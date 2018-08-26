@@ -94,6 +94,9 @@ venv.bak/
 .spyderproject
 .spyproject
 
+# VisualStudio code project settings
+__pycache__/
+.DS_Store
 # Rope project settings
 .ropeproject
 

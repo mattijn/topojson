@@ -1,2 +1,3 @@
-# topojson
-topojson
+# TOPOJSON
+
+python implementation of topojson based on https://bost.ocks.org/mike/topology/ and https://github.com/topojson
