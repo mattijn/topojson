@@ -4,10 +4,6 @@ import topojson as tj
 
 class TestExtract(unittest.TestCase):
 
-    # def setUp(self):
-    #     with open("tests/data_geojson/polygon-featurecollection-feature-clockwise.json") as f:
-    #         self.polygon_featurecollection_feature_clockwise = json.load(f)
-
     # extract copies coordinates sequentially into a buffer
     def test_linestring(self):
         data = {
@@ -61,4 +57,43 @@ class TestExtract(unittest.TestCase):
             }
         }  
         topology = tj.extract(data)
-        self.assertEqual(len(topology['lines']), 3)             
+        print(topology)
+        self.assertEqual(len(topology['lines']), 3)  
+
+    # test nested geojosn geometrycollection collection
+    def test_nested_geometrycollection(self):
+        data =  {
+            "foo": {
+                "type": "GeometryCollection",
+                "geometries": [
+                {
+                    "type": "GeometryCollection",
+                    "geometries": [
+                    {"type": "LineString", "coordinates": [[0.1, 0.2], [0.3, 0.4]]}
+                    ]
+                },
+                {"type": "Polygon", "coordinates": [[[0.5, 0.6], [0.7, 0.8], [0.9, 1.0]]]}
+                ]
+            }
+        }
+        topology = tj.extract(data)
+        print(topology)
+        self.assertEqual(len(topology['objects']['foo']['geometries'][0]['geometries'][0]['arcs']), 1)         
+
+    # test geometry collection + polygon
+    def test_geometrycollection_polygon(self):
+        data = {
+            "bar": {
+                "type": "Polygon",
+                "coordinates": [[[0, 0], [1, 1], [2, 0]]]
+            },    
+            "foo": {
+                "type": "GeometryCollection",
+                "geometries": [
+                {"type": "LineString", "coordinates": [[0.1, 0.2], [0.3, 0.4]]}
+                ]
+            }
+        }
+        topology = tj.extract(data)
+        print(topology)
+        self.assertEqual(len(topology['rings']), 1)         
