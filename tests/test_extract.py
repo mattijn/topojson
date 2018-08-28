@@ -96,4 +96,35 @@ class TestExtract(unittest.TestCase):
         }
         topology = tj.extract(data)
         print(topology)
-        self.assertEqual(len(topology['rings']), 1)         
+        self.assertEqual(len(topology['rings']), 1)  
+
+    # test feature type
+    def test_features(self):
+        data = {
+            "foo": {
+                "type": "Feature", 
+                "geometry": {"type": "LineString", "coordinates": [[.1, .2], [.3, .4]]}
+            },
+            "bar": {
+                "type": "Feature", 
+                "geometry": {"type": "Polygon", "coordinates": [[[0.5, 0.6], [0.7, 0.8], [0.9, 1.0]]]}
+            }
+        } 
+             
+        topology = tj.extract(data)
+        print(topology)  
+        self.assertEqual(len(topology['rings']), 1)    
+
+    def test_featurecollection(self):
+        data = {
+            "collection": {
+            "type": "FeatureCollection",
+            "features": [
+                {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[.1, .2], [.3, .4]]}},
+                {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[.5, .6], [.7, .8]]]}}
+            ]
+            }
+        }
+        topology = tj.extract(data)
+        print(topology)  
+        self.assertEqual(len(topology['rings']), 1)                     
