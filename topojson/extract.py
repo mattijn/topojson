@@ -120,14 +120,16 @@ class Extract:
         # the following lines can catch a GeometryCollection two levels deep
         # improvements on this are welcome
         for idx, geom in enumerate(geom):
-            if geom.type == 'GeometryCollection':
+            # if geom is GeometryCollection, collect geometries within collection on right level
+            if isinstance(geom, geometry.GeometryCollection):
                 self._records_collection = len(geom)
                 if self._geomcollection_counter == 1:
                     self._obj = obj['geometries']
                     self._geom_level_1 = idx
                 if self._geomcollection_counter == 2:
                     self._obj = obj['geometries'][self._geom_level_1]['geometries']  
-            # if not parse geometry to right object in data
+            
+            # geom is another registered geometry, determine location within collection
             else:
                 if self._geomcollection_counter == 1:
                     self._obj =  obj['geometries'][idx]
@@ -154,7 +156,7 @@ class Extract:
         obj['geometries'] = {}        
         zfill_value = len(str(len(obj['features'])))
 
-        # where each Feature is a new GeometryCollection
+        # each Feature becomes a new GeometryCollection
         for idx, feature in enumerate(obj['features']):
             # A GeoJSON Feature is mapped to a GeometryCollection
             feature['type'] = 'GeometryCollection'
@@ -165,7 +167,7 @@ class Extract:
         obj.pop('features', None)       
         data = obj['geometries']
         
-        # new data object is created, throw back to extract()
+        # new data object is created, throw the geometries back to extract()
         self.extract(data)
 
     @serialize_geom_type.register(geojson.Feature)
@@ -234,4 +236,5 @@ class Extract:
             "rings": self.rings,
             "objects": self._data
         }
+        
         return json_topology
