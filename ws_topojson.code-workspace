@@ -5,6 +5,6 @@
 		}
 	],
 	"settings": {
-		"python.pythonPath": "C:\\ProgramData\\Miniconda3\\python.exe"
+		"python.pythonPath": "/usr/local/bin/python3"
 	}
 }

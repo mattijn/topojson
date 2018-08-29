@@ -1,22 +1,28 @@
 import json
 import unittest
-import topojson as tj
+import topojson    
 
 class TestExtract(unittest.TestCase):
+    # the function setUp() is a method called to prepare the test fixture
+    # this means that the function is executed prior each test
+    # it is important to initiate the Extract() object prior each test
+    # otherwise test output will stack to the object if multiple tests are run.
+    def setUp(self):
+        extractClass = topojson.Extract()
+        self.extract = extractClass.extract
+
     # extract copies coordinates sequentially into a buffer
-    def test_linestring(self):        
-        topology = None
+    def test_linestring(self): 
         data = {
             "foo": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
             "bar": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]}
         }
-        topology = tj.extract(data)
-        # print(topology)
-        self.assertEqual(topology['coordinates'], [(0, 0), (1, 0), (2, 0), (0, 0), (1, 0), (2, 0)])
+        topo = self.extract(data)
+        # print(self.topo)
+        self.assertEqual(topo['coordinates'], [(0, 0), (1, 0), (2, 0), (0, 0), (1, 0), (2, 0)])
 
     # assess if a multipolygon is processed into the right number of rings
     def test_multipolygon(self):
-        topology = None
         data = {
             "foo": {
                 "type": "MultiPolygon",
@@ -43,13 +49,12 @@ class TestExtract(unittest.TestCase):
                 ]
             }
         }
-        topology = tj.extract(data)
+        topo = self.extract(data)
         # print(topology)
-        self.assertEqual(len(topology['rings']), 3)  
+        self.assertEqual(len(topo['rings']), 3)  
 
     # test multiliinestring
     def test_multilinestring(self):
-        topology = None
         data = {
             "foo": {
                 "type": "MultiLineString",
@@ -60,13 +65,12 @@ class TestExtract(unittest.TestCase):
                 ]
             }
         }  
-        topology = tj.extract(data)
+        topo = self.extract(data)
         # print(topology)
-        self.assertEqual(len(topology['lines']), 3)  
+        self.assertEqual(len(topo['lines']), 3)  
 
     # test nested geojosn geometrycollection collection
     def test_nested_geometrycollection(self):
-        topology = None
         data =  {
             "foo": {
                 "type": "GeometryCollection",
@@ -81,13 +85,12 @@ class TestExtract(unittest.TestCase):
                 ]
             }
         }
-        topology = tj.extract(data)
+        topo = self.extract(data)
         # print(topology)
-        self.assertEqual(len(topology['objects']['foo']['geometries'][0]['geometries'][0]['arcs']), 1)         
+        self.assertEqual(len(topo['objects']['foo']['geometries'][0]['geometries'][0]['arcs']), 1)         
 
     # test geometry collection + polygon
     def test_geometrycollection_polygon(self):
-        topology = None
         data = {
             "bar": {
                 "type": "Polygon",
@@ -100,13 +103,12 @@ class TestExtract(unittest.TestCase):
                 ]
             }
         }
-        topology = tj.extract(data)
+        topo = self.extract(data)
         # print(topology)
-        self.assertEqual(len(topology['rings']), 1)  
+        self.assertEqual(len(topo['rings']), 1)  
 
     # test feature type
     def test_features(self):
-        topology = None
         data = {
             "foo": {
                 "type": "Feature", 
@@ -118,13 +120,12 @@ class TestExtract(unittest.TestCase):
             }
         } 
              
-        topology = tj.extract(data)
+        topo = self.extract(data)
         # print(topology)  
-        self.assertEqual(len(topology['rings']), 1)    
+        self.assertEqual(len(topo['rings']), 1)    
 
     # test feature collection including geometry collection
     def test_featurecollection(self):
-        topology = None
         data = {
             "collection": {
             "type": "FeatureCollection",
@@ -136,11 +137,11 @@ class TestExtract(unittest.TestCase):
             ]            
             }
         }
-        topology = tj.extract(data)
+        topo = self.extract(data)
         # print(topology)  
-        self.assertEqual(len(topology['objects']), 2)
-        self.assertEqual(topology['coordinates'], [(0.1, 0.2), (0.3, 0.4), (0.5, 0.6), (0.7, 0.8), (0.9, 1.0), (0.5, 0.6)])
-        self.assertEqual(len(topology['rings']), 1)
-        self.assertEqual(len(topology['lines']), 1)
-        self.assertEqual(topology['objects']['feature_0']['geometries'][0]['type'], 'LineString')
-        self.assertEqual(topology['objects']['feature_1']['geometries'][0]['geometries'][0]['type'], 'Polygon')
+        self.assertEqual(len(topo['objects']), 2)
+        self.assertEqual(topo['coordinates'], [(0.1, 0.2), (0.3, 0.4), (0.5, 0.6), (0.7, 0.8), (0.9, 1.0), (0.5, 0.6)])
+        self.assertEqual(len(topo['rings']), 1)
+        self.assertEqual(len(topo['lines']), 1)
+        self.assertEqual(topo['objects']['feature_0']['geometries'][0]['type'], 'LineString')
+        self.assertEqual(topo['objects']['feature_1']['geometries'][0]['geometries'][0]['type'], 'Polygon')
