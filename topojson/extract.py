@@ -13,7 +13,6 @@ class Extract:
         self.lines = []
         self.rings = []
         self.coordinates = []
-        self.objects = {}  
         self._geomcollection_counter = 0  
 
     @methdispatch
@@ -25,13 +24,15 @@ class Extract:
         executed. 
 
         Currently the following geometry types are registered:
-        - LineString
-        - MultiLineString
-        - Polygon
-        - MultiPolygon
-        - Point
-        - MultiPoint
-        - GeometryCollection
+        - shapely.geometry.LineString
+        - shapely.geometry.MultiLineString
+        - shapely.geometry.Polygon
+        - shapely.geometry.MultiPolygon
+        - shapely.geometry.Point
+        - shapely.geometry.MultiPoint
+        - shapely.geometry.GeometryCollection
+        - geojson.Feature
+        - geojson.FeatureCollection
 
         In our case this will return an error as the input geom did not 
         match any of the required types.
@@ -206,7 +207,6 @@ class Extract:
         """
 
         self._data = data
-        self._prev_type = ''
 
         # iterate over the input dictionary or geojson object
         for key in self._data:
