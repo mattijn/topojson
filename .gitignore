@@ -107,3 +107,4 @@ __pycache__/
 
 # mypy
 .mypy_cache/
+ws_topojson.code-workspace
