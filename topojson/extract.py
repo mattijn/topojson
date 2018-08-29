@@ -1,9 +1,7 @@
 from .utils.dispatcher import methdispatch
-from copy import deepcopy
 import json
 from shapely import geometry 
 import geojson
-#import shape, LineString, MultiLineString, Polygon, MultiPolygon, geomCollection
 
 class Extract:
     """
@@ -117,7 +115,7 @@ class Extract:
         self._geomcollection_counter += 1
         self._records_collection = len(geom)
 
-        # iterate over the parsed shape(geom)'s 
+        # iterate over the parsed shape(geom) 
         # the original data objects is set as self._obj
         # the following lines can catch a GeometryCollection two levels deep
         # improvements on this are welcome
@@ -148,20 +146,42 @@ class Extract:
     @serialize_geom_type.register(geojson.FeatureCollection)
     def extract_featurecollection(self, geom):
         """
-        *geom* type is Point or MultiPoint instance.
-        coordinates are directly passed to arcs
+        *geom* type is FeatureCollection instance.
         """
+        # convert FeatureCollection into a GeometryCollection
         obj = self._obj
-        print('Im in featurecollection! {}'.format(obj))
+        obj['type'] = 'GeometryCollection'
+        obj['geometries'] = {}        
+        zfill_value = len(str(len(obj['features'])))
+
+        # where each Feature is a new GeometryCollection
+        for idx, feature in enumerate(obj['features']):
+            # A GeoJSON Feature is mapped to a GeometryCollection
+            feature['type'] = 'GeometryCollection'
+            feature['geometries'] = [feature['geometry']]
+            feature.pop('geometry', None)
+            obj['geometries']['feature_{}'.format(str(idx).zfill(zfill_value))] = feature
+        # all Features parsed into GeometryCollections, so drop features array
+        obj.pop('features', None)       
+        data = obj['geometries']
+        
+        # new data object is created, throw back to extract()
+        self.extract(data)
 
     @serialize_geom_type.register(geojson.Feature)
     def extract_feature(self, geom):
         """
-        *geom* type is Point or MultiPoint instance.
-        coordinates are directly passed to arcs
+        *geom* type is Feature instance.        
         """
         obj = self._obj
-        print('Im in feature! {}'.format(obj))        
+        
+        # A GeoJSON Feature is mapped to a GeometryCollection
+        obj['type'] = 'GeometryCollection'
+        obj['geometries'] = [obj['geometry']]
+        obj.pop('geometry', None)
+
+        geom = geometry.shape(obj)
+        self.serialize_geom_type(geom)
         
     def extract(self, data):
         """"
@@ -183,7 +203,7 @@ class Extract:
         into the `arcs` array within each object.
         """
 
-        self._data = deepcopy(data)
+        self._data = data
         self._prev_type = ''
 
         # iterate over the input dictionary or geojson object
@@ -199,8 +219,7 @@ class Extract:
             except ValueError:
                 geom = geojson.loads(geojson.dumps(self._obj))
                 
-
-            print(geom)
+            #print(geom)
             self.serialize_geom_type(geom)
             
             # reset geom collection counter and level
