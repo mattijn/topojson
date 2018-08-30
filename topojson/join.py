@@ -21,7 +21,10 @@ class Join:
         https://shapely.readthedocs.io/en/stable/manual.html#shared-paths
         
         to set up a R-tree:
-        and https://shapely.readthedocs.io/en/stable/manual.html#str-packed-r-tree
+        https://shapely.readthedocs.io/en/stable/manual.html#str-packed-r-tree
+        
+        get cartesian product:
+        https://stackoverflow.com/a/34032549
         """
         print(data)
         data['junctions'] = data['coordinates']
