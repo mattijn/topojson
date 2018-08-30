@@ -5,8 +5,8 @@ import topojson
 class TestExtract(unittest.TestCase):
     # the function setUp() is a method called to prepare the test fixture
     # this means that the function is executed prior each test
-    # it is important to initiate the Extract() object prior each test
-    # otherwise test output will stack to the object if multiple tests are run.
+    # it is important to initiate the object(s) prior each test
+    # otherwise test output will stack to the object(s) if multiple tests are run.
     def setUp(self):
         extractClass = topojson.Extract()
         self.extract = extractClass.extract
