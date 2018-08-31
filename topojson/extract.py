@@ -2,6 +2,7 @@ from .utils.dispatcher import methdispatch
 import json
 from shapely import geometry 
 import geojson
+import copy
 
 class Extract:
     """
@@ -56,8 +57,6 @@ class Extract:
             
         obj['arcs'].append(idx_arc)
         obj.pop('coordinates', None)
-        
-        #self.objects[key] = obj
 
     @serialize_geom_type.register(geometry.MultiLineString)
     def extract_multiline(self, geom):
@@ -84,8 +83,6 @@ class Extract:
             
         obj['arcs'].append(idx_arc)
         obj.pop('coordinates', None)
-        
-        #self.objects[key] = obj
 
     @serialize_geom_type.register(geometry.MultiPolygon)
     def extract_multiring(self, geom):
@@ -206,7 +203,7 @@ class Extract:
         into the `arcs` array within each object.
         """
 
-        self._data = data
+        self._data = copy.deepcopy(data)
 
         # iterate over the input dictionary or geojson object
         for key in self._data:
@@ -236,5 +233,6 @@ class Extract:
             "rings": self.rings,
             "objects": self._data
         }
+        del data
         
         return json_topology
