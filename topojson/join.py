@@ -1,3 +1,4 @@
+# pylint: disable=unsubscriptable-object
 from shapely import geometry
 from shapely.ops import shared_paths
 from shapely.ops import linemerge
@@ -15,7 +16,9 @@ class _Join:
 
     def junctions_two_lines(self, g1, g2):
         try:
-            forward, backward = shared_paths(g1, g2) 
+            forward_backward = shared_paths(g1, g2) 
+            forward = forward_backward[0]
+            backward = forward_backward[1]
             
             # if both backward and forward cotains objects combine 
             if backward.is_empty:
