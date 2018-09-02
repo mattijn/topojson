@@ -3,21 +3,13 @@ import unittest
 import topojson    
 
 class TestExtract(unittest.TestCase):
-    # the function setUp() is a method called to prepare the test fixture
-    # this means that the function is executed prior each test
-    # it is important to initiate the object(s) prior each test
-    # otherwise test output will stack to the object(s) if multiple tests are run.
-    def setUp(self):
-        extractClass = topojson.Extract()
-        self.extract = extractClass.extract
-
     # extract copies coordinates sequentially into a buffer
     def test_linestring(self): 
         data = {
             "foo": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
             "bar": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]}
         }
-        topo = self.extract(data)
+        topo = topojson.extract(data)
         # print(self.topo)
         self.assertEqual(topo['coordinates'], [(0, 0), (1, 0), (2, 0), (0, 0), (1, 0), (2, 0)])
 
@@ -49,7 +41,7 @@ class TestExtract(unittest.TestCase):
                 ]
             }
         }
-        topo = self.extract(data)
+        topo = topojson.extract(data)
         # print(topology)
         self.assertEqual(len(topo['rings']), 3)  
 
@@ -65,7 +57,7 @@ class TestExtract(unittest.TestCase):
                 ]
             }
         }  
-        topo = self.extract(data)
+        topo = topojson.extract(data)
         # print(topology)
         self.assertEqual(len(topo['lines']), 3)  
 
@@ -85,7 +77,7 @@ class TestExtract(unittest.TestCase):
                 ]
             }
         }
-        topo = self.extract(data)
+        topo = topojson.extract(data)
         # print(topology)
         self.assertEqual(len(topo['objects']['foo']['geometries'][0]['geometries'][0]['arcs']), 1)         
 
@@ -103,7 +95,7 @@ class TestExtract(unittest.TestCase):
                 ]
             }
         }
-        topo = self.extract(data)
+        topo = topojson.extract(data)
         # print(topology)
         self.assertEqual(len(topo['rings']), 1)  
 
@@ -120,7 +112,7 @@ class TestExtract(unittest.TestCase):
             }
         } 
              
-        topo = self.extract(data)
+        topo = topojson.extract(data)
         # print(topology)  
         self.assertEqual(len(topo['rings']), 1)    
 
@@ -137,7 +129,7 @@ class TestExtract(unittest.TestCase):
             ]            
             }
         }
-        topo = self.extract(data)
+        topo = topojson.extract(data)
         # print(topology)  
         self.assertEqual(len(topo['objects']), 2)
         self.assertEqual(topo['coordinates'], [(0.1, 0.2), (0.3, 0.4), (0.5, 0.6), (0.7, 0.8), (0.9, 1.0), (0.5, 0.6)])
