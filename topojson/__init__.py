@@ -1,9 +1,4 @@
-from topojson.extract import Extract
-from topojson.join import Join
+from topojson import extract, join
 
-_classExtract = Extract()
-extract = _classExtract.extract
-
-_classJoin = Join()
-join = _classJoin.join
-
+extract = extract._extracter
+join = join._joiner
