@@ -21,8 +21,8 @@ class _Extract:
     def serialize_geom_type(self, geom):
         """
         This function handles the different types of a geojson object.
-        Each type is registerd as its own function and called when found, if 
-        none of the types match the input geom the current function is
+        Each type is registerd as its own function and called when found, 
+        if none of the types match the input geom the current function is
         executed. 
 
         Currently the following geometry types are registered:
