@@ -44,11 +44,19 @@ class TestJoin(unittest.TestCase):
         self.assertListEqual(topo['junctions'], [(0, 0), (2, 0)])
 
     # exact duplicate rings ABCA & ABCA have no junctions
-    def test_exact_duplicate_rings_no_endpoints(self):
+    def test_exact_duplicate_rings(self):
         data = {
             "abca1": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 0], [0, 0]]]},
             "abca2": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 0], [0, 0]]]}
         }
         topo = topojson.join(topojson.extract(data))
-        # assertion is wrong, test should fail as polygon junctions are not solved yet
-        self.assertListEqual(topo['junctions'], [1])
+        self.assertListEqual(topo['junctions'], [])
+        
+    # reversed duplicate rings ABCA & ACBA have no junctions
+    def test_reversed_duplicate_rings(self):
+        data = {
+            "abca1": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 0], [0, 0]]]},
+            "acba2": {"type": "Polygon", "coordinates": [[[0, 0], [2, 0], [1, 0], [0, 0]]]}
+        }
+        topo = topojson.join(topojson.extract(data))
+        self.assertListEqual(topo['junctions'], [])        
