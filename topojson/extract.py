@@ -1,9 +1,14 @@
 from .utils.dispatcher import methdispatch
 import json
 from shapely import geometry 
+from shapely import speedups
 import geojson
 import copy
 import gc
+import logging
+
+if speedups.available:
+    speedups.enable()
 
 
 class _Extract:
@@ -16,6 +21,7 @@ class _Extract:
         self.rings = []
         self.coordinates = []
         self.geomcollection_counter = 0  
+        self.invalid_geoms = 0
 
     @methdispatch
     def serialize_geom_type(self, geom):
@@ -127,7 +133,7 @@ class _Extract:
                 if self.geomcollection_counter == 2:
                     self.obj = obj['geometries'][self.geom_level_1]['geometries']  
             
-            # geom is another registered geometry, determine location within collection
+            # geom is NOT a GeometryCollection, determine location within collection
             else:
                 if self.geomcollection_counter == 1:
                     self.obj = obj['geometries'][idx]
@@ -173,6 +179,7 @@ class _Extract:
         """
         *geom* type is Feature instance.        
         """
+        
         obj = self.obj
         
         # A GeoJSON Feature is mapped to a GeometryCollection
@@ -181,7 +188,13 @@ class _Extract:
         obj.pop('geometry', None)
 
         geom = geometry.shape(obj)
+        if not geom.is_valid:
+            self.invalid_geoms += 1
+            del self.data[self.key]
+            return        
+
         self.serialize_geom_type(geom)
+        
         
     def worker(self, data):
         """"
@@ -206,7 +219,8 @@ class _Extract:
         self.data = data
 
         # iterate over the input dictionary or geojson object
-        for key in self.data:
+        # use list since https://stackoverflow.com/a/11941855
+        for key in list(self.data):
             # based on the geom type the right function is serialized
             self.key = key
             self.obj = self.data[self.key]
@@ -215,6 +229,11 @@ class _Extract:
             # otherwise treat as geometric objects
             try:
                 geom = geometry.shape(self.obj)
+                # object can be mapped, but may not be valid. remove invalid objects and continue
+                if not geom.is_valid:
+                    self.invalid_geoms += 1
+                    del self.data[self.key]
+                    continue                
             except ValueError:
                 geom = geojson.loads(geojson.dumps(self.obj))
                 
@@ -224,7 +243,7 @@ class _Extract:
             # reset geom collection counter and level
             self.geomcollection_counter = 0
             self.geom_level_1 = 0
-
+        
         topo = {
             "type": "Topology",
             "coordinates": self.coordinates,
@@ -232,6 +251,11 @@ class _Extract:
             "rings": self.rings,
             "objects": self.data
         }
+        
+        # show the number of invalid geometries have been removed if any
+        if self.invalid_geoms > 0:
+            logging.warning('removed {} invalid geometric object{}'.format(
+                self.invalid_geoms, '' if self.invalid_geoms == 1 else 's'))        
         
         return topo
     
