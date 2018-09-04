@@ -15,28 +15,17 @@ class TestExtract(unittest.TestCase):
 
     # assess if a multipolygon is processed into the right number of rings
     def test_multipolygon(self):
+        # multipolygon
         data = {
             "foo": {
                 "type": "MultiPolygon",
                 "coordinates": [
                     [
-                        [
-                        [0.125, 0.0625],
-                        [0.5, 0.0625],
-                        [0.5, 0.25],
-                        [0.125, 0.25],
-                        [0.125, 0.0625]
-                        ]
-                    ],
-                    [[[0.125, 0.0625], [0.125, 0.0625], [0.125, 0.0625], [0.125, 0.0625]]],
+                        [[0, 0], [20, 0], [10, 20], [0, 0]],
+                        [[6, 5], [10, 2], [14, 5], [10, 8], [6, 5]]
+                    ],           
                     [
-                        [
-                        [0.125, 0.0625],
-                        [0.125, 0.25],
-                        [0.5, 0.25],
-                        [0.5, 0.0625],
-                        [0.125, 0.0625]
-                        ]
+                        [[25, 5], [30, 10], [35, 5], [25, 5]]
                     ]
                 ]
             }
@@ -44,6 +33,16 @@ class TestExtract(unittest.TestCase):
         topo = topojson.extract(data)
         # print(topology)
         self.assertEqual(len(topo['rings']), 3)  
+
+# invalid polygon geometry
+    def test_invalid_polygon(self):
+        data = {
+            "wrong": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 0], [0, 0]]]},
+            "valid": {"type": "Polygon", "coordinates": [[[0, 0], [2, 0], [1, 1], [0, 0]]]}
+        }
+        topo = topojson.extract(data)
+        # print(topology)
+        self.assertEqual(len(topo['rings']), 1)  
 
     # test multiliinestring
     def test_multilinestring(self):
