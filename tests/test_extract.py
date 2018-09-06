@@ -13,17 +13,20 @@ class TestExtract(unittest.TestCase):
         # print(self.topo)
         self.assertEqual(topo['coordinates'], [(0, 0), (1, 0), (2, 0), (0, 0), (1, 0), (2, 0)])
 
-    # assess if a multipolygon is processed into the right number of rings
+    # assess if a multipolygon with hole is processed into the right number of rings
     def test_multipolygon(self):
-        # multipolygon
+        # multipolygon with hole
         data = {
             "foo": {
                 "type": "MultiPolygon",
                 "coordinates": [
                     [
-                        [[0, 0], [20, 0], [10, 20], [0, 0]],
-                        [[6, 5], [10, 2], [14, 5], [10, 8], [6, 5]]
-                    ],           
+                        [[0, 0], [20, 0], [10, 20], [0, 0]], # CCW
+                        [[3, 2], [10, 16], [17, 2], [3, 2]] # CW
+                    ],  
+                    [
+                        [[6, 4], [14, 4], [10, 12], [6, 4]] #CCW 
+                    ],
                     [
                         [[25, 5], [30, 10], [35, 5], [25, 5]]
                     ]
@@ -50,12 +53,12 @@ class TestExtract(unittest.TestCase):
             "foo": {
                 "type": "MultiLineString",
                 "coordinates": [
-                [[0.125, 0.0625], [0.5, 0.25]],
-                [[0.125, 0.0625], [0.125, 0.0625]],
-                [[0.5, 0.25], [0.125, 0.0625]]
+                [[0.0, 0.0], [1, 1], [3, 3]],
+                [[1, 1], [0, 1]],
+                [[3,3], [4, 4], [0, 1]]
                 ]
             }
-        }  
+        } 
         topo = topojson.extract(data)
         # print(topology)
         self.assertEqual(len(topo['lines']), 3)  
