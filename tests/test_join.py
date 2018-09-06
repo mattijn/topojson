@@ -50,7 +50,7 @@ class TestJoin(unittest.TestCase):
             "abca2": {"type": "Polygon", "coordinates": [[[0, 0], [1, 1], [2, 0], [0, 0]]]}
         }
         topo = topojson.join(topojson.extract(data))
-        print(topo)
+        #print(topo)
         self.assertListEqual(topo['junctions'], [])
         
     # reversed duplicate rings ABCA & ACBA have no junctions

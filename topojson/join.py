@@ -56,7 +56,13 @@ class _Join:
 #         linearrings = [
 #             geometry.LineString(ring.boundary.coords[0:-1]) for ring in data['rings']
 #         ]
-        linearrings = [ring.boundary for ring in data['rings']]
+        linearrings = []
+        for ring in data['rings']:
+            if isinstance(ring.boundary, geometry.MultiLineString):
+                for mls in ring.boundary:
+                    linearrings.append(mls)
+            else:
+                linearrings.append(ring.boundary)
         mergerings = linearrings + data['lines']
         
         # first create list with all combinations of lines
