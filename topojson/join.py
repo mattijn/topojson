@@ -58,6 +58,7 @@ class _Join:
 #         ]
         linearrings = []
         for ring in data['rings']:
+            # catch rings with holes
             if isinstance(ring.boundary, geometry.MultiLineString):
                 for mls in ring.boundary:
                     linearrings.append(mls)
