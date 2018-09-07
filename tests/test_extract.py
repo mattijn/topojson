@@ -81,7 +81,7 @@ class TestExtract(unittest.TestCase):
         }
         topo = topojson.extract(data)
         # print(topology)
-        self.assertEqual(len(topo['objects']['foo']['geometries'][0]['geometries'][0]['arcs']), 1)         
+        self.assertEqual(len(topo['objects']['foo']['geometries'][0]['geometries'][0]['"coordinates"']), 1)         
 
     # test geometry collection + polygon
     def test_geometrycollection_polygon(self):
