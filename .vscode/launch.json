@@ -5,22 +5,22 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Experimental: Current File (Integrated Terminal)",
-            "type": "pythonExperimental",
+            "name": "Python: Current File (Integrated Terminal)",
+            "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/topojson/__init__.py", 
             "console": "integratedTerminal"
         },
         {
-            "name": "Python Experimental: Attach",
-            "type": "pythonExperimental",
+            "name": "Python: Attach",
+            "type": "python",
             "request": "attach",
             "port": 5678,
             "host": "localhost"
         },
         {
-            "name": "Python Experimental: Django",
-            "type": "pythonExperimental",
+            "name": "Python: Django",
+            "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",
             "console": "integratedTerminal",
@@ -32,8 +32,8 @@
             "django": true
         },
         {
-            "name": "Python Experimental: Flask",
-            "type": "pythonExperimental",
+            "name": "Python: Flask",
+            "type": "python",
             "request": "launch",
             "module": "flask",
             "env": {
@@ -47,8 +47,8 @@
             "jinja": true
         },
         {
-            "name": "Python Experimental: Current File (External Terminal)",
-            "type": "pythonExperimental",
+            "name": "Python: Current File (External Terminal)",
+            "type": "python",
             "request": "launch",
             "program": "${file}",
             "console": "externalTerminal"

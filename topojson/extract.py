@@ -58,10 +58,10 @@ class _Extract:
         # get index of last added item and store as arc
         obj = self.obj
         idx_arc = len(self.lines) - 1
-        if 'arcs' not in obj:
-            obj['arcs'] = [] 
+        if '"coordinates"' not in obj:
+            obj['"coordinates"'] = [] 
             
-        obj['arcs'].append(idx_arc)
+        obj['"coordinates"'].append(idx_arc)
         obj.pop('coordinates', None)
 
     @serialize_geom_type.register(geometry.MultiLineString)
@@ -81,13 +81,13 @@ class _Extract:
         self.coordinates.extend(arc)
         self.rings.append(geom)
 
-        # get index of last added item and store as arcs
+        # get index of last added item and store as "coordinates"
         idx_arc = len(self.rings) - 1
         obj = self.obj
-        if 'arcs' not in obj:
-            obj['arcs'] = []
+        if '"coordinates"' not in obj:
+            obj['"coordinates"'] = []
             
-        obj['arcs'].append(idx_arc)
+        obj['"coordinates"'].append(idx_arc)
         obj.pop('coordinates', None)
 
     @serialize_geom_type.register(geometry.MultiPolygon)
@@ -103,11 +103,11 @@ class _Extract:
     def extract_point(self, geom):
         """
         *geom* type is Point or MultiPoint instance.
-        coordinates are directly passed to arcs
+        coordinates are directly passed to "coordinates"
         """
         obj = self.obj
-        if 'arcs' not in obj:
-            obj['arcs'] = obj['coordinates']
+        if '"coordinates"' not in obj:
+            obj['"coordinates"'] = obj['coordinates']
         obj.pop('coordinates', None)
 
     @serialize_geom_type.register(geometry.GeometryCollection)
@@ -208,12 +208,12 @@ class _Extract:
 
         For each line or polygon geometry in the input hash, including nested
         geometries as in geometry collections, the `coordinates` array is replaced
-        with an equivalent `arcs` array that, for each line (for line string
+        with an equivalent `"coordinates"` array that, for each line (for line string
         geometries) or ring (for polygon geometries), points to one of the above
         lines or rings.
 
         Points geometries are not collected within the new properties, but are placed directly
-        into the `arcs` array within each object.
+        into the `"coordinates"` array within each object.
         """
 
         self.data = data
@@ -235,7 +235,13 @@ class _Extract:
                     del self.data[self.key]
                     continue                
             except ValueError:
+                # object might be a geojson Feature or FeatureCollection
                 geom = geojson.loads(geojson.dumps(self.obj))
+            except TypeError:
+                # object is not valid
+                self.invalid_geoms += 1
+                del self.data[self.key]
+                continue                 
                 
             #print(geom)
             self.serialize_geom_type(geom)
