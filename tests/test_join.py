@@ -225,7 +225,7 @@ class TestJoin(unittest.TestCase):
             "dbc": {"type": "LineString", "coordinates": [[3, 0], [1, 0], [2, 0]]}
         }
         topo = topojson.join(topojson.extract(data))
-        self.assertListEqual(topo['junctions'], [(0.0, 0.0), (2.0, 0.0)]) 
+        self.assertListEqual(topo['junctions'], [(1.0, 0.0), (2.0, 0.0)]) 
 
     # when a new line DBC merges into a reversed old line CBA, there is a junction at B
     def test_line_DBC_merge_reversed_line_CBA(self): 
