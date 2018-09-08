@@ -215,9 +215,10 @@ class TestJoin(unittest.TestCase):
             "abd": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [3, 0]]}
         }
         topo = topojson.join(topojson.extract(data))
-        self.assertListEqual(topo['junctions'], [(0.0, 0.0), (2.0, 0.0)]) 
+        self.assertListEqual(topo['junctions'], [(2.0, 0.0), (0.0, 0.0)]) 
 
     # when a new line DBC merges into an old line ABC, there is a junction at B
+    #!
     def test_line_DBC_merge_line_ABC(self): 
         data = {
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
