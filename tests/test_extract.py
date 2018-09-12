@@ -11,7 +11,7 @@ class TestExtract(unittest.TestCase):
         }
         topo = topojson.extract(data)
         # print(self.topo)
-        self.assertEqual(topo['coordinates'], [(0, 0), (1, 0), (2, 0), (0, 0), (1, 0), (2, 0)])
+        self.assertEqual(len(topo['lines']), 2)
 
     # assess if a multipolygon with hole is processed into the right number of rings
     def test_multipolygon(self):
@@ -134,7 +134,6 @@ class TestExtract(unittest.TestCase):
         topo = topojson.extract(data)
         # print(topology)  
         self.assertEqual(len(topo['objects']), 2)
-        self.assertEqual(topo['coordinates'], [(0.1, 0.2), (0.3, 0.4), (0.5, 0.6), (0.7, 0.8), (0.9, 1.0), (0.5, 0.6)])
         self.assertEqual(len(topo['rings']), 1)
         self.assertEqual(len(topo['lines']), 1)
         self.assertEqual(topo['objects']['feature_0']['geometries'][0]['type'], 'LineString')
