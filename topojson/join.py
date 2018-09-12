@@ -28,7 +28,7 @@ class _Join:
                 # only contains backward objects
                 shared_segments = backward       
             else:
-                # both backward and forward contains objects combine 
+                # both backward and forward contains objects, so combine 
                 shared_segments = geometry.MultiLineString([
                     linemerge(forward),
                     linemerge(backward)
@@ -51,11 +51,6 @@ class _Join:
         """
         
         # start of join from Polygon derived linearRings and LineStrings
-        
-#         # pop last coordinate        
-#         linearrings = [
-#             geometry.LineString(ring.boundary.coords[0:-1]) for ring in data['rings']
-#         ]
         linearrings = []
         for ring in data['rings']:
             # catch rings with holes

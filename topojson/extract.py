@@ -19,7 +19,6 @@ class _Extract:
         # initatie topology items
         self.lines = []
         self.rings = []
-        self.coordinates = []
         self.geomcollection_counter = 0  
         self.invalid_geoms = 0
 
@@ -51,8 +50,8 @@ class _Extract:
         """
         *geom* type is LineString instance.
         """
-        arc = list(geom.coords)
-        self.coordinates.extend(arc)
+        #arc = list(geom.coords)
+        #self.coordinates.extend(arc)
         self.lines.append(geom)
 
         # get index of last added item and store as arc
@@ -77,8 +76,8 @@ class _Extract:
         """
         *geom* type is Polygon instance.
         """
-        arc = list(geom.exterior.coords)
-        self.coordinates.extend(arc)
+        #arc = list(geom.exterior.coords)
+        #self.coordinates.extend(arc)
         self.rings.append(geom)
 
         # get index of last added item and store as "coordinates"
@@ -252,7 +251,7 @@ class _Extract:
         
         topo = {
             "type": "Topology",
-            "coordinates": self.coordinates,
+            #"coordinates": self.coordinates,
             "lines": self.lines,
             "rings": self.rings,
             "objects": self.data
