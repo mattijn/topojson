@@ -45,7 +45,7 @@ class TestJoin(unittest.TestCase):
         # print(topo)
         self.assertTrue(len(topo['junctions']), 6)        
 
-    # exact duplicate lines ABC & ABC have junctions at their end points   
+    # exact duplicate lines ABC & ABC have no junctions   
     def test_duplicate_lines_junction_endpoints(self):
         data = {
             "abc1": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
@@ -53,9 +53,9 @@ class TestJoin(unittest.TestCase):
         }        
         topo = topojson.join(topojson.extract(data))
         # print(topo)
-        self.assertListEqual(topo['junctions'], [(0, 0), (2, 0)])
+        self.assertListEqual(topo['junctions'], [])
   
-      # reversed duplicate lines ABC & CBA have junctions at their end points   
+      # reversed duplicate lines ABC & CBA have no junctions  
     def test_reversed_duplicate_lines_junction_endpoints(self):
         data = {
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
@@ -63,7 +63,7 @@ class TestJoin(unittest.TestCase):
         }        
         topo = topojson.join(topojson.extract(data))
         # print(topo)
-        self.assertListEqual(topo['junctions'], [(0, 0), (2, 0)])
+        self.assertListEqual(topo['junctions'], [])
 
     # exact duplicate rings ABCA & ABCA have no junctions
     def test_exact_duplicate_rings(self):
@@ -244,23 +244,23 @@ class TestJoin(unittest.TestCase):
         topo = topojson.join(topojson.extract(data))
         self.assertListEqual(topo['junctions'], []) 
 
-    # when a new line ABDE skips a point with an old line ABCDE, there is a junction at A and E
+    # when a new line ABDE skips a point with an old line ABCDE, there is a no junction
     def test_line_ABDE_skips_point_line_ABCDE(self): 
         data = {
             "abcde": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]]},
             "abde": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [3, 0], [4, 0]]}
         }
         topo = topojson.join(topojson.extract(data))
-        self.assertListEqual(topo['junctions'], [(0.0, 0.0), (4.0, 0.0)]) 
+        self.assertListEqual(topo['junctions'], []) 
 
-    # when a new line ABDE skips a point with a reversed old line EDCBA, there is a junction at B and D
+    # when a new line ABDE skips a point with a reversed old line EDCBA, there is no junction
     def test_line_ABDE_skips_point_reversed_line_EDCBA(self): 
         data = {
             "edcba": {"type": "LineString", "coordinates": [[4, 0], [3, 0], [2, 0], [1, 0], [0, 0]]},
             "abde": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [3, 0], [4, 0]]}
         }
         topo = topojson.join(topojson.extract(data))
-        self.assertListEqual(topo['junctions'], [(4.0, 0.0), (0.0, 0.0)]) 
+        self.assertListEqual(topo['junctions'], []) 
 
     # when a line ABCDBE self-intersects with its middle, there are no junctions
     def test_line_ABCDBE_self_intersects_with_middle(self): 
