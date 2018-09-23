@@ -50,23 +50,21 @@ class _Join:
         https://stackoverflow.com/a/34032549
         """
         
-        # start of join from Polygon derived linearRings and LineStrings
-        linearrings = []
-        for ring in data['rings']:
-            # catch rings with holes
-            if isinstance(ring.boundary, geometry.MultiLineString):
-                for mls in ring.boundary:
-                    linearrings.append(mls)
-            else:
-                linearrings.append(ring.boundary)
-        mergerings = linearrings + data['lines']
-        
         # first create list with all combinations of lines
-        line_combs = list(itertools.combinations(mergerings, 2))
+        line_combs = list(itertools.combinations(data['linestrings'], 2))
         
         # iterate over line combinations
         for geoms in line_combs:
-            self.junctions_two_lines(geoms[0], geoms[1])
+            # check if geometry are equal
+            # being equal meainging the geometry object coincide with those of the other.
+            # a rotated polygon or reversed linestring are both considered equal as well.
+            if geoms[0].equals(geoms[1]):
+                # TODO: record the indices of the couple geometries
+                pass
+                
+            else:
+                # not equal lets find junctions
+                self.junctions_two_lines(geoms[0], geoms[1])
 
         # self.segments is a list of LineStrings, get all coordinates
         s_coords = [y for x in self.segments for y in list(x.coords)]

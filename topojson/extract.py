@@ -1,24 +1,20 @@
 from .utils.dispatcher import methdispatch
 import json
 from shapely import geometry 
-from shapely import speedups
 import geojson
 import copy
-import gc
 import logging
-
-if speedups.available:
-    speedups.enable()
-
 
 class _Extract:
     """
     decompose shapes into lines and rings.
     """
     def __init__(self):
-        # initatie topology items
-        self.lines = []
-        self.rings = []
+        # initation topology items
+        # self.lines = []
+        # self.rings = []
+        self.bookkeeping = []
+        self.linestrings = []
         self.geomcollection_counter = 0  
         self.invalid_geoms = 0
 
@@ -43,6 +39,7 @@ class _Extract:
 
         Any non-registered geometry wil return as an error that cannot be mapped.
         """
+
         return print('error: {} cannot be mapped'.format(geom))
 
     @serialize_geom_type.register(geometry.LineString)
@@ -50,17 +47,19 @@ class _Extract:
         """
         *geom* type is LineString instance.
         """
-        #arc = list(geom.coords)
-        #self.coordinates.extend(arc)
-        self.lines.append(geom)
 
-        # get index of last added item and store as arc
+        idx_bk = len(self.bookkeeping)
+        idx_ls = len(self.linestrings)
+        # record index and store linestring geom
+        self.bookkeeping.append(idx_ls)
+        self.linestrings.append(geom)
+
+        # track record in object as well
         obj = self.obj
-        idx_arc = len(self.lines) - 1
         if '"coordinates"' not in obj:
-            obj['"coordinates"'] = [] 
-            
-        obj['"coordinates"'].append(idx_arc)
+            obj['"coordinates"'] = []
+           
+        obj['"coordinates"'].append(idx_bk)
         obj.pop('coordinates', None)
 
     @serialize_geom_type.register(geometry.MultiLineString)
@@ -68,6 +67,7 @@ class _Extract:
         """
         *geom* type is MultiLineString instance. 
         """
+
         for line in geom:
             self.extract_line(line)
 
@@ -76,17 +76,30 @@ class _Extract:
         """
         *geom* type is Polygon instance.
         """
-        #arc = list(geom.exterior.coords)
-        #self.coordinates.extend(arc)
-        self.rings.append(geom)
 
-        # get index of last added item and store as "coordinates"
-        idx_arc = len(self.rings) - 1
+        idx_bk = len(self.bookkeeping)
+        idx_ls = len(self.linestrings)
+        
+        boundary = geom.boundary
+        # catch ring with holes
+        if isinstance(boundary, geometry.MultiLineString):
+            # record index as list of items 
+            # and store each linestring geom
+            lst_idx = list(range(idx_ls, idx_ls + len(list(boundary))))
+            self.bookkeeping.append(lst_idx)           
+            for ls in boundary:
+                self.linestrings.append(ls)
+        else:
+            # record index and store single linestring geom
+            self.bookkeeping.append(idx_ls)
+            self.linestrings.append(boundary)        
+
+        # track record in object as well
         obj = self.obj
         if '"coordinates"' not in obj:
             obj['"coordinates"'] = []
             
-        obj['"coordinates"'].append(idx_arc)
+        obj['"coordinates"'].append(idx_bk)
         obj.pop('coordinates', None)
 
     @serialize_geom_type.register(geometry.MultiPolygon)
@@ -94,6 +107,7 @@ class _Extract:
         """
         *geom* type is MultiPolygon instance. 
         """
+
         for ring in geom:
             self.extract_ring(ring)
 
@@ -104,6 +118,7 @@ class _Extract:
         *geom* type is Point or MultiPoint instance.
         coordinates are directly passed to "coordinates"
         """
+
         obj = self.obj
         if '"coordinates"' not in obj:
             obj['"coordinates"'] = obj['coordinates']
@@ -114,6 +129,7 @@ class _Extract:
         """
         *geom* type is GeometryCollection instance.
         """
+
         obj = self.data[self.key]
         self.geomcollection_counter += 1
         self.records_collection = len(geom)
@@ -153,6 +169,7 @@ class _Extract:
         """
         *geom* type is FeatureCollection instance.
         """
+
         # convert FeatureCollection into a GeometryCollection
         obj = self.obj
         obj['type'] = 'GeometryCollection'
@@ -178,7 +195,7 @@ class _Extract:
         """
         *geom* type is Feature instance.        
         """
-        
+
         obj = self.obj
         
         # A GeoJSON Feature is mapped to a GeometryCollection
@@ -251,9 +268,8 @@ class _Extract:
         
         topo = {
             "type": "Topology",
-            #"coordinates": self.coordinates,
-            "lines": self.lines,
-            "rings": self.rings,
+            "linestrings": self.linestrings,
+            "bookkeeping": self.bookkeeping,
             "objects": self.data
         }
         
