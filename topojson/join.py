@@ -6,15 +6,25 @@ import itertools
 
 class _Join:
     """
-    identify junctions (intersection points).
+    identify junctions (intersection points) of shared paths.
     """
 
     def __init__(self):
-        # initatie topology items
+        # initation topology items
         self.junctions = []
         self.segments = []
 
-    def junctions_two_lines(self, g1, g2):
+    def shared_segs(self, g1, g2):
+        """
+        This function returns the segments that are shared with two input geometries.
+        The shapely function `shapely.ops.shared_paths()` is adopted and can catch
+        both the shared paths with the same direction for both inputs as well as the 
+        shared paths with the opposite direction for the two inputs.
+
+        The returned object extents the `segments` property with detected segments.
+        Where each seperate segment is a linestring between two points.
+        """
+
         fw_bw = shared_paths(g1, g2) 
         if not fw_bw.is_empty:
             
@@ -38,7 +48,22 @@ class _Join:
             
     def main(self, data):
         """
-        start join function
+        Detects the junctions of shared paths from the specified hash of linestrings.
+
+        The join function is the second step in the topology computation.
+        (Proably) the following sequence is adopted:
+        1. extract
+        2. join
+        3. cut
+        4. dedup
+        
+        After decomposing all geometric objects into linestrings it is necessary to detect
+        the junctions or start and end-points of shared paths so this paths can be 'merged'
+        in the next step. Merge is quoted as in facht only one of the shared path is kept and 
+        the other will be removed.
+
+        The following links have been used as referene in creating this object/functions.
+        TODO: delete when needed.
         
         to find shared paths:
         https://shapely.readthedocs.io/en/stable/manual.html#shared-paths
@@ -51,6 +76,7 @@ class _Join:
         """
         
         # first create list with all combinations of lines
+        # TODO: this needs to include index, otherwise bookkeeping is hard
         line_combs = list(itertools.combinations(data['linestrings'], 2))
         
         # iterate over line combinations
@@ -59,12 +85,12 @@ class _Join:
             # being equal meainging the geometry object coincide with those of the other.
             # a rotated polygon or reversed linestring are both considered equal as well.
             if geoms[0].equals(geoms[1]):
-                # TODO: record the indices of the couple geometries
+                # TODO: record the indices of the couple geometries that are equal
                 pass
                 
             else:
                 # not equal lets find junctions
-                self.junctions_two_lines(geoms[0], geoms[1])
+                self.shared_segs(geoms[0], geoms[1])
 
         # self.segments is a list of LineStrings, get all coordinates
         s_coords = [y for x in self.segments for y in list(x.coords)]
