@@ -7,12 +7,10 @@ import logging
 
 class _Extract:
     """
-    decompose shapes into lines and rings.
+    decompose shapes into linestrings and track record in bookkeeping.
     """
     def __init__(self):
         # initation topology items
-        # self.lines = []
-        # self.rings = []
         self.bookkeeping = []
         self.linestrings = []
         self.geomcollection_counter = 0  
@@ -21,12 +19,16 @@ class _Extract:
     @methdispatch
     def serialize_geom_type(self, geom):
         """
-        This function handles the different types of a geojson object.
+        This function handles the different types that can occur within a geojson object.
         Each type is registerd as its own function and called when found, 
         if none of the types match the input geom the current function is
         executed. 
 
-        Currently the following geometry types are registered:
+        The adoption of the dispatcher approach makes the usage of multiple if-else statements
+        not needed, since the dispatcher redirects the `geom` input to the function which
+        handles that partical geometry type.
+
+        The following geometry types are registered:
         - shapely.geometry.LineString
         - shapely.geometry.MultiLineString
         - shapely.geometry.Polygon
@@ -136,7 +138,7 @@ class _Extract:
 
         # iterate over the parsed shape(geom) 
         # the original data objects is set as self._obj
-        # the following lines can catch a GeometryCollection two levels deep
+        # the following lines can catch a GeometryCollection untill two levels deep
         # improvements on this are welcome
         for idx, geom in enumerate(geom):
             # if geom is GeometryCollection, collect geometries within collection on right level
@@ -170,10 +172,9 @@ class _Extract:
         *geom* type is FeatureCollection instance.
         """
 
-        # convert FeatureCollection into a GeometryCollection
+        # convert FeatureCollection into a dict of features
         obj = self.obj
-        obj['type'] = 'GeometryCollection'
-        obj['geometries'] = {}        
+        data = {}        
         zfill_value = len(str(len(obj['features'])))
 
         # each Feature becomes a new GeometryCollection
@@ -182,12 +183,9 @@ class _Extract:
             feature['type'] = 'GeometryCollection'
             feature['geometries'] = [feature['geometry']]
             feature.pop('geometry', None)
-            obj['geometries']['feature_{}'.format(str(idx).zfill(zfill_value))] = feature
-        # all Features parsed into GeometryCollections, so drop features array
-        obj.pop('features', None)       
-        data = obj['geometries']
+            data['feature_{}'.format(str(idx).zfill(zfill_value))] = feature
         
-        # new data object is created, throw the geometries back to main()
+        # new data dictionary is created, throw the geometries back to main()
         self.worker(data)
 
     @serialize_geom_type.register(geojson.Feature)
@@ -214,19 +212,17 @@ class _Extract:
         
     def worker(self, data):
         """"
-        Extracts the lines and rings from the specified hash of geometry objects.
+        Extracts the linestrings from the specified hash of geometry objects.
 
-        Returns an object with three new properties:
+        Returns an object with two new properties:
 
-        * coordinates - shared buffer of [x, y] coordinates
-        * lines - lines extracted from the hash, of the form [start, end], as shapely objects
-        * rings - rings extracted from the hash, of the form [start, end], as shapely objects
+        * linestrings - linestrings extracted from the hash, of the form [start, end], as shapely objects
+        * bookkeeping - record array storing index numbers of linestrings used in each object.
 
         For each line or polygon geometry in the input hash, including nested
         geometries as in geometry collections, the `coordinates` array is replaced
-        with an equivalent `"coordinates"` array that, for each line (for line string
-        geometries) or ring (for polygon geometries), points to one of the above
-        lines or rings.
+        with an equivalent `"coordinates"` array that points to one of the 
+        linestrings as indexed in `bookkeeping`.
 
         Points geometries are not collected within the new properties, but are placed directly
         into the `"coordinates"` array within each object.
@@ -241,8 +237,9 @@ class _Extract:
             self.key = key
             self.obj = self.data[self.key]
 
-            # determine if type is a feature or collections of features
-            # otherwise treat as geometric objects
+            # determine firstly if type of geom is a Shapely geometric object if not then
+            # the object might be a geojson Feature or FeatureCollection 
+            # otherwise it is not a recognized object and it will be removed 
             try:
                 geom = geometry.shape(self.obj)
                 # object can be mapped, but may not be valid. remove invalid objects and continue
@@ -259,7 +256,10 @@ class _Extract:
                 del self.data[self.key]
                 continue                 
                 
-            #print(geom)
+            # the geom object is recognized, lets serialize the geometric type.
+            # this function redirects the geometric object based on its type to 
+            # an equivalent function. Adopting this approach avoids the usage of
+            # multiple if-else statements.
             self.serialize_geom_type(geom)
             
             # reset geom collection counter and level
@@ -281,6 +281,7 @@ class _Extract:
         return topo
     
 def _extracter(data):
+    # since we move and replace data in the object, need a deepcopy to avoid changing the input-data
     data = copy.deepcopy(data)
     Extract = _Extract()
     e = Extract.worker(data)
