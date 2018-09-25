@@ -62,6 +62,10 @@ class _Join:
         in the next step. Merge is quoted as in facht only one of the shared path is kept and 
         the other will be removed.
 
+        Notes:
+        * why not de-duplicate (dedup) equal geometries in this object/function? 
+        Current approach is to record them and deal with it, maybe combined, in `cut` or `dedup` phase.
+
         The following links have been used as referene in creating this object/functions.
         TODO: delete when needed.
         
@@ -82,10 +86,12 @@ class _Join:
         # iterate over line combinations
         for geoms in line_combs:
             # check if geometry are equal
-            # being equal meainging the geometry object coincide with those of the other.
+            # being equal meaining the geometry object coincide with each other.
             # a rotated polygon or reversed linestring are both considered equal as well.
             if geoms[0].equals(geoms[1]):
                 # TODO: record the indices of the couple geometries that are equal
+                # we only record the indices that are equal which are processed in the 
+                # `cut` or `dedup` phase to actually process duplicates. 
                 pass
                 
             else:
