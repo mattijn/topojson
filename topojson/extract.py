@@ -53,7 +53,7 @@ class _Extract:
         idx_bk = len(self.bookkeeping)
         idx_ls = len(self.linestrings)
         # record index and store linestring geom
-        self.bookkeeping.append(idx_ls)
+        self.bookkeeping.append([idx_ls])
         self.linestrings.append(geom)
 
         # track record in object as well
@@ -93,7 +93,7 @@ class _Extract:
                 self.linestrings.append(ls)
         else:
             # record index and store single linestring geom
-            self.bookkeeping.append(idx_ls)
+            self.bookkeeping.append([idx_ls])
             self.linestrings.append(boundary)        
 
         # track record in object as well
@@ -233,6 +233,10 @@ class _Extract:
 
         Points geometries are not collected within the new properties, but are placed directly
         into the `"coordinates"` array within each object.
+
+        Developping Notes
+        * maybe better to include serialization of string type instead of handling this in worker
+        * serialize GeoDataFrame and GeoSeries type
         """
 
         self.data = data

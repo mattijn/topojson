@@ -1,4 +1,5 @@
 from shapely import geometry
+import copy
 
 class _Cut:
     """
@@ -21,9 +22,10 @@ class _Cut:
         3. cut
         4. dedup        
  
-        Notes:
+        Developping Notes:
         * prepared geometric operations can only be applied on many-points vs polygon operations
         * firstly dedup recorded equal geoms, since equal geoms will be cut both.
+        * start of iteration between cut.py and dedup.py        
 
         The following links have been used as referene in creating this object/functions.
         TODO: delete when needed.
@@ -42,6 +44,7 @@ class _Cut:
     
     
 def _cutter(data):
+    data = copy.deepcopy(data)
     Cut = _Cut()
     c = Cut.main(data)
     return c

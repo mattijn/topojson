@@ -2,7 +2,11 @@
 from shapely import geometry
 from shapely.ops import shared_paths
 from shapely.ops import linemerge
+from shapely import speedups
 import itertools
+import copy
+if speedups.available:
+    speedups.enable()
 
 class _Join:
     """
@@ -63,7 +67,7 @@ class _Join:
         in the next step. Merge is quoted as in facht only one of the shared path is kept and 
         the other will be removed.
 
-        Notes:
+        Developping Notes:
         * why not de-duplicate (dedup) equal geometries in this object/function? 
         Current approach is to record them and deal with it, maybe combined, in `cut` or `dedup` phase.
 
@@ -119,6 +123,7 @@ class _Join:
     
     
 def _joiner(data):
+    data = copy.deepcopy(data)
     Join = _Join()
     j = Join.main(data)
     return j
