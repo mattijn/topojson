@@ -31,7 +31,7 @@ class _Dedup:
         array_bk = np.array(list(itertools.zip_longest(*data['bookkeeping'], fillvalue=np.nan))).T
 
         # start deduping
-        for dup_pair in list(data['duplicates']):
+        for idx, dup_pair in enumerate(list(data['duplicates'])):
             idx_keep = dup_pair[0]
             idx_pop = dup_pair[1]
             
@@ -45,8 +45,8 @@ class _Dedup:
             with np.errstate(invalid='ignore'):
                 array_bk[array_bk > idx_pop] -= 1
             
-            # clean duplication list
-            data['duplicates'].remove(dup_pair)
+            # remove duplicate entry
+            del data['duplicates'][idx]
 
         # convert to list after numpy computation is finished
         list_bk = [obj[~np.isnan(obj)].astype(int).tolist() for obj in array_bk]        
