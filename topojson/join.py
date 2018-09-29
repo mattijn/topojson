@@ -104,16 +104,16 @@ class _Join:
             else:
                 # we only record the indices that are equal and which geom to keep.
                 # Processing is done in `cut` or `dedup` phase.
-                idx_to_pop = i1 if len(g1.coords) <= len(g2.coords) else i2
-                idx_to_keep = i1 if i2 == idx_to_pop else i2
-                self.duplicates.append((idx_to_keep, idx_to_pop))               
+                idx_pop = i1 if len(g1.coords) <= len(g2.coords) else i2
+                idx_keep = i1 if i2 == idx_pop else i2
+                self.duplicates.append((idx_keep, idx_pop))               
 
         # self.segments is a list of LineStrings, get all coordinates
         s_coords = [y for x in self.segments for y in list(x.coords)]
  
         # only keep junctions that appear only once
         # coordinates that appear multiple times are not junctions         
-        self.junctions = [i for i in s_coords if s_coords.count(i) is 1]
+        self.junctions = [geometry.Point(i) for i in s_coords if s_coords.count(i) is 1]
 
         # prepare to return
         data['junctions'] = self.junctions
