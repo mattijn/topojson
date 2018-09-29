@@ -31,6 +31,7 @@ class _Dedup:
         array_bk = np.array(list(itertools.zip_longest(*data['bookkeeping'], fillvalue=np.nan))).T
 
         # start deduping
+        # iterate over copy to change original list
         for idx, dup_pair in enumerate(list(data['duplicates'])):
             idx_keep = dup_pair[0]
             idx_pop = dup_pair[1]
