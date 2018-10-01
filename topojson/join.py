@@ -56,11 +56,10 @@ class _Join:
         Detects the junctions of shared paths from the specified hash of linestrings.
 
         The join function is the second step in the topology computation.
-        (Proably) the following sequence is adopted:
+        The following sequence is adopted:
         1. extract
         2. join
-        3. cut
-        4. dedup
+        3. cut & dedup
         
         After decomposing all geometric objects into linestrings it is necessary to detect
         the junctions or start and end-points of shared paths so this paths can be 'merged'

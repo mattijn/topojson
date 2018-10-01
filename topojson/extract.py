@@ -215,11 +215,10 @@ class _Extract:
         Extracts the linestrings from the specified hash of geometry objects.
 
         The extract function is the first step in the topology computation.
-        (Proably) the following sequence is adopted:
+        The following sequence is adopted:
         1. extract
         2. join
-        3. cut
-        4. dedup
+        3. cut & dedup
 
         Returns an object with two new properties:
 
