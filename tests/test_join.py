@@ -1,4 +1,4 @@
-import json
+from shapely import geometry
 import unittest
 import topojson    
 
@@ -11,7 +11,7 @@ class TestJoin(unittest.TestCase):
         }        
         topo = topojson.join(topojson.extract(data))
         # print(topo)
-        self.assertTrue((1.0, 0.0) in set(topo['junctions']))
+        self.assertTrue(geometry.Point(1.0, 0.0).equals(topo['junctions'][0]))
 
     # the returned hashmap has undefined for non-junction points
     def test_undefined_for_non_junction_points(self):
@@ -21,7 +21,7 @@ class TestJoin(unittest.TestCase):
         }        
         topo = topojson.join(topojson.extract(data))
         # print(topo)
-        self.assertFalse((1.0, 0.0) in topo['junctions'])
+        self.assertFalse(geometry.Point(1.0, 0.0) in geometry.MultiPoint(topo['junctions']))
 
         # forward backward lines
     def test_forward_backward_lines(self):        
@@ -118,7 +118,9 @@ class TestJoin(unittest.TestCase):
         "ab": {"type": "LineString", "coordinates": [[0, 0], [1, 0]]}
         }
         topo = topojson.join(topojson.extract(data))
-        self.assertListEqual(topo['junctions'], [(0.0, 0.0), (1.0, 0.0)])     
+        self.assertTrue(geometry.MultiPoint(
+            topo['junctions']
+            ).equals(geometry.MultiPoint([(0.0, 0.0), (1.0, 0.0)])))  
 
     # when a reversed old arc CBA extends a new arc AB, there is a junction at B
     def test_reversed_line_CBA_extends_new_line_AB(self):
@@ -127,7 +129,7 @@ class TestJoin(unittest.TestCase):
         "ab": {"type": "LineString", "coordinates": [[0, 0], [1, 0]]}
         }
         topo = topojson.join(topojson.extract(data))
-        self.assertIn((1.0, 0.0), topo['junctions'])    
+        self.assertTrue(geometry.Point(1.0, 0.0).within(geometry.MultiPoint(topo['junctions'])))
 
     # when a new arc ADE shares its start with an old arc ABC, there is no junction at A
     def test_line_ADE_share_starts_with_ABC(self):
@@ -170,7 +172,8 @@ class TestJoin(unittest.TestCase):
         "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]}
         }
         topo = topojson.join(topojson.extract(data))
-        self.assertListEqual(topo['junctions'], [(0.0, 0.0), (1.0, 0.0)])     
+        self.assertEqual(
+            geometry.MultiPoint(topo['junctions']), geometry.MultiPoint([(0.0, 0.0), (1.0, 0.0)]))    
 
     # when a new line ABC extends a reversed old line BA, there is a junction at B
     def test_line_ABC_extends_line_BA(self):    
@@ -179,7 +182,8 @@ class TestJoin(unittest.TestCase):
         "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]}
         }
         topo = topojson.join(topojson.extract(data))
-        self.assertListEqual(topo['junctions'], [(1.0, 0.0), (0.0, 0.0)])
+        self.assertEqual(
+            geometry.MultiPoint(topo['junctions']), geometry.MultiPoint([(1.0, 0.0), (0.0, 0.0)])) 
 
     # when a new line starts BC in the middle of an old line ABC, there is a junction at B
     def test_line_ABC_extends_line_BC(self):    
@@ -188,7 +192,7 @@ class TestJoin(unittest.TestCase):
         "bc": {"type": "LineString", "coordinates": [[1, 0], [2, 0]]}
         }
         topo = topojson.join(topojson.extract(data))
-        self.assertListEqual(topo['junctions'], [(1.0, 0.0), (2.0, 0.0)])    
+        self.assertTrue(geometry.MultiPoint(topo['junctions']).equals(geometry.MultiPoint([(1.0, 0.0), (2.0, 0.0)])))
 
     # when a new line BC starts in the middle of a reversed old line CBA, there is a junction at B
     def test_line_BC_start_middle_reversed_line_CBA(self):    
@@ -197,7 +201,7 @@ class TestJoin(unittest.TestCase):
         "bc": {"type": "LineString", "coordinates": [[1, 0], [2, 0]]}
         }
         topo = topojson.join(topojson.extract(data))
-        self.assertListEqual(topo['junctions'], [(2.0, 0.0), (1.0, 0.0)])  
+        self.assertTrue(geometry.MultiPoint(topo['junctions']).equals(geometry.MultiPoint([(2.0, 0.0), (1.0, 0.0)])))
 
     # when a new line ABD deviates from an old line ABC, there is a junction at B
     def test_line_ABD_deviates_line_ABC(self):    
@@ -206,7 +210,9 @@ class TestJoin(unittest.TestCase):
         "abd": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [3, 0]]}
         }
         topo = topojson.join(topojson.extract(data))
-        self.assertListEqual(topo['junctions'], [(0.0, 0.0), (2.0, 0.0)])      
+        self.assertTrue(
+            geometry.MultiPoint(topo['junctions']
+            ).equals(geometry.MultiPoint([(0.0, 0.0), (2.0, 0.0)])))      
 
     # when a new line ABD deviates from a reversed old line CBA, there is a junction at B
     def test_line_ABD_deviates_line_CBA(self): 
@@ -215,7 +221,9 @@ class TestJoin(unittest.TestCase):
             "abd": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [3, 0]]}
         }
         topo = topojson.join(topojson.extract(data))
-        self.assertListEqual(topo['junctions'], [(2.0, 0.0), (0.0, 0.0)]) 
+        self.assertTrue(
+            geometry.MultiPoint(topo['junctions']
+            ).equals(geometry.MultiPoint([(2.0, 0.0), (0.0, 0.0)]))) 
 
     # when a new line DBC merges into an old line ABC, there is a junction at B
     def test_line_DBC_merge_line_ABC(self): 
@@ -224,7 +232,9 @@ class TestJoin(unittest.TestCase):
             "dbc": {"type": "LineString", "coordinates": [[3, 0], [1, 0], [2, 0]]}
         }
         topo = topojson.join(topojson.extract(data))
-        self.assertListEqual(topo['junctions'], [(1.0, 0.0), (2.0, 0.0)]) 
+        self.assertTrue(
+            geometry.MultiPoint(topo['junctions']
+            ).equals(geometry.MultiPoint([(1.0, 0.0), (2.0, 0.0)]))) 
 
     # when a new line DBC merges into a reversed old line CBA, there is a junction at B
     def test_line_DBC_merge_reversed_line_CBA(self): 
@@ -233,7 +243,9 @@ class TestJoin(unittest.TestCase):
             "dbc": {"type": "LineString", "coordinates": [[3, 0], [1, 0], [2, 0]]}
         }
         topo = topojson.join(topojson.extract(data))
-        self.assertListEqual(topo['junctions'], [(2.0, 0.0), (1.0, 0.0)]) 
+        self.assertTrue(
+            geometry.MultiPoint(topo['junctions']
+            ).equals(geometry.MultiPoint([(2.0, 0.0), (1.0, 0.0)]))) 
 
     # when a new line DBE shares a single midpoint with an old line ABC, there is no junction at B
     def test_line_DBE_share_singe_midpoint_line_ABC(self): 
