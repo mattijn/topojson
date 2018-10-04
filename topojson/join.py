@@ -17,7 +17,6 @@ class _Join:
         # initation topology items
         self.junctions = []
         self.segments = []
-        self.duplicates = []
 
     def shared_segs(self, g1, g2):
         """
@@ -59,7 +58,8 @@ class _Join:
         The following sequence is adopted:
         1. extract
         2. join
-        3. cut & dedup
+        3. cut 
+        4. dedup
         
         After decomposing all geometric objects into linestrings it is necessary to detect
         the junctions or start and end-points of shared paths so this paths can be 'merged'
@@ -84,28 +84,19 @@ class _Join:
         """
         
         # first create list with all combinations of lines
-        ls_idx = [pair for pair in enumerate(data['linestrings'])]
-        line_combs = list(itertools.combinations(ls_idx, 2))
+        line_combs = list(itertools.combinations(data['linestrings'], 2))
         
         # iterate over line combinations
         for geoms in line_combs:
-            i1 = geoms[0][0]
-            g1 = geoms[0][1]
-
-            i2 = geoms[1][0]
-            g2 = geoms[1][1]
+            g1 = geoms[0]
+            g2 = geoms[1]
             # check if geometry are equal
             # being equal meaning the geometry object coincide with each other.
             # a rotated polygon or reversed linestring are both considered equal.
             if not g1.equals(g2):
                 # geoms are unique, let's find junctions
                 self.shared_segs(g1, g2)
-            else:
-                # we only record the indices that are equal and which geom to keep.
-                # Processing is done in `cut` or `dedup` phase.
-                idx_pop = i1 if len(g1.coords) <= len(g2.coords) else i2
-                idx_keep = i1 if i2 == idx_pop else i2
-                self.duplicates.append((idx_keep, idx_pop))               
+            # its quid pro quo to record equal geoms here. Let's leave it up to next phases           
 
         # self.segments is a list of LineStrings, get all coordinates
         s_coords = [y for x in self.segments for y in list(x.coords)]
@@ -116,7 +107,7 @@ class _Join:
 
         # prepare to return
         data['junctions'] = self.junctions
-        data['duplicates'] = self.duplicates
+        # data['duplicates'] = self.duplicates
         
         return data
     

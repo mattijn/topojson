@@ -218,7 +218,8 @@ class _Extract:
         The following sequence is adopted:
         1. extract
         2. join
-        3. cut & dedup
+        3. cut
+        4. dedup
 
         Returns an object with two new properties:
 
