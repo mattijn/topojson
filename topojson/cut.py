@@ -12,6 +12,7 @@ class _Cut:
 
     def __init__(self):
         # initation topology items
+        self.duplicates = []
         pass       
 
     def index_array(self, parameter_list):
@@ -50,26 +51,8 @@ class _Cut:
         2. join
         3. cut 
         4. dedup      
- 
-        Developping Notes:
-        * prepared geometric operations can only be applied on many-points vs polygon operations
-        * firstly dedup recorded equal geoms, since equal geoms will be cut both.
-        * start of iteration between cut.py and dedup.py        
-
-        The following links have been used as referene in creating this object/functions.
-        TODO: delete when needed.
-
-        Prepared Geometry Operations
-        Shapely geometries can be processed into a state that supports more efficient batches of operations.
-
-        Prepared geometries instances have the following methods: contains, 
-        contains_properly, covers, and intersects. 
-        All have exactly the same arguments and usage as their counterparts in 
-        non-prepared geometric objects.
-        https://shapely.readthedocs.io/en/stable/manual.html#prepared-geometry-operations
         """
 
-        # --- 1 ---
         # split each feature given the intersections 
         mp = geometry.MultiPoint(data['junctions'])
         slist = []
@@ -78,12 +61,10 @@ class _Cut:
             slist.append(list(geometry.MultiLineString(slines)))        
         
         # flatten the splitted linestrings and create bookkeeping array
-        segments_list, nested_array = self.flatten_and_index(slist)
+        segments_list, bk_array = self.flatten_and_index(slist)
 
-        # --- 2 ---
         # find duplicates of splitted linestrings
-        # first create list with all combinations of lines
-        # TODO: make it work
+        # first create list with all combinations of lines including index
         ls_idx = [pair for pair in enumerate(segments_list)]
         line_combs = list(itertools.combinations(ls_idx, 2))
 
@@ -99,16 +80,15 @@ class _Cut:
             # being equal meaning the geometry object coincide with each other.
             # a rotated polygon or reversed linestring are both considered equal.
             if g1.equals(g2):
-                # we only deup the geoms that are equal
                 idx_pop = i1 if len(g1.coords) <= len(g2.coords) else i2
                 idx_keep = i1 if i2 == idx_pop else i2
-                data['duplicates'].append((idx_keep, idx_pop)) 
+                self.duplicates.append((idx_keep, idx_pop)) 
         
-        # --- 3 ---
         # TODO: separate shared arcs from single used arcs
         # TODO: apply linemerge on the single used arcs (this avoids inclusion of rotation!)
         # TODO: etc
-        data['bookkkeeping_linestrings'] = self.list_from_array(nested_array)
+        data['duplicates'] = self.duplicates
+        data['bookkkeeping_linestrings'] = self.list_from_array(bk_array)
 
         return data
     
