@@ -1,0 +1,17 @@
+{
+  "type": "Topology",
+  "arcs": [
+    [[1, 1], [1, 0]],
+    [[1, 0], [0, 0], [0, 1], [1, 1]],
+    [[1, 1], [2, 1], [2, 0], [1, 0]]
+  ],
+  "objects": {
+    "shared_arc": {
+      "type": "GeometryCollection",
+      "geometries": [
+        {"arcs": [[0, 1]], "type": "Polygon", "properties": {"id": "0"}},
+        {"arcs": [[-1, 2]], "type": "Polygon", "properties": {"id": "1"}}
+      ]
+    }
+  }
+}
