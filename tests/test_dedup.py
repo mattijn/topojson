@@ -23,6 +23,6 @@ class TestDedup(unittest.TestCase):
         topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         # print(topo)
         self.assertEqual(len(topo['duplicates']), 0)
-        self.assertEqual(topo['bookkeeping'], [[0, 2], [1], [2]])
+        self.assertEqual(topo['bookkeeping_geoms'], [[0, 2], [1], [2]])
 
        

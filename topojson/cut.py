@@ -23,7 +23,7 @@ class _Cut:
     def flatten_and_index(self, slist):
         """
         function to create a flattened list of splitted linestrings, but make sure to
-        create a numpy array for bookkeeping for thee numerical computation
+        create a numpy array for bookkeeping_geoms for thee numerical computation
         """
         # flatten
         segmntlist = list(itertools.chain(*slist))
@@ -60,7 +60,7 @@ class _Cut:
             slines = split(ls, mp)
             slist.append(list(geometry.MultiLineString(slines)))        
         
-        # flatten the splitted linestrings and create bookkeeping array
+        # flatten the splitted linestrings and create bookkeeping_geoms array
         segments_list, bk_array = self.flatten_and_index(slist)
 
         # find duplicates of splitted linestrings
@@ -82,13 +82,14 @@ class _Cut:
             if g1.equals(g2):
                 idx_pop = i1 if len(g1.coords) <= len(g2.coords) else i2
                 idx_keep = i1 if i2 == idx_pop else i2
-                self.duplicates.append((idx_keep, idx_pop)) 
+                self.duplicates.append([idx_keep, idx_pop]) 
         
         # TODO: separate shared arcs from single used arcs
         # TODO: apply linemerge on the single used arcs (this avoids inclusion of rotation!)
         # TODO: etc
-        data['duplicates'] = self.duplicates
-        data['bookkkeeping_linestrings'] = self.list_from_array(bk_array)
+        data['duplicates'] = np.array(self.duplicates)
+        data['linestrings'] = segments_list
+        data['bookkeeping_linestrings'] = bk_array#self.list_from_array(bk_array)
 
         return data
     
