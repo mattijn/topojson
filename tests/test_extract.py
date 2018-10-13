@@ -33,7 +33,7 @@ class TestExtract(unittest.TestCase):
             }
         }
         topo = topojson.extract(data)
-        self.assertEqual(len(topo['bookkeeping']), 3)
+        self.assertEqual(len(topo['bookkeeping_geoms']), 3)
         self.assertEqual(len(topo['linestrings']), 4)  
 
 # invalid polygon geometry
@@ -127,7 +127,7 @@ class TestExtract(unittest.TestCase):
         topo = topojson.extract(data)
         # print(topology)  
         self.assertEqual(len(topo['objects']), 2)
-        self.assertEqual(len(topo['bookkeeping']), 2)
+        self.assertEqual(len(topo['bookkeeping_geoms']), 2)
         self.assertEqual(len(topo['linestrings']), 2)
         self.assertEqual(topo['objects']['feature_0']['geometries'][0]['type'], 'LineString')
         self.assertEqual(topo['objects']['feature_1']['geometries'][0]['geometries'][0]['type'], 'Polygon')

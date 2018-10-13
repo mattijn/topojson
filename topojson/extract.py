@@ -7,11 +7,11 @@ import logging
 
 class _Extract:
     """
-    decompose shapes into linestrings and track record in bookkeeping.
+    decompose shapes into linestrings and track record in bookkeeping_geoms.
     """
     def __init__(self):
         # initation topology items
-        self.bookkeeping = []
+        self.bookkeeping_geoms = []
         self.linestrings = []
         self.geomcollection_counter = 0  
         self.invalid_geoms = 0
@@ -50,10 +50,10 @@ class _Extract:
         *geom* type is LineString instance.
         """
 
-        idx_bk = len(self.bookkeeping)
+        idx_bk = len(self.bookkeeping_geoms)
         idx_ls = len(self.linestrings)
         # record index and store linestring geom
-        self.bookkeeping.append([idx_ls])
+        self.bookkeeping_geoms.append([idx_ls])
         self.linestrings.append(geom)
 
         # track record in object as well
@@ -79,7 +79,7 @@ class _Extract:
         *geom* type is Polygon instance.
         """
 
-        idx_bk = len(self.bookkeeping)
+        idx_bk = len(self.bookkeeping_geoms)
         idx_ls = len(self.linestrings)
         
         boundary = geom.boundary
@@ -88,12 +88,12 @@ class _Extract:
             # record index as list of items 
             # and store each linestring geom
             lst_idx = list(range(idx_ls, idx_ls + len(list(boundary))))
-            self.bookkeeping.append(lst_idx)           
+            self.bookkeeping_geoms.append(lst_idx)           
             for ls in boundary:
                 self.linestrings.append(ls)
         else:
             # record index and store single linestring geom
-            self.bookkeeping.append([idx_ls])
+            self.bookkeeping_geoms.append([idx_ls])
             self.linestrings.append(boundary)        
 
         # track record in object as well
@@ -224,12 +224,12 @@ class _Extract:
         Returns an object with two new properties:
 
         * linestrings - linestrings extracted from the hash, of the form [start, end], as shapely objects
-        * bookkeeping - record array storing index numbers of linestrings used in each object.
+        * bookkeeping_geoms - record array storing index numbers of linestrings used in each object.
 
         For each line or polygon geometry in the input hash, including nested
         geometries as in geometry collections, the `coordinates` array is replaced
         with an equivalent `"coordinates"` array that points to one of the 
-        linestrings as indexed in `bookkeeping`.
+        linestrings as indexed in `bookkeeping_geoms`.
 
         Points geometries are not collected within the new properties, but are placed directly
         into the `"coordinates"` array within each object.
@@ -280,7 +280,7 @@ class _Extract:
         topo = {
             "type": "Topology",
             "linestrings": self.linestrings,
-            "bookkeeping": self.bookkeeping,
+            "bookkeeping_geoms": self.bookkeeping_geoms,
             "objects": self.data
         }
         

@@ -44,7 +44,7 @@ class _Dedup:
     def flatten_and_index(self, slist):
         """
         function to create a flattened list of splitted linestrings, but make sure to
-        create a numpy array for bookkeeping for the numerical computation
+        create a numpy array for bookkeeping_geoms for the numerical computation
         """
         # flatten
         segmntlist = list(itertools.chain(*slist))
@@ -78,10 +78,10 @@ class _Dedup:
         """
         
         # deduplicate equal geometries
-        # create numpy array from bookkeeping variable for numerical computation
-        array_bk = self.index_array(data['bookkeeping'])
+        # create numpy array from bookkeeping_geoms variable for numerical computation
+        array_bk = self.index_array(data['bookkeeping_geoms'])
         array_bk = self.deduplicate(data['duplicates'], data['linestrings'], array_bk)
-        data['bookkeeping'] = self.list_from_array(array_bk)
+        data['bookkeeping_geoms'] = self.list_from_array(array_bk)
 
         return data
     
