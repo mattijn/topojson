@@ -13,6 +13,7 @@ class _Cut:
     def __init__(self):
         # initation topology items
         self.duplicates = []
+        self.bookkeeping_linestrings = []
         pass       
 
     def index_array(self, parameter_list):
@@ -53,12 +54,17 @@ class _Cut:
         4. dedup      
         """
 
+        if not data['junctions']:
+            data['bookkeeping_linestrings'] = data['bookkeeping_geoms']
+            return data        
+
         # split each feature given the intersections 
         mp = geometry.MultiPoint(data['junctions'])
         slist = []
         for ls in data['linestrings']:
             slines = split(ls, mp)
-            slist.append(list(geometry.MultiLineString(slines)))        
+            slist.append(list(geometry.MultiLineString(slines)))    
+   
         
         # flatten the splitted linestrings and create bookkeeping_geoms array
         segments_list, bk_array = self.flatten_and_index(slist)
@@ -84,12 +90,13 @@ class _Cut:
                 idx_keep = i1 if i2 == idx_pop else i2
                 self.duplicates.append([idx_keep, idx_pop]) 
         
+        self.bookkeeping_linestrings = bk_array.astype(float)#self.list_from_array(bk_array)
         # TODO: separate shared arcs from single used arcs
         # TODO: apply linemerge on the single used arcs (this avoids inclusion of rotation!)
         # TODO: etc
         data['duplicates'] = np.array(self.duplicates)
         data['linestrings'] = segments_list
-        data['bookkeeping_linestrings'] = bk_array#self.list_from_array(bk_array)
+        data['bookkeeping_linestrings'] = self.bookkeeping_linestrings
 
         return data
     
