@@ -25,4 +25,13 @@ class TestDedup(unittest.TestCase):
         self.assertEqual(len(topo['duplicates']), 0)
         self.assertEqual(topo['bookkeeping_geoms'], [[0, 2], [1], [2]])
 
+    def test_shared_line_ABCDBE_and_FBCG(self): 
+        data = {
+            "abcdbe": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0], [3, 0], [1, 0], [4, 0]]},
+            "fbcg": {"type": "LineString", "coordinates": [[0, 1], [1, 0], [2, 0], [3, 1]]}
+        }        
+        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        self.assertEqual(len(topo['duplicates']), 0)
+        self.assertEqual(topo['bookkeeping_geoms'], [[0, 2], [1], [2]])        
+
        

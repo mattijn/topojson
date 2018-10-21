@@ -37,7 +37,8 @@ class _Dedup:
                 array_bk[array_bk > idx_pop] -= 1
             
             # store shared arc index
-            self.shared_arcs_idx.append(idx_keep)
+            idx2keep = idx_keep if idx_pop > idx_keep else idx_keep - 1
+            self.shared_arcs_idx.append(idx2keep)
             # set duplicate entry to -99
             dup_pair_list[idx, :] = -99
         
@@ -60,7 +61,7 @@ class _Dedup:
         return segmntlist, array_bk  
 
     def list_from_array(self, array_bk):
-        # convert to list after numpy computation is finished
+        # convert numpy array to list, where elements set as np.nan are filtered
         list_bk = [obj[~np.isnan(obj)].astype(int).tolist() for obj in array_bk]   
         return list_bk        
             
@@ -87,20 +88,24 @@ class _Dedup:
         array_bk = self.deduplicate(data['duplicates'], data['linestrings'], array_bk)
         # data['bookkeeping_linestrings'] = self.list_from_array(array_bk)
 
-        # create mask for shared arcs to select only non-duplicates
-        mask = np.isin(array_bk, self.shared_arcs_idx)
-        # data['bookkeeping_linestrings'][mask]= np.nan 
-        # non_dp = self.list_from_array(data['bookkeeping_linestrings'])
-        array_bk[mask] = np.nan
-        non_dp = self.list_from_array(array_bk)
-
         # apply a shapely linemerge to merge all contiguous line-elements
+        # first create a mask for shared arcs to select only non-duplicates
+        mask = np.isin(array_bk, self.shared_arcs_idx)
+        array_geoms_ndp = copy.deepcopy(array_bk)
+        array_geoms_ndp[mask] = np.nan
+        geoms_ndp = self.list_from_array(array_geoms_ndp)
+
+
         # TODO: currently iterates over all geoms, maybe not necessary
         # TODO: the bookeeping_linestrings should be updated to reflect on the merges
         # TODO: non-contiguous line-elements are returned as MultiLineStrings, should be LineStrings
+        # iterate over 
         list_merged_line = []
-        for arcs_ndp_geom in non_dp:
-            list_merged_line.append(linemerge([ data['linestrings'][i] for i in arcs_ndp_geom ]))        
+        for arcs_ndp_geom in geoms_ndp:
+            list_merged_line.extend(list(
+                linemerge([ data['linestrings'][i] for i in arcs_ndp_geom ])
+                )
+            )       
         
         # set changed objects
         data['linestrings'] = list_merged_line
