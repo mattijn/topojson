@@ -1,0 +1,23 @@
+{
+    "type": "Topology",
+    "arcs": [
+      [[0, 0], [1, 0]],
+      [[2, 0], [3, 0], [1, 0], [4, 0]],
+      [[1, 0], [2, 0]],
+      [[0, 1], [1, 0]],
+      [[2, 0], [3, 1]]
+    ],
+    "objects": {
+      "shared_arc_on_top_of_arc": {
+        "type": "GeometryCollection",
+        "geometries": [
+          {
+            "type": "LineString",
+            "arcs": [0, 3, 1],
+            "properties": {"id": "abcdbe"}
+          },
+          {"type": "LineString", "arcs": [2, 3, 4], "properties": {"id": "fbcg"}}
+        ]
+      }
+    }
+  }
