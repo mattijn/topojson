@@ -23,8 +23,8 @@ class _Dedup:
     def deduplicate(self, dup_pair_list, linestring_list, array_bk):
         # start deduping
         for idx, dup_pair in enumerate(dup_pair_list):
-            idx_keep = int(dup_pair[0])
-            idx_pop = int(dup_pair[1])
+            idx_keep = dup_pair[0]
+            idx_pop = dup_pair[1]
             
             # remove duplicate linestring
             del linestring_list[idx_pop]
@@ -79,38 +79,43 @@ class _Dedup:
         Developping Notes:
         * dedup only arcs, not geoms.
         Quantization might be explained here: https://gist.github.com/scardine/6320052
-
         """
         
         # deduplicate equal geometries
         # create numpy array from bookkeeping_geoms variable for numerical computation
         array_bk = self.index_array(data['bookkeeping_linestrings'])
         array_bk = self.deduplicate(data['duplicates'], data['linestrings'], array_bk)
-        # data['bookkeeping_linestrings'] = self.list_from_array(array_bk)
 
         # apply a shapely linemerge to merge all contiguous line-elements
         # first create a mask for shared arcs to select only non-duplicates
+        # slice array_bk_ndp for geoms (rows) containing np.nan values
         mask = np.isin(array_bk, self.shared_arcs_idx)
-        array_geoms_ndp = copy.deepcopy(array_bk)
-        array_geoms_ndp[mask] = np.nan
-        geoms_ndp = self.list_from_array(array_geoms_ndp)
+        array_bk_ndp = copy.deepcopy(array_bk)
+        array_bk_ndp[mask] = np.nan
+        sliced_array_bk_ndp = array_bk_ndp[np.argwhere(np.isnan(array_bk_ndp))[0,:]]
 
+        # iterate over geoms that contain shared arcs and try linemerge on remaining arcs
+        for idx, arcs_geom_bk in enumerate(sliced_array_bk_ndp):
+            # print(np.isnan(arcs_geom_bk).any()) # should print True
+            # set number of arcs before trying linemerge
+            ndp_arcs_bk = arcs_geom_bk[~np.isnan(arcs_geom_bk)].astype(int)#.tolist()
+            no_ndp_arcs_bk = len(ndp_arcs_bk)
 
-        # TODO: currently iterates over all geoms, maybe not necessary
-        # TODO: the bookeeping_linestrings should be updated to reflect on the merges
-        # TODO: non-contiguous line-elements are returned as MultiLineStrings, should be LineStrings
-        # iterate over 
-        list_merged_line = []
-        for arcs_ndp_geom in geoms_ndp:
-            list_merged_line.extend(list(
-                linemerge([ data['linestrings'][i] for i in arcs_ndp_geom ])
-                )
-            )       
+            # apply linemerge
+            ndp_arcs = list(linemerge([ data['linestrings'][i] for i in ndp_arcs_bk ]))
+            no_ndp_arcs = len(ndp_arcs)
+
+            # only if no_ndp_arcs is different than no_ndp_arcs_bk continue, else is no changes 
+            if no_ndp_arcs != no_ndp_arcs_bk:
+                # TODO: place the merged linestrings back in data['linestrings']
+                # TODO: solve the bookkeeping
+                # print some variables if some linestrings were merged
+                print(idx, ndp_arcs_bk, ndp_arcs)       
         
         # set changed objects
-        data['linestrings'] = list_merged_line
-        data['shared_arcs_idx'] = self.shared_arcs_idx
-        data['bookkeeping_linestrings'] = self.list_from_array(array_bk)
+        del data['bookkeeping_linestrings']
+        data['bookkeeping_arcs'] = self.list_from_array(array_bk)
+        data['bookkeeping_shared_arcs'] = self.shared_arcs_idx
         data['duplicates'] = self.list_from_array(data['duplicates'][data['duplicates'] != -99])
 
         return data
