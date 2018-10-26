@@ -40,35 +40,9 @@ class _Cut:
     def list_from_array(self, array_bk):
         # convert to list after numpy computation is finished
         list_bk = [obj[~np.isnan(obj)].astype(int).tolist() for obj in array_bk]   
-        return list_bk        
-            
-    def main(self, data):
-        """
-        Cut the linestrings given the junctions of shared paths.
+        return list_bk    
 
-        The cut function is the third step in the topology computation.
-        The following sequence is adopted:
-        1. extract
-        2. join
-        3. cut 
-        4. dedup      
-        """
-
-        if not data['junctions']:
-            data['bookkeeping_linestrings'] = data['bookkeeping_geoms']
-            return data        
-
-        # split each feature given the intersections 
-        mp = geometry.MultiPoint(data['junctions'])
-        slist = []
-        for ls in data['linestrings']:
-            slines = split(ls, mp)
-            slist.append(list(geometry.MultiLineString(slines)))    
-   
-        
-        # flatten the splitted linestrings and create bookkeeping_geoms array
-        segments_list, bk_array = self.flatten_and_index(slist)
-
+    def find_duplicates(self, segments_list):
         # find duplicates of splitted linestrings
         # first create list with all combinations of lines including index
         ls_idx = [pair for pair in enumerate(segments_list)]
@@ -88,14 +62,42 @@ class _Cut:
             if g1.equals(g2):
                 idx_pop = i1 if len(g1.coords) <= len(g2.coords) else i2
                 idx_keep = i1 if i2 == idx_pop else i2
-                self.duplicates.append([idx_keep, idx_pop]) 
-        
-        self.bookkeeping_linestrings = bk_array.astype(float)#self.list_from_array(bk_array)
-        # TODO: separate shared arcs from single used arcs
-        # TODO: apply linemerge on the single used arcs (this avoids inclusion of rotation!)
-        # TODO: etc
+                self.duplicates.append([idx_keep, idx_pop])         
+            
+    def main(self, data):
+        """
+        Cut the linestrings given the junctions of shared paths.
+
+        The cut function is the third step in the topology computation.
+        The following sequence is adopted:
+        1. extract
+        2. join
+        3. cut 
+        4. dedup      
+        """
+
+        if data['junctions']:   
+            # split each feature given the intersections 
+            mp = geometry.MultiPoint(data['junctions'])
+            slist = []
+            for ls in data['linestrings']:
+                slines = split(ls, mp)
+                slist.append(list(geometry.MultiLineString(slines)))    
+
+            # flatten the splitted linestrings and create bookkeeping_geoms array
+            # and find duplicates
+            self.segments_list, bk_array = self.flatten_and_index(slist)
+            self.find_duplicates(self.segments_list)
+            self.bookkeeping_linestrings = bk_array.astype(float)
+
+        else:
+            self.segments_list = data['linestrings']
+            self.find_duplicates(data['linestrings'])
+            self.bookkeeping_linestrings = data['bookkeeping_geoms']
+                 
+        # prepare to return object
         data['duplicates'] = np.array(self.duplicates)
-        data['linestrings'] = segments_list
+        data['linestrings'] = self.segments_list
         data['bookkeeping_linestrings'] = self.bookkeeping_linestrings
 
         return data

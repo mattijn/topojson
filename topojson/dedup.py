@@ -88,21 +88,29 @@ class _Dedup:
 
         # apply a shapely linemerge to merge all contiguous line-elements
         # first create a mask for shared arcs to select only non-duplicates
-        # slice array_bk_ndp for geoms (rows) containing np.nan values
         mask = np.isin(array_bk, self.shared_arcs_idx)
-        array_bk_ndp = copy.deepcopy(array_bk)
-        array_bk_ndp[mask] = np.nan
-        sliced_array_bk_ndp = array_bk_ndp[np.argwhere(np.isnan(array_bk_ndp))[0,:]]
+        array_bk_ndp = copy.deepcopy(array_bk.astype(float))
+        
+        # TODO: make function of all below L102, so no need for else statement
+        if array_bk_ndp[mask].size != 0:
+            array_bk_ndp[mask] = np.nan
+
+            # slice array_bk_ndp for geoms (rows) containing np.nan values
+            slice_idx = np.argwhere(np.isnan(array_bk_ndp))[0,:]
+            sliced_array_bk_ndp = array_bk_ndp[slice_idx]
+        else:
+            sliced_array_bk_ndp = []
 
         # iterate over geoms that contain shared arcs and try linemerge on remaining arcs
         for idx, arcs_geom_bk in enumerate(sliced_array_bk_ndp):
-            # print(np.isnan(arcs_geom_bk).any()) # should print True
             # set number of arcs before trying linemerge
-            ndp_arcs_bk = arcs_geom_bk[~np.isnan(arcs_geom_bk)].astype(int)#.tolist()
+            ndp_arcs_bk = arcs_geom_bk[~np.isnan(arcs_geom_bk)].astype(int)
             no_ndp_arcs_bk = len(ndp_arcs_bk)
 
             # apply linemerge
-            ndp_arcs = list(linemerge([ data['linestrings'][i] for i in ndp_arcs_bk ]))
+            ndp_arcs = linemerge([ data['linestrings'][i] for i in ndp_arcs_bk ])
+            if isinstance(ndp_arcs, geometry.LineString):
+                ndp_arcs = [ndp_arcs]
             no_ndp_arcs = len(ndp_arcs)
 
             # only if no_ndp_arcs is different than no_ndp_arcs_bk continue, else is no changes 
@@ -110,7 +118,7 @@ class _Dedup:
                 # TODO: place the merged linestrings back in data['linestrings']
                 # TODO: solve the bookkeeping
                 # print some variables if some linestrings were merged
-                print(idx, ndp_arcs_bk, ndp_arcs)       
+                print(idx, ndp_arcs_bk, ndp_arcs[0].wkt)       
         
         # set changed objects
         del data['bookkeeping_linestrings']
