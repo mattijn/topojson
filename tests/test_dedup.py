@@ -22,8 +22,8 @@ class TestDedup(unittest.TestCase):
         }      
         topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         # print(topo)
-        self.assertEqual(len(topo['duplicates']), 0)
-        self.assertEqual(topo['bookkeeping_geoms'], [[0, 2], [1], [2]])
+        self.assertEqual(len(topo['bookkeeping_duplicates']), 0)
+        self.assertEqual(topo['bookkeeping_geoms'], [[0, 1], [2], [3]])
 
     def test_two_polygon_reversed_shared_arc(self):
         data = {
@@ -31,9 +31,9 @@ class TestDedup(unittest.TestCase):
             "befcb": {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]},
         }  
         topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
-        self.assertEqual(len(topo['duplicates']), 0)
-        self.assertEqual(topo['bookkeeping_shared_arcs'], [0])  
-        self.assertEqual(topo['bookkeeping_arcs'], [[0], [0]])  
+        self.assertEqual(len(topo['bookkeeping_duplicates']), 0)
+        self.assertEqual(topo['bookkeeping_shared_arcs'], [2])  
+        self.assertEqual(topo['bookkeeping_arcs'], [[2, 0], [1, 2]])  
 
     def test_duplicate_polygon_no_junctions(self):
         data = {
@@ -41,9 +41,10 @@ class TestDedup(unittest.TestCase):
             "acba": {"type": "Polygon", "coordinates": [[[0, 0], [0, 1], [1, 0], [0, 0]]]}
         }
         topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
-        self.assertEqual(len(topo['duplicates']), 0)
+        self.assertEqual(len(topo['bookkeeping_duplicates']), 0)
         self.assertEqual(topo['bookkeeping_shared_arcs'], [0])  
-        self.assertEqual(topo['bookkeeping_arcs'], [[0], [0]])         
+        self.assertEqual(topo['bookkeeping_arcs'], [[0], [0]])   
+        self.assertEqual(topo['bookkeeping_geoms'], [[0], [1]])         
 
     def test_shared_line_ABCDBE_and_FBCG(self): 
         data = {
@@ -51,8 +52,8 @@ class TestDedup(unittest.TestCase):
             "fbcg": {"type": "LineString", "coordinates": [[0, 1], [1, 0], [2, 0], [3, 1]]}
         }        
         topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
-        self.assertEqual(len(topo['duplicates']), 0)
-        self.assertEqual(topo['bookkeeping_shared_arcs'], [[3]])  
+        self.assertEqual(len(topo['bookkeeping_duplicates']), 0)
+        self.assertEqual(topo['bookkeeping_shared_arcs'], [3])  
         self.assertEqual(topo['bookkeeping_arcs'], [[0, 3, 1], [2, 3, 4]])        
 
        

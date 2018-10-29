@@ -105,7 +105,7 @@ class _Join:
         # coordinates that appear multiple times are not junctions         
         self.junctions = [geometry.Point(i) for i in s_coords if s_coords.count(i) is 1]
 
-        # prepare to return
+        # prepare to return object
         data['junctions'] = self.junctions
         # data['duplicates'] = self.duplicates
         

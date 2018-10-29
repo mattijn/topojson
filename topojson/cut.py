@@ -96,8 +96,8 @@ class _Cut:
             self.bookkeeping_linestrings = data['bookkeeping_geoms']
                  
         # prepare to return object
-        data['duplicates'] = np.array(self.duplicates)
         data['linestrings'] = self.segments_list
+        data['bookkeeping_duplicates'] = np.array(self.duplicates)
         data['bookkeeping_linestrings'] = self.bookkeeping_linestrings
 
         return data

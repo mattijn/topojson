@@ -11,6 +11,6 @@ class TestCut(unittest.TestCase):
         topo = topojson.cut(topojson.join(topojson.extract(data)))
         # print(topo)
         self.assertEqual(topo['bookkeeping_linestrings'].size, 6)
-        self.assertSequenceEqual(topo['duplicates'].tolist(), [[4, 1]])
+        self.assertSequenceEqual(topo['bookkeeping_duplicates'].tolist(), [[4, 1]])
 
        
