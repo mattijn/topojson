@@ -102,7 +102,7 @@ class _Dedup:
         mask = np.isin(array_bk, array_bk_sarcs)
         array_bk_ndp = copy.deepcopy(array_bk.astype(float))
         
-        # TODO: make function of all below L102, so no need for else statement
+        # TODO: make function of all below L115, so no need for else statement
         if array_bk_ndp[mask].size != 0:
             array_bk_ndp[mask] = np.nan
 
