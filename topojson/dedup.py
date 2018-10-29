@@ -16,11 +16,19 @@ class _Dedup:
         pass       
 
     def index_array(self, parameter_list):
-        # create numpy array from variable
+        """"
+        Function to create numpy array from nested lists. The shape of the numpy array 
+        are the number of nested lists (rows) x the length of the longest nested list (columns). 
+        Rows that contain less values are filled with np.nan values.
+        """
         array_bk = np.array(list(itertools.zip_longest(*parameter_list, fillvalue=np.nan))).T
         return array_bk
 
     def deduplicate(self, dup_pair_list, linestring_list, array_bk):
+        """
+        Function to deduplicate items
+        """
+
         # start deduping
         for idx, dup_pair in enumerate(dup_pair_list):
             idx_keep = dup_pair[0]
@@ -46,9 +54,9 @@ class _Dedup:
 
     def flatten_and_index(self, slist):
         """
-        function to create a flattened list of splitted linestrings, but make sure to
-        create a numpy array for bookkeeping_geoms for the numerical computation
+        Function to create a flattened list of splitted linestrings
         """
+
         # flatten
         segmntlist = list(itertools.chain(*slist))
         # create slice pairs
@@ -61,7 +69,9 @@ class _Dedup:
         return segmntlist, array_bk  
 
     def list_from_array(self, array_bk):
-        # convert numpy array to list, where elements set as np.nan are filtered
+        """
+        Function to convert numpy array to list, where elements set as np.nan are filtered
+        """
         list_bk = [obj[~np.isnan(obj)].astype(int).tolist() for obj in array_bk]   
         return list_bk        
             
@@ -84,11 +94,12 @@ class _Dedup:
         # deduplicate equal geometries
         # create numpy array from bookkeeping_geoms variable for numerical computation
         array_bk = self.index_array(data['bookkeeping_linestrings'])
-        array_bk = self.deduplicate(data['duplicates'], data['linestrings'], array_bk)
+        array_bk = self.deduplicate(data['bookkeeping_duplicates'], data['linestrings'], array_bk)
 
         # apply a shapely linemerge to merge all contiguous line-elements
         # first create a mask for shared arcs to select only non-duplicates
-        mask = np.isin(array_bk, self.shared_arcs_idx)
+        array_bk_sarcs = np.array(self.shared_arcs_idx)
+        mask = np.isin(array_bk, array_bk_sarcs)
         array_bk_ndp = copy.deepcopy(array_bk.astype(float))
         
         # TODO: make function of all below L102, so no need for else statement
@@ -102,7 +113,7 @@ class _Dedup:
             sliced_array_bk_ndp = []
 
         # iterate over geoms that contain shared arcs and try linemerge on remaining arcs
-        for idx, arcs_geom_bk in enumerate(sliced_array_bk_ndp):
+        for arcs_geom_bk in sliced_array_bk_ndp:
             # set number of arcs before trying linemerge
             ndp_arcs_bk = arcs_geom_bk[~np.isnan(arcs_geom_bk)].astype(int)
             no_ndp_arcs_bk = len(ndp_arcs_bk)
@@ -113,18 +124,33 @@ class _Dedup:
                 ndp_arcs = [ndp_arcs]
             no_ndp_arcs = len(ndp_arcs)
 
-            # only if no_ndp_arcs is different than no_ndp_arcs_bk continue, else is no changes 
+            # if no_ndp_arcs is different than no_ndp_arcs_bk, than a merge took place
+            # if lengths are equal, than merge did occur and no need to solve the bookkeeping
             if no_ndp_arcs != no_ndp_arcs_bk:
-                # TODO: place the merged linestrings back in data['linestrings']
-                # TODO: solve the bookkeeping
-                # print some variables if some linestrings were merged
-                print(idx, ndp_arcs_bk, ndp_arcs[0].wkt)       
+                # assumes that only first and last item of non-duplicate arcs can merge
+                idx_keep = ndp_arcs_bk[-1]
+                idx_pop = ndp_arcs_bk[0]
+
+                # replace linestring of idx_keep with merged linestring
+                # merged linestring seems to be placed up front, so get idx 0.
+                data['linestrings'][idx_keep] = ndp_arcs[0]
+                
+                # remove merged linestring
+                del data['linestrings'][idx_pop]
+                
+                # change reference of merged linestring and all index elements greater then idx_pop 
+                array_bk[array_bk == idx_pop] = np.nan
+                with np.errstate(invalid='ignore'):
+                    array_bk[array_bk > idx_pop] -= 1
+                    array_bk_sarcs[array_bk_sarcs > idx_pop] -= 1     
         
-        # set changed objects
+        # prepare to return object
         del data['bookkeeping_linestrings']
         data['bookkeeping_arcs'] = self.list_from_array(array_bk)
-        data['bookkeeping_shared_arcs'] = self.shared_arcs_idx
-        data['duplicates'] = self.list_from_array(data['duplicates'][data['duplicates'] != -99])
+        data['bookkeeping_shared_arcs'] = array_bk_sarcs.tolist()
+        data['bookkeeping_duplicates'] = self.list_from_array(
+            data['bookkeeping_duplicates'][data['bookkeeping_duplicates'] != -99]
+        )
 
         return data
     

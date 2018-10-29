@@ -277,6 +277,7 @@ class _Extract:
             self.geomcollection_counter = 0
             self.geom_level_1 = 0
         
+        # prepare to return object
         topo = {
             "type": "Topology",
             "linestrings": self.linestrings,
