@@ -7,7 +7,7 @@ import copy
 
 class _Dedup:
     """
-    cut shared paths and keep track of it
+    dedup duplicates and merge contiguous arcs
     """
 
     def __init__(self):
@@ -21,6 +21,7 @@ class _Dedup:
         are the number of nested lists (rows) x the length of the longest nested list (columns). 
         Rows that contain less values are filled with np.nan values.
         """
+
         array_bk = np.array(list(itertools.zip_longest(*parameter_list, fillvalue=np.nan))).T
         return array_bk
 
@@ -72,6 +73,7 @@ class _Dedup:
         """
         Function to convert numpy array to list, where elements set as np.nan are filtered
         """
+        
         list_bk = [obj[~np.isnan(obj)].astype(int).tolist() for obj in array_bk]   
         return list_bk        
             
