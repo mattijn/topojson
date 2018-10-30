@@ -5,6 +5,7 @@ import itertools
 import numpy as np
 import copy
 
+
 class _Cut:
     """
     cut shared paths and keep track of it
@@ -14,11 +15,13 @@ class _Cut:
         # initation topology items
         self.duplicates = []
         self.bookkeeping_linestrings = []
-        pass       
+        pass
 
     def index_array(self, parameter_list):
         # create numpy array from variable
-        array_bk = np.array(list(itertools.zip_longest(*parameter_list, fillvalue=np.nan))).T
+        array_bk = np.array(
+            list(itertools.zip_longest(*parameter_list, fillvalue=np.nan))
+        ).T
         return array_bk
 
     def flatten_and_index(self, slist):
@@ -30,17 +33,20 @@ class _Cut:
         segmntlist = list(itertools.chain(*slist))
         # create slice pairs
         segmnt_idx = list(itertools.accumulate([len(geom) for geom in slist]))
-        slice_pair = [(segmnt_idx[idx - 1] if idx >= 1 else 0, current) for idx, current in enumerate(segmnt_idx)]
+        slice_pair = [
+            (segmnt_idx[idx - 1] if idx >= 1 else 0, current)
+            for idx, current in enumerate(segmnt_idx)
+        ]
         # index array
-        list_bk = [range(len(segmntlist))[s[0]:s[1]] for s in slice_pair]
+        list_bk = [range(len(segmntlist))[s[0] : s[1]] for s in slice_pair]
         array_bk = self.index_array(list_bk)
-        
-        return segmntlist, array_bk  
+
+        return segmntlist, array_bk
 
     def list_from_array(self, array_bk):
         # convert to list after numpy computation is finished
-        list_bk = [obj[~np.isnan(obj)].astype(int).tolist() for obj in array_bk]   
-        return list_bk    
+        list_bk = [obj[~np.isnan(obj)].astype(int).tolist() for obj in array_bk]
+        return list_bk
 
     def find_duplicates(self, segments_list):
         # find duplicates of splitted linestrings
@@ -62,8 +68,8 @@ class _Cut:
             if g1.equals(g2):
                 idx_pop = i1 if len(g1.coords) <= len(g2.coords) else i2
                 idx_keep = i1 if i2 == idx_pop else i2
-                self.duplicates.append([idx_keep, idx_pop])         
-            
+                self.duplicates.append([idx_keep, idx_pop])
+
     def main(self, data):
         """
         Cut the linestrings given the junctions of shared paths.
@@ -76,13 +82,13 @@ class _Cut:
         4. dedup      
         """
 
-        if data['junctions']:   
-            # split each feature given the intersections 
-            mp = geometry.MultiPoint(data['junctions'])
+        if data["junctions"]:
+            # split each feature given the intersections
+            mp = geometry.MultiPoint(data["junctions"])
             slist = []
-            for ls in data['linestrings']:
+            for ls in data["linestrings"]:
                 slines = split(ls, mp)
-                slist.append(list(geometry.MultiLineString(slines)))    
+                slist.append(list(geometry.MultiLineString(slines)))
 
             # flatten the splitted linestrings and create bookkeeping_geoms array
             # and find duplicates
@@ -91,18 +97,18 @@ class _Cut:
             self.bookkeeping_linestrings = bk_array.astype(float)
 
         else:
-            self.segments_list = data['linestrings']
-            self.find_duplicates(data['linestrings'])
-            self.bookkeeping_linestrings = data['bookkeeping_geoms']
-                 
+            self.segments_list = data["linestrings"]
+            self.find_duplicates(data["linestrings"])
+            self.bookkeeping_linestrings = data["bookkeeping_geoms"]
+
         # prepare to return object
-        data['linestrings'] = self.segments_list
-        data['bookkeeping_duplicates'] = np.array(self.duplicates)
-        data['bookkeeping_linestrings'] = self.bookkeeping_linestrings
+        data["linestrings"] = self.segments_list
+        data["bookkeeping_duplicates"] = np.array(self.duplicates)
+        data["bookkeeping_linestrings"] = self.bookkeeping_linestrings
 
         return data
-    
-    
+
+
 def _cutter(data):
     data = copy.deepcopy(data)
     Cut = _Cut()
