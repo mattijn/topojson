@@ -5,8 +5,10 @@ from shapely.ops import linemerge
 from shapely import speedups
 import itertools
 import copy
+
 if speedups.available:
     speedups.enable()
+
 
 class _Join:
     """
@@ -29,27 +31,26 @@ class _Join:
         Where each seperate segment is a linestring between two points.
         """
 
-        fw_bw = shared_paths(g1, g2) 
+        fw_bw = shared_paths(g1, g2)
         if not fw_bw.is_empty:
-            
+
             forward = fw_bw[0]
             backward = fw_bw[1]
 
             if backward.is_empty:
                 # only contains forward objects
                 shared_segments = forward
-            elif forward.is_empty:    
+            elif forward.is_empty:
                 # only contains backward objects
-                shared_segments = backward       
+                shared_segments = backward
             else:
-                # both backward and forward contains objects, so combine 
-                shared_segments = geometry.MultiLineString([
-                    linemerge(forward),
-                    linemerge(backward)
-                ])
+                # both backward and forward contains objects, so combine
+                shared_segments = geometry.MultiLineString(
+                    [linemerge(forward), linemerge(backward)]
+                )
 
             self.segments.extend(list(shared_segments))
-            
+
     def main(self, data):
         """
         Detects the junctions of shared paths from the specified hash of linestrings.
@@ -82,10 +83,10 @@ class _Join:
         get cartesian product:
         https://stackoverflow.com/a/34032549
         """
-        
+
         # first create list with all combinations of lines
-        line_combs = list(itertools.combinations(data['linestrings'], 2))
-        
+        line_combs = list(itertools.combinations(data["linestrings"], 2))
+
         # iterate over line combinations
         for geoms in line_combs:
             g1 = geoms[0]
@@ -96,22 +97,22 @@ class _Join:
             if not g1.equals(g2):
                 # geoms are unique, let's find junctions
                 self.shared_segs(g1, g2)
-            # its quid pro quo to record equal geoms here. Let's leave it up to next phases           
+            # its quid pro quo to record equal geoms here. Let's leave it up to next phases
 
         # self.segments is a list of LineStrings, get all coordinates
         s_coords = [y for x in self.segments for y in list(x.coords)]
- 
+
         # only keep junctions that appear only once
-        # coordinates that appear multiple times are not junctions         
+        # coordinates that appear multiple times are not junctions
         self.junctions = [geometry.Point(i) for i in s_coords if s_coords.count(i) is 1]
 
         # prepare to return object
-        data['junctions'] = self.junctions
+        data["junctions"] = self.junctions
         # data['duplicates'] = self.duplicates
-        
+
         return data
-    
-    
+
+
 def _joiner(data):
     data = copy.deepcopy(data)
     Join = _Join()

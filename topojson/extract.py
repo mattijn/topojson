@@ -1,19 +1,21 @@
 from .utils.dispatcher import methdispatch
 import json
-from shapely import geometry 
+from shapely import geometry
 import geojson
 import copy
 import logging
+
 
 class _Extract:
     """
     decompose shapes into linestrings and track record in bookkeeping_geoms.
     """
+
     def __init__(self):
         # initation topology items
         self.bookkeeping_geoms = []
         self.linestrings = []
-        self.geomcollection_counter = 0  
+        self.geomcollection_counter = 0
         self.invalid_geoms = 0
 
     @methdispatch
@@ -42,7 +44,7 @@ class _Extract:
         Any non-registered geometry wil return as an error that cannot be mapped.
         """
 
-        return print('error: {} cannot be mapped'.format(geom))
+        return print("error: {} cannot be mapped".format(geom))
 
     @serialize_geom_type.register(geometry.LineString)
     def extract_line(self, geom):
@@ -60,9 +62,9 @@ class _Extract:
         obj = self.obj
         if '"coordinates"' not in obj:
             obj['"coordinates"'] = []
-           
+
         obj['"coordinates"'].append(idx_bk)
-        obj.pop('coordinates', None)
+        obj.pop("coordinates", None)
 
     @serialize_geom_type.register(geometry.MultiLineString)
     def extract_multiline(self, geom):
@@ -81,28 +83,28 @@ class _Extract:
 
         idx_bk = len(self.bookkeeping_geoms)
         idx_ls = len(self.linestrings)
-        
+
         boundary = geom.boundary
         # catch ring with holes
         if isinstance(boundary, geometry.MultiLineString):
-            # record index as list of items 
+            # record index as list of items
             # and store each linestring geom
             lst_idx = list(range(idx_ls, idx_ls + len(list(boundary))))
-            self.bookkeeping_geoms.append(lst_idx)           
+            self.bookkeeping_geoms.append(lst_idx)
             for ls in boundary:
                 self.linestrings.append(ls)
         else:
             # record index and store single linestring geom
             self.bookkeeping_geoms.append([idx_ls])
-            self.linestrings.append(boundary)        
+            self.linestrings.append(boundary)
 
         # track record in object as well
         obj = self.obj
         if '"coordinates"' not in obj:
             obj['"coordinates"'] = []
-            
+
         obj['"coordinates"'].append(idx_bk)
-        obj.pop('coordinates', None)
+        obj.pop("coordinates", None)
 
     @serialize_geom_type.register(geometry.MultiPolygon)
     def extract_multiring(self, geom):
@@ -123,8 +125,8 @@ class _Extract:
 
         obj = self.obj
         if '"coordinates"' not in obj:
-            obj['"coordinates"'] = obj['coordinates']
-        obj.pop('coordinates', None)
+            obj['"coordinates"'] = obj["coordinates"]
+        obj.pop("coordinates", None)
 
     @serialize_geom_type.register(geometry.GeometryCollection)
     def extract_geometrycollection(self, geom):
@@ -136,7 +138,7 @@ class _Extract:
         self.geomcollection_counter += 1
         self.records_collection = len(geom)
 
-        # iterate over the parsed shape(geom) 
+        # iterate over the parsed shape(geom)
         # the original data objects is set as self._obj
         # the following lines can catch a GeometryCollection untill two levels deep
         # improvements on this are welcome
@@ -145,27 +147,27 @@ class _Extract:
             if isinstance(geom, geometry.GeometryCollection):
                 self.records_collection = len(geom)
                 if self.geomcollection_counter == 1:
-                    self.obj = obj['geometries']
+                    self.obj = obj["geometries"]
                     self.geom_level_1 = idx
                 if self.geomcollection_counter == 2:
-                    self.obj = obj['geometries'][self.geom_level_1]['geometries']  
-            
+                    self.obj = obj["geometries"][self.geom_level_1]["geometries"]
+
             # geom is NOT a GeometryCollection, determine location within collection
             else:
                 if self.geomcollection_counter == 1:
-                    self.obj = obj['geometries'][idx]
+                    self.obj = obj["geometries"][idx]
                     # if last record in collection is parsed set collection counter one level up
                     if idx == self.records_collection - 1:
-                        self.geomcollection_counter += -1                    
+                        self.geomcollection_counter += -1
                 if self.geomcollection_counter == 2:
-                    self.obj =  obj['geometries'][self.geom_level_1]['geometries'][idx]
+                    self.obj = obj["geometries"][self.geom_level_1]["geometries"][idx]
                     # if last record in collection is parsed set collection counter one level up
                     if idx == self.records_collection - 1:
-                        self.geomcollection_counter += -1                    
+                        self.geomcollection_counter += -1
 
             # set type for next loop
             self.serialize_geom_type(geom)
-        
+
     @serialize_geom_type.register(geojson.FeatureCollection)
     def extract_featurecollection(self, geom):
         """
@@ -174,17 +176,17 @@ class _Extract:
 
         # convert FeatureCollection into a dict of features
         obj = self.obj
-        data = {}        
-        zfill_value = len(str(len(obj['features'])))
+        data = {}
+        zfill_value = len(str(len(obj["features"])))
 
         # each Feature becomes a new GeometryCollection
-        for idx, feature in enumerate(obj['features']):
+        for idx, feature in enumerate(obj["features"]):
             # A GeoJSON Feature is mapped to a GeometryCollection
-            feature['type'] = 'GeometryCollection'
-            feature['geometries'] = [feature['geometry']]
-            feature.pop('geometry', None)
-            data['feature_{}'.format(str(idx).zfill(zfill_value))] = feature
-        
+            feature["type"] = "GeometryCollection"
+            feature["geometries"] = [feature["geometry"]]
+            feature.pop("geometry", None)
+            data["feature_{}".format(str(idx).zfill(zfill_value))] = feature
+
         # new data dictionary is created, throw the geometries back to main()
         self.worker(data)
 
@@ -195,21 +197,20 @@ class _Extract:
         """
 
         obj = self.obj
-        
+
         # A GeoJSON Feature is mapped to a GeometryCollection
-        obj['type'] = 'GeometryCollection'
-        obj['geometries'] = [obj['geometry']]
-        obj.pop('geometry', None)
+        obj["type"] = "GeometryCollection"
+        obj["geometries"] = [obj["geometry"]]
+        obj.pop("geometry", None)
 
         geom = geometry.shape(obj)
         if not geom.is_valid:
             self.invalid_geoms += 1
             del self.data[self.key]
-            return        
+            return
 
         self.serialize_geom_type(geom)
-        
-        
+
     def worker(self, data):
         """"
         Extracts the linestrings from the specified hash of geometry objects.
@@ -249,15 +250,15 @@ class _Extract:
             self.obj = self.data[self.key]
 
             # determine firstly if type of geom is a Shapely geometric object if not then
-            # the object might be a geojson Feature or FeatureCollection 
-            # otherwise it is not a recognized object and it will be removed 
+            # the object might be a geojson Feature or FeatureCollection
+            # otherwise it is not a recognized object and it will be removed
             try:
                 geom = geometry.shape(self.obj)
                 # object can be mapped, but may not be valid. remove invalid objects and continue
                 if not geom.is_valid:
                     self.invalid_geoms += 1
                     del self.data[self.key]
-                    continue                
+                    continue
             except ValueError:
                 # object might be a geojson Feature or FeatureCollection
                 geom = geojson.loads(geojson.dumps(self.obj))
@@ -265,33 +266,37 @@ class _Extract:
                 # object is not valid
                 self.invalid_geoms += 1
                 del self.data[self.key]
-                continue                 
-                
+                continue
+
             # the geom object is recognized, lets serialize the geometric type.
-            # this function redirects the geometric object based on its type to 
+            # this function redirects the geometric object based on its type to
             # an equivalent function. Adopting this approach avoids the usage of
             # multiple if-else statements.
             self.serialize_geom_type(geom)
-            
+
             # reset geom collection counter and level
             self.geomcollection_counter = 0
             self.geom_level_1 = 0
-        
+
         # prepare to return object
         topo = {
             "type": "Topology",
             "linestrings": self.linestrings,
             "bookkeeping_geoms": self.bookkeeping_geoms,
-            "objects": self.data
+            "objects": self.data,
         }
-        
+
         # show the number of invalid geometries have been removed if any
         if self.invalid_geoms > 0:
-            logging.warning('removed {} invalid geometric object{}'.format(
-                self.invalid_geoms, '' if self.invalid_geoms == 1 else 's'))        
-        
+            logging.warning(
+                "removed {} invalid geometric object{}".format(
+                    self.invalid_geoms, "" if self.invalid_geoms == 1 else "s"
+                )
+            )
+
         return topo
-    
+
+
 def _extracter(data):
     # since we move and replace data in the object, need a deepcopy to avoid changing the input-data
     data = copy.deepcopy(data)
