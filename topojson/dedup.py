@@ -69,6 +69,39 @@ class _Dedup:
         
         return segmntlist, array_bk  
 
+    def merge_contigious_arcs(self, data, sliced_array_bk_ndp, array_bk, array_bk_sarcs):
+        # iterate over geoms that contain shared arcs and try linemerge on remaining arcs
+        for arcs_geom_bk in sliced_array_bk_ndp:
+            # set number of arcs before trying linemerge
+            ndp_arcs_bk = arcs_geom_bk[~np.isnan(arcs_geom_bk)].astype(int)
+            no_ndp_arcs_bk = len(ndp_arcs_bk)
+
+            # apply linemerge
+            ndp_arcs = linemerge([ data['linestrings'][i] for i in ndp_arcs_bk ])
+            if isinstance(ndp_arcs, geometry.LineString):
+                ndp_arcs = [ndp_arcs]
+            no_ndp_arcs = len(ndp_arcs)
+
+            # if no_ndp_arcs is different than no_ndp_arcs_bk, than a merge took place
+            # if lengths are equal, than merge did occur and no need to solve the bookkeeping
+            if no_ndp_arcs != no_ndp_arcs_bk:
+                # assumes that only first and last item of non-duplicate arcs can merge
+                idx_keep = ndp_arcs_bk[-1]
+                idx_pop = ndp_arcs_bk[0]
+
+                # replace linestring of idx_keep with merged linestring
+                # merged linestring seems to be placed up front, so get idx 0.
+                data['linestrings'][idx_keep] = ndp_arcs[0]
+                
+                # remove merged linestring
+                del data['linestrings'][idx_pop]
+                
+                # change reference of merged linestring and all index elements greater then idx_pop 
+                array_bk[array_bk == idx_pop] = np.nan
+                with np.errstate(invalid='ignore'):
+                    array_bk[array_bk > idx_pop] -= 1
+                    array_bk_sarcs[array_bk_sarcs > idx_pop] -= 1            
+
     def list_from_array(self, array_bk):
         """
         Function to convert numpy array to list, where elements set as np.nan are filtered
@@ -104,48 +137,18 @@ class _Dedup:
         mask = np.isin(array_bk, array_bk_sarcs)
         array_bk_ndp = copy.deepcopy(array_bk.astype(float))
         
-        # TODO: make function of all below L115, so no need for else statement
+        # only do merging of arcs if there are contigous arcs in geoms
         if array_bk_ndp[mask].size != 0:
+            # make sure idx to shared arcs are set to np.nan
             array_bk_ndp[mask] = np.nan
 
             # slice array_bk_ndp for geoms (rows) containing np.nan values
             slice_idx = np.argwhere(np.isnan(array_bk_ndp))[0,:]
             sliced_array_bk_ndp = array_bk_ndp[slice_idx]
-        else:
-            sliced_array_bk_ndp = []
 
-        # iterate over geoms that contain shared arcs and try linemerge on remaining arcs
-        for arcs_geom_bk in sliced_array_bk_ndp:
-            # set number of arcs before trying linemerge
-            ndp_arcs_bk = arcs_geom_bk[~np.isnan(arcs_geom_bk)].astype(int)
-            no_ndp_arcs_bk = len(ndp_arcs_bk)
+            # apply linemerge on geoms containing contigious arcs and maintain bookkeeping
+            self.merge_contigious_arcs(data, sliced_array_bk_ndp, array_bk, array_bk_sarcs)
 
-            # apply linemerge
-            ndp_arcs = linemerge([ data['linestrings'][i] for i in ndp_arcs_bk ])
-            if isinstance(ndp_arcs, geometry.LineString):
-                ndp_arcs = [ndp_arcs]
-            no_ndp_arcs = len(ndp_arcs)
-
-            # if no_ndp_arcs is different than no_ndp_arcs_bk, than a merge took place
-            # if lengths are equal, than merge did occur and no need to solve the bookkeeping
-            if no_ndp_arcs != no_ndp_arcs_bk:
-                # assumes that only first and last item of non-duplicate arcs can merge
-                idx_keep = ndp_arcs_bk[-1]
-                idx_pop = ndp_arcs_bk[0]
-
-                # replace linestring of idx_keep with merged linestring
-                # merged linestring seems to be placed up front, so get idx 0.
-                data['linestrings'][idx_keep] = ndp_arcs[0]
-                
-                # remove merged linestring
-                del data['linestrings'][idx_pop]
-                
-                # change reference of merged linestring and all index elements greater then idx_pop 
-                array_bk[array_bk == idx_pop] = np.nan
-                with np.errstate(invalid='ignore'):
-                    array_bk[array_bk > idx_pop] -= 1
-                    array_bk_sarcs[array_bk_sarcs > idx_pop] -= 1     
-        
         # prepare to return object
         del data['bookkeeping_linestrings']
         data['bookkeeping_arcs'] = self.list_from_array(array_bk)

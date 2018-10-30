@@ -1,0 +1,13 @@
+{
+  "type": "Topology",
+  "arcs": [[[0, 0], [0, 1], [1, 0], [0, 0]]],
+  "objects": {
+    "duplicate_polygon_reversed": {
+      "type": "GeometryCollection",
+      "geometries": [
+        {"arcs": [[0]], "type": "Polygon", "properties": {"id": "0"}},
+        {"arcs": [[0]], "type": "Polygon", "properties": {"id": "1"}}
+      ]
+    }
+  }
+}
