@@ -56,25 +56,6 @@ class _Dedup:
 
         return array_bk
 
-    def flatten_and_index(self, slist):
-        """
-        Function to create a flattened list of splitted linestrings
-        """
-
-        # flatten
-        segmntlist = list(itertools.chain(*slist))
-        # create slice pairs
-        segmnt_idx = list(itertools.accumulate([len(geom) for geom in slist]))
-        slice_pair = [
-            (segmnt_idx[idx - 1] if idx >= 1 else 0, current)
-            for idx, current in enumerate(segmnt_idx)
-        ]
-        # index array
-        list_bk = [range(len(segmntlist))[s[0] : s[1]] for s in slice_pair]
-        array_bk = self.index_array(list_bk)
-
-        return segmntlist, array_bk
-
     def merge_contigious_arcs(
         self, data, sliced_array_bk_ndp, array_bk, array_bk_sarcs
     ):

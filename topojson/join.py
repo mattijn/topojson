@@ -108,7 +108,6 @@ class _Join:
 
         # prepare to return object
         data["junctions"] = self.junctions
-        # data['duplicates'] = self.duplicates
 
         return data
 
