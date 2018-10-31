@@ -43,11 +43,6 @@ class _Cut:
 
         return segmntlist, array_bk
 
-    def list_from_array(self, array_bk):
-        # convert to list after numpy computation is finished
-        list_bk = [obj[~np.isnan(obj)].astype(int).tolist() for obj in array_bk]
-        return list_bk
-
     def find_duplicates(self, segments_list):
         # find duplicates of splitted linestrings
         # first create list with all combinations of lines including index
