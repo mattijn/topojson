@@ -1,6 +1,8 @@
 import json
 import unittest
 import topojson
+from shapely import geometry
+import geopandas
 
 
 class TestExtract(unittest.TestCase):
@@ -170,3 +172,14 @@ class TestExtract(unittest.TestCase):
             "Polygon",
         )
 
+    # test feature collection including geometry collection
+    def test_geopandas_geoseries(self):
+        data = geopandas.GeoSeries(
+            [
+                geometry.Polygon([(0, 0), (1, 0), (1, 1)]),
+                geometry.Polygon([(0, 0), (1, 0), (1, 1), (0, 1)]),
+                geometry.Polygon([(2, 0), (3, 0), (3, 1), (2, 1)]),
+            ]
+        )
+        topo = topojson.extract(data)
+        print(topo)
