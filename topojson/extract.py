@@ -222,7 +222,7 @@ class _Extract:
         *geom* type is GeoDataFrame/GeoSeries instance.        
         """
 
-        self.obj = geojson.loads(geom)
+        self.obj = geojson.loads(geojson.dumps(geom))
         self.serialize_geom_type(self.obj)
 
     @serialize_geom_type.register(dict)
