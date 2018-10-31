@@ -1,8 +1,9 @@
 from .utils.dispatcher import methdispatch
 import json
+import copy
+import geopandas
 from shapely import geometry
 import geojson
-import copy
 import logging
 
 
@@ -40,6 +41,9 @@ class _Extract:
         - shapely.geometry.GeometryCollection
         - geojson.Feature
         - geojson.FeatureCollection
+        - geopandas.GeoDataFrame
+        - geopandas.GeoSeries
+        - dict
 
         Any non-registered geometry wil return as an error that cannot be mapped.
         """
@@ -211,36 +215,21 @@ class _Extract:
 
         self.serialize_geom_type(geom)
 
-    def worker(self, data):
-        """"
-        Extracts the linestrings from the specified hash of geometry objects.
-
-        The extract function is the first step in the topology computation.
-        The following sequence is adopted:
-        1. extract
-        2. join
-        3. cut
-        4. dedup
-
-        Returns an object with two new properties:
-
-        * linestrings - linestrings extracted from the hash, of the form [start, end], as shapely objects
-        * bookkeeping_geoms - record array storing index numbers of linestrings used in each object.
-
-        For each line or polygon geometry in the input hash, including nested
-        geometries as in geometry collections, the `coordinates` array is replaced
-        with an equivalent `"coordinates"` array that points to one of the 
-        linestrings as indexed in `bookkeeping_geoms`.
-
-        Points geometries are not collected within the new properties, but are placed directly
-        into the `"coordinates"` array within each object.
-
-        Developping Notes
-        * maybe better to include serialization of string type instead of handling this in worker
-        * serialize GeoDataFrame and GeoSeries type
+    @serialize_geom_type.register(geopandas.GeoDataFrame)
+    @serialize_geom_type.register(geopandas.GeoSeries)
+    def extract_geopandas(self, geom):
+        """
+        *geom* type is GeoDataFrame/GeoSeries instance.        
         """
 
-        self.data = data
+        self.obj = geojson.loads(geom)
+        self.serialize_geom_type(self.obj)
+
+    @serialize_geom_type.register(dict)
+    def extract_dictionary(self, geom):
+        """
+        *geom* type is Dictionary instance.        
+        """
 
         # iterate over the input dictionary or geojson object
         # use list since https://stackoverflow.com/a/11941855
@@ -278,6 +267,38 @@ class _Extract:
             self.geomcollection_counter = 0
             self.geom_level_1 = 0
 
+    def worker(self, data):
+        """"
+        Extracts the linestrings from the specified hash of geometry objects.
+
+        The extract function is the first step in the topology computation.
+        The following sequence is adopted:
+        1. extract
+        2. join
+        3. cut
+        4. dedup
+
+        Returns an object with two new properties:
+
+        * linestrings - linestrings extracted from the hash, of the form [start, end], as shapely objects
+        * bookkeeping_geoms - record array storing index numbers of linestrings used in each object.
+
+        For each line or polygon geometry in the input hash, including nested
+        geometries as in geometry collections, the `coordinates` array is replaced
+        with an equivalent `"coordinates"` array that points to one of the 
+        linestrings as indexed in `bookkeeping_geoms`.
+
+        Points geometries are not collected within the new properties, but are placed directly
+        into the `"coordinates"` array within each object.
+
+        Developping Notes
+        * maybe better to include serialization of string type instead of handling this in worker
+        * serialize GeoDataFrame and GeoSeries type
+        """
+
+        self.data = data
+        self.serialize_geom_type(data)
+
         # prepare to return object
         topo = {
             "type": "Topology",
@@ -299,7 +320,10 @@ class _Extract:
 
 def _extracter(data):
     # since we move and replace data in the object, need a deepcopy to avoid changing the input-data
-    data = copy.deepcopy(data)
+    try:
+        data = data.copy()
+    except:
+        data = copy.deepcopy(data)
     Extract = _Extract()
     e = Extract.worker(data)
     return e

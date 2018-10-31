@@ -1,6 +1,5 @@
 from shapely import geometry
 from shapely.ops import split
-from shapely.ops import linemerge
 import itertools
 import numpy as np
 import copy
