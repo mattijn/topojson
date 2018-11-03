@@ -10,3 +10,9 @@ The currently implemented method deviates (till know) on at least four points fr
 
 Some points to consider:
 In the JS-implementation a closed LineString ABCA contains a junction in A, but a closed Polygon ABCA contains no junction in A. In the current implementation in both situations there won't be a junction in A. Moreover Polygons and LineStrings are both considered as being LineStrings (Polygons are splitted in exterior and interiors LineStrings).
+
+Installation of the python module `rtree` depends on the C++ library `libspatialindex`. If not installed, install by:
+
+```bash
+brew install spatialindex
+```
