@@ -73,7 +73,8 @@ class _Cut:
         1. extract
         2. join
         3. cut 
-        4. dedup      
+        4. dedup 
+        5. hashmap     
         """
 
         if data["junctions"]:

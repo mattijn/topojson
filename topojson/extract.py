@@ -277,6 +277,7 @@ class _Extract:
         2. join
         3. cut
         4. dedup
+        5. hashmap
 
         Returns an object with two new properties:
 
