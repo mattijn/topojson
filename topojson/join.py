@@ -61,6 +61,7 @@ class _Join:
         2. join
         3. cut 
         4. dedup
+        5. hashmap
         
         After decomposing all geometric objects into linestrings it is necessary to detect
         the junctions or start and end-points of shared paths so this paths can be 'merged'

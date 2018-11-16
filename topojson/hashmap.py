@@ -12,7 +12,6 @@ class _Hashmap:
         # initation topology items
         pass
 
-    ### SEEMS NOT GOOD
     def backward_arcs(self, arc_ids):
         """
         Function to check if the shared arcs in geom should be backward.
@@ -106,7 +105,7 @@ class _Hashmap:
 
     def main(self, data):
         """
-        Hashmapping of object references to arcs
+        Hashmap function resolves bookkeeping results to object arcs.
 
         The hashmap function is the fifth step in the topology computation.
         The following sequence is adopted:

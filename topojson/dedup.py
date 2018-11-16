@@ -108,7 +108,8 @@ class _Dedup:
         1. extract
         2. join
         3. cut 
-        4. dedup      
+        4. dedup
+        5. hashmap     
  
         Developping Notes:
         * dedup only arcs, not geoms.
