@@ -103,7 +103,7 @@ class _Dedup:
         """
         Deduplication of linestrings that contain duplicates
 
-        The cut function is the third step in the topology computation.
+        The dedup function is the fourth step in the topology computation.
         The following sequence is adopted:
         1. extract
         2. join

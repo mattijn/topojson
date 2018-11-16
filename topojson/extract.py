@@ -64,10 +64,10 @@ class _Extract:
 
         # track record in object as well
         obj = self.obj
-        if '"coordinates"' not in obj:
-            obj['"coordinates"'] = []
+        if "arcs" not in obj:
+            obj["arcs"] = []
 
-        obj['"coordinates"'].append(idx_bk)
+        obj["arcs"].append(idx_bk)
         obj.pop("coordinates", None)
 
     @serialize_geom_type.register(geometry.MultiLineString)
@@ -104,10 +104,10 @@ class _Extract:
 
         # track record in object as well
         obj = self.obj
-        if '"coordinates"' not in obj:
-            obj['"coordinates"'] = []
+        if "arcs" not in obj:
+            obj["arcs"] = []
 
-        obj['"coordinates"'].append(idx_bk)
+        obj["arcs"].append(idx_bk)
         obj.pop("coordinates", None)
 
     @serialize_geom_type.register(geometry.MultiPolygon)
@@ -128,8 +128,8 @@ class _Extract:
         """
 
         obj = self.obj
-        if '"coordinates"' not in obj:
-            obj['"coordinates"'] = obj["coordinates"]
+        if "arcs" not in obj:
+            obj["arcs"] = obj["coordinates"]
         obj.pop("coordinates", None)
 
     @serialize_geom_type.register(geometry.GeometryCollection)
@@ -222,8 +222,8 @@ class _Extract:
         *geom* type is GeoDataFrame/GeoSeries instance.        
         """
 
-        self.obj = geojson.loads(geojson.dumps(geom))
-        self.serialize_geom_type(self.obj)
+        self.obj = geom.__geo_interface__
+        self.extract_featurecollection(self.obj)
 
     @serialize_geom_type.register(dict)
     def extract_dictionary(self, geom):
@@ -321,9 +321,9 @@ class _Extract:
 def _extracter(data):
     # since we move and replace data in the object, need a deepcopy to avoid changing the input-data
     try:
-        data = data.copy()
-    except:
         data = copy.deepcopy(data)
+    except:
+        data = data.copy()
     Extract = _Extract()
     e = Extract.worker(data)
     return e
