@@ -2,7 +2,7 @@ import unittest
 import topojson
 
 
-class TestDedup(unittest.TestCase):
+class TestHasmap(unittest.TestCase):
     # duplicate rotated geometry bar with hole interior in geometry foo
     def test_hashmap_geomcol_multipolygon_polygon(self):
         data = {
