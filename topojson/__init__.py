@@ -1,4 +1,4 @@
-from topojson import extract, join, cut, dedup, hashmap
+from topojson import extract, join, cut, dedup, hashmap, topo2geojson
 
 extract = extract._extracter
 join = join._joiner
