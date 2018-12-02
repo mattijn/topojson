@@ -56,19 +56,25 @@ class _Extract:
         *geom* type is LineString instance.
         """
 
-        idx_bk = len(self.bookkeeping_geoms)
-        idx_ls = len(self.linestrings)
-        # record index and store linestring geom
-        self.bookkeeping_geoms.append([idx_ls])
-        self.linestrings.append(geom)
+        # only process non-empty geometries
+        if not geom.is_empty:
+            idx_bk = len(self.bookkeeping_geoms)
+            idx_ls = len(self.linestrings)
+            # record index and store linestring geom
+            self.bookkeeping_geoms.append([idx_ls])
+            self.linestrings.append(geom)
 
-        # track record in object as well
-        obj = self.obj
-        if "arcs" not in obj:
-            obj["arcs"] = []
+            # track record in object as well
+            obj = self.obj
+            if "arcs" not in obj:
+                obj["arcs"] = []
 
-        obj["arcs"].append(idx_bk)
-        obj.pop("coordinates", None)
+            obj["arcs"].append(idx_bk)
+            obj.pop("coordinates", None)
+
+        # when geometry is empty, treat as point
+        else:
+            self.extract_point(geom)
 
     @serialize_geom_type.register(geometry.MultiLineString)
     def extract_multiline(self, geom):

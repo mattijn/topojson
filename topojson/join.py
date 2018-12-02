@@ -2,6 +2,7 @@
 from shapely import geometry
 from shapely.ops import shared_paths
 from shapely.ops import linemerge
+from shapely.ops import snap
 from shapely import speedups
 import itertools
 import copy
@@ -31,7 +32,12 @@ class _Join:
         Where each seperate segment is a linestring between two points.
         """
 
-        fw_bw = shared_paths(g1, g2)
+        try:
+            fw_bw = shared_paths(g1, g2)
+        except ValueError:
+            # catch TopologyException for non-noded intersections
+            fw_bw = shared_paths(snap(g1, g2, tolerance=0.000001), g2)
+
         if not fw_bw.is_empty:
 
             forward = fw_bw[0]

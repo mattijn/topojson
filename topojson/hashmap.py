@@ -91,8 +91,8 @@ class _Hashmap:
         """
 
         for k, v in dictionary.items():
-            if k == key:
-                # print('dict: {}'.format(v))
+            # resolve when key equals 'arcs' and v contains arc indici
+            if k == key and v is not None:
                 dictionary[key] = self.resolve_bookkeeping(v)
                 yield v
             elif isinstance(v, dict):
