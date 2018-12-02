@@ -35,6 +35,12 @@ class TestExtract(unittest.TestCase):
         self.assertEqual(len(topo["bookkeeping_geoms"]), 3)
         self.assertEqual(len(topo["linestrings"]), 4)
 
+    # a LineString without coordinates is ke polygon geometry
+    def test_empty_linestring(self):
+        data = {"empty_ls": {"type": "LineString", "coordinates": None}}
+        topo = topojson.extract(data)
+        self.assertEqual(topo["objects"]["empty_ls"]["arcs"], None)
+
     # invalid polygon geometry
     def test_invalid_polygon(self):
         data = {
