@@ -116,7 +116,7 @@ class _Hashmap:
         5. hashmap   
  
         Developping Notes:
-        * ..
+        * PostGIS Tips for Power Users: http://2010.foss4g.org/presentations/3369.pdf
         """
 
         # make data available within class
