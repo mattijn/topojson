@@ -30,8 +30,7 @@ class TestHasmap(unittest.TestCase):
             topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         )
         # print(topo)
-        self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
-        self.assertEqual(topo["bookkeeping_geoms"], [[0, 1], [2], [3]])
+        self.assertEqual(topo["objects"]["foo"]["geometries"][0]["arcs"][0], [4, 0])
 
     def test_hashmap_backward_polygon(self):
         data = {
