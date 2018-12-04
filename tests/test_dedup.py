@@ -1,5 +1,6 @@
 import unittest
 import topojson
+import geopandas
 
 
 class TestDedup(unittest.TestCase):
@@ -75,3 +76,8 @@ class TestDedup(unittest.TestCase):
         self.assertEqual(topo["bookkeeping_shared_arcs"], [3])
         self.assertEqual(topo["bookkeeping_arcs"], [[0, 3, 1], [2, 3, 4]])
 
+    def test_egypt_sudan(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[(data.name == "Egypt") | (data.name == "Sudan")]
+        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 1)
