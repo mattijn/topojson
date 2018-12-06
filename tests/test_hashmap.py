@@ -1,5 +1,6 @@
 import unittest
 import topojson
+import geopandas
 
 
 class TestHasmap(unittest.TestCase):
@@ -48,3 +49,13 @@ class TestHasmap(unittest.TestCase):
         )
         self.assertEqual(topo["objects"]["abc"]["arcs"], [[-3, 0]])
         self.assertEqual(topo["objects"]["def"]["arcs"], [[1, 2]])
+
+    # this test should catch a shared boundary and a hashed multipolgon
+    # related to https://github.com/Toblerity/Shapely/issues/535
+    def test_albania_greece(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[(data.name == "Albania") | (data.name == "Greece")]
+        topo = topojson.hashmap(
+            topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        )
+        self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 1)

@@ -14,6 +14,7 @@ class _Dedup:
     def __init__(self):
         # initation topology items
         self.shared_arcs_idx = []
+        self.merged_arcs_idx = []
         pass
 
     def index_array(self, parameter_list):
@@ -59,7 +60,12 @@ class _Dedup:
     def merge_contigious_arcs(
         self, data, sliced_array_bk_ndp, array_bk, array_bk_sarcs
     ):
-        # iterate over geoms that contain shared arcs and try linemerge on remaining arcs
+        """
+        Function that iterate over geoms that contain shared arcs and try linemerge 
+        on remaining arcs. The merged contigious arc is placed back in the 'linestrings'
+        object. 
+        The arcs that can be popped are placed within the merged_arcs_idx list
+        """
         for arcs_geom_bk in sliced_array_bk_ndp:
             # set number of arcs before trying linemerge
             ndp_arcs_bk = arcs_geom_bk[~np.isnan(arcs_geom_bk)].astype(int)
@@ -81,15 +87,24 @@ class _Dedup:
                 # replace linestring of idx_keep with merged linestring
                 # merged linestring seems to be placed up front, so get idx 0.
                 data["linestrings"][idx_keep] = ndp_arcs[0]
+                self.merged_arcs_idx.append(idx_pop)
 
-                # remove merged linestring
-                del data["linestrings"][idx_pop]
+    def pop_merged_arcs(self, data, array_bk, array_bk_sarcs):
+        """
+        The collected indici that can be popped, since they have been merged
+        """
 
-                # change reference of merged linestring and all index elements greater then idx_pop
-                array_bk[array_bk == idx_pop] = np.nan
-                with np.errstate(invalid="ignore"):
-                    array_bk[array_bk > idx_pop] -= 1
-                    array_bk_sarcs[array_bk_sarcs > idx_pop] -= 1
+        self.merged_arcs_idx.sort(reverse=True)
+        for idx_pop in self.merged_arcs_idx:
+
+            # remove merged linestring
+            del data["linestrings"][idx_pop]
+
+            # change reference of merged linestring and all index elements greater then idx_pop
+            array_bk[array_bk == idx_pop] = np.nan
+            with np.errstate(invalid="ignore"):
+                array_bk[array_bk > idx_pop] -= 1
+                array_bk_sarcs[array_bk_sarcs > idx_pop] -= 1
 
     def list_from_array(self, array_bk):
         """
@@ -142,6 +157,9 @@ class _Dedup:
             self.merge_contigious_arcs(
                 data, sliced_array_bk_ndp, array_bk, array_bk_sarcs
             )
+
+            # pop the merged contigious arcs and maintain bookkeeping.
+            self.pop_merged_arcs(data, array_bk, array_bk_sarcs)
 
         # prepare to return object
         del data["bookkeeping_linestrings"]
