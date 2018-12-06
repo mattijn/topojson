@@ -33,10 +33,12 @@ class _Join:
         """
 
         try:
-            fw_bw = shared_paths(g1, g2)
-        except ValueError:
-            # catch TopologyException for non-noded intersections
+            # use snap to catch TopologyException for non-noded intersections
+            # also required for setting tolerance of near-identical shared paths.
             fw_bw = shared_paths(snap(g1, g2, tolerance=0.000001), g2)
+            # fw_bw = shared_paths(g1, g2)
+        except ValueError as e:
+            print(e)
 
         if not fw_bw.is_empty:
 
@@ -69,16 +71,17 @@ class _Join:
         4. dedup
         5. hashmap
         
-        After decomposing all geometric objects into linestrings it is necessary to detect
-        the junctions or start and end-points of shared paths so this paths can be 'merged'
-        in the next step. Merge is quoted as in facht only one of the shared path is kept and 
-        the other will be removed.
+        After decomposing all geometric objects into linestrings it is necessary to 
+        detect the junctions or start and end-points of shared paths so this paths can 
+        be 'merged' in the next step. Merge is quoted as in fact only one of the 
+        shared path is kept and the other will be removed.
 
         Developping Notes:
         * why not de-duplicate (dedup) equal geometries in this object/function? 
-        Current approach is to record them and deal with it, maybe combined, in `cut` or `dedup` phase.
+        Current approach is to record them and deal with it, maybe combined, in `cut` 
+        or `dedup` phase.
 
-        The following links have been used as referene in creating this object/functions.
+        The following links have been used as reference for this object/functions.
         TODO: delete when needed.
         
         to find shared paths:
@@ -104,7 +107,6 @@ class _Join:
             if not g1.equals(g2):
                 # geoms are unique, let's find junctions
                 self.shared_segs(g1, g2)
-            # its quid pro quo to record equal geoms here. Let's leave it up to next phases
 
         # self.segments is a list of LineStrings, get all coordinates
         s_coords = [y for x in self.segments for y in list(x.coords)]
