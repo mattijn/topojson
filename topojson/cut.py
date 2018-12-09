@@ -59,7 +59,7 @@ class _Cut:
             # check if geometry are equal
             # being equal meaning the geometry object coincide with each other.
             # a rotated polygon or reversed linestring are both considered equal.
-            if g1.almost_equals(g2):
+            if g1.equals(g2):
                 idx_pop = i1 if len(g1.coords) <= len(g2.coords) else i2
                 idx_keep = i1 if i2 == idx_pop else i2
                 self.duplicates.append([idx_keep, idx_pop])
