@@ -33,14 +33,15 @@ class _Join:
         """
 
         try:
-            # use snap to catch TopologyException for non-noded intersections
             # also required for setting tolerance of near-identical shared paths.
-            fw_bw = shared_paths(snap(g1, g2, tolerance=0.000001), g2)
-            # fw_bw = shared_paths(g1, g2)
+            # g1 = snap(g1, g2, tolerance=0.000001)
+            fw_bw = shared_paths(g1, g2)
         except ValueError as e:
+            # use snap to catch TopologyException for non-noded intersections
+            # fw_bw = shared_paths(snap(g1, g2, tolerance=0.000001), g2)
             print(e)
 
-        if not fw_bw.is_empty:
+        if fw_bw and not fw_bw.is_empty:
 
             forward = fw_bw[0]
             backward = fw_bw[1]
@@ -94,6 +95,10 @@ class _Join:
         https://stackoverflow.com/a/34032549
         """
 
+        # # simplify geometry using tolerance
+        # data["linestrings"] = list(
+        #     geometry.MultiLineString(data["linestrings"]).simplify(tolerance=0.000001)
+        # )
         # first create list with all combinations of lines
         line_combs = list(itertools.combinations(data["linestrings"], 2))
 
