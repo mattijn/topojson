@@ -20,8 +20,8 @@ class _Dedup:
     def index_array(self, parameter_list):
         """"
         Function to create numpy array from nested lists. The shape of the numpy array 
-        are the number of nested lists (rows) x the length of the longest nested list (columns). 
-        Rows that contain less values are filled with np.nan values.
+        are the number of nested lists (rows) x the length of the longest nested list 
+        (columns). Rows that contain less values are filled with np.nan values.
         """
 
         array_bk = np.array(
@@ -45,7 +45,8 @@ class _Dedup:
             # change reference duplicate and all elements greater index
             array_bk[array_bk == idx_pop] = idx_keep
             # numpy 1.8.0-notes states:
-            # "Comparing NaN floating point numbers now raises the invalid runtime warning."
+            # "Comparing NaN floating point numbers now raises the invalid runtime
+            # warning."
             with np.errstate(invalid="ignore"):
                 array_bk[array_bk > idx_pop] -= 1
 
@@ -78,7 +79,8 @@ class _Dedup:
             no_ndp_arcs = len(ndp_arcs)
 
             # if no_ndp_arcs is different than no_ndp_arcs_bk, than a merge took place
-            # if lengths are equal, than merge did occur and no need to solve the bookkeeping
+            # if lengths are equal, than merge did occur and no need to solve the
+            # bookkeeping
             if no_ndp_arcs != no_ndp_arcs_bk:
                 # assumes that only first and last item of non-duplicate arcs can merge
                 idx_keep = ndp_arcs_bk[-1]
@@ -100,7 +102,8 @@ class _Dedup:
             # remove merged linestring
             del data["linestrings"][idx_pop]
 
-            # change reference of merged linestring and all index elements greater then idx_pop
+            # change reference of merged linestring and all index elements greater
+            # then idx_pop
             array_bk[array_bk == idx_pop] = np.nan
             with np.errstate(invalid="ignore"):
                 array_bk[array_bk > idx_pop] -= 1
@@ -108,7 +111,8 @@ class _Dedup:
 
     def list_from_array(self, array_bk):
         """
-        Function to convert numpy array to list, where elements set as np.nan are filtered
+        Function to convert numpy array to list, where elements set as np.nan 
+        are filtered
         """
 
         list_bk = [obj[~np.isnan(obj)].astype(int).tolist() for obj in array_bk]
@@ -153,7 +157,8 @@ class _Dedup:
             slice_idx = np.argwhere(np.isnan(array_bk_ndp))[0, :]
             sliced_array_bk_ndp = array_bk_ndp[slice_idx]
 
-            # apply linemerge on geoms containing contigious arcs and maintain bookkeeping
+            # apply linemerge on geoms containing contigious arcs and maintain
+            # bookkeeping
             self.merge_contigious_arcs(
                 data, sliced_array_bk_ndp, array_bk, array_bk_sarcs
             )

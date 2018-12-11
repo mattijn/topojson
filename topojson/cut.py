@@ -92,9 +92,10 @@ class _Cut:
             self.bookkeeping_linestrings = bk_array.astype(float)
 
         else:
+            bk_array = self.index_array(data["bookkeeping_geoms"])[:, :, np.newaxis]
             self.segments_list = data["linestrings"]
             self.find_duplicates(data["linestrings"])
-            self.bookkeeping_linestrings = data["bookkeeping_geoms"]
+            self.bookkeeping_linestrings = bk_array
 
         # prepare to return object
         data["linestrings"] = self.segments_list

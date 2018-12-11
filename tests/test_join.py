@@ -240,7 +240,8 @@ class TestJoin(unittest.TestCase):
             geometry.MultiPoint([(1.0, 0.0), (0.0, 0.0)]),
         )
 
-    # when a new line starts BC in the middle of an old line ABC, there is a junction at B
+    # when a new line starts BC in the middle of an old line ABC, there is a 
+    # junction at B
     def test_line_ABC_extends_line_BC(self):
         data = {
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
@@ -253,7 +254,8 @@ class TestJoin(unittest.TestCase):
             )
         )
 
-    # when a new line BC starts in the middle of a reversed old line CBA, there is a junction at B
+    # when a new line BC starts in the middle of a reversed old line CBA, there is a 
+    # junction at B
     def test_line_BC_start_middle_reversed_line_CBA(self):
         data = {
             "cba": {"type": "LineString", "coordinates": [[2, 0], [1, 0], [0, 0]]},
@@ -279,7 +281,8 @@ class TestJoin(unittest.TestCase):
             )
         )
 
-    # when a new line ABD deviates from a reversed old line CBA, there is a junction at B
+    # when a new line ABD deviates from a reversed old line CBA, there is a 
+    # junction at B
     def test_line_ABD_deviates_line_CBA(self):
         data = {
             "cba": {"type": "LineString", "coordinates": [[2, 0], [1, 0], [0, 0]]},
@@ -318,7 +321,8 @@ class TestJoin(unittest.TestCase):
             )
         )
 
-    # when a new line DBE shares a single midpoint with an old line ABC, there is no junction at B
+    # when a new line DBE shares a single midpoint with an old line ABC, there is 
+    # no junction at B
     def test_line_DBE_share_singe_midpoint_line_ABC(self):
         data = {
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
@@ -342,7 +346,8 @@ class TestJoin(unittest.TestCase):
         topo = topojson.join(topojson.extract(data))
         self.assertListEqual(topo["junctions"], [])
 
-    # when a new line ABDE skips a point with a reversed old line EDCBA, there is no junction
+    # when a new line ABDE skips a point with a reversed old line EDCBA, there is 
+    # no junction
     def test_line_ABDE_skips_point_reversed_line_EDCBA(self):
         data = {
             "edcba": {
@@ -390,7 +395,8 @@ class TestJoin(unittest.TestCase):
         topo = topojson.join(topojson.extract(data))
         self.assertListEqual(topo["junctions"], [])
 
-    # when an old line ABCDBE self-intersects and shares a point B, there is no junction at B
+    # when an old line ABCDBE self-intersects and shares a point B, there is 
+    # no junction at B
     def test_line_ABCDB_self_intersects(self):
         data = {
             "abcdbe": {

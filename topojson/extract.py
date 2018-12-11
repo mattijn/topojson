@@ -22,14 +22,13 @@ class _Extract:
     @methdispatch
     def serialize_geom_type(self, geom):
         """
-        This function handles the different types that can occur within a geojson object.
-        Each type is registerd as its own function and called when found, 
-        if none of the types match the input geom the current function is
-        executed. 
+        This function handles the different types that can occur within a geojson 
+        object. Each type is registerd as its own function and called when found, 
+        if none of the types match the input geom the current function is executed. 
 
-        The adoption of the dispatcher approach makes the usage of multiple if-else statements
-        not needed, since the dispatcher redirects the `geom` input to the function which
-        handles that partical geometry type.
+        The adoption of the dispatcher approach makes the usage of multiple if-else 
+        statements not needed, since the dispatcher redirects the `geom` input to the 
+        function which handles that partical geometry type.
 
         The following geometry types are registered:
         - shapely.geometry.LineString
@@ -153,7 +152,8 @@ class _Extract:
         # the following lines can catch a GeometryCollection untill two levels deep
         # improvements on this are welcome
         for idx, geom in enumerate(geom):
-            # if geom is GeometryCollection, collect geometries within collection on right level
+            # if geom is GeometryCollection, collect geometries within collection
+            # on right level
             if isinstance(geom, geometry.GeometryCollection):
                 self.records_collection = len(geom)
                 if self.geomcollection_counter == 1:
@@ -166,12 +166,14 @@ class _Extract:
             else:
                 if self.geomcollection_counter == 1:
                     self.obj = obj["geometries"][idx]
-                    # if last record in collection is parsed set collection counter one level up
+                    # if last record in collection is parsed set collection counter
+                    # one level up
                     if idx == self.records_collection - 1:
                         self.geomcollection_counter += -1
                 if self.geomcollection_counter == 2:
                     self.obj = obj["geometries"][self.geom_level_1]["geometries"][idx]
-                    # if last record in collection is parsed set collection counter one level up
+                    # if last record in collection is parsed set collection counter
+                    # one level up
                     if idx == self.records_collection - 1:
                         self.geomcollection_counter += -1
 
@@ -244,12 +246,13 @@ class _Extract:
             self.key = key
             self.obj = self.data[self.key]
 
-            # determine firstly if type of geom is a Shapely geometric object if not then
-            # the object might be a geojson Feature or FeatureCollection
+            # determine firstly if type of geom is a Shapely geometric object if not
+            # then the object might be a geojson Feature or FeatureCollection
             # otherwise it is not a recognized object and it will be removed
             try:
                 geom = geometry.shape(self.obj)
-                # object can be mapped, but may not be valid. remove invalid objects and continue
+                # object can be mapped, but may not be valid. remove invalid objects
+                # and continue
                 if not geom.is_valid:
                     self.invalid_geoms += 1
                     del self.data[self.key]
@@ -287,19 +290,22 @@ class _Extract:
 
         Returns an object with two new properties:
 
-        * linestrings - linestrings extracted from the hash, of the form [start, end], as shapely objects
-        * bookkeeping_geoms - record array storing index numbers of linestrings used in each object.
+        * linestrings - linestrings extracted from the hash, of the form [start, end], 
+        as shapely objects
+        * bookkeeping_geoms - record array storing index numbers of linestrings 
+        used in each object.
 
         For each line or polygon geometry in the input hash, including nested
         geometries as in geometry collections, the `coordinates` array is replaced
         with an equivalent `"coordinates"` array that points to one of the 
         linestrings as indexed in `bookkeeping_geoms`.
 
-        Points geometries are not collected within the new properties, but are placed directly
-        into the `"coordinates"` array within each object.
+        Points geometries are not collected within the new properties, but are placed 
+        directly into the `"coordinates"` array within each object.
 
         Developping Notes
-        * maybe better to include serialization of string type instead of handling this in worker
+        * maybe better to include serialization of string type instead of handling 
+        this in worker
         * serialize GeoDataFrame and GeoSeries type
         """
 

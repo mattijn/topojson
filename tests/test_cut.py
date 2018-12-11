@@ -127,7 +127,8 @@ class TestCut(unittest.TestCase):
         self.assertEqual(len(topo["junctions"]), 0)
         self.assertSequenceEqual(topo["bookkeeping_duplicates"].tolist(), [[1, 0]])
 
-    # TODO: Continue from https://github.com/topojson/topojson-server/blob/master/test/cut-test.js#L103
+    # TODO: Continue from
+    # https://github.com/topojson/topojson-server/blob/master/test/cut-test.js#L103
 
     # overlapping rings ABCDA and BEFCB are cut into BC-CDAB and BEFC-CB
     def test_overlapping_rings_are_cut(self):
