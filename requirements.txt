@@ -1,0 +1,4 @@
+numpy
+shapely
+geopandas
+geojson
