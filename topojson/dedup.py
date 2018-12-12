@@ -34,6 +34,9 @@ class _Dedup:
         Function to deduplicate items
         """
 
+        # sort the dup_pair_list by the 1st column (idx_pop) in descending order
+        dup_pair_list = dup_pair_list[dup_pair_list[:, 1].argsort()[::-1]]
+
         # start deduping
         for idx, dup_pair in enumerate(dup_pair_list):
             idx_keep = dup_pair[0]
@@ -43,12 +46,10 @@ class _Dedup:
             del linestring_list[idx_pop]
 
             # change reference duplicate and all elements greater index
+            no_dups = array_bk[array_bk == idx_pop].size
             array_bk[array_bk == idx_pop] = idx_keep
-            # numpy 1.8.0-notes states:
-            # "Comparing NaN floating point numbers now raises the invalid runtime
-            # warning."
             with np.errstate(invalid="ignore"):
-                array_bk[array_bk > idx_pop] -= 1
+                array_bk[array_bk > idx_pop] -= no_dups
 
             # store shared arc index
             idx2keep = idx_keep if idx_pop > idx_keep else idx_keep - 1

@@ -68,8 +68,8 @@ class _Hashmap:
 
     def resolve_bookkeeping(self, geoms):
         """
-        Function that is activated once the key of interest in the find_arcs functino is detected.
-        It replaces the geom ids with the corresponding arc ids.
+        Function that is activated once the key of interest in the find_arcs function
+        is detected. It replaces the geom ids with the corresponding arc ids.
         """
 
         arcs = []
@@ -128,6 +128,29 @@ class _Hashmap:
         # parse the linestrings into list of coordinates
         for idx, ls in enumerate(data["linestrings"]):
             self.data["linestrings"][idx] = np.array(ls.xy).T.tolist()
+
+        objects = {}
+        objects["geometries"] = []
+        objects["type"] = "GeometryCollection"
+        for idx, feature in enumerate(data["objects"]):
+            feat = data["objects"][feature]
+            # print(feat)
+            feat["type"] = feat["geometries"][0]["type"]
+
+            if feat["type"] == "Polygon":
+                f_arc = feat["geometries"][0]["arcs"]
+                # print(idx, feature, f_arc)
+                feat["arcs"] = f_arc
+
+            if feat["type"] == "MultiPolygon":
+                f_arcs = feat["geometries"][0]["arcs"]
+                feat["arcs"] = [[arc] for arc in f_arcs]
+
+            feat.pop("geometries", None)
+            objects["geometries"].append(feat)
+
+        data["objects"] = {}
+        data["objects"]["data"] = objects
 
         # prepare to return object
         data = self.data
