@@ -135,15 +135,22 @@ class _Hashmap:
         for idx, feature in enumerate(data["objects"]):
             feat = data["objects"][feature]
             # print(feat)
-            feat["type"] = feat["geometries"][0]["type"]
+            if "geometries" in feat:
+                feat["type"] = feat["geometries"][0]["type"]
 
             if feat["type"] == "Polygon":
-                f_arc = feat["geometries"][0]["arcs"]
+                if "geometries" in feat:
+                    f_arc = feat["geometries"][0]["arcs"]
+                else:
+                    f_arc = feat["arcs"]
                 # print(idx, feature, f_arc)
                 feat["arcs"] = f_arc
 
             if feat["type"] == "MultiPolygon":
-                f_arcs = feat["geometries"][0]["arcs"]
+                if "geometries" in feat:
+                    f_arcs = feat["geometries"][0]["arcs"]
+                else:
+                    f_arcs["arcs"]
                 feat["arcs"] = [[arc] for arc in f_arcs]
 
             feat.pop("geometries", None)

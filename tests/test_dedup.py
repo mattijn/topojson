@@ -24,7 +24,7 @@ class TestDedup(unittest.TestCase):
         }
         topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         # print(topo)
-        self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
+        self.assertEqual(len(topo["bookkeeping_duplicates"]), 2)
         self.assertEqual(topo["bookkeeping_geoms"], [[0, 1], [2], [3]])
 
     def test_two_polygon_reversed_shared_arc(self):
@@ -39,7 +39,7 @@ class TestDedup(unittest.TestCase):
             },
         }
         topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
-        self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
+        self.assertEqual(len(topo["bookkeeping_duplicates"]), 2)
         self.assertEqual(topo["bookkeeping_shared_arcs"], [2])
         self.assertEqual(topo["bookkeeping_arcs"], [[2, 0], [1, 2]])
 
@@ -55,7 +55,7 @@ class TestDedup(unittest.TestCase):
             },
         }
         topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
-        self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
+        self.assertEqual(len(topo["bookkeeping_duplicates"]), 2)
         self.assertEqual(topo["bookkeeping_shared_arcs"], [0])
         self.assertEqual(topo["bookkeeping_arcs"], [[0], [0]])
         self.assertEqual(topo["bookkeeping_geoms"], [[0], [1]])
@@ -72,7 +72,7 @@ class TestDedup(unittest.TestCase):
             },
         }
         topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
-        self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
+        self.assertEqual(len(topo["bookkeeping_duplicates"]), 2)
         self.assertEqual(topo["bookkeeping_shared_arcs"], [3])
         self.assertEqual(topo["bookkeeping_arcs"], [[0, 3, 1], [2, 3, 4]])
 

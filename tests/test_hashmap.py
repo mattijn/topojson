@@ -31,7 +31,9 @@ class TestHasmap(unittest.TestCase):
             topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         )
         # print(topo)
-        self.assertEqual(topo["objects"]["foo"]["geometries"][0]["arcs"][0], [4, 0])
+        self.assertEqual(
+            topo["objects"]["data"]["geometries"][0]["arcs"], [[[4, 0]], [[1]], [[2]]]
+        )
 
     def test_hashmap_backward_polygon(self):
         data = {
@@ -47,8 +49,8 @@ class TestHasmap(unittest.TestCase):
         topo = topojson.hashmap(
             topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         )
-        self.assertEqual(topo["objects"]["abc"]["arcs"], [[-3, 0]])
-        self.assertEqual(topo["objects"]["def"]["arcs"], [[1, 2]])
+        self.assertEqual(topo["objects"]["data"]["geometries"][0]["arcs"], [[-3, 0]])
+        self.assertEqual(topo["objects"]["data"]["geometries"][1]["arcs"], [[1, 2]])
 
     # this test should catch a shared boundary and a hashed multipolgon
     # related to https://github.com/Toblerity/Shapely/issues/535
@@ -58,4 +60,19 @@ class TestHasmap(unittest.TestCase):
         topo = topojson.hashmap(
             topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         )
-        self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 1)
+        self.assertEqual(len(topo["arcs"]), 3)
+
+    def test_benin_surrounding_countries(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[data.continent == "Africa"]
+        data = data[
+            (data.name == "Niger")
+            | (data.name == "Nigeria")
+            | (data.name == "Burkina Faso")
+            | (data.name == "Togo")
+            | (data.name == "Benin")
+        ]
+        topo = topojson.hashmap(
+            topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        )
+        self.assertEqual(len(topo["arcs"]), 3)

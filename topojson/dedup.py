@@ -34,7 +34,7 @@ class _Dedup:
         Function to deduplicate items
         """
 
-        # sort the dup_pair_list by the 1st column (idx_pop) in descending order
+        # sort the dup_pair_list by the 2nd column (idx_pop) in descending order
         dup_pair_list = dup_pair_list[dup_pair_list[:, 1].argsort()[::-1]]
 
         # start deduping
@@ -139,9 +139,10 @@ class _Dedup:
         # deduplicate equal geometries
         # create numpy array from bookkeeping_geoms variable for numerical computation
         array_bk = self.index_array(data["bookkeeping_linestrings"])
-        array_bk = self.deduplicate(
-            data["bookkeeping_duplicates"], data["linestrings"], array_bk
-        )
+        if data["bookkeeping_duplicates"].size != 0:
+            array_bk = self.deduplicate(
+                data["bookkeeping_duplicates"], data["linestrings"], array_bk
+            )
 
         # apply a shapely linemerge to merge all contiguous line-elements
         # first create a mask for shared arcs to select only non-duplicates
