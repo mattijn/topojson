@@ -26,7 +26,7 @@ class _Join:
         This function returns the segments that are shared with two input geometries.
         The shapely function `shapely.ops.shared_paths()` is adopted and can catch
         both the shared paths with the same direction for both inputs as well as the 
-        shared paths with the opposite direction for the two inputs.
+        shared paths with the opposite direction for one the two inputs.
 
         The returned object extents the `segments` property with detected segments.
         Where each seperate segment is a linestring between two points.
@@ -73,9 +73,9 @@ class _Join:
         5. hashmap
         
         After decomposing all geometric objects into linestrings it is necessary to 
-        detect the junctions or start and end-points of shared paths so this paths can 
+        detect the junctions or start and end-points of shared paths so these paths can 
         be 'merged' in the next step. Merge is quoted as in fact only one of the 
-        shared path is kept and the other will be removed.
+        shared path is kept and the other path is removed.
 
         Developping Notes:
         * why not de-duplicate (dedup) equal geometries in this object/function? 

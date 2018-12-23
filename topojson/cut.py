@@ -26,7 +26,7 @@ class _Cut:
     def flatten_and_index(self, slist):
         """
         function to create a flattened list of splitted linestrings, but make sure to
-        create a numpy array for bookkeeping_geoms for thee numerical computation
+        create a numpy array for bookkeeping_geoms for the numerical computation
         """
         # flatten
         segmntlist = list(itertools.chain(*slist))
@@ -59,6 +59,7 @@ class _Cut:
             # check if geometry are equal
             # being equal meaning the geometry object coincide with each other.
             # a rotated polygon or reversed linestring are both considered equal.
+            # TODO: The g1.equals(g2) method seems incapable. How to solve?
             if g1.equals(g2):
                 idx_pop = i1 if len(g1.coords) <= len(g2.coords) else i2
                 idx_keep = i1 if i2 == idx_pop else i2
