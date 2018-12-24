@@ -89,8 +89,9 @@ class _Cut:
             # flatten the splitted linestrings and create bookkeeping_geoms array
             # and find duplicates
             self.segments_list, bk_array = self.flatten_and_index(slist)
-            self.find_duplicates(self.segments_list)
-            self.bookkeeping_linestrings = bk_array.astype(float)
+            return self.segments_list
+            # self.find_duplicates(self.segments_list)
+            # self.bookkeeping_linestrings = bk_array.astype(float)
 
         else:
             bk_array = self.index_array(data["bookkeeping_geoms"]).ravel()
