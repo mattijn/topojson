@@ -119,21 +119,17 @@ class _Join:
         for segment in self.segments:
             s_coords.extend([[y for x in segment for y in list(x.coords)]])
 
-        # s_coords = [y for x in self.segments for y in list(x.coords)]
-
         # only keep junctions that appear only once in each segment (nested list)
         # coordinates that appear multiple times are not junctions
-        # junctions can appear multiple times in multiple segments, only keep unique
         for coords in s_coords:
             self.junctions.extend(
                 [geometry.Point(i) for i in coords if coords.count(i) is 1]
             )
+
+        # junctions can appear multiple times in multiple segments, remove duplicates
         self.junctions = [
             loads(xy) for xy in list(set([x.wkb for x in self.junctions]))
         ]
-
-        # self.junctions = [geometry.Point(i) for i in s_coords if s_coords.count(i) is 1]
-
         # # prepare to return object
         data["junctions"] = self.junctions
 
