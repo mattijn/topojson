@@ -59,7 +59,6 @@ class _Cut:
             # check if geometry are equal
             # being equal meaning the geometry object coincide with each other.
             # a rotated polygon or reversed linestring are both considered equal.
-            # TODO: The g1.equals(g2) method seems incapable. How to solve?
             if g1.equals(g2):
                 idx_pop = i1 if len(g1.coords) <= len(g2.coords) else i2
                 idx_keep = i1 if i2 == idx_pop else i2
@@ -89,9 +88,9 @@ class _Cut:
             # flatten the splitted linestrings and create bookkeeping_geoms array
             # and find duplicates
             self.segments_list, bk_array = self.flatten_and_index(slist)
-            return self.segments_list
-            # self.find_duplicates(self.segments_list)
-            # self.bookkeeping_linestrings = bk_array.astype(float)
+            # return self.segments_list
+            self.find_duplicates(self.segments_list)
+            self.bookkeeping_linestrings = bk_array.astype(float)
 
         else:
             bk_array = self.index_array(data["bookkeeping_geoms"]).ravel()
