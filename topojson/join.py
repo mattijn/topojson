@@ -1,5 +1,6 @@
 # pylint: disable=unsubscriptable-object
 from shapely import geometry
+from shapely.wkb import loads
 from shapely.ops import shared_paths
 from shapely.ops import linemerge
 from shapely.ops import snap
@@ -58,7 +59,7 @@ class _Join:
                     [linemerge(forward), linemerge(backward)]
                 )
 
-            self.segments.extend(list(shared_segments))
+            self.segments.extend([list(shared_segments)])
 
     def main(self, data):
         """
@@ -113,14 +114,27 @@ class _Join:
                 # geoms are unique, let's find junctions
                 self.shared_segs(g1, g2)
 
-        # self.segments is a list of LineStrings, get all coordinates
-        s_coords = [y for x in self.segments for y in list(x.coords)]
+        # self.segments are nested lists of LineStrings, get coordinates of each nest
+        s_coords = []
+        for segment in self.segments:
+            s_coords.extend([[y for x in segment for y in list(x.coords)]])
 
-        # only keep junctions that appear only once
+        # s_coords = [y for x in self.segments for y in list(x.coords)]
+
+        # only keep junctions that appear only once in each segment (nested list)
         # coordinates that appear multiple times are not junctions
-        self.junctions = [geometry.Point(i) for i in s_coords if s_coords.count(i) is 1]
+        # junctions can appear multiple times in multiple segments, only keep unique
+        for coords in s_coords:
+            self.junctions.extend(
+                [geometry.Point(i) for i in coords if coords.count(i) is 1]
+            )
+        self.junctions = [
+            loads(xy) for xy in list(set([x.wkb for x in self.junctions]))
+        ]
 
-        # prepare to return object
+        # self.junctions = [geometry.Point(i) for i in s_coords if s_coords.count(i) is 1]
+
+        # # prepare to return object
         data["junctions"] = self.junctions
 
         return data
