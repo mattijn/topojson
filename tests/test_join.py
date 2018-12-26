@@ -1,6 +1,7 @@
 from shapely import geometry
 import unittest
 import topojson
+import geopandas
 
 
 class TestJoin(unittest.TestCase):
@@ -519,3 +520,12 @@ class TestJoin(unittest.TestCase):
         topo = topojson.join(topojson.extract(data))
         self.assertListEqual(topo["junctions"], [])
 
+    # should keep junctions from partly shared paths
+    # this test was added since the a shared path of ABC and another shared path of ABD
+    # only kept the junctions at A, C and D, but not at B.
+    def test_shared_junctions_in_shared_paths(self):
+        data = geopandas.read_file(geopandas.datasets.get_path('naturalearth_lowres'))
+        data = data[(data.name == 'Togo') | (data.name == 'Benin') | 
+            (data.name == 'Burkina Faso')]
+        topo = topojson.join(topojson.extract(data))
+        self.assertEqual(len(topo["junctions"]), 4)
