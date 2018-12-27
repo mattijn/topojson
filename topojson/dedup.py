@@ -153,7 +153,6 @@ class _Dedup:
 
         # apply a shapely linemerge to merge all contiguous line-elements
         # first create a mask for shared arcs to select only non-duplicates
-        # array_bk_sarcs = np.array(self.shared_arcs_idx)
         mask = np.isin(array_bk, array_bk_sarcs)
         array_bk_ndp = copy.deepcopy(array_bk.astype(float))
 
@@ -176,7 +175,7 @@ class _Dedup:
         # prepare to return object
         del data["bookkeeping_linestrings"]
         data["bookkeeping_arcs"] = self.list_from_array(array_bk)
-        data["bookkeeping_shared_arcs"] = array_bk_sarcs.tolist()
+        data["bookkeeping_shared_arcs"] = array_bk_sarcs.astype(int).tolist()
         data["bookkeeping_duplicates"] = self.list_from_array(
             data["bookkeeping_duplicates"][dup_pair_list != -99]
         )

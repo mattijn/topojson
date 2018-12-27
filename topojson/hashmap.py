@@ -29,40 +29,44 @@ class _Hashmap:
             arc_idxs_prev = [x - 1 for x in arc_idxs]
 
             for idx, arc in enumerate(arc_idxs):
-                # print(arc)
-                # print(idx)
-                # print(arc_idxs_next[idx])
                 shrd_arc_idx = arc_ids[arc]
                 shrd_arc = self.data["linestrings"][shrd_arc_idx]
 
-                try:
-                    # get next arc in geom
-                    next_arc_idx = arc_idxs_next[idx]
-                    # print(next_arc_idx)
-                    next_arc = self.data["linestrings"][arc_ids[next_arc_idx]]
-                except IndexError:
-                    # no next arc in geom, get previous arc
-                    next_arc = None
+                if arc_idxs_prev[idx] >= 0:
+                    # get prev arc in geom
                     prev_arc_idx = arc_idxs_prev[idx]
                     prev_arc = self.data["linestrings"][arc_ids[prev_arc_idx]]
-
-                if next_arc:
-                    # check last value of shrd_idx and first value of next_idx
-                    # print('n')
-                    coord_shrd_last = np.array(shrd_arc.xy)[:, -1]
-                    coord_next_first = np.array(next_arc.xy)[:, 0]
-                    # print(coord_shrd_last, coord_next_first)
-                    if not np.array_equiv(coord_shrd_last, coord_next_first):
-                        # shrd_arc should be backwards
-                        arc_ids[arc] = -(arc_ids[arc] + 1)
                 else:
+                    # get next arc in geom
+                    next_arc_idx = arc_idxs_next[idx]
+                    next_arc = self.data["linestrings"][arc_ids[next_arc_idx]]
+                    prev_arc = None
+
+                # get first and last coordinate of current (shared) arc
+                coord_shrd_first = np.array(shrd_arc.xy)[:, 0]
+                coord_shrd_last = np.array(shrd_arc.xy)[:, -1]
+
+                if prev_arc:
                     # check first value of shrd_idx and last value prev_idx
-                    # print('p')
-                    coord_shrd_first = np.array(shrd_arc.xy)[:, 0]
                     coord_prev_last = np.array(prev_arc.xy)[:, -1]
                     if not np.array_equiv(coord_shrd_first, coord_prev_last):
-                        # shrd_arc should be backwards
-                        arc_ids[arc] = -(arc_ids[arc] + 1)
+                        # double check if backwarding will work
+                        if np.array_equiv(coord_shrd_last, coord_next_first):
+                            # shrd_arc should be backwards
+                            arc_ids[arc] = -(arc_ids[arc] + 1)
+                        else:
+                            print("grmph")
+                            # aah, I've to remember if the previous arc was rotated!
+
+                # only for first arc of geom there is no prev_arc
+                else:
+                    # check last value of shrd_idx and first value of next_idx
+                    coord_next_first = np.array(next_arc.xy)[:, 0]
+                    if not np.array_equiv(coord_shrd_last, coord_next_first):
+                        # double check if backwarding will work
+                        if np.array_equiv(coord_shrd_first, coord_next_first):
+                            # shrd_arc should be backwards
+                            arc_ids[arc] = -(arc_ids[arc] + 1)
 
         return arc_ids
 

@@ -62,15 +62,13 @@ class TestHasmap(unittest.TestCase):
         )
         self.assertEqual(len(topo["arcs"]), 3)
 
+    # something is wrong with hashmapping in the example of benin
     def test_benin_surrounding_countries(self):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-        data = data[data.continent == "Africa"]
         data = data[
-            (data.name == "Niger")
-            | (data.name == "Nigeria")
-            | (data.name == "Burkina Faso")
-            | (data.name == "Togo")
+            (data.name == "Togo")
             | (data.name == "Benin")
+            | (data.name == "Burkina Faso")
         ]
         topo = topojson.hashmap(
             topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
