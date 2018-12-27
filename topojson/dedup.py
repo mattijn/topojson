@@ -34,8 +34,11 @@ class _Dedup:
         Function to deduplicate items
         """
 
-        # sort the dup_pair_list by the 2nd column (idx_pop) in descending order
-        dup_pair_list = dup_pair_list[dup_pair_list[:, 1].argsort()[::-1]]
+        # sort the dup_pair_list by the 1st column (idx_keep) in descending order
+        dup_pair_list = dup_pair_list[dup_pair_list[:, 0].argsort()[::-1]]
+        # initiate an array with np.nans, where sizes equals number of duplicates
+        array_bk_sarcs = np.empty(len(dup_pair_list))
+        array_bk_sarcs.fill(np.nan)
 
         # start deduping
         for idx, dup_pair in enumerate(dup_pair_list):
@@ -45,23 +48,27 @@ class _Dedup:
             # remove duplicate linestring
             del linestring_list[idx_pop]
 
-            # change reference duplicate and all elements greater index
+            # change reference duplicate to idx_keep
             no_dups = array_bk[array_bk == idx_pop].size
             array_bk[array_bk == idx_pop] = idx_keep
+
+            # next run may affect previous runs, maintain bookkeeping and change
+            # all elements greater than the index which was removed.
             with np.errstate(invalid="ignore"):
                 array_bk[array_bk > idx_pop] -= no_dups
+                dup_pair_list[dup_pair_list > idx_pop] -= no_dups
+                array_bk_sarcs[array_bk_sarcs > idx_pop] -= no_dups
 
             # store shared arc index
             idx2keep = idx_keep if idx_pop > idx_keep else idx_keep - 1
-            self.shared_arcs_idx.append(idx2keep)
+            array_bk_sarcs[idx] = idx2keep
+
             # set duplicate entry to -99
             dup_pair_list[idx, :] = -99
 
-        return array_bk
+        return array_bk_sarcs, dup_pair_list
 
-    def merge_contigious_arcs(
-        self, data, sliced_array_bk_ndp, array_bk, array_bk_sarcs
-    ):
+    def merge_contigious_arcs(self, data, sliced_array_bk_ndp):
         """
         Function that iterate over geoms that contain shared arcs and try linemerge 
         on remaining arcs. The merged contigious arc is placed back in the 'linestrings'
@@ -80,7 +87,7 @@ class _Dedup:
             no_ndp_arcs = len(ndp_arcs)
 
             # if no_ndp_arcs is different than no_ndp_arcs_bk, than a merge took place
-            # if lengths are equal, than merge did occur and no need to solve the
+            # if lengths are equal, than no merge did occur and no need to solve the
             # bookkeeping
             if no_ndp_arcs != no_ndp_arcs_bk:
                 # assumes that only first and last item of non-duplicate arcs can merge
@@ -140,13 +147,13 @@ class _Dedup:
         # create numpy array from bookkeeping_geoms variable for numerical computation
         array_bk = self.index_array(data["bookkeeping_linestrings"])
         if data["bookkeeping_duplicates"].size != 0:
-            array_bk = self.deduplicate(
+            array_bk_sarcs, dup_pair_list = self.deduplicate(
                 data["bookkeeping_duplicates"], data["linestrings"], array_bk
             )
 
         # apply a shapely linemerge to merge all contiguous line-elements
         # first create a mask for shared arcs to select only non-duplicates
-        array_bk_sarcs = np.array(self.shared_arcs_idx)
+        # array_bk_sarcs = np.array(self.shared_arcs_idx)
         mask = np.isin(array_bk, array_bk_sarcs)
         array_bk_ndp = copy.deepcopy(array_bk.astype(float))
 
@@ -156,14 +163,12 @@ class _Dedup:
             array_bk_ndp[mask] = np.nan
 
             # slice array_bk_ndp for geoms (rows) containing np.nan values
-            slice_idx = np.argwhere(np.isnan(array_bk_ndp))[0, :]
+            slice_idx = np.unique(np.argwhere(np.isnan(array_bk_ndp))[:, 0])
             sliced_array_bk_ndp = array_bk_ndp[slice_idx]
 
             # apply linemerge on geoms containing contigious arcs and maintain
             # bookkeeping
-            self.merge_contigious_arcs(
-                data, sliced_array_bk_ndp, array_bk, array_bk_sarcs
-            )
+            self.merge_contigious_arcs(data, sliced_array_bk_ndp)
 
             # pop the merged contigious arcs and maintain bookkeeping.
             self.pop_merged_arcs(data, array_bk, array_bk_sarcs)
@@ -173,7 +178,7 @@ class _Dedup:
         data["bookkeeping_arcs"] = self.list_from_array(array_bk)
         data["bookkeeping_shared_arcs"] = array_bk_sarcs.tolist()
         data["bookkeeping_duplicates"] = self.list_from_array(
-            data["bookkeeping_duplicates"][data["bookkeeping_duplicates"] != -99]
+            data["bookkeeping_duplicates"][dup_pair_list != -99]
         )
 
         return data

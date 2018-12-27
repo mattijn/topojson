@@ -81,3 +81,17 @@ class TestDedup(unittest.TestCase):
         data = data[(data.name == "Egypt") | (data.name == "Sudan")]
         topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 1)
+
+    # this test was added since the shared_arcs bookkeeping is not doing well. Next runs
+    # can affect previous runs where dup_pair_list should update properly.
+    def test_shared_junctions_in_shared_paths(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[
+            (data.name == "Togo")
+            | (data.name == "Benin")
+            | (data.name == "Burkina Faso")
+        ]
+        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 3)
+        self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
+
