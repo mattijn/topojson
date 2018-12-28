@@ -12,61 +12,127 @@ class _Hashmap:
         # initation topology items
         pass
 
+    def hash_order(self, arc_ids, shared_bool):
+        """
+        create a decision list with the following options:
+        0 - skip the array
+        1 - follow the order of the first arc
+        2 - follow the order of the last arc
+        
+        Parameters
+        ----------
+        arc_ids : list
+            list containing the index values of the arcs 
+        shared_bool : list
+            boolean list with same length as arc_ids, 
+            True means the arc is shared, False means it is a non-shared arc
+        
+        Returns
+        -------
+        order_of_arc : numpy array
+            array containg values if first or last arc should be used to order
+        split_arc_ids : list of numpy arrays
+            array containing splitted arc ids
+        """
+
+        # first split it by the boolean shared arcs
+        split_arc_ids = np.split(arc_ids, np.nonzero(~shared_bool)[0])
+        split_boolean = np.split(shared_bool, np.nonzero(~shared_bool)[0])
+
+        order_of_arc = [None] * len(split_boolean)
+        # no need for iterations if split_boolean contains only 1 array
+        if len(split_boolean) == 1:
+            # happens when the geom only contains shared arcs,  its impossible to guess
+            # the direction of the geometry, so follow the order of the first arc
+            order_of_arc[0] = 1
+
+        else:
+            # check each splitted geom to decide how to treat
+            for idx, split_geom in enumerate(split_boolean):
+                if len(split_geom) == 0:
+                    # skip when the array is empty
+                    order_of_arc[idx] = 0
+
+                elif len(split_geom) != 0 and split_geom.sum() == 0:
+                    # skip when the splitted geom contains only non-shared arcs
+                    order_of_arc[idx] = 0
+
+                elif len(split_geom) != 0 and split_geom.sum() == len(split_geom):
+                    # happens when the first splitted geom contains only shared arcs
+                    # but the first arc of next splitted geom contains a non-shared arc
+                    # lets take that one, and follow the order of the last arc
+                    next_arc = split_arc_ids[idx + 1][0]
+                    split_arc_ids[idx] = np.append(split_arc_ids[idx], next_arc)
+                    order_of_arc[idx] = 2
+
+                else:
+                    # len(split_geom) > 1 and split_geom.sum() != len(split_geom):
+                    order_of_arc[idx] = 1
+
+        return order_of_arc, split_arc_ids
+
     def backward_arcs(self, arc_ids):
         """
         Function to check if the shared arcs in geom should be backward.
         If so, are written as -(index+1)
         """
 
-        boolean_shared_arcs = np.isin(self.data["bookkeeping_shared_arcs"], arc_ids)
-        shared_arcs_in_geom = list(
-            compress(self.data["bookkeeping_shared_arcs"], boolean_shared_arcs)
-        )
+        shared_bool = np.isin(self.data["bookkeeping_shared_arcs"], arc_ids)
+        order_of_arc, split_arc_ids = self.hash_order(arc_ids, shared_bool)
 
-        for arc_idx in shared_arcs_in_geom:
-            arc_idxs = [idx for idx, val in enumerate(arc_ids) if val == arc_idx]
-            arc_idxs_next = [x + 1 for x in arc_idxs]
-            arc_idxs_prev = [x - 1 for x in arc_idxs]
+        # shared_arcs_in_geom = list(
+        #     compress(self.data["bookkeeping_shared_arcs"], boolean_shared_arcs)
+        # )
+        for idx, split_arc in enumerate(split_arc_ids):
+            order = order_of_arc[idx]
 
-            for idx, arc in enumerate(arc_idxs):
-                shrd_arc_idx = arc_ids[arc]
-                shrd_arc = self.data["linestrings"][shrd_arc_idx]
+            # if order is 2 should follow order of the last arc
+            # if order is 1 should follow order of the first arc
+            # if order is 0 can skip the split_arc
+            for arc_idx in split_arc:
+                arc_idxs = [idx for idx, val in enumerate(arc_ids) if val == arc_idx]
+                arc_idxs_next = [x + 1 for x in arc_idxs]
+                arc_idxs_prev = [x - 1 for x in arc_idxs]
 
-                if arc_idxs_prev[idx] >= 0:
-                    # get prev arc in geom
-                    prev_arc_idx = arc_idxs_prev[idx]
-                    prev_arc = self.data["linestrings"][arc_ids[prev_arc_idx]]
-                else:
-                    # get next arc in geom
-                    next_arc_idx = arc_idxs_next[idx]
-                    next_arc = self.data["linestrings"][arc_ids[next_arc_idx]]
-                    prev_arc = None
+                for idx, arc in enumerate(arc_idxs):
+                    shrd_arc_idx = arc_ids[arc]
+                    shrd_arc = self.data["linestrings"][shrd_arc_idx]
 
-                # get first and last coordinate of current (shared) arc
-                coord_shrd_first = np.array(shrd_arc.xy)[:, 0]
-                coord_shrd_last = np.array(shrd_arc.xy)[:, -1]
+                    if arc_idxs_prev[idx] >= 0:
+                        # get prev arc in geom
+                        prev_arc_idx = arc_idxs_prev[idx]
+                        prev_arc = self.data["linestrings"][arc_ids[prev_arc_idx]]
+                    else:
+                        # get next arc in geom
+                        next_arc_idx = arc_idxs_next[idx]
+                        next_arc = self.data["linestrings"][arc_ids[next_arc_idx]]
+                        prev_arc = None
 
-                if prev_arc:
-                    # check first value of shrd_idx and last value prev_idx
-                    coord_prev_last = np.array(prev_arc.xy)[:, -1]
-                    if not np.array_equiv(coord_shrd_first, coord_prev_last):
-                        # double check if backwarding will work
-                        if np.array_equiv(coord_shrd_last, coord_next_first):
-                            # shrd_arc should be backwards
-                            arc_ids[arc] = -(arc_ids[arc] + 1)
-                        else:
-                            print("grmph")
-                            # aah, I've to remember if the previous arc was rotated!
+                    # get first and last coordinate of current (shared) arc
+                    coord_shrd_first = np.array(shrd_arc.xy)[:, 0]
+                    coord_shrd_last = np.array(shrd_arc.xy)[:, -1]
 
-                # only for first arc of geom there is no prev_arc
-                else:
-                    # check last value of shrd_idx and first value of next_idx
-                    coord_next_first = np.array(next_arc.xy)[:, 0]
-                    if not np.array_equiv(coord_shrd_last, coord_next_first):
-                        # double check if backwarding will work
-                        if np.array_equiv(coord_shrd_first, coord_next_first):
-                            # shrd_arc should be backwards
-                            arc_ids[arc] = -(arc_ids[arc] + 1)
+                    if prev_arc:
+                        # check first value of shrd_idx and last value prev_idx
+                        coord_prev_last = np.array(prev_arc.xy)[:, -1]
+                        if not np.array_equiv(coord_shrd_first, coord_prev_last):
+                            # double check if backwarding will work
+                            if np.array_equiv(coord_shrd_last, coord_next_first):
+                                # shrd_arc should be backwards
+                                arc_ids[arc] = -(arc_ids[arc] + 1)
+                            else:
+                                print("grmph")
+                                # aah, I've to remember if the previous arc was rotated!
+
+                    # only for first arc of geom there is no prev_arc
+                    else:
+                        # check last value of shrd_idx and first value of next_idx
+                        coord_next_first = np.array(next_arc.xy)[:, 0]
+                        if not np.array_equiv(coord_shrd_last, coord_next_first):
+                            # double check if backwarding will work
+                            if np.array_equiv(coord_shrd_first, coord_next_first):
+                                # shrd_arc should be backwards
+                                arc_ids[arc] = -(arc_ids[arc] + 1)
 
         return arc_ids
 
