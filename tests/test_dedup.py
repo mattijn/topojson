@@ -95,3 +95,14 @@ class TestDedup(unittest.TestCase):
         self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 3)
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
 
+    # this test was added since there is something wrong and I've no idea what.
+    def test_something_with_these_geoms(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[
+            (data.name == "Eritrea")
+            | (data.name == "Ethiopia")
+            | (data.name == "Sudan")
+        ]
+        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 3)
+        self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
