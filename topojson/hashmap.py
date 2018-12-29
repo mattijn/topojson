@@ -77,14 +77,14 @@ class _Hashmap:
         If so, are written as -(index+1)
         """
 
-        shared_bool = np.isin(self.data["bookkeeping_shared_arcs"], arc_ids)
+        shared_bool = np.isin(arc_ids, self.data["bookkeeping_shared_arcs"])
         order_of_arc, split_arc_ids = self.hash_order(arc_ids, shared_bool)
 
         # shared_arcs_in_geom = list(
         #     compress(self.data["bookkeeping_shared_arcs"], boolean_shared_arcs)
         # )
-        for idx, split_arc in enumerate(split_arc_ids):
-            order = order_of_arc[idx]
+        for idx_outer, split_arc in enumerate(split_arc_ids):
+            order = order_of_arc[idx_outer]
 
             # if order is 0 can skip the split_arc
             # if order is 1 should follow order of the first arc
@@ -137,6 +137,9 @@ class _Hashmap:
                         previous_arc_backwards = True
                     else:
                         previous_arc_backwards = False
+
+            if order == 2:
+                split_arc_ids[idx_outer] = split_arc[::-1]
 
         comb_arc_ids = np.concatenate(split_arc_ids).flatten()
         _, idx_arcs = np.unique(comb_arc_ids, return_index=True)
