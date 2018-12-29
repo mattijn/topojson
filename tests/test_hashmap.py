@@ -73,4 +73,4 @@ class TestHasmap(unittest.TestCase):
         topo = topojson.hashmap(
             topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         )
-        self.assertEqual(len(topo["arcs"]), 3)
+        self.assertEqual(len(topo["arcs"]), 6)
