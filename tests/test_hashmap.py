@@ -89,3 +89,20 @@ class TestHasmap(unittest.TestCase):
             topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         )
         self.assertEqual(len(topo["arcs"]), 6)
+
+    # this test was added since the shared_arcs bookkeeping is doing well, but the
+    # wrong arc gots deleted. How come?
+    def test_shared_arcs_ordering_issues(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[
+            (data.name == "Botswana")
+            | (data.name == "South Africa")
+            | (data.name == "Zimbabwe")
+            | (data.name == "Mozambique")
+            | (data.name == "Zambia")
+        ]
+        topo = topojson.hashmap(
+            topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        )
+        self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 3)
+        self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)

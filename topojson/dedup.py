@@ -151,26 +151,31 @@ class _Dedup:
                 data["bookkeeping_duplicates"], data["linestrings"], array_bk
             )
 
-        # apply a shapely linemerge to merge all contiguous line-elements
-        # first create a mask for shared arcs to select only non-duplicates
-        mask = np.isin(array_bk, array_bk_sarcs)
-        array_bk_ndp = copy.deepcopy(array_bk.astype(float))
+        # The assumption that only the first and last item of non-duplicate arcs can
+        # merge doesn't hold. For now comment the linemerging of contigiuous
+        # line-elements
+        # --------------------------------------------------------------------
 
-        # only do merging of arcs if there are contigous arcs in geoms
-        if array_bk_ndp[mask].size != 0:
-            # make sure idx to shared arcs are set to np.nan
-            array_bk_ndp[mask] = np.nan
+        # # apply a shapely linemerge to merge all contiguous line-elements
+        # # first create a mask for shared arcs to select only non-duplicates
+        # mask = np.isin(array_bk, array_bk_sarcs)
+        # array_bk_ndp = copy.deepcopy(array_bk.astype(float))
 
-            # slice array_bk_ndp for geoms (rows) containing np.nan values
-            slice_idx = np.unique(np.argwhere(np.isnan(array_bk_ndp))[:, 0])
-            sliced_array_bk_ndp = array_bk_ndp[slice_idx]
+        # # only do merging of arcs if there are contigous arcs in geoms
+        # if array_bk_ndp[mask].size != 0:
+        #     # make sure idx to shared arcs are set to np.nan
+        #     array_bk_ndp[mask] = np.nan
 
-            # apply linemerge on geoms containing contigious arcs and maintain
-            # bookkeeping
-            self.merge_contigious_arcs(data, sliced_array_bk_ndp)
+        #     # slice array_bk_ndp for geoms (rows) containing np.nan values
+        #     slice_idx = np.all(~np.isnan(array_bk_ndp)[:, [0, -1]], axis=1)
+        #     sliced_array_bk_ndp = array_bk_ndp[slice_idx]
 
-            # pop the merged contigious arcs and maintain bookkeeping.
-            self.pop_merged_arcs(data, array_bk, array_bk_sarcs)
+        #     # apply linemerge on geoms containing contigious arcs and maintain
+        #     # bookkeeping
+        #     self.merge_contigious_arcs(data, sliced_array_bk_ndp)
+
+        #     # pop the merged contigious arcs and maintain bookkeeping.
+        #     self.pop_merged_arcs(data, array_bk, array_bk_sarcs)
 
         # prepare to return object
         del data["bookkeeping_linestrings"]

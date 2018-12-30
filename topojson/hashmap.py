@@ -18,6 +18,7 @@ class _Hashmap:
         0 - skip the array
         1 - follow the order of the first arc
         2 - follow the order of the last arc
+        3 - align first two arcs and continue
         
         Parameters
         ----------
@@ -43,8 +44,9 @@ class _Hashmap:
         # no need for iterations if split_boolean contains only 1 array
         if len(split_boolean) == 1:
             # happens when the geom only contains shared arcs,  its impossible to guess
-            # the direction of the geometry, so follow the order of the first arc
-            order_of_arc[0] = 1
+            # the direction of the geometry, so align the first two arcs and continue
+            # from there
+            order_of_arc[0] = 3
 
         else:
             # check each splitted geom to decide how to treat
@@ -98,6 +100,7 @@ class _Hashmap:
             previous_arc_backwards = False
             for idx, arc_idx in enumerate(split_arc):
                 if idx == 0:
+                    previous_arc_backwards = False
                     continue
 
                 # seems previous run can influence next run
@@ -123,12 +126,6 @@ class _Hashmap:
                 # order 1, compare last coordinate of previous arc with first coordinate
                 # of current arc. If not equal, rotate current arc
                 if order == 1:
-                    if np.array_equiv(coord_f_prev, coord_l) and not np.array_equiv(
-                        coord_l_prev, coord_f
-                    ):
-                        split_arc[idx - 1] = -(arc_idx_prev + 1)
-                        split_arc[idx] = -(arc_idx + 1)
-                        previous_arc_backwards = True
                     if not np.array_equiv(coord_l_prev, coord_f):
                         split_arc[idx] = -(arc_idx + 1)
                         previous_arc_backwards = True
@@ -138,8 +135,21 @@ class _Hashmap:
                 # order 2, since the list is reversed, have to check first coordinate
                 # of previous arc with the last coordinate of current arc. If not equal
                 # rotate current arc.
-                else:
+                elif order == 2:
                     if not np.array_equiv(coord_f_prev, coord_l):
+                        split_arc[idx] = -(arc_idx + 1)
+                        previous_arc_backwards = True
+                    else:
+                        previous_arc_backwards = False
+
+                elif order == 3:
+                    if np.array_equiv(coord_f_prev, coord_l) and not np.array_equiv(
+                        coord_l_prev, coord_f
+                    ):
+                        split_arc[idx - 1] = -(arc_idx_prev + 1)
+                        split_arc[idx] = -(arc_idx + 1)
+                        previous_arc_backwards = True
+                    if not np.array_equiv(coord_l_prev, coord_f):
                         split_arc[idx] = -(arc_idx + 1)
                         previous_arc_backwards = True
                     else:

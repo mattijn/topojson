@@ -35,7 +35,11 @@ class _Join:
         """
 
         # detect potential shared paths between two linestrings
-        fw_bw = shared_paths(g1, g2)
+        try:
+            fw_bw = shared_paths(g1, g2)
+        except ValueError:
+            fw_bw = False
+            # fw_bw = shared_paths(snap(g1, g2, tolerance=6), g2)
 
         # continue if any shared path was detected
         if fw_bw and not fw_bw.is_empty:
