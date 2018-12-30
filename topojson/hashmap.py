@@ -99,6 +99,7 @@ class _Hashmap:
             for idx, arc_idx in enumerate(split_arc):
                 if idx == 0:
                     continue
+
                 # seems previous run can influence next run
                 arc_idx_prev = split_arc[idx - 1]
                 if arc_idx_prev < 0:
@@ -122,6 +123,12 @@ class _Hashmap:
                 # order 1, compare last coordinate of previous arc with first coordinate
                 # of current arc. If not equal, rotate current arc
                 if order == 1:
+                    if np.array_equiv(coord_f_prev, coord_l) and not np.array_equiv(
+                        coord_l_prev, coord_f
+                    ):
+                        split_arc[idx - 1] = -(arc_idx_prev + 1)
+                        split_arc[idx] = -(arc_idx + 1)
+                        previous_arc_backwards = True
                     if not np.array_equiv(coord_l_prev, coord_f):
                         split_arc[idx] = -(arc_idx + 1)
                         previous_arc_backwards = True

@@ -74,3 +74,18 @@ class TestHasmap(unittest.TestCase):
             topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         )
         self.assertEqual(len(topo["arcs"]), 6)
+
+    # something is wrong with hashmapping once a geometry has only shared arcs
+    def test_geom_surrounding_many_geometries(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[
+            (data.name == "Botswana")
+            | (data.name == "South Africa")
+            | (data.name == "Zimbabwe")
+            | (data.name == "Namibia")
+            | (data.name == "Zambia")
+        ]
+        topo = topojson.hashmap(
+            topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        )
+        self.assertEqual(len(topo["arcs"]), 6)

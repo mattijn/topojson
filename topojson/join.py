@@ -5,6 +5,7 @@ from shapely.ops import shared_paths
 from shapely.ops import linemerge
 from shapely.ops import snap
 from shapely import speedups
+import numpy as np
 import itertools
 import copy
 
@@ -33,15 +34,10 @@ class _Join:
         Where each seperate segment is a linestring between two points.
         """
 
-        try:
-            # also required for setting tolerance of near-identical shared paths.
-            # g1 = snap(g1, g2, tolerance=0.000001)
-            fw_bw = shared_paths(g1, g2)
-        except ValueError as e:
-            # use snap to catch TopologyException for non-noded intersections
-            # fw_bw = shared_paths(snap(g1, g2, tolerance=0.000001), g2)
-            print(e)
+        # detect potential shared paths between two linestrings
+        fw_bw = shared_paths(g1, g2)
 
+        # continue if any shared path was detected
         if fw_bw and not fw_bw.is_empty:
 
             forward = fw_bw[0]
@@ -59,7 +55,14 @@ class _Join:
                     [linemerge(forward), linemerge(backward)]
                 )
 
+            # add shared paths to segments
             self.segments.extend([list(shared_segments)])
+
+            # also add the first coordinates of both geoms to segments
+            p1_g1 = geometry.Point(np.array(g1.xy)[:, 0])
+            p1_g2 = geometry.Point(np.array(g2.xy)[:, 0])
+            ls_p1_g1g2 = geometry.LineString([p1_g1, p1_g2])
+            self.segments.extend([[ls_p1_g1g2]])
 
     def main(self, data):
         """
@@ -94,12 +97,11 @@ class _Join:
         
         get cartesian product:
         https://stackoverflow.com/a/34032549
+
+        Use tolerance setting in snap for near-identical shared paths.
+        Uuse snap to catch TopologyException for non-noded intersections
         """
 
-        # # simplify geometry using tolerance
-        # data["linestrings"] = list(
-        #     geometry.MultiLineString(data["linestrings"]).simplify(tolerance=0.000001)
-        # )
         # first create list with all combinations of lines
         line_combs = list(itertools.combinations(data["linestrings"], 2))
 
