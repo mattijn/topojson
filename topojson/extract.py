@@ -313,7 +313,7 @@ class _Extract:
         self.serialize_geom_type(data)
 
         # prepare to return object
-        topo = {
+        data = {
             "type": "Topology",
             "linestrings": self.linestrings,
             "bookkeeping_geoms": self.bookkeeping_geoms,
@@ -328,7 +328,7 @@ class _Extract:
                 )
             )
 
-        return topo
+        return data
 
 
 def _extracter(data):

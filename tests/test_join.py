@@ -529,3 +529,19 @@ class TestJoin(unittest.TestCase):
             (data.name == 'Burkina Faso')]
         topo = topojson.join(topojson.extract(data))
         self.assertEqual(len(topo["junctions"]), 4)
+
+    # this test was added since a shared path can be detected of two linestrings where 
+    # the shared path is partly from the start and partly of the end part of the 
+    # linestring. If any shared path are detected also add the first coordinates of both
+    # linestrings to be considerd as junction. Not sure what happened if this introduces
+    # another problem since this coordinates may not be unique anymore, and this can be 
+    # skipped as a junction..
+    def test_shared_segment_partly_start_partly_end_segment(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[
+            (data.name == "Eritrea")
+            | (data.name == "Ethiopia")
+            | (data.name == "Sudan")
+        ]
+        topo = topojson.join(topojson.extract(data))
+        self.assertEqual(len(topo['junctions']), 11)       
