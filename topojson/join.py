@@ -5,7 +5,6 @@ from shapely.ops import shared_paths
 from shapely.ops import linemerge
 from shapely.ops import snap
 from shapely import speedups
-import numpy as np
 import itertools
 import copy
 
@@ -62,9 +61,9 @@ class _Join:
             # add shared paths to segments
             self.segments.extend([list(shared_segments)])
 
-            # also add the first coordinates of both geoms to segments
-            p1_g1 = geometry.Point(np.array(g1.xy)[:, 0])
-            p1_g2 = geometry.Point(np.array(g2.xy)[:, 0])
+            # also add the first coordinates of both geoms as a vertice to segments
+            p1_g1 = geometry.Point(list(g1.coords[0]))
+            p1_g2 = geometry.Point(list(g2.coords[0]))
             ls_p1_g1g2 = geometry.LineString([p1_g1, p1_g2])
             self.segments.extend([[ls_p1_g1g2]])
 

@@ -1,4 +1,5 @@
 import numpy as np
+from shapely import geometry
 from itertools import compress
 import copy
 
@@ -112,14 +113,22 @@ class _Hashmap:
                 previous_arc = self.data["linestrings"][arc_idx_prev]
 
                 # get first and last coordinate of current and previous arc
-                coords = np.squeeze(np.array(current_arc.xy)[:, [[0, -1]]].T)
-                coord_f = coords[0]
-                coord_l = coords[1]
+                # coords = np.squeeze(np.array(current_arc.xy)[:, [[0, -1]]].T)
+                coord_f = geometry.Point(list(current_arc.coords[0]))
+                coord_l = geometry.Point(list(current_arc.coords[-1]))
 
                 if not previous_arc_backwards:
-                    coords_prev = np.squeeze(np.array(previous_arc.xy)[:, [[0, -1]]].T)
+                    coords_prev = [
+                        geometry.Point(list(previous_arc.coords[0])),
+                        geometry.Point(list(previous_arc.coords[-1])),
+                    ]
+                    # np.squeeze(np.array(previous_arc.xy)[:, [[0, -1]]].T)
                 else:
-                    coords_prev = np.squeeze(np.array(previous_arc.xy)[:, [[-1, 0]]].T)
+                    coords_prev = [
+                        geometry.Point(list(previous_arc.coords[-1])),
+                        geometry.Point(list(previous_arc.coords[0])),
+                    ]
+                    # coords_prev = np.squeeze(np.array(previous_arc.xy)[:, [[-1, 0]]].T)
                 coord_f_prev = coords_prev[0]
                 coord_l_prev = coords_prev[1]
 
