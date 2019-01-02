@@ -3,7 +3,6 @@ from shapely import geometry
 from shapely.wkb import loads
 from shapely.ops import shared_paths
 from shapely.ops import linemerge
-from shapely.ops import snap
 from shapely import speedups
 import itertools
 import copy
