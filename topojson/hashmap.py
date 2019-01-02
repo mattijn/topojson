@@ -1,5 +1,4 @@
 import numpy as np
-from shapely import geometry
 from itertools import compress
 import copy
 
