@@ -1,5 +1,6 @@
 from shapely import geometry
-from shapely.ops import split
+from .utils.ops import fast_split
+# from shapely.ops import split
 import itertools
 import numpy as np
 import copy
@@ -79,10 +80,12 @@ class _Cut:
 
         if data["junctions"]:
             # split each feature given the intersections
-            mp = geometry.MultiPoint(data["junctions"])
+            # mp = geometry.MultiPoint(data["junctions"])
+            mp = data["junctions"]
             slist = []
             for ls in data["linestrings"]:
-                slines = split(ls, mp)
+                # slines = split(ls, mp)
+                slines = fast_split(ls, mp)
                 slist.append(list(geometry.MultiLineString(slines)))
 
             # flatten the splitted linestrings and create bookkeeping_geoms array
