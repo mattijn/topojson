@@ -1,5 +1,6 @@
 import unittest
 import topojson
+import geopandas
 
 
 class TestCut(unittest.TestCase):
@@ -147,3 +148,10 @@ class TestCut(unittest.TestCase):
         self.assertEqual(topo["bookkeeping_linestrings"].size, 6)
         self.assertSequenceEqual(topo["bookkeeping_duplicates"].tolist(), [[4, 1]])
 
+    def test_nybb_fast_split(self):
+        nybb_path = geopandas.datasets.get_path("nybb")
+        data = geopandas.read_file(nybb_path)
+        data.set_index("BoroCode", inplace=True)
+
+        topo = topojson.cut(topojson.join(topojson.extract(data)))
+        self.assertEqual(topo["bookkeeping_linestrings"].size, 6)
