@@ -4,6 +4,7 @@ from shapely.wkb import loads
 from shapely.ops import shared_paths
 from shapely.ops import linemerge
 from shapely import speedups
+import numpy as np
 import itertools
 import copy
 
@@ -20,6 +21,43 @@ class _Join:
         # initation topology items
         self.junctions = []
         self.segments = []
+
+    def prequantize(self, linestrings, quant_factor=1e6):
+        """
+        Function that applies quantization. Quantization removes information by 
+        reducing the precision of each coordinate, effectively snapping each point 
+        to a regular grid
+
+        Parameters
+        ----------
+        linestrings: list of shapely.LineStrings
+            LineStrings that will be quantized
+        quant_factor : int
+            Quantization factor. Normally this varies between 1e4, 1e5, 1e6. Where a 
+            higher number means a bigger grid where the coordinates can snap to. 
+ 
+
+        Returns
+        -------
+        kx, ky, x0, y0: int
+            Scale (kx, ky) and translation (x0, y0) values
+        """
+
+        x0, y0, x1, y1 = geometry.MultiLineString(linestrings).bounds
+        kx = 1 / ((quant_factor - 1) / (x1 - x0))
+        ky = 1 / ((quant_factor - 1) / (y1 - y0))
+
+        for ls in linestrings:
+            ls_xy = np.array(ls.xy)
+            ls_xy = (
+                np.array([(ls_xy[0] - x0) / kx, (ls_xy[1] - y0) / ky])
+                .T.round()
+                .astype(int)
+            )
+            _, idx = np.unique(ls_xy, axis=0, return_index=True)
+            ls.coords = ls_xy[np.append(np.sort(idx), len(ls_xy) - 1)]
+
+        return kx, ky, x0, y0
 
     def shared_segs(self, g1, g2):
         """
@@ -66,7 +104,7 @@ class _Join:
             ls_p1_g1g2 = geometry.LineString([p1_g1, p1_g2])
             self.segments.extend([[ls_p1_g1g2]])
 
-    def main(self, data):
+    def main(self, data, quant_factor):
         """
         Detects the junctions of shared paths from the specified hash of linestrings.
 
@@ -104,7 +142,15 @@ class _Join:
         Uuse snap to catch TopologyException for non-noded intersections
         """
 
-        # first create list with all combinations of lines
+        # quantize linestrings before comparing
+        # if set to None or a value < 1 (True equals 1) no quantizing is applied.
+        if quant_factor is not None:
+            if quant_factor > 1:
+                kx, ky, x0, y0 = self.prequantize(data["linestrings"], quant_factor)
+                data["scale"] = [1 / kx, 1 / ky]
+                data["translate"] = [x0, y0]
+
+        # create list with all combinations of lines
         line_combs = list(itertools.combinations(data["linestrings"], 2))
 
         # iterate over line combinations
@@ -134,14 +180,14 @@ class _Join:
         self.junctions = [
             loads(xy) for xy in list(set([x.wkb for x in self.junctions]))
         ]
-        # # prepare to return object
+        # prepare to return object
         data["junctions"] = self.junctions
 
         return data
 
 
-def _joiner(data):
+def _joiner(data, quant_factor=None):
     data = copy.deepcopy(data)
     Join = _Join()
-    j = Join.main(data)
+    j = Join.main(data, quant_factor)
     return j

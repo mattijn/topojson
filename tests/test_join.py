@@ -548,5 +548,5 @@ class TestJoin(unittest.TestCase):
 
     def test_non_noded_interesection(self):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.join(topojson.extract(data), quant_factor=1e6)
         self.assertEqual(len(topo['junctions']), 11)               
