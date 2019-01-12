@@ -122,21 +122,23 @@ class _Join:
         shared path is kept and the other path is removed.
 
         Developping Notes:
-        * why not de-duplicate (dedup) equal geometries in this object/function? 
-        Current approach is to record them and deal with it, maybe combined, in `cut` 
-        or `dedup` phase.
+        # current implemented method using comprension lists
+        s_coords = [y for x in s12 for y in list(x.coords)]
+        pts = [i for i in s_coords if s_coords.count(i) is 1]
 
+        # potential method using numpy array
+        mls_xy = np.array(s12.__geo_interface__['coordinates'])
+        mls_xy = mls_xy.reshape(-1, mls_xy.shape[-1])
+        uniq_xy, ctx_xy = np.unique(mls_xy, axis=0, return_counts=True)
+        pts = uniq_xy[ctx_xy == 1]
+        
         The following links have been used as reference for this object/functions.
-        TODO: delete when needed.
         
         to find shared paths:
         https://shapely.readthedocs.io/en/stable/manual.html#shared-paths
         
         to set up a R-tree:
         https://shapely.readthedocs.io/en/stable/manual.html#str-packed-r-tree
-        
-        get cartesian product:
-        https://stackoverflow.com/a/34032549
 
         Use tolerance setting in snap for near-identical shared paths.
         Uuse snap to catch TopologyException for non-noded intersections
@@ -156,6 +158,7 @@ class _Join:
         for geoms in line_combs:
             g1 = geoms[0]
             g2 = geoms[1]
+
             # check if geometry are equal
             # being equal meaning the geometry object coincide with each other.
             # a rotated polygon or reversed linestring are both considered equal.
@@ -179,6 +182,7 @@ class _Join:
         self.junctions = [
             loads(xy) for xy in list(set([x.wkb for x in self.junctions]))
         ]
+
         # prepare to return object
         data["junctions"] = self.junctions
 

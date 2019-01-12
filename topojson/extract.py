@@ -200,7 +200,7 @@ class _Extract:
             data["feature_{}".format(str(idx).zfill(zfill_value))] = feature
 
         # new data dictionary is created, throw the geometries back to main()
-        self.worker(data)
+        self.main(data)
 
     @serialize_geom_type.register(geojson.Feature)
     def extract_feature(self, geom):
@@ -276,7 +276,7 @@ class _Extract:
             self.geomcollection_counter = 0
             self.geom_level_1 = 0
 
-    def worker(self, data):
+    def main(self, data):
         """"
         Extracts the linestrings from the specified hash of geometry objects.
 
@@ -304,9 +304,7 @@ class _Extract:
         directly into the `"coordinates"` array within each object.
 
         Developping Notes
-        * maybe better to include serialization of string type instead of handling 
-        this in worker
-        * serialize GeoDataFrame and GeoSeries type
+        * 
         """
 
         self.data = data
@@ -338,5 +336,5 @@ def _extracter(data):
     except:
         data = data.copy()
     Extract = _Extract()
-    e = Extract.worker(data)
+    e = Extract.main(data)
     return e
