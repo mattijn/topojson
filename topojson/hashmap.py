@@ -235,11 +235,11 @@ class _Hashmap:
         # only if linestrings are quantized, apply delta encoding.
         if "transform" in data.keys():
             for idx, ls in enumerate(data["linestrings"]):
-                geom = np.array(ls.xy).T.astype(int)
-                geom_p1 = copy.copy(geom[0])
-                geom -= np.roll(geom, 1, axis=0)
-                geom[0] = geom_p1
-                self.data["linestrings"][idx] = geom.tolist()
+                ls = np.array(ls.xy).T.astype(int)
+                ls_p1 = copy.copy(ls[0])
+                ls -= np.roll(ls, 1, axis=0)
+                ls[0] = ls_p1
+                self.data["linestrings"][idx] = ls.tolist()
 
         else:
             for idx, ls in enumerate(data["linestrings"]):
@@ -250,7 +250,7 @@ class _Hashmap:
         objects["type"] = "GeometryCollection"
         for idx, feature in enumerate(data["objects"]):
             feat = data["objects"][feature]
-            # print(feat)
+
             if "geometries" in feat:
                 feat["type"] = feat["geometries"][0]["type"]
 
@@ -259,7 +259,7 @@ class _Hashmap:
                     f_arc = feat["geometries"][0]["arcs"]
                 else:
                     f_arc = feat["arcs"]
-                # print(idx, feature, f_arc)
+
                 feat["arcs"] = f_arc
 
             if feat["type"] == "MultiPolygon":
