@@ -147,8 +147,7 @@ class _Join:
         if quant_factor is not None:
             if quant_factor > 1:
                 kx, ky, x0, y0 = self.prequantize(data["linestrings"], quant_factor)
-                data["scale"] = [1 / kx, 1 / ky]
-                data["translate"] = [x0, y0]
+                data["transform"] = {"scale": [1 / kx, 1 / ky], "translate": [x0, y0]}
 
         # create list with all combinations of lines
         line_combs = list(itertools.combinations(data["linestrings"], 2))

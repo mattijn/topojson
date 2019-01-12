@@ -232,8 +232,18 @@ class _Hashmap:
         list(self.resolve_objects("arcs", self.data["objects"]))
 
         # parse the linestrings into list of coordinates
-        for idx, ls in enumerate(data["linestrings"]):
-            self.data["linestrings"][idx] = np.array(ls.xy).T.tolist()
+        # only if linestrings are quantized, apply delta encoding.
+        if "transform" in data.keys():
+            for idx, ls in enumerate(data["linestrings"]):
+                geom = np.array(ls.xy).T.astype(int)
+                geom_p1 = copy.copy(geom[0])
+                geom -= np.roll(geom, 1, axis=0)
+                geom[0] = geom_p1
+                self.data["linestrings"][idx] = geom.tolist()
+
+        else:
+            for idx, ls in enumerate(data["linestrings"]):
+                self.data["linestrings"][idx] = np.array(ls.xy).T.tolist()
 
         objects = {}
         objects["geometries"] = []
@@ -269,9 +279,9 @@ class _Hashmap:
         data = self.data
         data["arcs"] = data["linestrings"]
         del data["linestrings"]
+        del data["junctions"]
         del data["bookkeeping_geoms"]
         del data["bookkeeping_duplicates"]
-        del data["junctions"]
         del data["bookkeeping_arcs"]
         del data["bookkeeping_shared_arcs"]
 
