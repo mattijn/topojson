@@ -1,7 +1,9 @@
 import itertools
 import numpy as np
+from rtree import index
 import bisect
 from shapely import geometry
+import threading
 
 
 def fast_split(line, splitter):
@@ -51,3 +53,69 @@ def fast_split(line, splitter):
     slines = np.split(ls_xy, splitter_indices, axis=0)
 
     return slines
+
+
+def insertor(geoms):
+    """
+    generator function to use stream loading of geometries for creating a rtree index
+    """
+
+    for i, obj in enumerate(geoms):
+        yield (i, obj.bounds, None)
+
+
+def get_matches(geoms, tree_idx):
+    """
+    Function to return the indici of the rtree that intersects with the input geometries
+    
+    Parameters
+    ----------
+    geoms : list
+        list of geometries to compare against the rtree index
+    tree_idx: rtree.index.Index
+        an rtree indexing object
+        
+    Returns
+    -------
+    matches: list
+        list of tuples, where the key of each tuple is the linestring index 
+        and the value of each key is a list of junctions intersecting bounds of linestring
+    """
+
+    matches = []
+    for idx_ls, obj in enumerate(geoms):
+        intersect_idx = list(tree_idx.intersection(obj.bounds))
+        if len(intersect_idx):
+            matches.append([[idx_ls], intersect_idx])
+    return matches
+
+
+def select_unique(data):
+    sorted_data = data[np.lexsort(data.T), :]
+    row_mask = np.append([True], np.any(np.diff(sorted_data, axis=0), 1))
+
+    return sorted_data[row_mask]
+
+
+def select_unique_combs(linestrings):
+    # create spatial index on junctions including performance properties
+    p = index.Property()
+    p.leaf_capacity = 1000
+    p.fill_factor = 0.9
+    tree_idx = index.Index(insertor(linestrings), properties=p)
+
+    # get index of linestrings intersecting each linestring
+    idx_match = get_matches(linestrings, tree_idx)
+
+    # make combinations of unique possibilities
+    combs = []
+    for idx_comb in idx_match:
+        combs.extend(list(itertools.product(*idx_comb)))
+
+    combs = np.array(combs)
+    combs.sort(axis=1)
+    combs = select_unique(combs)
+
+    uniq_line_combs = combs[(np.diff(combs, axis=1) != 0).flatten()]
+
+    return uniq_line_combs

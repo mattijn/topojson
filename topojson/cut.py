@@ -1,6 +1,6 @@
 from shapely import geometry
 from .utils.ops import fast_split
-# from shapely.ops import split
+from .utils.ops import select_unique_combs
 import itertools
 import numpy as np
 import copy
@@ -45,17 +45,13 @@ class _Cut:
 
     def find_duplicates(self, segments_list):
         # find duplicates of splitted linestrings
-        # first create list with all combinations of lines including index
-        ls_idx = [pair for pair in enumerate(segments_list)]
-        line_combs = list(itertools.combinations(ls_idx, 2))
+        # create list with unique combinations of lines using a rdtree
+        line_combs = select_unique_combs(segments_list)
 
-        # iterate over line combinations
-        for geoms in line_combs:
-            i1 = geoms[0][0]
-            g1 = geoms[0][1]
-
-            i2 = geoms[1][0]
-            g2 = geoms[1][1]
+        # iterate over index combinations
+        for i1, i2 in line_combs:
+            g1 = segments_list[i1]
+            g2 = segments_list[i2]
 
             # check if geometry are equal
             # being equal meaning the geometry object coincide with each other.
