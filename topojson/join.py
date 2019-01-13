@@ -4,10 +4,7 @@ from shapely.wkb import loads
 from shapely.ops import shared_paths
 from shapely.ops import linemerge
 from shapely import speedups
-<<<<<<< HEAD
 from .utils.ops import select_unique_combs
-=======
->>>>>>> 349a34a6c70b2d0c9655a2fd7dfc3fdf32341041
 import numpy as np
 import itertools
 import copy
@@ -153,7 +150,6 @@ class _Join:
         if quant_factor is not None:
             if quant_factor > 1:
                 kx, ky, x0, y0 = self.prequantize(data["linestrings"], quant_factor)
-<<<<<<< HEAD
                 data["transform"] = {"scale": [kx, ky], "translate": [x0, y0]}
 
         # create list with unique combinations of lines using a rdtree
@@ -163,17 +159,6 @@ class _Join:
         for i1, i2 in line_combs:
             g1 = data["linestrings"][i1]
             g2 = data["linestrings"][i2]
-=======
-                data["transform"] = {"scale": [1 / kx, 1 / ky], "translate": [x0, y0]}
-
-        # create list with all combinations of lines
-        line_combs = list(itertools.combinations(data["linestrings"], 2))
-
-        # iterate over line combinations
-        for geoms in line_combs:
-            g1 = geoms[0]
-            g2 = geoms[1]
->>>>>>> 349a34a6c70b2d0c9655a2fd7dfc3fdf32341041
 
             # check if geometry are equal
             # being equal meaning the geometry object coincide with each other.

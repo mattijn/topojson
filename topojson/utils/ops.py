@@ -1,14 +1,9 @@
 import itertools
 import numpy as np
-<<<<<<< HEAD
 from rtree import index
 import bisect
 from shapely import geometry
 import threading
-=======
-import bisect
-from shapely import geometry
->>>>>>> 349a34a6c70b2d0c9655a2fd7dfc3fdf32341041
 
 
 def fast_split(line, splitter):
@@ -58,7 +53,6 @@ def fast_split(line, splitter):
     slines = np.split(ls_xy, splitter_indices, axis=0)
 
     return slines
-<<<<<<< HEAD
 
 
 def insertor(geoms):
@@ -125,5 +119,3 @@ def select_unique_combs(linestrings):
     uniq_line_combs = combs[(np.diff(combs, axis=1) != 0).flatten()]
 
     return uniq_line_combs
-=======
->>>>>>> 349a34a6c70b2d0c9655a2fd7dfc3fdf32341041
