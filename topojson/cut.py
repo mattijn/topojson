@@ -26,8 +26,8 @@ class _Cut:
 
     def flatten_and_index(self, slist):
         """
-        function to create a flattened list of splitted linestrings, but make sure to
-        create a numpy array for bookkeeping_geoms for the numerical computation
+        function to create a flattened list of splitted linestrings and create a 
+        numpy array for bookkeeping_geoms for the numerical computation
         """
         # flatten
         segmntlist = list(itertools.chain(*slist))

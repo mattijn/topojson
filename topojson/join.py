@@ -8,6 +8,7 @@ from .utils.ops import select_unique_combs
 import numpy as np
 import itertools
 import copy
+import warnings
 
 if speedups.available:
     speedups.enable()
@@ -22,6 +23,7 @@ class _Join:
         # initation topology items
         self.junctions = []
         self.segments = []
+        self.valerr = False
 
     def prequantize(self, linestrings, quant_factor=1e6):
         """
@@ -55,8 +57,9 @@ class _Join:
                 .T.round()
                 .astype(int)
             )
-            _, idx = np.unique(ls_xy, axis=0, return_index=True)
-            ls.coords = ls_xy[np.append(np.sort(idx), len(ls_xy) - 1)]
+            ls.coords = ls_xy[
+                np.insert(np.absolute(np.diff(ls_xy, 1, axis=0)).sum(axis=1), 0, 1) != 0
+            ]
 
         return kx, ky, x0, y0
 
@@ -75,6 +78,7 @@ class _Join:
         try:
             fw_bw = shared_paths(g1, g2)
         except ValueError:
+            self.valerr = True
             fw_bw = False
             # fw_bw = shared_paths(snap(g1, g2, tolerance=6), g2)
 
@@ -100,8 +104,8 @@ class _Join:
             self.segments.extend([list(shared_segments)])
 
             # also add the first coordinates of both geoms as a vertice to segments
-            p1_g1 = geometry.Point(list(g1.coords[0]))
-            p1_g2 = geometry.Point(list(g2.coords[0]))
+            p1_g1 = geometry.Point([g1.xy[0][0], g1.xy[1][0]])
+            p1_g2 = geometry.Point([g2.xy[0][0], g2.xy[1][0]])
             ls_p1_g1g2 = geometry.LineString([p1_g1, p1_g2])
             self.segments.extend([[ls_p1_g1g2]])
 
@@ -170,7 +174,16 @@ class _Join:
         # self.segments are nested lists of LineStrings, get coordinates of each nest
         s_coords = []
         for segment in self.segments:
-            s_coords.extend([[y for x in segment for y in list(x.coords)]])
+            s_coords.extend(
+                [
+                    [
+                        (x.xy[0][y], x.xy[1][y])
+                        for x in segment
+                        for y in range(len(x.xy[0]))
+                    ]
+                ]
+            )
+            # s_coords.extend([[y for x in segment for y in list(x.coords)]])
 
         # only keep junctions that appear only once in each segment (nested list)
         # coordinates that appear multiple times are not junctions

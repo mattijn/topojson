@@ -106,3 +106,15 @@ class TestHasmap(unittest.TestCase):
         )
         self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 3)
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
+
+    # this test was added since quantizing with 1e14 there is
+    # only Mali that got wrongly ordered?
+    def test_quantizing_arcs_ordering_issues(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        topo = topojson.hashmap(
+            topojson.dedup(
+                topojson.cut(topojson.join(topojson.extract(data), quant_factor=1e14))
+            )
+        )
+        self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 3)
+        self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)

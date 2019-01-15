@@ -82,15 +82,13 @@ class _Hashmap:
         shared_bool = np.isin(arc_ids, self.data["bookkeeping_shared_arcs"])
         order_of_arc, split_arc_ids = self.hash_order(arc_ids, shared_bool)
 
-        # shared_arcs_in_geom = list(
-        #     compress(self.data["bookkeeping_shared_arcs"], boolean_shared_arcs)
-        # )
         for idx_outer, split_arc in enumerate(split_arc_ids):
             order = order_of_arc[idx_outer]
 
             # if order is 0 can skip the split_arc
             # if order is 1 should follow order of the first arc
             # if order is 2 should follow order of the last arc
+            # if order is 3 align first two arcs and continue
             if order == 0:
                 continue
 
@@ -100,7 +98,6 @@ class _Hashmap:
             previous_arc_backwards = False
             for idx, arc_idx in enumerate(split_arc):
                 if idx == 0:
-                    previous_arc_backwards = False
                     continue
 
                 # seems previous run can influence next run
@@ -112,22 +109,19 @@ class _Hashmap:
                 previous_arc = self.data["linestrings"][arc_idx_prev]
 
                 # get first and last coordinate of current and previous arc
-                # coords = np.squeeze(np.array(current_arc.xy)[:, [[0, -1]]].T)
-                coord_f = list(current_arc.coords[0])
-                coord_l = list(current_arc.coords[-1])
+                coord_f = [current_arc.xy[0][0], current_arc.xy[1][0]]
+                coord_l = [current_arc.xy[0][-1], current_arc.xy[1][-1]]
 
                 if not previous_arc_backwards:
                     coords_prev = [
-                        list(previous_arc.coords[0]),
-                        list(previous_arc.coords[-1]),
+                        [previous_arc.xy[0][0], previous_arc.xy[1][0]],
+                        [previous_arc.xy[0][-1], previous_arc.xy[1][-1]],
                     ]
-                    # np.squeeze(np.array(previous_arc.xy)[:, [[0, -1]]].T)
                 else:
                     coords_prev = [
-                        list(previous_arc.coords[-1]),
-                        list(previous_arc.coords[0]),
+                        [previous_arc.xy[0][-1], previous_arc.xy[1][-1]],
+                        [previous_arc.xy[0][0], previous_arc.xy[1][0]],
                     ]
-                    # coords_prev = np.squeeze(np.array(previous_arc.xy)[:, [[-1, 0]]].T)
                 coord_f_prev = coords_prev[0]
                 coord_l_prev = coords_prev[1]
 
@@ -157,7 +151,10 @@ class _Hashmap:
                         split_arc[idx - 1] = -(arc_idx_prev + 1)
                         split_arc[idx] = -(arc_idx + 1)
                         previous_arc_backwards = True
-                    if not np.array_equiv(coord_l_prev, coord_f):
+                    elif np.array_equiv(coord_f, coord_f_prev):
+                        split_arc[idx - 1] = -(arc_idx_prev + 1)
+                        previous_arc_backwards = False
+                    elif not np.array_equiv(coord_l_prev, coord_f):
                         split_arc[idx] = -(arc_idx + 1)
                         previous_arc_backwards = True
                     else:
