@@ -69,11 +69,11 @@ topojson.topology(data)
 The result is TopoJSON. 
 
 The following geometry types are registered as correct geometric input data:
-- geojson.Feature
-- geojson.FeatureCollection
-- geopandas.GeoDataFrame
-- geopandas.GeoSeries
-- dict of geometries (LineString, MultiLineString, Polygon, MultiPolygon, Point, MultiPoint, GeometryCollection)
+- `geojson.Feature`
+- `geojson.FeatureCollection`
+- `geopandas.GeoDataFrame`
+- `geopandas.GeoSeries`
+- `dict` of geometries (`LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`, `Point`, `MultiPoint`, `GeometryCollection`)
 
 ## Example and tutorial notebooks
 
