@@ -330,7 +330,8 @@ class _Extract:
 
 
 def _extracter(data):
-    # since we move and replace data in the object, need a deepcopy to avoid changing the input-data
+    # since we move and replace data in the object,
+    # we need a deepcopy to avoid changing the input-data
     data = copy.deepcopy(data)
     Extract = _Extract()
     e = Extract.main(data)

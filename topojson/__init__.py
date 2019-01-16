@@ -1,7 +1,6 @@
-from topojson import extract, join, cut, dedup, hashmap, topology
-
-__doc__ = """Encode geometric data into the TopoJSON format"""
 __version__ = "0.8rc1"
+
+from . import extract, join, cut, dedup, hashmap, topology
 
 extract = extract._extracter
 join = join._joiner
