@@ -18,11 +18,9 @@ The required dependencies are:
 - `numpy`
 - `shapely`
 
-The optional packages are:
+The optional packages is:
 
 - `rdtree`
-- `geopandas`
-- `geojson`
 
 Inclusion of `rdtree` is highly recommended, as it will improve speed substantially!
 
