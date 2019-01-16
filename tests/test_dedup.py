@@ -1,6 +1,9 @@
 import unittest
 import topojson
-import geopandas
+try:
+    import geopandas
+except:
+    pass
 
 
 class TestDedup(unittest.TestCase):

@@ -2,7 +2,10 @@ import json
 import unittest
 import topojson
 from shapely import geometry
-import geopandas
+try:
+    import geopandas
+except:
+    pass
 
 
 class TestExtract(unittest.TestCase):
