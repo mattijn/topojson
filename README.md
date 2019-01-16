@@ -9,9 +9,9 @@
 
 ## Installation
 
-The package is not yet released on PyPi and can currently be installed through git:
+The package is released on PyPi as version 1.0rc1. Installation can be done by:
 
-`python -m pip install git+https://github.com/mattijn/topojson.git`
+`python3 -m pip install topojson`
 
 The required dependencies are:
 
@@ -24,12 +24,13 @@ The optional packages are:
 - `geopandas`
 - `geojson`
 
-Inclusion of `rdtree` is highly recommened though, as it will improve speed substantially. 
-The packages `geopandas` and `geojson` ware solely used in the tests and recognized as types with the extractor.
+Inclusion of `rdtree` is highly recommended, as it will improve speed substantially!
+
+The packages `geopandas` and `geojson` are solely used in the tests and recognized as types with the extractor.
 
 Download dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/ for Windows and use `pip` for Linux and Mac.
 
-Installation of the Python module `rtree` depends on the C++ library `libspatialindex`. For a installation on Mac you will have to install this using brew, as follow:
+Installation of the Python module `rtree` depends on the C++ library `libspatialindex`. For a installation on Mac can install this using `brew`:
 
 ```bash
 brew install spatialindex
