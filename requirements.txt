@@ -1,5 +1,2 @@
 numpy
 shapely
-rdtree
-geopandas
-geojson
