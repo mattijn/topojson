@@ -6,7 +6,7 @@ import numpy as np
 import copy
 
 
-class _Cut:
+class Cut:
     """
     cut shared paths and keep track of it
     """
@@ -106,8 +106,7 @@ class _Cut:
         return data
 
 
-def _cutter(data):
+def cut(data):
     data = copy.deepcopy(data)
-    Cut = _Cut()
-    c = Cut.main(data)
-    return c
+    cutter = Cut()
+    return cutter.main(data)

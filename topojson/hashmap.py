@@ -3,7 +3,7 @@ from itertools import compress
 import copy
 
 
-class _Hashmap:
+class Hashmap:
     """
     dedup duplicates and merge contiguous arcs
     """
@@ -285,8 +285,7 @@ class _Hashmap:
         return data
 
 
-def _hashmapper(data):
+def hashmap(data):
     data = copy.deepcopy(data)
-    Hashmap = _Hashmap()
-    h = Hashmap.main(data)
-    return h
+    hashmapper = Hashmap()
+    return hashmapper.main(data)

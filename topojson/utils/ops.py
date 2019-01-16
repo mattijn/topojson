@@ -1,9 +1,7 @@
 import itertools
 import numpy as np
-from rtree import index
 import bisect
 from shapely import geometry
-import threading
 
 
 def fast_split(line, splitter):
@@ -98,6 +96,11 @@ def select_unique(data):
 
 
 def select_unique_combs(linestrings):
+    try:
+        from rtree import index
+    except:
+        all_line_combs = list(itertools.combinations(range(len(linestrings)), 2))
+        return all_line_combs
     # create spatial index on junctions including performance properties
     p = index.Property()
     p.leaf_capacity = 1000

@@ -12,8 +12,9 @@ class TestJoin(unittest.TestCase):
             "ab": {"type": "LineString", "coordinates": [[0, 0], [1, 0]]},
         }
         topo = topojson.join(topojson.extract(data))
-        # print(topo)
-        self.assertTrue(geometry.Point(1.0, 0.0).equals(topo["junctions"][0]))
+        self.assertTrue(geometry.MultiPoint([
+            (0.0, 0.0),(1.0, 0.0),(2.0, 0.0)
+            ]).equals(geometry.MultiPoint(topo["junctions"])))
 
     # the returned hashmap has undefined for non-junction points
     def test_undefined_for_non_junction_points(self):
@@ -202,7 +203,7 @@ class TestJoin(unittest.TestCase):
         topo = topojson.join(topojson.extract(data))
         self.assertListEqual(topo["junctions"], [])
 
-    # ring AA is not a propere polygon geometry.
+    # ring AA is not a proper polygon geometry.
     def test_single_ring_AA(self):
         data = {"aa": {"type": "Polygon", "coordinates": [[0, 0], [0, 0]]}}
         topo = topojson.join(topojson.extract(data))
@@ -224,9 +225,9 @@ class TestJoin(unittest.TestCase):
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
         }
         topo = topojson.join(topojson.extract(data))
-        self.assertEqual(
-            geometry.MultiPoint(topo["junctions"]),
-            geometry.MultiPoint([(0.0, 0.0), (1.0, 0.0)]),
+        self.assertTrue(
+            geometry.MultiPoint(topo["junctions"]).equals(
+            geometry.MultiPoint([(0.0, 0.0), (1.0, 0.0)])),
         )
 
     # when a new line ABC extends a reversed old line BA, there is a junction at B
@@ -236,10 +237,9 @@ class TestJoin(unittest.TestCase):
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
         }
         topo = topojson.join(topojson.extract(data))
-        self.assertEqual(
-            geometry.MultiPoint(topo["junctions"]),
-            geometry.MultiPoint([(1.0, 0.0), (0.0, 0.0)]),
-        )
+        self.assertTrue(
+            geometry.MultiPoint(topo["junctions"]).equals(
+            geometry.MultiPoint([(1.0, 0.0), (0.0, 0.0)])))
 
     # when a new line starts BC in the middle of an old line ABC, there is a 
     # junction at B
@@ -251,7 +251,7 @@ class TestJoin(unittest.TestCase):
         topo = topojson.join(topojson.extract(data))
         self.assertTrue(
             geometry.MultiPoint(topo["junctions"]).equals(
-                geometry.MultiPoint([(1.0, 0.0), (2.0, 0.0)])
+                geometry.MultiPoint([(1.0, 0.0), (0.0, 0.0), (2.0, 0.0)])
             )
         )
 
@@ -305,7 +305,7 @@ class TestJoin(unittest.TestCase):
         topo = topojson.join(topojson.extract(data))
         self.assertTrue(
             geometry.MultiPoint(topo["junctions"]).equals(
-                geometry.MultiPoint([(1.0, 0.0), (2.0, 0.0)])
+                geometry.MultiPoint([(1.0, 0.0), (2.0, 0.0), (3.0, 0.0), (0.0, 0.0)])
             )
         )
 
@@ -318,7 +318,7 @@ class TestJoin(unittest.TestCase):
         topo = topojson.join(topojson.extract(data))
         self.assertTrue(
             geometry.MultiPoint(topo["junctions"]).equals(
-                geometry.MultiPoint([(2.0, 0.0), (1.0, 0.0)])
+                geometry.MultiPoint([(2.0, 0.0), (1.0, 0.0), (3.0, 0.0)])
             )
         )
 
@@ -528,7 +528,7 @@ class TestJoin(unittest.TestCase):
         data = data[(data.name == 'Togo') | (data.name == 'Benin') | 
             (data.name == 'Burkina Faso')]
         topo = topojson.join(topojson.extract(data))
-        self.assertEqual(len(topo["junctions"]), 4)
+        self.assertEqual(len(topo["junctions"]), 6)
 
     # this test was added since a shared path can be detected of two linestrings where 
     # the shared path is partly from the start and partly of the end part of the 
@@ -549,4 +549,4 @@ class TestJoin(unittest.TestCase):
     def test_non_noded_interesection(self):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         topo = topojson.join(topojson.extract(data), quant_factor=1e6)
-        self.assertEqual(len(topo['junctions']), 11)               
+        self.assertEqual(len(topo['junctions']), 377)               

@@ -1,13 +1,20 @@
 from .utils.dispatcher import methdispatch
 import json
 import copy
-import geopandas
 from shapely import geometry
-import geojson
 import logging
 
+try:
+    import geopandas
+except:
+    pass
+try:
+    import geojson
+except:
+    pass
 
-class _Extract:
+
+class Extract:
     """
     decompose shapes into linestrings and track record in bookkeeping_geoms.
     """
@@ -329,10 +336,12 @@ class _Extract:
         return data
 
 
-def _extracter(data):
+def extract(data):
     # since we move and replace data in the object,
     # we need a deepcopy to avoid changing the input-data
-    data = copy.deepcopy(data)
-    Extract = _Extract()
-    e = Extract.main(data)
-    return e
+    try:
+        data = copy.deepcopy(data)
+    except:
+        data = data.copy()
+    extractor = Extract()
+    return extractor.main(data)

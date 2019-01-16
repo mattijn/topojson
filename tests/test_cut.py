@@ -154,4 +154,4 @@ class TestCut(unittest.TestCase):
         data.set_index("BoroCode", inplace=True)
 
         topo = topojson.cut(topojson.join(topojson.extract(data)))
-        self.assertEqual(topo["bookkeeping_linestrings"].size, 6)
+        self.assertEqual(topo["bookkeeping_linestrings"].size, 5618)

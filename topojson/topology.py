@@ -1,31 +1,34 @@
-from topojson.extract import _Extract
-from topojson.join import _Join
-from topojson.cut import _Cut
-from topojson.dedup import _Dedup
-from topojson.hashmap import _Hashmap
+from .extract import Extract
+from .join import Join
+from .cut import Cut
+from .dedup import Dedup
+from .hashmap import Hashmap
 import copy
 
 
-def _topology(data, snap_vertices=False, gridsize_to_snap=1e6):
+def topology(data, snap_vertices=False, gridsize_to_snap=1e6):
     # initialize classes
-    Extract = _Extract()
-    Join = _Join()
-    Cut = _Cut()
-    Dedup = _Dedup()
-    Hashmap = _Hashmap()
+    extractor = Extract()
+    joiner = Join()
+    cutter = Cut()
+    deduper = Dedup()
+    hashmapper = Hashmap()
 
     # copy data
-    data = copy.deepcopy(data)
+    try:
+        data = copy.deepcopy(data)
+    except:
+        data = data.copy()
 
     # apply topology to data
-    data = Extract.main(data)
+    data = extractor.main(data)
     if snap_vertices:
-        data = Join.main(data, quant_factor=gridsize_to_snap)
+        data = joiner.main(data, quant_factor=gridsize_to_snap)
     else:
-        data = Join.main(data, quant_factor=None)
-    data = Cut.main(data)
-    data = Dedup.main(data)
-    data = Hashmap.main(data)
+        data = joiner.main(data, quant_factor=None)
+    data = cutter.main(data)
+    data = deduper.main(data)
+    data = hashmapper.main(data)
 
     return data
 

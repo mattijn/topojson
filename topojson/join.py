@@ -14,7 +14,7 @@ if speedups.available:
     speedups.enable()
 
 
-class _Join:
+class Join:
     """
     identify junctions (intersection points) of shared paths.
     """
@@ -149,6 +149,10 @@ class _Join:
         Uuse snap to catch TopologyException for non-noded intersections
         """
 
+        if not data["linestrings"]:
+            data["junctions"] = self.junctions
+            return data
+
         # quantize linestrings before comparing
         # if set to None or a value < 1 (True equals 1) no quantizing is applied.
         if quant_factor is not None:
@@ -203,8 +207,7 @@ class _Join:
         return data
 
 
-def _joiner(data, quant_factor=None):
+def join(data, quant_factor=None):
     data = copy.deepcopy(data)
-    Join = _Join()
-    j = Join.main(data, quant_factor)
-    return j
+    joiner = Join()
+    return joiner.main(data, quant_factor)

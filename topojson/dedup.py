@@ -6,7 +6,7 @@ import numpy as np
 import copy
 
 
-class _Dedup:
+class Dedup:
     """
     dedup duplicates and merge contiguous arcs
     """
@@ -188,8 +188,7 @@ class _Dedup:
         return data
 
 
-def _deduper(data):
+def dedup(data):
     data = copy.deepcopy(data)
-    Dedup = _Dedup()
-    d = Dedup.main(data)
-    return d
+    deduper = Dedup()
+    return deduper.main(data)
