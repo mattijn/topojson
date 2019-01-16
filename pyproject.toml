@@ -1,0 +1,11 @@
+[build-system]
+requires = ["flit"]
+build-backend = "flit.buildapi"
+
+[tool.flit.metadata]
+module = "topojson"
+author = "Mattijn van Hoek"
+author-email = "mattijn@gmail.com"
+home-page = "https://github.com/mattijn/topojson"
+classifiers = ["License :: OSI Approved :: BSD License"]
+
