@@ -5,7 +5,7 @@
 
 [Work in Progress]
 
-*TopoJSON* encodes geographic data structures into a shared topology. This repository describes the development of the Python implementation of this TopoJSON format. A TopoJSON topology represents one or more geometries that share sequences of positions called arcs. 
+*TopoJSON* encodes geographic data structures into a shared topology. This repository describes the development of a **Python** implementation of this TopoJSON format. A TopoJSON topology represents one or more geometries that share sequences of positions called arcs. 
 
 
 ## Usage
