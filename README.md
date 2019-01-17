@@ -40,7 +40,7 @@ topojson.topology(data)
 
 The result is TopoJSON. 
 
-The following geometry types are registered as correct geometric input data:
+The following geometry types are registered as correct geographical input data:
 - `geojson.Feature`
 - `geojson.FeatureCollection`
 - `geopandas.GeoDataFrame`
