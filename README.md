@@ -60,7 +60,7 @@ The required dependencies are:
 - `numpy`
 - `shapely`
 
-The optional packages is:
+The optional package is:
 
 - `rdtree`
 
