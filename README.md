@@ -82,9 +82,9 @@ Development of this packages started by reading https://bost.ocks.org/mike/topol
 
 The reason for development of this package was to use Shapely and NumPy for the core-functionaliteits and provide a better integration with other geographical packages available within the Python ecosystem (eg. `geopandas`). Also the possibility of including the many tests available in the JavaScript implementation was hoped-for.
 
-To create a certain synergy between the JavaScript and Python implementation the same naming conventions were adopted for the processing steps (`extract`, `join`, `cut`, `dedup`, `hashmap`).
+To create a certain synergy between the JavaScript and Python implementation the same naming conventions were adopted for the processing steps (`extract`, `join`, `cut`, `dedup`, `hashmap`). Even though the actual code differs much
 
-Nonetheless, some subtile differences are existing between the JavaScript implementation and the current Python implementation in derival of the Topology. Some of these deviation are briefly mentioned here:
+Some subtile differences are existing between the JavaScript implementation and the current Python implementation for deriving the Topology. Some of these deviation are briefly mentioned here:
 
 1. The extraction class stores all the different geometrical objects as Shapely LineStrings in `'linestrings'` and keeps a record of these linestrings available under the key `'bookkeeping_geoms'`. In the JavaScript implementation there is a differentiation of the geometries between `'lines'`, `'rings'` and a seperate object containing all `'coordinates'`. Since the current approach adopts `shapely` for much of the heavy lifting this extraction is working against us (in the cut-process).
 
