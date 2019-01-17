@@ -64,13 +64,9 @@ The optional packages is:
 
 - `rdtree`
 
-Inclusion of `rdtree` is highly recommended, as it will improve speed substantially!
+Inclusion of `rdtree` is highly recommended, as it will improve speed substantially for geographical data containing many objects. Download dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/ for Windows and use `pip` for Linux and Mac.
 
-The packages `geopandas` and `geojson` are solely used in the tests and recognized as types with the extractor.
-
-Download dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/ for Windows and use `pip` for Linux and Mac.
-
-Installation of the Python module `rtree` depends on the C++ library `libspatialindex`. For a installation on Mac can install this using `brew`:
+The packages `geopandas` and `geojson` are solely used in the tests and recognized as types with the extractor. Installation of the Python module `rtree` depends on the C++ library `libspatialindex`. For a installation on Mac one can install this using `brew` as such:
 
 ```bash
 brew install spatialindex
@@ -78,15 +74,17 @@ brew install spatialindex
 
 ## Example and tutorial notebooks
 
-The notebooks folder of this Github repository contains Jupyter Notebooks with a tutorial. The many tests within this package also can be used as example material.
+The notebooks folder of this GitHub repository contains a Jupyter Notebook with a tutorial. The many tests within this package also can be used as example material.
 
 ## Development Notes
 
-Development of this packages started by reading https://bost.ocks.org/mike/topology/ and https://github.com/topojson by Mike Bostocks.
+Development of this packages started by reading https://bost.ocks.org/mike/topology/ and https://github.com/topojson by Mike Bostocks and https://github.com/calvinmetcalf/topojson.py by Calvin Metcalf.
 
-Initially a translation of the JavaScript implementation was considered, but quickly was decided to use a combination of Shapely (since it is based on the GEOS library) and NumPy. 
+The reason for development of this package was to use Shapely and NumPy for the core-functionaliteits and provide a better integration with other geographical packages available within the Python ecosystem (eg. `geopandas`). Also the possibility of including the many tests available in the JavaScript implementation was hoped-for.
 
-Nonetheless, some subtile differences are existing between the JavaScript implementation of the TopoJSON format and the current Python implementation. Some of these deviation are briefly mentioned here:
+To create a certain synergy between the JavaScript and Python implementation the same naming conventions were adopted for the processing steps (`extract`, `join`, `cut`, `dedup`, `hashmap`).
+
+Nonetheless, some subtile differences are existing between the JavaScript implementation and the current Python implementation in derival of the Topology. Some of these deviation are briefly mentioned here:
 
 1. The extraction class stores all the different geometrical objects as Shapely LineStrings in `'linestrings'` and keeps a record of these linestrings available under the key `'bookkeeping_geoms'`. In the JavaScript implementation there is a differentiation of the geometries between `'lines'`, `'rings'` and a seperate object containing all `'coordinates'`. Since the current approach adopts `shapely` for much of the heavy lifting this extraction is working against us (in the cut-process).
 
@@ -94,4 +92,4 @@ Nonetheless, some subtile differences are existing between the JavaScript implem
 
 3. In the computation of a shared path, a junction can be created on an existing coordinate in one of the geometries. Where in the JavaScript implementation this only can be considered when both geometries contain the coordinate. 
 
-4. In the process of cutting lines the rings are rotated in the JavaScript implementation to make sure they start at a junction. This reduces the number of cuts. This rotation is done before cutting. In the current Python implementation this is (will be) done differently. First the linestrings are cut using the junction coordinates and afterwards there is tried to apply a linemerge on the non-duplicate arcs of a geometry containing at least one shared arc.
+4. In the process of cutting lines the rings are rotated in the JavaScript implementation to make sure they start at a junction. This reduces the number of cuts. This rotation is done before cutting. In the current Python implementation this ~~is~~ (will be) done differently. First the linestrings are cut using the junction coordinates and afterwards there is tried to apply a linemerge on the non-duplicate arcs of a geometry containing at least one shared arc.
