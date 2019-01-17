@@ -86,7 +86,7 @@ Development of this packages started by reading:
 
 The reason for development of this package was the willingness:
 - To adopt `shapely` (GEOS) and `numpy` for the core-functionalities in deriving the Topology.
-- To provide a better integration with other geographical packages available within the Python ecosystem (eg. `geopandas` and `altair`).
+- To provide integration with other geographical packages within the Python ecosystem (eg. `geopandas` and `altair`).
 - Also the possibility of including the many tests available in the JavaScript implementation was hoped-for.
 
 To create a certain synergy between the JavaScript and Python implementation the same naming conventions was adopted for the processing steps (`extract`, `join`, `cut`, `dedup`, `hashmap`). Even though the actual code differs significant.
@@ -95,7 +95,7 @@ Some subtile differences are existing between the JavaScript implementation and 
 
 1. The extraction class stores all the different geometrical objects as Shapely LineStrings in `'linestrings'` and keeps a record of these linestrings available under the key `'bookkeeping_geoms'`. In the JavaScript implementation there is a differentiation of the geometries between `'lines'`, `'rings'` and a seperate object containing all `'coordinates'`. Since the current approach adopts `shapely` for much of the heavy lifting this extraction is working against us (in the cut-process).
 
-2. In the join class only the geometries that have shared paths are considered to have junctions. This means that the intersection of two crossing lines at a single coordinate is not considered as a junction. This also means that the two ends of a LineString are not automatically considered as being a junction. So if a segment starts or finish on another segment with that coordinate being the only coordinate in common it is not considered as a junction.
+2. In the join class only the geometries that have shared paths are considered to have junctions. This means that the intersection of two crossing lines at a single coordinate is not considered as a junction. This also means that the two ends of a LineString are not automatically considered as being a junction. So if a segment starts or finish on another segment, with that coordinate being the only coordinate in common, it is not considered as a junction.
 
 3. In the computation of a shared path, a junction can be created on an existing coordinate in one of the geometries. Where in the JavaScript implementation this only can be considered when both geometries contain the coordinate. 
 
