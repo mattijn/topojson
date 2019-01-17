@@ -82,9 +82,12 @@ Development of this packages started by reading:
 - https://bost.ocks.org/mike/topology/ and https://github.com/topojson by Mike Bostocks and
 - https://github.com/calvinmetcalf/topojson.py by Calvin Metcalf.
 
-The reason for development of this package was the willingness to adopt Shapely (GEOS) and NumPy for the core-functionalities in deriving the Topology and to provide a better integration with other geographical packages available within the Python ecosystem (eg. `geopandas` and `altair`). Also the possibility of including the many tests available in the JavaScript implementation was hoped-for.
+The reason for development of this package was the willingness:
+- To adopt `shapely` (GEOS) and `numpy` for the core-functionalities in deriving the Topology.
+- To provide a better integration with other geographical packages available within the Python ecosystem (eg. `geopandas` and `altair`).
+- Also the possibility of including the many tests available in the JavaScript implementation was hoped-for.
 
-To create a certain synergy between the JavaScript and Python implementation the same naming conventions were adopted for the processing steps (`extract`, `join`, `cut`, `dedup`, `hashmap`). Even though the actual code differs significant.
+To create a certain synergy between the JavaScript and Python implementation the same naming conventions was adopted for the processing steps (`extract`, `join`, `cut`, `dedup`, `hashmap`). Even though the actual code differs significant.
 
 Some subtile differences are existing between the JavaScript implementation and the current Python implementation for deriving the Topology. Some of these deviation are briefly mentioned here:
 
@@ -94,4 +97,4 @@ Some subtile differences are existing between the JavaScript implementation and 
 
 3. In the computation of a shared path, a junction can be created on an existing coordinate in one of the geometries. Where in the JavaScript implementation this only can be considered when both geometries contain the coordinate. 
 
-4. In the process of cutting lines the rings are rotated in the JavaScript implementation to make sure they start at a junction. This reduces the number of cuts. This rotation is done before cutting. In the current Python implementation this ~~is~~ (will be) done differently. First the linestrings are cut using the junction coordinates and afterwards there is tried to apply a linemerge on the non-duplicate arcs of a geometry containing at least one shared arc.
+4. In the process of cutting lines the rings are rotated in the JavaScript implementation to make sure they start at a junction. This reduces the number of cuts. This rotation is done before cutting. In the current Python implementation this ~~is~~ will be done differently. First the linestrings are cut using the junction coordinates and afterwards there is tried to apply a linemerge on the non-duplicate arcs of a geometry containing at least one shared arc.
