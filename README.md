@@ -7,34 +7,6 @@
 *TopoJSON* encodes geographic data structures into a shared topology. This repository describes the development of the Python implementation of this TopoJSON format. A TopoJSON topology represents one or more geometries that share sequences of positions called arcs. 
 
 
-## Installation
-
-The package is released on PyPi as version 1.0rc1. Installation can be done by:
-
-`python3 -m pip install topojson`
-
-The required dependencies are:
-
-- `numpy`
-- `shapely`
-
-The optional packages is:
-
-- `rdtree`
-
-Inclusion of `rdtree` is highly recommended, as it will improve speed substantially!
-
-The packages `geopandas` and `geojson` are solely used in the tests and recognized as types with the extractor.
-
-Download dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/ for Windows and use `pip` for Linux and Mac.
-
-Installation of the Python module `rtree` depends on the C++ library `libspatialindex`. For a installation on Mac can install this using `brew`:
-
-```bash
-brew install spatialindex
-```
-
-
 ## Usage
 
 The package can be used as follow:
@@ -74,6 +46,34 @@ The following geometry types are registered as correct geometric input data:
 - `geopandas.GeoDataFrame`
 - `geopandas.GeoSeries`
 - `dict` of geometries (`LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`, `Point`, `MultiPoint`, `GeometryCollection`)
+
+
+## Installation
+
+The package is released on PyPi as version 1.0rc1. Installation can be done by:
+
+`python3 -m pip install topojson`
+
+The required dependencies are:
+
+- `numpy`
+- `shapely`
+
+The optional packages is:
+
+- `rdtree`
+
+Inclusion of `rdtree` is highly recommended, as it will improve speed substantially!
+
+The packages `geopandas` and `geojson` are solely used in the tests and recognized as types with the extractor.
+
+Download dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/ for Windows and use `pip` for Linux and Mac.
+
+Installation of the Python module `rtree` depends on the C++ library `libspatialindex`. For a installation on Mac can install this using `brew`:
+
+```bash
+brew install spatialindex
+```
 
 ## Example and tutorial notebooks
 
