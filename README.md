@@ -53,7 +53,9 @@ The following geometry types are registered as correct geographical input data:
 
 The package is released on PyPi as version `1.0rc1`. Installation can be done by:
 
-`python3 -m pip install topojson`
+```
+python3 -m pip install topojson
+```
 
 The required dependencies are:
 
