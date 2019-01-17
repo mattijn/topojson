@@ -50,7 +50,7 @@ The following geometry types are registered as correct geometric input data:
 
 ## Installation
 
-The package is released on PyPi as version 1.0rc1. Installation can be done by:
+The package is released on PyPi as version `1.0rc1`. Installation can be done by:
 
 `python3 -m pip install topojson`
 
