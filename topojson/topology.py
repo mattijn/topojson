@@ -6,7 +6,9 @@ from .hashmap import Hashmap
 import copy
 
 
-def topology(data, snap_vertices=False, gridsize_to_snap=1e6):
+def topology(
+    data, snap_vertices=True, gridsize_to_snap=1e6, simplify=True, simplify_factor=1
+):
     # initialize classes
     extractor = Extract()
     joiner = Join()
@@ -28,7 +30,10 @@ def topology(data, snap_vertices=False, gridsize_to_snap=1e6):
         data = joiner.main(data, quant_factor=None)
     data = cutter.main(data)
     data = deduper.main(data)
-    data = hashmapper.main(data)
+    if simplify:
+        data = hashmapper.main(data, simplify_factor=simplify_factor)
+    else:
+        data = hashmapper.main(data, simplify_factor=None)
 
     return data
 

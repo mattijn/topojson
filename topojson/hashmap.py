@@ -1,5 +1,6 @@
 import numpy as np
 from itertools import compress
+from simplification.cutil import simplify_coords
 import copy
 
 
@@ -10,6 +11,7 @@ class Hashmap:
 
     def __init__(self):
         # initation topology items
+        self.simp = False
         pass
 
     def hash_order(self, arc_ids, shared_bool):
@@ -206,7 +208,7 @@ class Hashmap:
                     for result in self.resolve_objects(key, d):
                         yield result
 
-    def main(self, data):
+    def main(self, data, simplify_factor=1):
         """
         Hashmap function resolves bookkeeping results to object arcs.
 
@@ -231,16 +233,35 @@ class Hashmap:
         # parse the linestrings into list of coordinates
         # only if linestrings are quantized, apply delta encoding.
         if "transform" in data.keys():
+            if simplify_factor is not None:
+                if simplify_factor >= 1:
+                    for idx, ls in enumerate(data["linestrings"]):
+                        self.data["linestrings"][idx] = simplify_coords(
+                            np.array(ls), simplify_factor
+                        )
+                    self.simp = True
+
             for idx, ls in enumerate(data["linestrings"]):
-                ls = np.array(ls.xy).T.astype(int)
+                if self.simp:
+                    ls = ls.astype(int)
+                else:
+                    ls = np.array(ls).astype(int)
                 ls_p1 = copy.copy(ls[0])
                 ls -= np.roll(ls, 1, axis=0)
                 ls[0] = ls_p1
                 self.data["linestrings"][idx] = ls.tolist()
 
         else:
-            for idx, ls in enumerate(data["linestrings"]):
-                self.data["linestrings"][idx] = np.array(ls.xy).T.tolist()
+            if simplify_factor is not None:
+                print("xxx")
+                if simplify_factor >= 1:
+                    for idx, ls in enumerate(data["linestrings"]):
+                        self.data["linestrings"][idx] = simplify_coords(
+                            np.array(ls), simplify_factor
+                        ).tolist()
+            else:
+                for idx, ls in enumerate(data["linestrings"]):
+                    self.data["linestrings"][idx] = np.array(ls).tolist()
 
         objects = {}
         objects["geometries"] = []
@@ -285,7 +306,7 @@ class Hashmap:
         return data
 
 
-def hashmap(data):
+def hashmap(data, simplify_factor):
     data = copy.deepcopy(data)
     hashmapper = Hashmap()
-    return hashmapper.main(data)
+    return hashmapper.main(data, simplify_factor)
