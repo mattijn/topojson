@@ -1,8 +1,10 @@
 import unittest
 import topojson
+
 try:
     import geopandas
-except:
+except ImportError as e:
+    print(e)
     pass
 
 
@@ -150,6 +152,14 @@ class TestCut(unittest.TestCase):
         # print(topo)
         self.assertEqual(topo["bookkeeping_linestrings"].size, 6)
         self.assertSequenceEqual(topo["bookkeeping_duplicates"].tolist(), [[4, 1]])
+
+    # currently the border between Sudan and Eqypt is not recognized as duplicate
+    # because of floating-precision. Should be solved by a 'snap_to_grid' option.
+    def test_to_cut_border_egypt_sudan(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[(data.name == "Egypt") | (data.name == "Sudan")]
+        topo = topojson.cut(topojson.join(topojson.extract(data)))
+        self.assertEqual(len(topo["bookkeeping_duplicates"].tolist()), 0)
 
     def test_nybb_fast_split(self):
         nybb_path = geopandas.datasets.get_path("nybb")

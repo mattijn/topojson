@@ -1,41 +1,52 @@
 import itertools
 import numpy as np
-import bisect
 from shapely import geometry
+
+
+def asvoid(arr):
+    """
+    View the array as dtype np.void (bytes). The items along the last axis are
+    viewed as one value. This allows comparisons to be performed which treat
+    entire rows as one value.
+    """
+    arr = np.ascontiguousarray(arr)
+    if np.issubdtype(arr.dtype, np.floating):
+        """ Care needs to be taken here since
+        np.array([-0.]).view(np.void) != np.array([0.]).view(np.void)
+        Adding 0. converts -0. to 0.
+        """
+        arr += 0.
+    return arr.view(np.dtype((np.void, arr.dtype.itemsize * arr.shape[-1])))
 
 
 def fast_split(line, splitter):
     """
     Split a LineString with a Point or MultiPoint. 
-    This function is a replacement for the shapely.ops.split function, but much faster.
+    This function is a replacement for the shapely.ops.split function, but faster.
     """
 
     if isinstance(splitter, geometry.Point):
         splitter = geometry.MultiPoint([splitter])
 
-    # compute the distance from the beginning of the linestring for each point on line
-    pts_on_line = list(
-        itertools.compress(splitter, [line.distance(pt) < 1e-8 for pt in splitter])
-    )
-    splitter_distances = np.array([line.project(pt) for pt in pts_on_line])
-    splitter_distances = splitter_distances[splitter_distances > 0]
-
-    # compute accumulated distances from point-to-point on line of all
-    # linestring coordinates
+    # convert geometries of coordinates to numpy arrays
     ls_xy = np.array(line.xy).T
-    ls_xy_roll = np.roll(ls_xy, 1, axis=0)
-    eucl_dist = np.sqrt(
-        (ls_xy_roll[:, 0] - ls_xy[:, 0]) ** 2 + (ls_xy_roll[:, 1] - ls_xy[:, 1]) ** 2
+    sp_xy = np.squeeze(np.array([pt.xy for pt in splitter]), axis=(2,))
+
+    # locate index of splitter coordinates in linestring
+    # use tolerance parameter to select very nearby junctions to linestring
+    tol = 1e8
+    splitter_indices = np.flatnonzero(
+        np.in1d(
+            asvoid(np.around(ls_xy * tol).astype(int)),
+            asvoid(np.around(sp_xy * tol).astype(int)),
+        )
     )
-    # the first distance is computed from the first point to the last point, set to 0
-    eucl_dist[0] = 0
-    ls_cumsum = eucl_dist.cumsum()
 
     # compute the indices on wich to split the line
-    splitter_indices = np.unique(
-        [bisect.bisect_left(ls_cumsum, splitter) for splitter in splitter_distances]
-    ).astype(int)
-    splitter_indices = splitter_indices[splitter_indices < (ls_xy.shape[0] - 1)]
+    # cannot split on first or last index of linestring
+    splitter_indices = splitter_indices[
+        (splitter_indices < (ls_xy.shape[0] - 1)) & (splitter_indices > 0)
+    ]
 
     # split the linestring where each sub-array includes the split-point
     # create a new array with the index elements repeated
@@ -76,8 +87,8 @@ def get_matches(geoms, tree_idx):
     Returns
     -------
     matches: list
-        list of tuples, where the key of each tuple is the linestring index 
-        and the value of each key is a list of junctions intersecting bounds of linestring
+        list of tuples, where the key of each tuple is the linestring index and the 
+        value of each key is a list of junctions intersecting bounds of linestring.
     """
 
     matches = []

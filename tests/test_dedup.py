@@ -1,5 +1,6 @@
 import unittest
 import topojson
+
 try:
     import geopandas
 except:
@@ -76,14 +77,8 @@ class TestDedup(unittest.TestCase):
         }
         topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
-        self.assertEqual(topo["bookkeeping_shared_arcs"], [3])
-        self.assertEqual(topo["bookkeeping_arcs"], [[0, 3, 1], [2, 3, 4]])
-
-    def test_egypt_sudan(self):
-        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-        data = data[(data.name == "Egypt") | (data.name == "Sudan")]
-        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
-        self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 1)
+        self.assertEqual(topo["bookkeeping_shared_arcs"], [4])
+        self.assertEqual(topo["bookkeeping_arcs"], [[0, 4, 1, 2], [3, 4, 5]])
 
     # this test was added since the shared_arcs bookkeeping is not doing well. Next runs
     # can affect previous runs where dup_pair_list should update properly.
@@ -111,4 +106,13 @@ class TestDedup(unittest.TestCase):
         ]
         topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 10)
+        self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
+
+    # this test was added since there is no test for non-intersecting geometries.
+    # as was raised in https://github.com/mattijn/topojson/issues/1
+    def test_no_shared_paths_in_geoms(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[(data.name == "Togo") | (data.name == "Liberia")]
+        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 0)
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)

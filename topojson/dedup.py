@@ -15,7 +15,6 @@ class Dedup:
         # initation topology items
         self.shared_arcs_idx = []
         self.merged_arcs_idx = []
-        pass
 
     def index_array(self, parameter_list):
         """"
@@ -180,10 +179,13 @@ class Dedup:
         # prepare to return object
         del data["bookkeeping_linestrings"]
         data["bookkeeping_arcs"] = self.list_from_array(array_bk)
-        data["bookkeeping_shared_arcs"] = array_bk_sarcs.astype(int).tolist()
-        data["bookkeeping_duplicates"] = self.list_from_array(
-            data["bookkeeping_duplicates"][dup_pair_list != -99]
-        )
+        if data["bookkeeping_duplicates"].size != 0:
+            data["bookkeeping_shared_arcs"] = array_bk_sarcs.astype(int).tolist()
+            data["bookkeeping_duplicates"] = self.list_from_array(
+                data["bookkeeping_duplicates"][dup_pair_list != -99]
+            )
+        else:
+            data["bookkeeping_shared_arcs"] = []
 
         return data
 
