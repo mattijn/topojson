@@ -108,3 +108,7 @@ __pycache__/
 # mypy
 .mypy_cache/
 ws_topojson.code-workspace
+
+# testing notebooks
+highres.topojson
+testing.ipynb

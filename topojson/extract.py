@@ -16,7 +16,7 @@ except:
 
 class Extract:
     """
-    decompose shapes into linestrings and track record in bookkeeping_geoms.
+    decompose geometries into linestrings and track record of the linestrings.
     """
 
     def __init__(self):
@@ -29,9 +29,10 @@ class Extract:
     @methdispatch
     def serialize_geom_type(self, geom):
         """
-        This function handles the different types that can occur within a geojson 
-        object. Each type is registerd as its own function and called when found, 
-        if none of the types match the input geom the current function is executed. 
+        This function handles the different types that can occur within known 
+        geographical data. Each type is registerd as its own function and called when 
+        found, if none of the types match the input geom the current function is 
+        executed. 
 
         The adoption of the dispatcher approach makes the usage of multiple if-else 
         statements not needed, since the dispatcher redirects the `geom` input to the 

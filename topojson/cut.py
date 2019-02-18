@@ -8,17 +8,25 @@ import copy
 
 class Cut:
     """
-    cut shared paths and keep track of it
+    Split the linestrings given the junctions of shared paths and record duplicates.
     """
 
     def __init__(self):
         # initation topology items
         self.duplicates = []
         self.bookkeeping_linestrings = []
-        pass
 
     def index_array(self, parameter_list):
-        # create numpy array from variable
+        """
+        Create numpy array from list of lists. The number of lists and and the max 
+        length determines the size of the array.
+        
+        Parameters
+        ----------
+        parameter_list : list of lists
+            each lists contains values
+        
+        """
         array_bk = np.array(
             list(itertools.zip_longest(*parameter_list, fillvalue=np.nan))
         ).T
@@ -26,9 +34,22 @@ class Cut:
 
     def flatten_and_index(self, slist):
         """
-        function to create a flattened list of splitted linestrings and create a 
-        numpy array for bookkeeping_geoms for the numerical computation
+        Function to create a flattened list of splitted linestrings and create a 
+        numpy array of the bookkeeping_geoms for tracking purposes.
+        
+        Parameters
+        ----------
+        slist : list of LineString
+            list of splitted LineStrings
+        
+        Returns
+        -------
+        list
+            segmntlist flattens the nested LineString in slist
+        numpy.array
+            array_bk is a bookkeeping array with index values to each LineString
         """
+
         # flatten
         segmntlist = list(itertools.chain(*slist))
         # create slice pairs
@@ -44,7 +65,19 @@ class Cut:
         return segmntlist, array_bk
 
     def find_duplicates(self, segments_list):
-        # find duplicates of splitted linestrings
+        """
+        Function for solely detecting and recording duplicate LineStrings.
+        Firstly couple combinations of LineStrings are created. A couple is defined 
+        as two linestrings where the enveloppe overlaps. Indexes of duplicates are
+        appended to the list self.duplicates.
+        
+        Parameters
+        ----------
+        segments_list : list of LineString
+            list of valid LineStrings 
+        
+        """
+
         # create list with unique combinations of lines using a rdtree
         line_combs = select_unique_combs(segments_list)
 
@@ -63,7 +96,7 @@ class Cut:
 
     def main(self, data):
         """
-        Cut the linestrings given the junctions of shared paths.
+        Entry point for the class Cut.
 
         The cut function is the third step in the topology computation.
         The following sequence is adopted:
@@ -71,7 +104,20 @@ class Cut:
         2. join
         3. cut 
         4. dedup 
-        5. hashmap     
+        5. hashmap         
+        
+        Parameters
+        ----------
+        data : dict
+            object created by the method topojson.join.
+        
+        Returns
+        -------
+        dict
+            object updated and expanded with 
+            - updated key: linestrings
+            - new key: bookkeeping_duplicates
+            - new key: bookkeeping_linestrings
         """
 
         if data["junctions"]:
@@ -84,10 +130,9 @@ class Cut:
                 slines = fast_split(ls, mp)
                 slist.append(list(geometry.MultiLineString(slines)))
 
-            # flatten the splitted linestrings and create bookkeeping_geoms array
+            # flatten the splitted linestrings, create bookkeeping_geoms array
             # and find duplicates
             self.segments_list, bk_array = self.flatten_and_index(slist)
-            # return self.segments_list
             self.find_duplicates(self.segments_list)
             self.bookkeeping_linestrings = bk_array.astype(float)
 
@@ -107,6 +152,32 @@ class Cut:
 
 
 def cut(data):
+    """
+    This function targets the following objectives: 
+    1. Split linestrings given the junctions of shared paths 
+    2. Identifies indexes of linestrings that are duplicates
+
+    The cut function is the third step in the topology computation.
+    The following sequence is adopted:
+    1. extract
+    2. join
+    3. cut 
+    4. dedup 
+    5. hashmap         
+    
+    Parameters
+    ----------
+    data : dict
+        object created by the method topojson.join.
+    
+    Returns
+    -------
+    dict
+        object updated and expanded with 
+        - updated key: linestrings
+        - new key: bookkeeping_duplicates
+        - new key: bookkeeping_linestrings    
+    """
     data = copy.deepcopy(data)
     cutter = Cut()
     return cutter.main(data)

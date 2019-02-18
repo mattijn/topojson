@@ -5,10 +5,21 @@ from shapely import geometry
 
 def asvoid(arr):
     """
-    View the array as dtype np.void (bytes). The items along the last axis are
-    viewed as one value. This allows comparisons to be performed which treat
-    entire rows as one value.
+    Utility function to create a 1-dimensional numpy void object (bytes)
+    of a 2-dimensional array. This is useful for the function numpy.in1d(), 
+    since it only accepts 1-dimensional objects.    
+    
+    Parameters
+    ----------
+    arr : numpy.array
+        2-dimensional numpy array
+    
+    Returns
+    -------
+    numpy.void
+        1-dimensional numpy void object
     """
+
     arr = np.ascontiguousarray(arr)
     if np.issubdtype(arr.dtype, np.floating):
         """ Care needs to be taken here since
@@ -23,6 +34,19 @@ def fast_split(line, splitter):
     """
     Split a LineString with a Point or MultiPoint. 
     This function is a replacement for the shapely.ops.split function, but faster.
+    
+    Parameters
+    ----------
+    line : LineString
+        LineString that you like to be split
+    splitter : Point or MultiPoint
+        A single or multiple points on wich the line should be tried splitting
+    
+    Returns
+    -------
+    list of numpy.array
+        If more than 1 item, the line was split. Each item in the list is a 
+        array of coordinates. 
     """
 
     if isinstance(splitter, geometry.Point):
@@ -66,7 +90,12 @@ def fast_split(line, splitter):
 
 def insertor(geoms):
     """
-    generator function to use stream loading of geometries for creating a rtree index
+    Generator function to use for stream loading of geometries to create a rtree index.
+    
+    Parameters
+    ----------
+    geoms : list of LineString
+        each LineString is a valid shapely linestring object
     """
 
     for i, obj in enumerate(geoms):
@@ -86,7 +115,7 @@ def get_matches(geoms, tree_idx):
         
     Returns
     -------
-    matches: list
+    list
         list of tuples, where the key of each tuple is the linestring index and the 
         value of each key is a list of junctions intersecting bounds of linestring.
     """
@@ -100,6 +129,21 @@ def get_matches(geoms, tree_idx):
 
 
 def select_unique(data):
+    """
+    Function to return unique pairs within a numpy array. 
+    Example: input as [[1,2], [2,1]] will return as [[1,2]]
+
+    Parameters
+    ----------
+    data : numpy.array
+        2 dimensional array, where each row is a couple
+    
+    Returns
+    -------
+    numpy.array
+        2 dimensional array, where each row is unique.
+    """
+
     sorted_data = data[np.lexsort(data.T), :]
     row_mask = np.append([True], np.any(np.diff(sorted_data, axis=0), 1))
 
@@ -107,6 +151,23 @@ def select_unique(data):
 
 
 def select_unique_combs(linestrings):
+    """
+    Given a set of inpit linestrings will create unique couple combinations.
+    Each combination created contains a couple of two linestrings where the enveloppe
+    overlaps each other.
+    Linestrings with non-overlapping enveloppes are not returned as combination.
+    
+    Parameters
+    ----------
+    linestrings : list of LineString
+        list where each item is a shapely LineString
+    
+    Returns
+    -------
+    numpy.array
+        2 dimensional array, with on each row the index combination
+        of a unique couple LineString with overlapping enveloppe
+    """
     try:
         from rtree import index
     except:

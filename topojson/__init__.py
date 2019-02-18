@@ -1,5 +1,5 @@
-__version__ = "1.0rc1"
-__doc__ = "TopoJSON encodes geographic data structures into a shared topology in Python"
+__version__ = "1.0rc2"
+__doc__ = "Encode geographic data as topology in Python! 🌍"
 
 from .extract import extract
 from .join import join
