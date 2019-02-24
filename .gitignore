@@ -112,3 +112,4 @@ ws_topojson.code-workspace
 # testing notebooks
 highres.topojson
 testing.ipynb
+test_geoms.ipynb
