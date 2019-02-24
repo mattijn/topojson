@@ -95,6 +95,8 @@ class TestDedup(unittest.TestCase):
 
     # this test was added since the shared_arcs bookkeeping is doing well, but the
     # wrong arc gots deleted. How come?
+    # the problem arose in wrongly linemerging of contigiuous line-elements
+    # merged linestring is not always placed upfront.
     def test_arc_not_shared_arcs_got_deleted(self):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         data = data[

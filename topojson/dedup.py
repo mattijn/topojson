@@ -28,6 +28,34 @@ class Dedup:
         ).T
         return array_bk
 
+    def find_merged_linestring(self, data, no_ndp_arcs, ndp_arcs, ndp_arcs_bk):
+        """
+        Function to find the index of LineString in a MultiLineString object which 
+        contains merged LineStrings. 
+        
+        Parameters
+        ----------
+        data : dictionary
+            object that contains the 'linestrings'
+        no_ndp_arcs : int
+            number of non-duplicate arcs
+        ndp_arcs : array
+            array containing index values of the related arcs
+        
+        Returns
+        -------
+        int
+            index of LineString that contains merged LineStrings
+        """
+
+        for segment_idx in range(no_ndp_arcs):
+            merged_arcs_bool = [
+                ndp_arcs[segment_idx].contains(data["linestrings"][i])
+                for i in ndp_arcs_bk
+            ].count(True)
+            if merged_arcs_bool == 2:
+                return segment_idx
+
     def deduplicate(self, dup_pair_list, linestring_list, array_bk):
         """
         Function to deduplicate items
@@ -93,9 +121,14 @@ class Dedup:
                 idx_keep = ndp_arcs_bk[-1]
                 idx_pop = ndp_arcs_bk[0]
 
+                # get the idx of the linestring which was merged
+                idx_merg_arc = self.find_merged_linestring(
+                    data, no_ndp_arcs, ndp_arcs, ndp_arcs_bk
+                )
+                # idx_merged_arc = np.nonzero(np.array(m_arcs).sum(axis=1) == 2)[0][0]
+
                 # replace linestring of idx_keep with merged linestring
-                # merged linestring seems to be placed up front, so get idx 0.
-                data["linestrings"][idx_keep] = ndp_arcs[0]
+                data["linestrings"][idx_keep] = ndp_arcs[idx_merg_arc]
                 self.merged_arcs_idx.append(idx_pop)
 
     def pop_merged_arcs(self, data, array_bk, array_bk_sarcs):
@@ -155,26 +188,26 @@ class Dedup:
         # line-elements
         # --------------------------------------------------------------------
 
-        # # apply a shapely linemerge to merge all contiguous line-elements
-        # # first create a mask for shared arcs to select only non-duplicates
-        # mask = np.isin(array_bk, array_bk_sarcs)
-        # array_bk_ndp = copy.deepcopy(array_bk.astype(float))
+        # apply a shapely linemerge to merge all contiguous line-elements
+        # first create a mask for shared arcs to select only non-duplicates
+        mask = np.isin(array_bk, array_bk_sarcs)
+        array_bk_ndp = copy.deepcopy(array_bk.astype(float))
 
-        # # only do merging of arcs if there are contigous arcs in geoms
-        # if array_bk_ndp[mask].size != 0:
-        #     # make sure idx to shared arcs are set to np.nan
-        #     array_bk_ndp[mask] = np.nan
+        # only do merging of arcs if there are contigous arcs in geoms
+        if array_bk_ndp[mask].size != 0:
+            # make sure idx to shared arcs are set to np.nan
+            array_bk_ndp[mask] = np.nan
 
-        #     # slice array_bk_ndp for geoms (rows) containing np.nan values
-        #     slice_idx = np.all(~np.isnan(array_bk_ndp)[:, [0, -1]], axis=1)
-        #     sliced_array_bk_ndp = array_bk_ndp[slice_idx]
+            # slice array_bk_ndp for geoms (rows) containing np.nan values
+            slice_idx = np.all(~np.isnan(array_bk_ndp)[:, [0, -1]], axis=1)
+            sliced_array_bk_ndp = array_bk_ndp[slice_idx]
 
-        #     # apply linemerge on geoms containing contigious arcs and maintain
-        #     # bookkeeping
-        #     self.merge_contigious_arcs(data, sliced_array_bk_ndp)
+            # apply linemerge on geoms containing contigious arcs and maintain
+            # bookkeeping
+            self.merge_contigious_arcs(data, sliced_array_bk_ndp)
 
-        #     # pop the merged contigious arcs and maintain bookkeeping.
-        #     self.pop_merged_arcs(data, array_bk, array_bk_sarcs)
+            # pop the merged contigious arcs and maintain bookkeeping.
+            self.pop_merged_arcs(data, array_bk, array_bk_sarcs)
 
         # prepare to return object
         del data["bookkeeping_linestrings"]

@@ -1,6 +1,6 @@
 import numpy as np
 from itertools import compress
-from simplification.cutil import simplify_coords
+from simplification import cutil
 import copy
 
 
@@ -236,7 +236,7 @@ class Hashmap:
             if simplify_factor is not None:
                 if simplify_factor >= 1:
                     for idx, ls in enumerate(data["linestrings"]):
-                        self.data["linestrings"][idx] = simplify_coords(
+                        self.data["linestrings"][idx] = cutil.simplify_coords(
                             np.array(ls), simplify_factor
                         )
                     self.simp = True
@@ -256,7 +256,7 @@ class Hashmap:
                 print("xxx")
                 if simplify_factor >= 1:
                     for idx, ls in enumerate(data["linestrings"]):
-                        self.data["linestrings"][idx] = simplify_coords(
+                        self.data["linestrings"][idx] = cutil.simplify_coords(
                             np.array(ls), simplify_factor
                         ).tolist()
             else:
