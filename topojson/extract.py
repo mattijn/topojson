@@ -6,17 +6,17 @@ import logging
 
 try:
     import geopandas
-except:
+except ImportError:
     pass
 try:
     import geojson
-except:
+except ImportError:
     pass
 
 
 class Extract:
     """
-    decompose geometries into linestrings and track record of the linestrings.
+    Decompose geometries into linestrings and track record of the linestrings.
     """
 
     def __init__(self):
@@ -59,8 +59,12 @@ class Extract:
 
     @serialize_geom_type.register(geometry.LineString)
     def extract_line(self, geom):
-        """
-        *geom* type is LineString instance.
+        """*geom* type is LineString instance.
+        
+        Parameters
+        ----------
+        geom : shapely.geometry.LineString
+            LineString instance
         """
 
         # only process non-empty geometries
@@ -85,8 +89,12 @@ class Extract:
 
     @serialize_geom_type.register(geometry.MultiLineString)
     def extract_multiline(self, geom):
-        """
-        *geom* type is MultiLineString instance. 
+        """*geom* type is MultiLineString instance. 
+        
+        Parameters
+        ----------
+        geom : shapely.geometry.MultiLineString
+            MultiLineString instance
         """
 
         for line in geom:
@@ -94,8 +102,12 @@ class Extract:
 
     @serialize_geom_type.register(geometry.Polygon)
     def extract_ring(self, geom):
-        """
-        *geom* type is Polygon instance.
+        """*geom* type is Polygon instance.
+        
+        Parameters
+        ----------
+        geom : shapely.geometry.Polygon
+            Polygon instance
         """
 
         idx_bk = len(self.bookkeeping_geoms)
@@ -125,8 +137,12 @@ class Extract:
 
     @serialize_geom_type.register(geometry.MultiPolygon)
     def extract_multiring(self, geom):
-        """
-        *geom* type is MultiPolygon instance. 
+        """*geom* type is MultiPolygon instance. 
+
+        Parameters
+        ----------
+        geom : shapely.geometry.MultiPolygon
+            MultiPolygon instance
         """
 
         for ring in geom:
@@ -135,9 +151,13 @@ class Extract:
     @serialize_geom_type.register(geometry.MultiPoint)
     @serialize_geom_type.register(geometry.Point)
     def extract_point(self, geom):
-        """
-        *geom* type is Point or MultiPoint instance.
+        """*geom* type is Point or MultiPoint instance.
         coordinates are directly passed to "coordinates"
+        
+        Parameters
+        ----------
+        geom : shapely.geometry.Point or shapely.geometry.MultiPoint
+            Point or MultiPoint instance
         """
 
         obj = self.obj
@@ -147,8 +167,12 @@ class Extract:
 
     @serialize_geom_type.register(geometry.GeometryCollection)
     def extract_geometrycollection(self, geom):
-        """
-        *geom* type is GeometryCollection instance.
+        """*geom* type is GeometryCollection instance.
+        
+        Parameters
+        ----------
+        geom : shapely.geometry.GeometryCollection
+            GeometryCollection instance
         """
 
         obj = self.data[self.key]
@@ -190,8 +214,12 @@ class Extract:
 
     @serialize_geom_type.register(geojson.FeatureCollection)
     def extract_featurecollection(self, geom):
-        """
-        *geom* type is FeatureCollection instance.
+        """*geom* type is FeatureCollection instance.
+        
+        Parameters
+        ----------
+        geom : geojson.FeatureCollection
+            FeatureCollection instance
         """
 
         # convert FeatureCollection into a dict of features
@@ -212,8 +240,12 @@ class Extract:
 
     @serialize_geom_type.register(geojson.Feature)
     def extract_feature(self, geom):
-        """
-        *geom* type is Feature instance.        
+        """*geom* type is Feature instance.
+        
+        Parameters
+        ----------
+        geom : geojson.Feature
+            Feature instance
         """
 
         obj = self.obj
@@ -234,8 +266,12 @@ class Extract:
     @serialize_geom_type.register(geopandas.GeoDataFrame)
     @serialize_geom_type.register(geopandas.GeoSeries)
     def extract_geopandas(self, geom):
-        """
-        *geom* type is GeoDataFrame/GeoSeries instance.        
+        """*geom* type is GeoDataFrame or GeoSeries instance.        
+        
+        Parameters
+        ----------
+        geom : geopandas.GeoDataFrame or geopandas.GeoSeries
+            GeoDataFrame or GeoSeries instance
         """
 
         self.obj = geom.__geo_interface__
@@ -243,19 +279,22 @@ class Extract:
 
     @serialize_geom_type.register(dict)
     def extract_dictionary(self, geom):
-        """
-        *geom* type is Dictionary instance.        
+        """*geom* type is Dictionary instance.
+        
+        Parameters
+        ----------
+        geom : dict
+            Dictionary instance
         """
 
-        # iterate over the input dictionary or geojson object
-        # use list since https://stackoverflow.com/a/11941855
+        # iterate over the input dictionary or geographical object
         for key in list(self.data):
             # based on the geom type the right function is serialized
             self.key = key
             self.obj = self.data[self.key]
 
             # determine firstly if type of geom is a Shapely geometric object if not
-            # then the object might be a geojson Feature or FeatureCollection
+            # then the object might be a GeoJSON Feature or FeatureCollection
             # otherwise it is not a recognized object and it will be removed
             try:
                 geom = geometry.shape(self.obj)
@@ -266,7 +305,7 @@ class Extract:
                     del self.data[self.key]
                     continue
             except ValueError:
-                # object might be a geojson Feature or FeatureCollection
+                # object might be a GeoJSON Feature or FeatureCollection
                 geom = geojson.loads(geojson.dumps(self.obj))
             except TypeError:
                 # object is not valid
@@ -286,7 +325,7 @@ class Extract:
 
     def main(self, data):
         """"
-        Extracts the linestrings from the specified hash of geometry objects.
+        Entry point for the class Extract.
 
         The extract function is the first step in the topology computation.
         The following sequence is adopted:
@@ -296,7 +335,7 @@ class Extract:
         4. dedup
         5. hashmap
 
-        Returns an object with two new properties:
+        Returns an object including two new properties:
 
         * linestrings - linestrings extracted from the hash, of the form [start, end], 
         as shapely objects
@@ -312,7 +351,7 @@ class Extract:
         directly into the `"coordinates"` array within each object.
 
         Developping Notes
-        * 
+        *
         """
 
         self.data = data
@@ -338,6 +377,38 @@ class Extract:
 
 
 def extract(data):
+    """
+    This function targets the following objectives: 
+    1. Detection of geometrical type of the object
+    2. Extraction of linestrings from the object
+
+    The extract function is the first step in the topology computation.
+    The following sequence is adopted:
+    1. extract
+    2. join
+    3. cut
+    4. dedup
+    5. hashmap
+   
+    Parameters
+    ----------
+    data : Union[shapely.geometry.LineString, shapely.geometry.MultiLineString, 
+    shapely.geometry.Polygon, shapely.geometry.MultiPolygon, shapely.geometry.Point,
+    shapely.geometry.MultiPoint, shapely.geometry.GeometryCollection, geojson.Feature,
+    geojson.FeatureCollection, geopandas.GeoDataFrame, geopandas.GeoSeries, dict]
+        Different types of a geometry object, originating from shapely, geojson, 
+        geopandas and dictionary.
+    
+    Returns
+    -------
+    dict
+        object created including
+        - new key: type        
+        - new key: linestrings
+        - new key: bookkeeping_geoms
+        - new key: objects    
+    """
+
     # since we move and replace data in the object,
     # we need a deepcopy to avoid changing the input-data
     try:

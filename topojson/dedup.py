@@ -8,7 +8,7 @@ import copy
 
 class Dedup:
     """
-    dedup duplicates and merge contiguous arcs
+    Dedup duplicates and merge contiguous arcs
     """
 
     def __init__(self):
@@ -16,15 +16,25 @@ class Dedup:
         self.shared_arcs_idx = []
         self.merged_arcs_idx = []
 
-    def index_array(self, parameter_list):
-        """"
+    def index_array(self, nested_lists):
+        """
         Function to create numpy array from nested lists. The shape of the numpy array 
         are the number of nested lists (rows) x the length of the longest nested list 
-        (columns). Rows that contain less values are filled with np.nan values.
+        (columns). Rows that contain less values are filled with np.nan values.        
+        
+        Parameters
+        ----------
+        nested_lists : list of lists
+            list containing nested lists of different sizes.
+        
+        Returns
+        -------
+        numpy.ndarray
+            array created from nested lists, np.nan is used to fill the array
         """
 
         array_bk = np.array(
-            list(itertools.zip_longest(*parameter_list, fillvalue=np.nan))
+            list(itertools.zip_longest(*nested_lists, fillvalue=np.nan))
         ).T
         return array_bk
 
@@ -35,7 +45,7 @@ class Dedup:
         
         Parameters
         ----------
-        data : dictionary
+        data : dict
             object that contains the 'linestrings'
         no_ndp_arcs : int
             number of non-duplicate arcs
@@ -59,6 +69,22 @@ class Dedup:
     def deduplicate(self, dup_pair_list, linestring_list, array_bk):
         """
         Function to deduplicate items
+        
+        Parameters
+        ----------
+        dup_pair_list : numpy.ndarray
+            array containing pair of indexes that refer to duplicate linestrings.
+        linestring_list : list of shapely.geometry.LineStrings
+            list of linestrings from which items will be removed.
+        array_bk : numpy.ndarray
+            array used for bookkeeping of linestrings.
+        
+        Returns
+        -------
+        numpy.ndarray
+            bookkeeping array of shared arcs
+        numpy.ndarray
+            array where each processed pair is set to -99
         """
 
         # sort the dup_pair_list by the 1st column (idx_keep) in descending order
@@ -101,7 +127,15 @@ class Dedup:
         on remaining arcs. The merged contigious arc is placed back in the 'linestrings'
         object. 
         The arcs that can be popped are placed within the merged_arcs_idx list
+        
+        Parameters
+        ----------
+        data : dict
+            object that contains the 'linestrings'.
+        sliced_array_bk_ndp : numpy.ndarray
+            bookkeeping array where shared linestrings are set to np.nan. 
         """
+
         for arcs_geom_bk in sliced_array_bk_ndp:
             # set number of arcs before trying linemerge
             ndp_arcs_bk = arcs_geom_bk[~np.isnan(arcs_geom_bk)].astype(int)
@@ -170,9 +204,6 @@ class Dedup:
         4. dedup
         5. hashmap     
  
-        Developping Notes:
-        * dedup only arcs, not geoms.
-        Quantization might be explained here: https://gist.github.com/scardine/6320052
         """
 
         # deduplicate equal geometries
@@ -182,11 +213,6 @@ class Dedup:
             array_bk_sarcs, dup_pair_list = self.deduplicate(
                 data["bookkeeping_duplicates"], data["linestrings"], array_bk
             )
-
-        # The assumption that only the first and last item of non-duplicate arcs can
-        # merge doesn't hold. For now comment the linemerging of contigiuous
-        # line-elements
-        # --------------------------------------------------------------------
 
         # apply a shapely linemerge to merge all contiguous line-elements
         # first create a mask for shared arcs to select only non-duplicates

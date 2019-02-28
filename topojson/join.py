@@ -16,7 +16,7 @@ if speedups.available:
 
 class Join:
     """
-    identify junctions (intersection points) of shared paths.
+    Identify junctions (intersection points) of shared paths.
     """
 
     def __init__(self):
@@ -33,12 +33,11 @@ class Join:
 
         Parameters
         ----------
-        linestrings: list of shapely.LineStrings
+        linestrings: list of shapely.geometry.LineStrings
             LineStrings that will be quantized
         quant_factor : int
             Quantization factor. Normally this varies between 1e4, 1e5, 1e6. Where a 
             higher number means a bigger grid where the coordinates can snap to. 
- 
 
         Returns
         -------
@@ -71,7 +70,14 @@ class Join:
         shared paths with the opposite direction for one the two inputs.
 
         The returned object extents the `segments` property with detected segments.
-        Where each seperate segment is a linestring between two points.
+        Where each seperate segment is a linestring between two points.        
+        
+        Parameters
+        ----------
+        g1 : shapely.geometry.LineString
+            first geometry
+        g2 : shapely.geometry.LineString
+            second geometry
         """
 
         # detect potential shared paths between two linestrings
@@ -109,44 +115,40 @@ class Join:
             ls_p1_g1g2 = geometry.LineString([p1_g1, p1_g2])
             self.segments.extend([[ls_p1_g1g2]])
 
-    def main(self, data, quant_factor):
+    def main(self, data, quant_factor=None):
         """
-        Detects the junctions of shared paths from the specified hash of linestrings.
+        Entry point for the class Join.
 
         The join function is the second step in the topology computation.
         The following sequence is adopted:
         1. extract
         2. join
         3. cut 
-        4. dedup
-        5. hashmap
+        4. dedup 
+        5. hashmap  
+
+        Detects the junctions of shared paths from the specified hash of linestrings.
         
         After decomposing all geometric objects into linestrings it is necessary to 
         detect the junctions or start and end-points of shared paths so these paths can 
         be 'merged' in the next step. Merge is quoted as in fact only one of the 
         shared path is kept and the other path is removed.
 
-        Developping Notes:
-        # current implemented method using comprension lists
-        s_coords = [y for x in s12 for y in list(x.coords)]
-        pts = [i for i in s_coords if s_coords.count(i) is 1]
-
-        # potential method using numpy array
-        mls_xy = np.array(s12.__geo_interface__['coordinates'])
-        mls_xy = mls_xy.reshape(-1, mls_xy.shape[-1])
-        uniq_xy, ctx_xy = np.unique(mls_xy, axis=0, return_counts=True)
-        pts = uniq_xy[ctx_xy == 1]
+        Parameters
+        ----------
+        data : dict
+            object created by the method topojson.extract.
+        quant_factor : int, optional (default: None)
+            quantization factor, used to constrain float numbers to integer values.
+            - Use 1e4 for 5 valued values (00001-99999)
+            - Use 1e6 for 7 valued values (0000001-9999999)
         
-        The following links have been used as reference for this object/functions.
-        
-        to find shared paths:
-        https://shapely.readthedocs.io/en/stable/manual.html#shared-paths
-        
-        to set up a R-tree:
-        https://shapely.readthedocs.io/en/stable/manual.html#str-packed-r-tree
-
-        Use tolerance setting in snap for near-identical shared paths.
-        Uuse snap to catch TopologyException for non-noded intersections
+        Returns
+        -------
+        dict
+            object expanded with 
+            - new key: junctions
+            - new key: transform (if quant_factor is not None)        
         """
 
         if not data["linestrings"]:
@@ -208,6 +210,35 @@ class Join:
 
 
 def join(data, quant_factor=None):
+    """
+    This function targets the following objectives: 
+    1. Quantization of input linestrings if necessary
+    2. Identifies junctions of shared paths
+
+    The join function is the second step in the topology computation.
+    The following sequence is adopted:
+    1. extract
+    2. join
+    3. cut 
+    4. dedup 
+    5. hashmap  
+    
+    Parameters
+    ----------
+    data : dict
+        object created by the method topojson.extract.
+    quant_factor : int, optional (default: None)
+        quantization factor, used to constrain float numbers to integer values.
+        - Use 1e4 for 5 valued values (00001-99999)
+        - Use 1e6 for 7 valued values (0000001-9999999)
+    
+    Returns
+    -------
+    dict
+        object expanded with 
+        - new key: junctions
+        - new key: transform (if quant_factor is not None)
+    """
     data = copy.deepcopy(data)
     joiner = Join()
     return joiner.main(data, quant_factor)
