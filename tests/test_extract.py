@@ -2,10 +2,8 @@ import json
 import unittest
 import topojson
 from shapely import geometry
-try:
-    import geopandas
-except:
-    pass
+import geopandas
+import geojson
 
 
 class TestExtract(unittest.TestCase):
@@ -175,6 +173,24 @@ class TestExtract(unittest.TestCase):
             topo["objects"]["feature_1"]["geometries"][0]["geometries"][0]["type"],
             "Polygon",
         )
+
+    # test to parse feature collection from a geojson file through geojson library
+    def test_geojson_feat_col_geom_col(self):
+        with open("tests/files_geojson/feature_collection.geojson") as f:
+            data = geojson.load(f)
+        topo = topojson.extract(data)
+        self.assertEqual(len(topo["objects"]), 1)
+        self.assertEqual(len(topo["bookkeeping_geoms"]), 3)
+        self.assertEqual(len(topo["linestrings"]), 3)
+
+    # test to parse a feature from a geojson file through geojson library
+    def test_geojson_feature_geom_col(self):
+        with open("tests/files_geojson/feature.geojson") as f:
+            data = geojson.load(f)
+        topo = topojson.extract(data)
+        self.assertEqual(len(topo["objects"]), 1)
+        self.assertEqual(len(topo["bookkeeping_geoms"]), 3)
+        self.assertEqual(len(topo["linestrings"]), 3)
 
     # test feature collection including geometry collection
     def test_geopandas_geoseries(self):
