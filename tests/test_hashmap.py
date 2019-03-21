@@ -1,9 +1,6 @@
 import unittest
 import topojson
-try:
-    import geopandas
-except:
-    pass
+import geopandas
 
 
 class TestHasmap(unittest.TestCase):

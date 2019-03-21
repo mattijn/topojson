@@ -7,11 +7,12 @@ import logging
 try:
     import geopandas
 except ImportError:
-    pass
+    from .utils.dummy import geopandas
+
 try:
     import geojson
 except ImportError:
-    pass
+    from .utils.dummy import geojson
 
 
 class Extract:
@@ -223,7 +224,11 @@ class Extract:
         """
 
         # convert FeatureCollection into a dict of features
-        obj = self.obj
+        if not hasattr(self, "obj"):
+            obj = geom
+            self.obj = geom
+        else:
+            obj = self.obj
         data = {}
         zfill_value = len(str(len(obj["features"])))
 
@@ -248,7 +253,13 @@ class Extract:
             Feature instance
         """
 
-        obj = self.obj
+        # TODO: this will trigger an error as there is no self.obj
+        if not hasattr(self, "obj"):
+            obj = geom
+            self.key = "feature_0"
+            self.data = {self.key: geom}
+        else:
+            obj = self.obj
 
         # A GeoJSON Feature is mapped to a GeometryCollection
         obj["type"] = "GeometryCollection"
@@ -307,7 +318,7 @@ class Extract:
             except ValueError:
                 # object might be a GeoJSON Feature or FeatureCollection
                 geom = geojson.loads(geojson.dumps(self.obj))
-            except TypeError:
+            except (IndexError, TypeError):
                 # object is not valid
                 self.invalid_geoms += 1
                 del self.data[self.key]
