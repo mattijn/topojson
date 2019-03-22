@@ -12,7 +12,6 @@ class Hashmap:
     def __init__(self):
         # initation topology items
         self.simp = False
-        pass
 
     def hash_order(self, arc_ids, shared_bool):
         """
@@ -208,7 +207,7 @@ class Hashmap:
                     for result in self.resolve_objects(key, d):
                         yield result
 
-    def main(self, data, simplify_factor=1):
+    def main(self, data, simplify_factor=None):
         """
         Hashmap function resolves bookkeeping results to object arcs.
 
@@ -306,7 +305,7 @@ class Hashmap:
         return data
 
 
-def hashmap(data, simplify_factor):
+def hashmap(data, simplify_factor=None):
     data = copy.deepcopy(data)
     hashmapper = Hashmap()
     return hashmapper.main(data, simplify_factor)
