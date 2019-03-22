@@ -118,3 +118,20 @@ class TestDedup(unittest.TestCase):
         topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 0)
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
+
+    # this test was added since the local variable 'array_bk_sarcs' was
+    # referenced before assignment. As was raised in:
+    # https://github.com/mattijn/topojson/issues/3
+    def test_array_bk_sarcs_reference(self):
+        data = {
+            "foo": {"type": "LineString", "coordinates": [[4, 0], [2, 2], [0, 0]]},
+            "bar": {
+                "type": "LineString",
+                "coordinates": [[0, 2], [1, 1], [2, 2], [3, 1], [4, 2]],
+            },
+        }
+        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        # test pass, but 'bookkeeping_shared_arcs' should not be 0...
+        # splitting method needs to be improved
+        self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 0)
+        self.assertEqual(len(topo["junctions"]), 4)

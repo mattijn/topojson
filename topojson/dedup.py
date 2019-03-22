@@ -209,6 +209,7 @@ class Dedup:
         # deduplicate equal geometries
         # create numpy array from bookkeeping_geoms variable for numerical computation
         array_bk = self.index_array(data["bookkeeping_linestrings"])
+        array_bk_sarcs = None
         if data["bookkeeping_duplicates"].size != 0:
             array_bk_sarcs, dup_pair_list = self.deduplicate(
                 data["bookkeeping_duplicates"], data["linestrings"], array_bk
@@ -221,7 +222,7 @@ class Dedup:
 
         # only do merging of arcs if there are contigous arcs in geoms
         if array_bk_ndp[mask].size != 0:
-            # make sure idx to shared arcs are set to np.nan
+            # make sure the idx of shared arcs are set to np.nan
             array_bk_ndp[mask] = np.nan
 
             # slice array_bk_ndp for geoms (rows) containing np.nan values
