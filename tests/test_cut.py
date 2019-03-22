@@ -1,11 +1,6 @@
 import unittest
 import topojson
-
-try:
-    import geopandas
-except ImportError as e:
-    print(e)
-    pass
+import geopandas
 
 
 class TestCut(unittest.TestCase):

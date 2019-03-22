@@ -73,7 +73,7 @@ class TestHasmap(unittest.TestCase):
         topo = topojson.hashmap(
             topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         )
-        self.assertEqual(len(topo["arcs"]), 8)
+        self.assertEqual(len(topo["arcs"]), 6)
 
     # something is wrong with hashmapping once a geometry has only shared arcs
     def test_geom_surrounding_many_geometries(self):
@@ -88,7 +88,7 @@ class TestHasmap(unittest.TestCase):
         topo = topojson.hashmap(
             topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         )
-        self.assertEqual(len(topo["arcs"]), 16)
+        self.assertEqual(len(topo["arcs"]), 14)
 
     # this test was added since the shared_arcs bookkeeping is doing well, but the
     # wrong arc gots deleted. How come?
@@ -104,4 +104,4 @@ class TestHasmap(unittest.TestCase):
         topo = topojson.hashmap(
             topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         )
-        self.assertEqual(len(topo["arcs"]), 20)
+        self.assertEqual(len(topo["arcs"]), 18)

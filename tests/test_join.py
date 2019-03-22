@@ -1,10 +1,7 @@
 from shapely import geometry
 import unittest
 import topojson
-try:
-    import geopandas
-except:
-    pass
+import geopandas
 
 
 class TestJoin(unittest.TestCase):
