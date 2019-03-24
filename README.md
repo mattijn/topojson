@@ -49,7 +49,7 @@ The following geometry types are registered as correct geographical input data:
 
 ## Installation
 
-The package is released on PyPi as version `1.0rc1`. Installation can be done by:
+The package is released on PyPi as version `1.0rc2`. Installation can be done by:
 
 ```
 python3 -m pip install topojson
@@ -59,14 +59,30 @@ The required dependencies are:
 
 - `numpy`
 - `shapely`
+- `simplification`
 
-Download dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/ for Windows and use `pip` for Linux and Mac.
+Download dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/ for Windows where possible and use `pip` for Linux and Mac.
 
 The packages `geopandas` and `geojson` are solely used in the tests and recognized as types with the extractor.
 
 ## Example and tutorial notebooks
 
 The notebooks folder of this GitHub repository contains a Jupyter Notebook with a tutorial. The many tests within this package also can be used as example material.
+
+## Changelog
+
+Version `1.0rc2`:
+
+- apply linemerge on non-duplicate arcs
+- fix computing topology without shared boundaries (https://github.com/mattijn/topojson/issues/1, https://github.com/mattijn/topojson/issues/3)
+- use `geopandas` and `geojson` solely for tests (https://github.com/mattijn/topojson/issues/4)
+- use [`simplification`](https://github.com/urschrei/simplification) as option to simplify linestrings
+- include option to snap vertices to grid
+- removed `rdtree` as dependency, use `SRTtree` from `shapely` instead
+
+Version `1.0rc1`:
+
+- initial release
 
 ## Development Notes
 
