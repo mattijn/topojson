@@ -5,8 +5,7 @@
 
 [Work in Progress]
 
-*TopoJSON* encodes geographic data structures into a shared topology. This repository describes the development of a **Python** implementation of this TopoJSON format. A TopoJSON topology represents one or more geometries that share sequences of positions called arcs. 
-
+_TopoJSON_ encodes geographic data structures into a shared topology. This repository describes the development of a **Python** implementation of this TopoJSON format. A TopoJSON topology represents one or more geometries that share sequences of positions called arcs.
 
 ## Usage
 
@@ -38,16 +37,15 @@ topojson.topology(data)
       [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
       [[1.0, 1.0], [1.0, 0.0]]]}
 
-
-The result is TopoJSON. 
+The result is TopoJSON.
 
 The following geometry types are registered as correct geographical input data:
+
 - `geojson.Feature`
 - `geojson.FeatureCollection`
 - `geopandas.GeoDataFrame`
 - `geopandas.GeoSeries`
 - `dict` of geometries (`LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`, `Point`, `MultiPoint`, `GeometryCollection`)
-
 
 ## Installation
 
@@ -62,17 +60,9 @@ The required dependencies are:
 - `numpy`
 - `shapely`
 
-The optional package is:
+Download dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/ for Windows and use `pip` for Linux and Mac.
 
-- `rdtree`
-
-Inclusion of `rdtree` is highly recommended, as it will improve speed substantially for geographical data containing many objects. Download dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/ for Windows and use `pip` for Linux and Mac.
-
-The packages `geopandas` and `geojson` are solely used in the tests and recognized as types with the extractor. Installation of the Python module `rtree` depends on the C++ library `libspatialindex`. For a installation on Mac one can install this using `brew` as such:
-
-```bash
-brew install spatialindex
-```
+The packages `geopandas` and `geojson` are solely used in the tests and recognized as types with the extractor.
 
 ## Example and tutorial notebooks
 
@@ -81,10 +71,12 @@ The notebooks folder of this GitHub repository contains a Jupyter Notebook with 
 ## Development Notes
 
 Development of this packages started by reading:
+
 - https://bost.ocks.org/mike/topology/ and https://github.com/topojson by Mike Bostocks and
 - https://github.com/calvinmetcalf/topojson.py by Calvin Metcalf.
 
 The reason for development of this package was the willingness:
+
 - To adopt `shapely` (GEOS) and `numpy` for the core-functionalities in deriving the Topology.
 - To provide integration with other geographical packages within the Python ecosystem (eg. `geopandas` and `altair`).
 - Also the possibility of including the many tests available in the JavaScript implementation was hoped-for.
@@ -97,6 +89,6 @@ Some subtile differences are existing between the JavaScript implementation and 
 
 2. In the join class only the geometries that have shared paths are considered to have junctions. This means that the intersection of two crossing lines at a single coordinate is not considered as a junction. This also means that the two ends of a LineString are not automatically considered as being a junction. So if a segment starts or finish on another segment, with that coordinate being the only coordinate in common, it is not considered as a junction.
 
-3. In the computation of a shared path, a junction can be created on an existing coordinate in one of the geometries. Where in the JavaScript implementation this only can be considered when both geometries contain the coordinate. 
+3. In the computation of a shared path, a junction can be created on an existing coordinate in one of the geometries. Where in the JavaScript implementation this only can be considered when both geometries contain the coordinate.
 
-4. In the process of cutting lines the rings are rotated in the JavaScript implementation to make sure they start at a junction. This reduces the number of cuts. This rotation is done before cutting. In the current Python implementation this ~~is~~ will be done differently. First the linestrings are cut using the junction coordinates and afterwards there is tried to apply a linemerge on the non-duplicate arcs of a geometry containing at least one shared arc.
+4. In the process of cutting lines the rings are rotated in the JavaScript implementation to make sure they start at a junction. This reduces the number of cuts. This rotation is done before cutting. In the current Python implementation this is be done differently. First the linestrings are cut using the junction coordinates and afterwards there is tried to apply a linemerge on the non-duplicate arcs of a geometry containing at least one shared arc.

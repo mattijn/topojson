@@ -1,6 +1,7 @@
 import itertools
 import numpy as np
 from shapely import geometry
+from shapely.strtree import STRtree
 
 
 def asvoid(arr):
@@ -88,20 +89,6 @@ def fast_split(line, splitter):
     return slines
 
 
-def insertor(geoms):
-    """
-    Generator function to use for stream loading of geometries to create a rtree index.
-    
-    Parameters
-    ----------
-    geoms : list of LineString
-        each LineString is a valid shapely linestring object
-    """
-
-    for i, obj in enumerate(geoms):
-        yield (i, obj.bounds, None)
-
-
 def get_matches(geoms, tree_idx):
     """
     Function to return the indici of the rtree that intersects with the input geometries
@@ -109,9 +96,9 @@ def get_matches(geoms, tree_idx):
     Parameters
     ----------
     geoms : list
-        list of geometries to compare against the rtree index
-    tree_idx: rtree.index.Index
-        an rtree indexing object
+        list of geometries to compare against the STRtree
+    tree_idx: STRtree
+        a STRtree indexing object
         
     Returns
     -------
@@ -120,11 +107,13 @@ def get_matches(geoms, tree_idx):
         value of each key is a list of junctions intersecting bounds of linestring.
     """
 
+    # find near linestrings by querying tree
     matches = []
     for idx_ls, obj in enumerate(geoms):
-        intersect_idx = list(tree_idx.intersection(obj.bounds))
-        if len(intersect_idx):
-            matches.append([[idx_ls], intersect_idx])
+        intersect_ls = tree_idx.query(obj)
+        if len(intersect_ls):
+            matches.extend([[[idx_ls], [ls.i for ls in intersect_ls]]])
+
     return matches
 
 
@@ -168,16 +157,11 @@ def select_unique_combs(linestrings):
         2 dimensional array, with on each row the index combination
         of a unique couple LineString with overlapping enveloppe
     """
-    try:
-        from rtree import index
-    except:
-        all_line_combs = list(itertools.combinations(range(len(linestrings)), 2))
-        return all_line_combs
-    # create spatial index on junctions including performance properties
-    p = index.Property()
-    p.leaf_capacity = 1000
-    p.fill_factor = 0.9
-    tree_idx = index.Index(insertor(linestrings), properties=p)
+
+    # create spatial index and add idx as attribute
+    for i, ls in enumerate(linestrings):
+        ls.i = i
+    tree_idx = STRtree(linestrings)
 
     # get index of linestrings intersecting each linestring
     idx_match = get_matches(linestrings, tree_idx)

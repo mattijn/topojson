@@ -7,7 +7,7 @@ import copy
 
 
 def topology(
-    data, snap_vertices=True, gridsize_to_snap=1e6, simplify=True, simplify_factor=1
+    data, snap_vertices=False, gridsize_to_snap=1e6, simplify=False, simplify_factor=1
 ):
     # initialize classes
     extractor = Extract()
@@ -24,10 +24,12 @@ def topology(
 
     # apply topology to data
     data = extractor.main(data)
+
     if snap_vertices:
         data = joiner.main(data, quant_factor=gridsize_to_snap)
     else:
         data = joiner.main(data, quant_factor=None)
+
     data = cutter.main(data)
     data = deduper.main(data)
     if simplify:
