@@ -67,7 +67,193 @@ The packages `geopandas` and `geojson` are solely used in the tests and recogniz
 
 ## Example and tutorial notebooks
 
-The notebooks folder of this GitHub repository contains a Jupyter Notebook with a [tutorial][l1]. The many [tests][l2] within this package also can be used as example material.
+### Type: `dict`
+
+
+```python
+[In: 1]
+```
+```python
+import topojson
+
+dictionary = {
+    "abc": {
+        "type": "Polygon",
+        "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
+    },
+    "def": {
+        "type": "Polygon",
+        "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
+    }
+}
+dictionary
+```
+
+```python
+[Out: 1]
+```
+    {'abc': {'type': 'Polygon',
+      'coordinates': [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
+     'def': {'type': 'Polygon',
+      'coordinates': [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}}
+
+
+
+```python
+[In: 2]
+```
+```python
+topojson.topology(dictionary)
+```
+
+```python
+[Out: 2]
+```
+    {'type': 'Topology',
+     'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[-3, 0]]},
+        {'type': 'Polygon', 'arcs': [[1, 2]]}],
+       'type': 'GeometryCollection'}},
+     'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
+      [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
+      [[1.0, 1.0], [1.0, 0.0]]]}
+
+
+
+### Type: `GeoDataFrame` from package `geopandas`
+
+
+```python
+[In: 1]
+```
+```python
+import geopandas
+import topojson
+from shapely import geometry
+%matplotlib inline
+
+gdf = geopandas.GeoDataFrame({
+    "name": ["abc", "def"],
+    "geometry": [
+        geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]), 
+        geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]])
+    ]
+})
+gdf.plot(column="name")
+gdf.head()
+```
+
+```python
+[Out: 1]
+```
+
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>name</th>
+      <th>geometry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>abc</td>
+      <td>POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>def</td>
+      <td>POLYGON ((1 0, 2 0, 2 1, 1 1, 1 0))</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+<img src="docs/img/geodataframe_plot.png" alt="Logo">
+
+
+```python
+[In: 2]
+```
+```python
+topojson.topology(gdf)
+```
+
+```python
+[Out: 2]
+```
+    {'type': 'Topology',
+     'objects': {'data': {'geometries': [{'id': '0',
+         'type': 'Polygon',
+         'properties': {'name': 'abc'},
+         'bbox': (0.0, 0.0, 1.0, 1.0),
+         'arcs': [[-3, 0]]},
+        {'id': '1',
+         'type': 'Polygon',
+         'properties': {'name': 'def'},
+         'bbox': (1.0, 0.0, 2.0, 1.0),
+         'arcs': [[1, 2]]}],
+       'type': 'GeometryCollection'}},
+     'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
+      [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
+      [[1.0, 1.0], [1.0, 0.0]]]}
+
+
+
+### Type: `FeatureCollection` from package `geojson`
+
+
+```python
+[In: 1]
+```
+```python
+from geojson import Feature, Polygon, FeatureCollection
+
+feature_1 = Feature(
+    geometry=Polygon([[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]),
+    properties={"name":"abc"}
+)
+feature_2 = Feature(
+    geometry=Polygon([[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]),
+    properties={"name":"def"}
+)
+feature_collection = FeatureCollection([feature_1, feature_2])
+feature_collection
+```
+ 
+```python
+[Out: 1]
+```
+
+    {"features": [{"geometry": {"coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]], "type": "Polygon"}, "properties": {"name": "abc"}, "type": "Feature"}, {"geometry": {"coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]], "type": "Polygon"}, "properties": {"name": "def"}, "type": "Feature"}], "type": "FeatureCollection"}
+
+
+
+```python
+[In: 2]
+```
+```python
+topojson.topology(feature_collection)
+```
+
+```python
+[Out: 2]
+```
+
+    {'type': 'Topology',
+     'objects': {'data': {'geometries': [{"arcs": [[-3, 0]], "properties": {"name": "abc"}, "type": "Polygon"},
+        {"arcs": [[1, 2]], "properties": {"name": "def"}, "type": "Polygon"}],
+       'type': 'GeometryCollection'}},
+     'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
+      [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
+      [[1.0, 1.0], [1.0, 0.0]]]}
+
+
+
+The notebooks folder of this GitHub repository also contains a Jupyter Notebook with a [tutorial][l1]. The many [tests][l2] as part of this package also can be used as example material.
 
 [l1]: https://github.com/mattijn/topojson/blob/master/notebooks/example%20usage.ipynb
 [l2]: https://github.com/mattijn/topojson/tree/master/tests
