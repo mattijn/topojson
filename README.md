@@ -65,7 +65,7 @@ Download dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/ for Windo
 
 The packages `geopandas` and `geojson` are solely used in the tests and recognized as types with the extractor.
 
-## Example and tutorial notebooks
+## Examples and tutorial notebooks
 
 ### Type: `dict`
 
@@ -301,4 +301,4 @@ Some subtile differences are existing between the JavaScript implementation and 
 
 3. In the computation of a shared path, a junction can be created on an existing coordinate in one of the geometries. Where in the JavaScript implementation this only can be considered when both geometries contain the coordinate.
 
-4. In the process of cutting lines the rings are rotated in the JavaScript implementation to make sure they start at a junction. This reduces the number of cuts. This rotation is done before cutting. In the current Python implementation this is be done differently. First the linestrings are cut using the junction coordinates and afterwards there is tried to apply a linemerge on the non-duplicate arcs of a geometry containing at least one shared arc.
+4. In the process of cutting lines; the rings are rotated in the JavaScript implementation to make sure they start at a junction. This reduces the number of cuts. This rotation is done before cutting. In the current Python implementation this is done differently. First the linestrings are cut using the junction coordinates and afterwards there is tried to apply a linemerge on the non-duplicate arcs of a geometry containing at least one shared arc.
