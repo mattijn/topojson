@@ -75,7 +75,7 @@ Version `1.0rc2`:
 
 - apply linemerge on non-duplicate arcs
 - fix computing topology without shared boundaries ([#1][i1], [#3][i3])
-- use `geopandas` and `geojson` solely for tests, bu recognize them as type ([#2][i2], [#4][i4])
+- use `geopandas` and `geojson` solely for tests, but recognize them as type ([#2][i2], [#4][i4])
 - use [`simplification`](https://github.com/urschrei/simplification) as option to simplify linestrings
 - include option to snap vertices to grid
 - removed `rdtree` as dependency, use `SRTtree` from `shapely` instead
