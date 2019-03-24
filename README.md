@@ -74,8 +74,8 @@ The notebooks folder of this GitHub repository contains a Jupyter Notebook with 
 Version `1.0rc2`:
 
 - apply linemerge on non-duplicate arcs
-- fix computing topology without shared boundaries (https://github.com/mattijn/topojson/issues/1, https://github.com/mattijn/topojson/issues/3)
-- use `geopandas` and `geojson` solely for tests (https://github.com/mattijn/topojson/issues/4)
+- fix computing topology without shared boundaries ([#1][i1], [#3][i3])
+- use `geopandas` and `geojson` solely for tests, bu recognize them as type ([#2][i2], [#4][i4])
 - use [`simplification`](https://github.com/urschrei/simplification) as option to simplify linestrings
 - include option to snap vertices to grid
 - removed `rdtree` as dependency, use `SRTtree` from `shapely` instead
@@ -83,6 +83,11 @@ Version `1.0rc2`:
 Version `1.0rc1`:
 
 - initial release
+
+[i1]: https://github.com/mattijn/topojson/issues/1
+[i2]: https://github.com/mattijn/topojson/issues/2
+[i3]: https://github.com/mattijn/topojson/issues/3
+[i4]: https://github.com/mattijn/topojson/issues/4
 
 ## Development Notes
 
