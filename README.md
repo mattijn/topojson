@@ -67,7 +67,10 @@ The packages `geopandas` and `geojson` are solely used in the tests and recogniz
 
 ## Example and tutorial notebooks
 
-The notebooks folder of this GitHub repository contains a Jupyter Notebook with a tutorial. The many tests within this package also can be used as example material.
+The notebooks folder of this GitHub repository contains a Jupyter Notebook with a [tutorial][l1]. The many [tests][l2] within this package also can be used as example material.
+
+[l1]: https://github.com/mattijn/topojson/blob/master/notebooks/example%20usage.ipynb
+[l2]: https://github.com/mattijn/topojson/tree/master/tests
 
 ## Changelog
 
