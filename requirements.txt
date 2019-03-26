@@ -1,3 +1,5 @@
+geojson
+geopandas
 numpy
 shapely
 simplification
