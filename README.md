@@ -83,14 +83,6 @@ dictionary = {
         "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
     }
 }
-dictionary
-```
-
-```python
-    {'abc': {'type': 'Polygon',
-      'coordinates': [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
-     'def': {'type': 'Polygon',
-      'coordinates': [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}}
 ```
 
 # 
@@ -198,31 +190,6 @@ feature_2 = Feature(
 feature_collection = FeatureCollection([feature_1, feature_2])
 feature_collection
 ```
- 
-```python
-{
-  "features": [
-    {
-      "geometry": {
-        "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
-        "type": "Polygon"
-      },
-      "properties": {"name": "abc"},
-      "type": "Feature"
-    },
-    {
-      "geometry": {
-        "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
-        "type": "Polygon"
-      },
-      "properties": {"name": "def"},
-      "type": "Feature"
-    }
-  ],
-  "type": "FeatureCollection"
-}
-```
-
 
 #
 ```python
