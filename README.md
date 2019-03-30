@@ -71,9 +71,6 @@ The packages `geopandas` and `geojson` are solely used in the tests and recogniz
 
 
 ```python
-In [1]:
-```
-```python
 import topojson
 
 dictionary = {
@@ -90,25 +87,18 @@ dictionary
 ```
 
 ```python
-Out[1]: 
-```
     {'abc': {'type': 'Polygon',
       'coordinates': [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
      'def': {'type': 'Polygon',
       'coordinates': [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}}
-
+```
 
 # 
-```python
-In [2]:
-```
 ```python
 topojson.topology(dictionary)
 ```
 
 ```python
-Out[2]:
-```
     {'type': 'Topology',
      'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[-3, 0]]},
         {'type': 'Polygon', 'arcs': [[1, 2]]}],
@@ -116,15 +106,12 @@ Out[2]:
      'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
       [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
       [[1.0, 1.0], [1.0, 0.0]]]}
-
+```
 
 
 ### Type: `GeoDataFrame` from package `geopandas`
 
 
-```python
-In [1]:
-```
 ```python
 import geopandas
 import topojson
@@ -140,10 +127,6 @@ gdf = geopandas.GeoDataFrame({
 })
 gdf.plot(column="name")
 gdf.head()
-```
-
-```python
-Out[1]:
 ```
 
 <div>
@@ -176,15 +159,10 @@ Out[1]:
 
 # 
 ```python
-In [2]:
-```
-```python
 topojson.topology(gdf)
 ```
 
 ```python
-Out[2]:
-```
     {'type': 'Topology',
      'objects': {'data': {'geometries': [{'id': '0',
          'type': 'Polygon',
@@ -200,15 +178,12 @@ Out[2]:
      'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
       [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
       [[1.0, 1.0], [1.0, 0.0]]]}
-
+```
 
 
 ### Type: `FeatureCollection` from package `geojson`
 
 
-```python
-In [1]:
-```
 ```python
 from geojson import Feature, Polygon, FeatureCollection
 
@@ -225,24 +200,36 @@ feature_collection
 ```
  
 ```python
-Out[1]:
+{
+  "features": [
+    {
+      "geometry": {
+        "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
+        "type": "Polygon"
+      },
+      "properties": {"name": "abc"},
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
+        "type": "Polygon"
+      },
+      "properties": {"name": "def"},
+      "type": "Feature"
+    }
+  ],
+  "type": "FeatureCollection"
+}
 ```
-
-    {"features": [{"geometry": {"coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]], "type": "Polygon"}, "properties": {"name": "abc"}, "type": "Feature"}, {"geometry": {"coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]], "type": "Polygon"}, "properties": {"name": "def"}, "type": "Feature"}], "type": "FeatureCollection"}
 
 
 #
-```python
-In [2]:
-```
 ```python
 topojson.topology(feature_collection)
 ```
 
 ```python
-Out[2]:
-```
-
     {'type': 'Topology',
      'objects': {'data': {'geometries': [{"arcs": [[-3, 0]], "properties": {"name": "abc"}, "type": "Polygon"},
         {"arcs": [[1, 2]], "properties": {"name": "def"}, "type": "Polygon"}],
@@ -250,7 +237,7 @@ Out[2]:
      'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
       [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
       [[1.0, 1.0], [1.0, 0.0]]]}
-
+```
 
 
 The notebooks folder of this GitHub repository also contains a Jupyter Notebook with a [tutorial][l1]. The many [tests][l2] as part of this package also can be used as example material.
