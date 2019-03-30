@@ -98,7 +98,7 @@ Out[1]:
       'coordinates': [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}}
 
 
-
+# 
 ```python
 In [2]:
 ```
@@ -174,7 +174,7 @@ Out[1]:
 
 <img src="docs/img/geodataframe_plot.png" alt="Logo">
 
-
+# 
 ```python
 In [2]:
 ```
@@ -231,7 +231,7 @@ Out[1]:
     {"features": [{"geometry": {"coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]], "type": "Polygon"}, "properties": {"name": "abc"}, "type": "Feature"}, {"geometry": {"coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]], "type": "Polygon"}, "properties": {"name": "def"}, "type": "Feature"}], "type": "FeatureCollection"}
 
 
-
+#
 ```python
 In [2]:
 ```
