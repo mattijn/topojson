@@ -188,7 +188,6 @@ feature_2 = Feature(
     properties={"name":"def"}
 )
 feature_collection = FeatureCollection([feature_1, feature_2])
-feature_collection
 ```
 
 #
