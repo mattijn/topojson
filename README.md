@@ -71,7 +71,7 @@ The packages `geopandas` and `geojson` are solely used in the tests and recogniz
 
 
 ```python
-[In: 1]
+In [1]:
 ```
 ```python
 import topojson
@@ -90,7 +90,7 @@ dictionary
 ```
 
 ```python
-[Out: 1]
+Out[1]: 
 ```
     {'abc': {'type': 'Polygon',
       'coordinates': [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
@@ -100,14 +100,14 @@ dictionary
 
 
 ```python
-[In: 2]
+In [2]:
 ```
 ```python
 topojson.topology(dictionary)
 ```
 
 ```python
-[Out: 2]
+Out[2]:
 ```
     {'type': 'Topology',
      'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[-3, 0]]},
@@ -123,7 +123,7 @@ topojson.topology(dictionary)
 
 
 ```python
-[In: 1]
+In [1]:
 ```
 ```python
 import geopandas
@@ -143,7 +143,7 @@ gdf.head()
 ```
 
 ```python
-[Out: 1]
+Out[1]:
 ```
 
 <div>
@@ -176,14 +176,14 @@ gdf.head()
 
 
 ```python
-[In: 2]
+In [2]:
 ```
 ```python
 topojson.topology(gdf)
 ```
 
 ```python
-[Out: 2]
+Out[2]:
 ```
     {'type': 'Topology',
      'objects': {'data': {'geometries': [{'id': '0',
@@ -207,7 +207,7 @@ topojson.topology(gdf)
 
 
 ```python
-[In: 1]
+In [1]:
 ```
 ```python
 from geojson import Feature, Polygon, FeatureCollection
@@ -225,7 +225,7 @@ feature_collection
 ```
  
 ```python
-[Out: 1]
+Out[1]:
 ```
 
     {"features": [{"geometry": {"coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]], "type": "Polygon"}, "properties": {"name": "abc"}, "type": "Feature"}, {"geometry": {"coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]], "type": "Polygon"}, "properties": {"name": "def"}, "type": "Feature"}], "type": "FeatureCollection"}
@@ -233,14 +233,14 @@ feature_collection
 
 
 ```python
-[In: 2]
+In [2]:
 ```
 ```python
 topojson.topology(feature_collection)
 ```
 
 ```python
-[Out: 2]
+Out[2]:
 ```
 
     {'type': 'Topology',
