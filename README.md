@@ -147,7 +147,7 @@ gdf.head()
 
 
 
-<img src="docs/img/geodataframe_plot.png" alt="Logo">
+<img src="images/geodataframe_plot.png" alt="Logo">
 
 # 
 ```python
