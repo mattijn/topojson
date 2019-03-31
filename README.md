@@ -100,8 +100,8 @@ topojson.topology(dictionary)
       [[1.0, 1.0], [1.0, 0.0]]]}
 ```
 
-
-### Type: `GeoDataFrame` from package `geopandas`
+#
+### Type: `GeoDataFrame` from package `geopandas` (if installed)
 
 
 ```python
@@ -172,8 +172,8 @@ topojson.topology(gdf)
       [[1.0, 1.0], [1.0, 0.0]]]}
 ```
 
-
-### Type: `FeatureCollection` from package `geojson`
+#
+### Type: `FeatureCollection` from package `geojson` (if installed)
 
 
 ```python
@@ -204,7 +204,7 @@ topojson.topology(feature_collection)
       [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
       [[1.0, 1.0], [1.0, 0.0]]]}
 ```
-
+#
 
 The notebooks folder of this GitHub repository also contains a Jupyter Notebook with a [tutorial][l1]. The many [tests][l2] as part of this package also can be used as example material.
 
