@@ -10,12 +10,12 @@ dist: xenial
 # blocklist
 branches:
   except:
-  - setup-toml-travis
+  - master
 
 # safelist
 branches:
   only:
-  - master
+  - setup-toml-travis
 
 jobs:
   include:
