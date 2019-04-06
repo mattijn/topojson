@@ -7,15 +7,10 @@ python:
   - "nightly"
 dist: xenial
 
-# blocklist
-branches:
-  except:
-  - master
-
 # safelist
 branches:
   only:
-  - setup-toml-travis
+  - master
 
 jobs:
   include:
