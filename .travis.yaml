@@ -7,6 +7,16 @@ python:
   - "nightly"
 dist: xenial
 
+# blocklist
+branches:
+  except:
+  - master
+
+# safelist
+branches:
+  only:
+  - setup-toml-travis
+
 jobs:
   include:
     - stage: TEST
