@@ -81,11 +81,13 @@ class Hashmap:
 
         Parameters
         ----------
-        arc_ids :
+        arc_ids : list
+            description of input
         
         Returns
         -------
-        arc_ids :       
+        arc_ids : list   
+            description of output        
         """
 
         shared_bool = np.isin(arc_ids, self.data["bookkeeping_shared_arcs"])
