@@ -1,26 +1,13 @@
 {
-    "python.unitTest.unittestArgs": [
-        "-v",
-        "-s",
-        "./tests",
-        "-p",
-        "test_*.py"
-    ],
-    "python.unitTest.pyTestEnabled": false,
-    "python.unitTest.nosetestsEnabled": false,
-    "python.unitTest.unittestEnabled": true,
-    "python.formatting.provider": "black",
-    "python.formatting.blackArgs": [
-        "--line-length",
-        "88",
-        "--py36"
-    ],
-    "editor.formatOnSave": true,
-    "[python]": {
-        "editor.rulers": [
-            88,
-            120
-        ]
-    },
-    "python.pythonPath": "/usr/local/opt/python/bin/python3.7"
+  "python.unitTest.unittestArgs": ["-v", "-s", "./tests", "-p", "test_*.py"],
+  "python.unitTest.pyTestEnabled": false,
+  "python.unitTest.nosetestsEnabled": false,
+  "python.unitTest.unittestEnabled": true,
+  "python.formatting.provider": "black",
+  "python.formatting.blackArgs": ["--line-length", "88", "--py36"],
+  "editor.formatOnSave": true,
+  "[python]": {
+    "editor.rulers": [88, 120]
+  },
+  "python.pythonPath": "/usr/local/bin/python3"
 }

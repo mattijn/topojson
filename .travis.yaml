@@ -1,0 +1,29 @@
+language: python
+cache: pip
+python:
+  - "3.6"
+  - "3.7"
+  - "3.7-dev"
+  - "nightly"
+dist: xenial
+
+# safelist
+branches:
+  only:
+  - master
+
+jobs:
+  include:
+    - stage: TEST
+      before_install:
+        - pip install -U pip flit
+      install:
+        - flit install --deps develop
+      script: python -m unittest
+
+    - stage: PRODUCTION
+      before_install:
+        - pip install -U pip flit
+      install:
+        - flit install --deps production
+      script: python -c "import topojson"

@@ -78,6 +78,16 @@ class Hashmap:
         """
         Function to check if the shared arcs in geom should be backward.
         If so, are written as -(index+1)
+
+        Parameters
+        ----------
+        arc_ids : list
+            description of input
+        
+        Returns
+        -------
+        arc_ids : list   
+            description of output        
         """
 
         shared_bool = np.isin(arc_ids, self.data["bookkeeping_shared_arcs"])
