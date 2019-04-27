@@ -1,1 +1,7 @@
 remote_theme: pmarsceill/just-the-docs
+theme: "just-the-docs"
+aux_links:
+  "Python TopoJSON on GitHub":
+    - "//github.com/mattijn/topojson"
+color_scheme: "dark"
+title: topojson
