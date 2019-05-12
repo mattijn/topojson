@@ -163,3 +163,14 @@ class TestCut(unittest.TestCase):
 
         topo = topojson.cut(topojson.join(topojson.extract(data)))
         self.assertEqual(topo["bookkeeping_linestrings"].size, 5618)
+
+    # this test was added since the fast_split was really slow on geometries
+    # when there are many junctions in the geometry. During debugging this test ran
+    # eventually 8x more quick.
+    def test_many_junctions(self):
+        data = geopandas.read_file(
+            "tests/files_geojson/mesh2d.geojson", driver="GeoJSON"
+        )
+        topo = topojson.cut(topojson.join(topojson.extract(data)))
+        self.assertEqual(topo["bookkeeping_linestrings"].size, 11010)
+

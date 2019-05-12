@@ -67,7 +67,7 @@ class Cut:
     def find_duplicates(self, segments_list):
         """
         Function for solely detecting and recording duplicate LineStrings.
-        Firstly couple combinations of LineStrings are created. A couple is defined 
+        Firstly creates couple-combinations of LineStrings. A couple is defined 
         as two linestrings where the enveloppe overlaps. Indexes of duplicates are
         appended to the list self.duplicates.
         
@@ -122,12 +122,17 @@ class Cut:
 
         if data["junctions"]:
             # split each feature given the intersections
-            # mp = geometry.MultiPoint(data["junctions"])
+            # prepare the junctions as a 2d coordinate array
             mp = data["junctions"]
+            if isinstance(mp, geometry.Point):
+                mp = geometry.MultiPoint([mp])
+
+            splitter = np.squeeze(np.array([pt.xy for pt in mp]), axis=(2,))
             slist = []
             for ls in data["linestrings"]:
                 # slines = split(ls, mp)
-                slines = fast_split(ls, mp)
+                line = np.array(ls.xy).T
+                slines = fast_split(line, splitter)
                 slist.append(list(geometry.MultiLineString(slines)))
 
             # flatten the splitted linestrings, create bookkeeping_geoms array
