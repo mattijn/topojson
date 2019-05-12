@@ -33,15 +33,15 @@ def asvoid(arr):
 
 def fast_split(line, splitter):
     """
-    Split a LineString with a Point or MultiPoint. 
+    Split a LineString (numpy.array) with a Point or MultiPoint. 
     This function is a replacement for the shapely.ops.split function, but faster.
     
     Parameters
     ----------
-    line : LineString
-        LineString that you like to be split
-    splitter : Point or MultiPoint
-        A single or multiple points on wich the line should be tried splitting
+    line : numpy.array 
+        numpy array with coordinates that you like to be split
+    splitter : numpy.array
+        numpy array with coordates on wich the line should be tried splitting
     
     Returns
     -------
@@ -50,35 +50,33 @@ def fast_split(line, splitter):
         array of coordinates. 
     """
 
-    if isinstance(splitter, geometry.Point):
-        splitter = geometry.MultiPoint([splitter])
-
-    # convert geometries of coordinates to numpy arrays
-    ls_xy = np.array(line.xy).T
-    sp_xy = np.squeeze(np.array([pt.xy for pt in splitter]), axis=(2,))
+    # previously did convert geometries of coordinates from LineString and (Multi)Point
+    # to numpy arrays. This function now expect this as input to save time.
+    # line = np.array(line.xy).T
+    # splitter = np.squeeze(np.array([pt.xy for pt in splitter]), axis=(2,))
 
     # locate index of splitter coordinates in linestring
-    # use tolerance parameter to select very nearby junctions to linestring
+    # TODO: maybe a r-tree indexer on the `splitter` can improve the timings
     tol = 1e8
     splitter_indices = np.flatnonzero(
         np.in1d(
-            asvoid(np.around(ls_xy * tol).astype(int)),
-            asvoid(np.around(sp_xy * tol).astype(int)),
+            asvoid(np.around(line * tol).astype(int)),
+            asvoid(np.around(splitter * tol).astype(int)),
         )
     )
 
     # compute the indices on wich to split the line
     # cannot split on first or last index of linestring
     splitter_indices = splitter_indices[
-        (splitter_indices < (ls_xy.shape[0] - 1)) & (splitter_indices > 0)
+        (splitter_indices < (line.shape[0] - 1)) & (splitter_indices > 0)
     ]
 
     # split the linestring where each sub-array includes the split-point
     # create a new array with the index elements repeated
-    tmp_indices = np.zeros(ls_xy.shape[0], dtype=int)
+    tmp_indices = np.zeros(line.shape[0], dtype=int)
     tmp_indices[splitter_indices] = 1
     tmp_indices += 1
-    ls_xy = np.repeat(ls_xy, tmp_indices, axis=0)
+    ls_xy = np.repeat(line, tmp_indices, axis=0)
 
     # update indices to account for the changed array
     splitter_indices = splitter_indices + np.arange(1, len(splitter_indices) + 1)
