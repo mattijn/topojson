@@ -176,7 +176,14 @@ class Extract:
             GeometryCollection instance
         """
 
-        obj = self.data[self.key]
+        if not hasattr(self, "key"):
+            obj = geom.__geo_interface__
+            self.key = "feature_0"
+            self.data = {self.key: obj}
+        else:
+            obj = self.data[self.key]
+
+        # obj = self.data[self.key]
         self.geomcollection_counter += 1
         self.records_collection = len(geom)
 
@@ -184,15 +191,15 @@ class Extract:
         # the original data objects is set as self._obj
         # the following lines can catch a GeometryCollection untill two levels deep
         # improvements on this are welcome
-        for idx, geom in enumerate(geom):
+        for idx, geo in enumerate(geom):
             # if geom is GeometryCollection, collect geometries within collection
             # on right level
-            if isinstance(geom, geometry.GeometryCollection):
-                self.records_collection = len(geom)
+            if isinstance(geo, geometry.GeometryCollection):
+                self.records_collection = len(geo)
                 if self.geomcollection_counter == 1:
                     self.obj = obj["geometries"]
                     self.geom_level_1 = idx
-                if self.geomcollection_counter == 2:
+                elif self.geomcollection_counter == 2:
                     self.obj = obj["geometries"][self.geom_level_1]["geometries"]
 
             # geom is NOT a GeometryCollection, determine location within collection
@@ -203,7 +210,7 @@ class Extract:
                     # one level up
                     if idx == self.records_collection - 1:
                         self.geomcollection_counter += -1
-                if self.geomcollection_counter == 2:
+                elif self.geomcollection_counter == 2:
                     self.obj = obj["geometries"][self.geom_level_1]["geometries"][idx]
                     # if last record in collection is parsed set collection counter
                     # one level up
@@ -211,7 +218,7 @@ class Extract:
                         self.geomcollection_counter += -1
 
             # set type for next loop
-            self.serialize_geom_type(geom)
+            self.serialize_geom_type(geo)
 
     @serialize_geom_type.register(geojson.FeatureCollection)
     def extract_featurecollection(self, geom):
@@ -253,7 +260,6 @@ class Extract:
             Feature instance
         """
 
-        # TODO: this will trigger an error as there is no self.obj
         if not hasattr(self, "obj"):
             obj = geom
             self.key = "feature_0"
