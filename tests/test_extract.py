@@ -202,4 +202,20 @@ class TestExtract(unittest.TestCase):
             ]
         )
         topo = topojson.extract(data)
-        print(topo)
+        self.assertEqual(len(topo["objects"]), 3)
+        self.assertEqual(len(topo["bookkeeping_geoms"]), 3)
+        self.assertEqual(len(topo["linestrings"]), 3)
+
+    # test shapely geometry collection.
+    def test_shapely_geometrycollection(self):
+        data = geometry.GeometryCollection(
+            [
+                geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]),
+                geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]),
+            ]
+        )
+        topo = topojson.extract(data)
+        self.assertEqual(len(topo["objects"]), 1)
+        self.assertEqual(len(topo["bookkeeping_geoms"]), 2)
+        self.assertEqual(len(topo["linestrings"]), 2)
+
