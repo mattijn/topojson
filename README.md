@@ -45,7 +45,14 @@ The following geometry types are registered as correct geographical input data:
 - `geojson.FeatureCollection`
 - `geopandas.GeoDataFrame`
 - `geopandas.GeoSeries`
-- `dict` of geometries (`LineString`, `MultiLineString`, `Polygon`, `MultiPolygon`, `Point`, `MultiPoint`, `GeometryCollection`)
+- `shapely.geometry.LineString`
+- `shapely.geometry.MultiLineString`
+- `shapely.geometry.Polygon`
+- `shapely.geometry.MultiPolygon`
+- `shapely.geometry.Point`
+- `shapely.geometry.MultiPoint`
+- `shapely.geometry.GeometryCollection`
+- `dict` of objects that provide a valid `__geo_interface__`
 
 ## Installation
 
@@ -69,6 +76,7 @@ The packages `geopandas` and `geojson` are solely used in the tests and recogniz
 
 ### Type: `dict`
 
+The dictionary should be structured like {`key1`: `obj1`, `key2`: `obj2`}.
 
 ```python
 import topojson
@@ -85,7 +93,8 @@ dictionary = {
 }
 ```
 
-# 
+#
+
 ```python
 topojson.topology(dictionary)
 ```
@@ -101,8 +110,8 @@ topojson.topology(dictionary)
 ```
 
 #
-### Type: `GeoDataFrame` from package `geopandas` (if installed)
 
+### Type: `GeoDataFrame` from package `geopandas` (if installed)
 
 ```python
 import geopandas
@@ -113,7 +122,7 @@ from shapely import geometry
 gdf = geopandas.GeoDataFrame({
     "name": ["abc", "def"],
     "geometry": [
-        geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]), 
+        geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]),
         geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]])
     ]
 })
@@ -145,11 +154,10 @@ gdf.head()
 </table>
 </div>
 
-
-
 <img src="images/geodataframe_plot.png" alt="Logo">
 
-# 
+#
+
 ```python
 topojson.topology(gdf)
 ```
@@ -173,8 +181,8 @@ topojson.topology(gdf)
 ```
 
 #
-### Type: `FeatureCollection` from package `geojson` (if installed)
 
+### Type: `FeatureCollection` from package `geojson` (if installed)
 
 ```python
 from geojson import Feature, Polygon, FeatureCollection
@@ -191,6 +199,7 @@ feature_collection = FeatureCollection([feature_1, feature_2])
 ```
 
 #
+
 ```python
 topojson.topology(feature_collection)
 ```
@@ -204,6 +213,7 @@ topojson.topology(feature_collection)
       [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
       [[1.0, 1.0], [1.0, 0.0]]]}
 ```
+
 #
 
 The notebooks folder of this GitHub repository also contains a Jupyter Notebook with a [tutorial][l1]. The many [tests][l2] as part of this package also can be used as example material.

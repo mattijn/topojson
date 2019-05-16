@@ -51,7 +51,7 @@ class Extract:
         - geojson.FeatureCollection
         - geopandas.GeoDataFrame
         - geopandas.GeoSeries
-        - dict
+        - dict of objects that provide a __geo_interface__
 
         Any non-registered geometry wil return as an error that cannot be mapped.
         """
@@ -304,9 +304,10 @@ class Extract:
             self.key = key
             self.obj = self.data[self.key]
 
-            # determine firstly if type of geom is a Shapely geometric object if not
-            # then the object might be a GeoJSON Feature or FeatureCollection
-            # otherwise it is not a recognized object and it will be removed
+            # determine firstly if type of geom is an object that provide a
+            # __geo_interface__. If not then the object might be a GeoJSON Feature or
+            # FeatureCollection otherwise it is not a recognized object and it will be
+            # removed
             try:
                 geom = geometry.shape(self.obj)
                 # object can be mapped, but may not be valid. remove invalid objects
