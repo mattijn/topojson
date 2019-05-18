@@ -2,6 +2,7 @@ from shapely import geometry
 import unittest
 import topojson
 import geopandas
+from topojson.join import Join
 
 
 class TestJoin(unittest.TestCase):
@@ -549,4 +550,13 @@ class TestJoin(unittest.TestCase):
     def test_non_noded_interesection(self):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         topo = topojson.join(topojson.extract(data), quant_factor=1e6)
-        self.assertEqual(len(topo['junctions']), 377)               
+        self.assertEqual(len(topo['junctions']), 377)   
+
+    def test_super_function_extract(self):
+        data = geometry.GeometryCollection([
+            geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]), 
+            geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]])
+        ])   
+        topo = Join(data)    
+        self.assertEqual(list(topo.join.keys()), 
+        ['type', 'linestrings', 'bookkeeping_geoms', 'objects', 'junctions'])

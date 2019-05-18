@@ -1,6 +1,8 @@
 import unittest
 import topojson
 import geopandas
+from shapely import geometry
+from topojson.cut import Cut
 
 
 class TestCut(unittest.TestCase):
@@ -173,4 +175,25 @@ class TestCut(unittest.TestCase):
         )
         topo = topojson.cut(topojson.join(topojson.extract(data)))
         self.assertEqual(topo["bookkeeping_linestrings"].size, 11010)
+
+    def test_super_function_cut(self):
+        data = geometry.GeometryCollection(
+            [
+                geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]),
+                geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]),
+            ]
+        )
+        topo = Cut(data)
+        self.assertEqual(
+            list(topo.cut.keys()),
+            [
+                "type",
+                "linestrings",
+                "bookkeeping_geoms",
+                "objects",
+                "junctions",
+                "bookkeeping_duplicates",
+                "bookkeeping_linestrings",
+            ],
+        )
 

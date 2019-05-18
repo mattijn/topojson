@@ -4,17 +4,24 @@ from .utils.ops import select_unique_combs
 import itertools
 import numpy as np
 import copy
+from .join import Join
 
 
-class Cut:
+class Cut(Join):
     """
     Split the linestrings given the junctions of shared paths and record duplicates.
     """
 
-    def __init__(self):
+    def __init__(self, data):
+        # execute previous step
+        super().__init__(data)
+
         # initation topology items
         self.duplicates = []
         self.bookkeeping_linestrings = []
+
+        # execute main function
+        self.cut = self.cutter(self.join)
 
     def index_array(self, parameter_list):
         """
@@ -94,7 +101,7 @@ class Cut:
                 idx_keep = i1 if i2 == idx_pop else i2
                 self.duplicates.append([idx_keep, idx_pop])
 
-    def main(self, data):
+    def cutter(self, data):
         """
         Entry point for the class Cut.
 
@@ -156,33 +163,33 @@ class Cut:
         return data
 
 
-def cut(data):
-    """
-    This function targets the following objectives: 
-    1. Split linestrings given the junctions of shared paths 
-    2. Identifies indexes of linestrings that are duplicates
+# def cut(data):
+#     """
+#     This function targets the following objectives:
+#     1. Split linestrings given the junctions of shared paths
+#     2. Identifies indexes of linestrings that are duplicates
 
-    The cut function is the third step in the topology computation.
-    The following sequence is adopted:
-    1. extract
-    2. join
-    3. cut 
-    4. dedup 
-    5. hashmap         
-    
-    Parameters
-    ----------
-    data : dict
-        object created by the method topojson.join.
-    
-    Returns
-    -------
-    dict
-        object updated and expanded with 
-        - updated key: linestrings
-        - new key: bookkeeping_duplicates
-        - new key: bookkeeping_linestrings    
-    """
-    data = copy.deepcopy(data)
-    cutter = Cut()
-    return cutter.main(data)
+#     The cut function is the third step in the topology computation.
+#     The following sequence is adopted:
+#     1. extract
+#     2. join
+#     3. cut
+#     4. dedup
+#     5. hashmap
+
+#     Parameters
+#     ----------
+#     data : dict
+#         object created by the method topojson.join.
+
+#     Returns
+#     -------
+#     dict
+#         object updated and expanded with
+#         - updated key: linestrings
+#         - new key: bookkeeping_duplicates
+#         - new key: bookkeeping_linestrings
+#     """
+#     data = copy.deepcopy(data)
+#     cutter = Cut()
+#     return cutter.main(data)

@@ -9,21 +9,28 @@ import numpy as np
 import itertools
 import copy
 import warnings
+from .extract import Extract
 
 if speedups.available:
     speedups.enable()
 
 
-class Join:
+class Join(Extract):
     """
     Identify junctions (intersection points) of shared paths.
     """
 
-    def __init__(self):
+    def __init__(self, data):
+        # execute previous step
+        super().__init__(data)
+
         # initation topology items
         self.junctions = []
         self.segments = []
         self.valerr = False
+
+        # execute main function
+        self.join = self.joiner(self.extract)
 
     def prequantize(self, linestrings, quant_factor=1e6):
         """
@@ -115,7 +122,7 @@ class Join:
             ls_p1_g1g2 = geometry.LineString([p1_g1, p1_g2])
             self.segments.extend([[ls_p1_g1g2]])
 
-    def main(self, data, quant_factor=None):
+    def joiner(self, data, quant_factor=None):
         """
         Entry point for the class Join.
 
@@ -209,36 +216,36 @@ class Join:
         return data
 
 
-def join(data, quant_factor=None):
-    """
-    This function targets the following objectives: 
-    1. Quantization of input linestrings if necessary
-    2. Identifies junctions of shared paths
+# def join(data, quant_factor=None):
+#     """
+#     This function targets the following objectives:
+#     1. Quantization of input linestrings if necessary
+#     2. Identifies junctions of shared paths
 
-    The join function is the second step in the topology computation.
-    The following sequence is adopted:
-    1. extract
-    2. join
-    3. cut 
-    4. dedup 
-    5. hashmap  
-    
-    Parameters
-    ----------
-    data : dict
-        object created by the method topojson.extract.
-    quant_factor : int, optional (default: None)
-        quantization factor, used to constrain float numbers to integer values.
-        - Use 1e4 for 5 valued values (00001-99999)
-        - Use 1e6 for 7 valued values (0000001-9999999)
-    
-    Returns
-    -------
-    dict
-        object expanded with 
-        - new key: junctions
-        - new key: transform (if quant_factor is not None)
-    """
-    data = copy.deepcopy(data)
-    joiner = Join()
-    return joiner.main(data, quant_factor)
+#     The join function is the second step in the topology computation.
+#     The following sequence is adopted:
+#     1. extract
+#     2. join
+#     3. cut
+#     4. dedup
+#     5. hashmap
+
+#     Parameters
+#     ----------
+#     data : dict
+#         object created by the method topojson.extract.
+#     quant_factor : int, optional (default: None)
+#         quantization factor, used to constrain float numbers to integer values.
+#         - Use 1e4 for 5 valued values (00001-99999)
+#         - Use 1e6 for 7 valued values (0000001-9999999)
+
+#     Returns
+#     -------
+#     dict
+#         object expanded with
+#         - new key: junctions
+#         - new key: transform (if quant_factor is not None)
+#     """
+#     data = copy.deepcopy(data)
+#     joiner = Join()
+#     return joiner.main(data, quant_factor)

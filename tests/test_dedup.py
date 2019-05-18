@@ -1,6 +1,8 @@
 import unittest
 import topojson
 import geopandas
+from topojson.dedup import Dedup
+from shapely import geometry
 
 
 class TestDedup(unittest.TestCase):
@@ -131,3 +133,25 @@ class TestDedup(unittest.TestCase):
         # splitting method needs to be improved
         self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 0)
         self.assertEqual(len(topo["junctions"]), 4)
+
+    def test_super_function_dedup(self):
+        data = geometry.GeometryCollection(
+            [
+                geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]),
+                geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]),
+            ]
+        )
+        topo = Dedup(data)
+        self.assertEqual(
+            list(topo.dedup.keys()),
+            [
+                "type",
+                "linestrings",
+                "bookkeeping_geoms",
+                "objects",
+                "junctions",
+                "bookkeeping_duplicates",
+                "bookkeeping_arcs",
+                "bookkeeping_shared_arcs",
+            ],
+        )

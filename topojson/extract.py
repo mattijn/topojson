@@ -15,17 +15,18 @@ except ImportError:
     from .utils.dummy import geojson
 
 
-class Extract:
+class Extract(object):
     """
     Decompose geometries into linestrings and track record of the linestrings.
     """
 
-    def __init__(self):
+    def __init__(self, data):
         # initation topology items
         self.bookkeeping_geoms = []
         self.linestrings = []
         self.geomcollection_counter = 0
         self.invalid_geoms = 0
+        self.extract = self.extractor(data)
 
     @methdispatch
     def serialize_geom_type(self, geom):
@@ -248,7 +249,7 @@ class Extract:
             data["feature_{}".format(str(idx).zfill(zfill_value))] = feature
 
         # new data dictionary is created, throw the geometries back to main()
-        self.main(data)
+        self.extractor(data)
 
     @serialize_geom_type.register(geojson.Feature)
     def extract_feature(self, geom):
@@ -341,7 +342,7 @@ class Extract:
             self.geomcollection_counter = 0
             self.geom_level_1 = 0
 
-    def main(self, data):
+    def extractor(self, data):
         """"
         Entry point for the class Extract.
 
@@ -394,44 +395,44 @@ class Extract:
         return data
 
 
-def extract(data):
-    """
-    This function targets the following objectives: 
-    1. Detection of geometrical type of the object
-    2. Extraction of linestrings from the object
+# def extract(data):
+#     """
+#     This function targets the following objectives:
+#     1. Detection of geometrical type of the object
+#     2. Extraction of linestrings from the object
 
-    The extract function is the first step in the topology computation.
-    The following sequence is adopted:
-    1. extract
-    2. join
-    3. cut
-    4. dedup
-    5. hashmap
-   
-    Parameters
-    ----------
-    data : Union[shapely.geometry.LineString, shapely.geometry.MultiLineString, 
-    shapely.geometry.Polygon, shapely.geometry.MultiPolygon, shapely.geometry.Point,
-    shapely.geometry.MultiPoint, shapely.geometry.GeometryCollection, geojson.Feature,
-    geojson.FeatureCollection, geopandas.GeoDataFrame, geopandas.GeoSeries, dict]
-        Different types of a geometry object, originating from shapely, geojson, 
-        geopandas and dictionary.
-    
-    Returns
-    -------
-    dict
-        object created including
-        - new key: type        
-        - new key: linestrings
-        - new key: bookkeeping_geoms
-        - new key: objects    
-    """
+#     The extract function is the first step in the topology computation.
+#     The following sequence is adopted:
+#     1. extract
+#     2. join
+#     3. cut
+#     4. dedup
+#     5. hashmap
 
-    # since we move and replace data in the object,
-    # we need a deepcopy to avoid changing the input-data
-    try:
-        data = copy.deepcopy(data)
-    except:
-        data = data.copy()
-    extractor = Extract()
-    return extractor.main(data)
+#     Parameters
+#     ----------
+#     data : Union[shapely.geometry.LineString, shapely.geometry.MultiLineString,
+#     shapely.geometry.Polygon, shapely.geometry.MultiPolygon, shapely.geometry.Point,
+#     shapely.geometry.MultiPoint, shapely.geometry.GeometryCollection, geojson.Feature,
+#     geojson.FeatureCollection, geopandas.GeoDataFrame, geopandas.GeoSeries, dict]
+#         Different types of a geometry object, originating from shapely, geojson,
+#         geopandas and dictionary.
+
+#     Returns
+#     -------
+#     dict
+#         object created including
+#         - new key: type
+#         - new key: linestrings
+#         - new key: bookkeeping_geoms
+#         - new key: objects
+#     """
+
+#     # since we move and replace data in the object,
+#     # we need a deepcopy to avoid changing the input-data
+#     try:
+#         data = copy.deepcopy(data)
+#     except:
+#         data = data.copy()
+#     extractor = Extract()
+#     return extractor.main(data)

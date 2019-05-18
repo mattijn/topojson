@@ -4,17 +4,24 @@ from shapely.ops import linemerge
 import itertools
 import numpy as np
 import copy
+from .cut import Cut
 
 
-class Dedup:
+class Dedup(Cut):
     """
     Dedup duplicates and merge contiguous arcs
     """
 
-    def __init__(self):
+    def __init__(self, data):
+        # execute previous step
+        super().__init__(data)
+
         # initation topology items
         self.shared_arcs_idx = []
         self.merged_arcs_idx = []
+
+        # execute main function of Dedup
+        self.dedup = self.deduper(self.cut)
 
     def index_array(self, nested_lists):
         """
@@ -192,7 +199,7 @@ class Dedup:
         list_bk = [obj[~np.isnan(obj)].astype(int).tolist() for obj in array_bk]
         return list_bk
 
-    def main(self, data):
+    def deduper(self, data):
         """
         Deduplication of linestrings that contain duplicates
 
@@ -250,7 +257,7 @@ class Dedup:
         return data
 
 
-def dedup(data):
-    data = copy.deepcopy(data)
-    deduper = Dedup()
-    return deduper.main(data)
+# def dedup(data):
+#     data = copy.deepcopy(data)
+#     deduper = Dedup()
+#     return deduper.main(data)

@@ -2,16 +2,23 @@ import numpy as np
 from itertools import compress
 from simplification import cutil
 import copy
+from .dedup import Dedup
 
 
-class Hashmap:
+class Hashmap(Dedup):
     """
     dedup duplicates and merge contiguous arcs
     """
 
-    def __init__(self):
+    def __init__(self, data):
+        # execute previous step
+        super().__init__(data)
+
         # initation topology items
         self.simp = False
+
+        # execute main function of Hashmap
+        self.hashmap = self.hashmapper(self.dedup)
 
     def hash_order(self, arc_ids, shared_bool):
         """
@@ -217,7 +224,7 @@ class Hashmap:
                     for result in self.resolve_objects(key, d):
                         yield result
 
-    def main(self, data, simplify_factor=None):
+    def hashmapper(self, data, simplify_factor=None):
         """
         Hashmap function resolves bookkeeping results to object arcs.
 
@@ -315,7 +322,7 @@ class Hashmap:
         return data
 
 
-def hashmap(data, simplify_factor=None):
-    data = copy.deepcopy(data)
-    hashmapper = Hashmap()
-    return hashmapper.main(data, simplify_factor)
+# def hashmap(data, simplify_factor=None):
+#     data = copy.deepcopy(data)
+#     hashmapper = Hashmap()
+#     return hashmapper.main(data, simplify_factor)

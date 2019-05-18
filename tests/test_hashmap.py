@@ -1,6 +1,8 @@
 import unittest
 import topojson
 import geopandas
+from shapely import geometry
+from topojson.hashmap import Hashmap
 
 
 class TestHasmap(unittest.TestCase):
@@ -105,3 +107,13 @@ class TestHasmap(unittest.TestCase):
             topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
         )
         self.assertEqual(len(topo["arcs"]), 18)
+
+    def test_super_function_hashmap(self):
+        data = geometry.GeometryCollection(
+            [
+                geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]),
+                geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]),
+            ]
+        )
+        topo = Hashmap(data)
+        self.assertEqual(list(topo.hashmap.keys()), ["type", "objects", "arcs"])
