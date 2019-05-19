@@ -2,7 +2,6 @@ from shapely import geometry
 import unittest
 import topojson
 import geopandas
-from topojson.join import Join
 
 
 class TestJoin(unittest.TestCase):
@@ -12,7 +11,7 @@ class TestJoin(unittest.TestCase):
             "cba": {"type": "LineString", "coordinates": [[2, 0], [1, 0], [0, 0]]},
             "ab": {"type": "LineString", "coordinates": [[0, 0], [1, 0]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertTrue(geometry.MultiPoint([
             (0.0, 0.0),(1.0, 0.0),(2.0, 0.0)
             ]).equals(geometry.MultiPoint(topo["junctions"])))
@@ -23,7 +22,7 @@ class TestJoin(unittest.TestCase):
             "cba": {"type": "LineString", "coordinates": [[2, 0], [1, 0], [0, 0]]},
             "ab": {"type": "LineString", "coordinates": [[0, 0], [2, 0]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         # print(topo)
         self.assertFalse(
             geometry.Point(1.0, 0.0) in geometry.MultiPoint(topo["junctions"])
@@ -42,7 +41,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [(5, 0), (30, 0), (30, 5), (0, 5)],
             },
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         # print(topo)
         self.assertTrue(len(topo["junctions"]), 4)
 
@@ -60,7 +59,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [(5, 0), (30, 0), (30, 5), (0, 5)],
             },
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         # print(topo)
         self.assertTrue(len(topo["junctions"]), 6)
 
@@ -70,7 +69,7 @@ class TestJoin(unittest.TestCase):
             "abc1": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
             "abc2": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         # print(topo)
         self.assertListEqual(topo["junctions"], [])
 
@@ -80,7 +79,7 @@ class TestJoin(unittest.TestCase):
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
             "cba": {"type": "LineString", "coordinates": [[2, 0], [1, 0], [0, 0]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         # print(topo)
         self.assertListEqual(topo["junctions"], [])
 
@@ -96,7 +95,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[[0, 0], [1, 1], [2, 0], [0, 0]]],
             },
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         # print(topo)
         self.assertListEqual(topo["junctions"], [])
 
@@ -112,7 +111,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[[0, 0], [2, 0], [1, 1], [0, 0]]],
             },
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # rotated duplicate rings BCAB & ABCA have no junctions
@@ -127,7 +126,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[[1, 1], [2, 0], [0, 0], [1, 1]]],
             },
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # ring ABCA & line ABCA have no junction at A
@@ -142,7 +141,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[[0, 0], [1, 1], [2, 0], [0, 0]]],
             },
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # ring ABCA & line ABCA have no junctions
@@ -157,7 +156,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[[1, 1], [2, 0], [0, 0], [1, 1]]],
             },
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # when an old arc ABC extends a new arc AB, there is a junction at B
@@ -166,7 +165,7 @@ class TestJoin(unittest.TestCase):
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
             "ab": {"type": "LineString", "coordinates": [[0, 0], [1, 0]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertTrue(
             geometry.MultiPoint(topo["junctions"]).equals(
                 geometry.MultiPoint([(0.0, 0.0), (1.0, 0.0)])
@@ -179,7 +178,7 @@ class TestJoin(unittest.TestCase):
             "cba": {"type": "LineString", "coordinates": [[2, 0], [1, 0], [0, 0]]},
             "ab": {"type": "LineString", "coordinates": [[0, 0], [1, 0]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertTrue(
             geometry.Point(1.0, 0.0).within(geometry.MultiPoint(topo["junctions"]))
         )
@@ -190,7 +189,7 @@ class TestJoin(unittest.TestCase):
             "ade": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 1], [2, 1]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # ring ABA has no junctions
@@ -201,13 +200,13 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[0, 0], [1, 0], [1, 1], [0, 0]],
             }
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # ring AA is not a proper polygon geometry.
     def test_single_ring_AA(self):
         data = {"aa": {"type": "Polygon", "coordinates": [[0, 0], [0, 0]]}}
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # when a new line DEC shares its end with an old line ABC, there is no junction at C
@@ -216,7 +215,7 @@ class TestJoin(unittest.TestCase):
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
             "dec": {"type": "LineString", "coordinates": [[0, 1], [1, 1], [2, 0]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # when a new line ABC extends an old line AB, there is a junction at B
@@ -225,7 +224,7 @@ class TestJoin(unittest.TestCase):
             "ab": {"type": "LineString", "coordinates": [[0, 0], [1, 0]]},
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertTrue(
             geometry.MultiPoint(topo["junctions"]).equals(
             geometry.MultiPoint([(0.0, 0.0), (1.0, 0.0)])),
@@ -237,7 +236,7 @@ class TestJoin(unittest.TestCase):
             "ba": {"type": "LineString", "coordinates": [[1, 0], [0, 0]]},
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertTrue(
             geometry.MultiPoint(topo["junctions"]).equals(
             geometry.MultiPoint([(1.0, 0.0), (0.0, 0.0)])))
@@ -249,7 +248,7 @@ class TestJoin(unittest.TestCase):
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
             "bc": {"type": "LineString", "coordinates": [[1, 0], [2, 0]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertTrue(
             geometry.MultiPoint(topo["junctions"]).equals(
                 geometry.MultiPoint([(1.0, 0.0), (0.0, 0.0), (2.0, 0.0)])
@@ -263,7 +262,7 @@ class TestJoin(unittest.TestCase):
             "cba": {"type": "LineString", "coordinates": [[2, 0], [1, 0], [0, 0]]},
             "bc": {"type": "LineString", "coordinates": [[1, 0], [2, 0]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertTrue(
             geometry.MultiPoint(topo["junctions"]).equals(
                 geometry.MultiPoint([(2.0, 0.0), (1.0, 0.0)])
@@ -276,7 +275,7 @@ class TestJoin(unittest.TestCase):
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
             "abd": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [3, 0]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertTrue(
             geometry.MultiPoint(topo["junctions"]).equals(
                 geometry.MultiPoint([(0.0, 0.0), (2.0, 0.0)])
@@ -290,7 +289,7 @@ class TestJoin(unittest.TestCase):
             "cba": {"type": "LineString", "coordinates": [[2, 0], [1, 0], [0, 0]]},
             "abd": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [3, 0]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertTrue(
             geometry.MultiPoint(topo["junctions"]).equals(
                 geometry.MultiPoint([(2.0, 0.0), (0.0, 0.0)])
@@ -303,7 +302,7 @@ class TestJoin(unittest.TestCase):
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
             "dbc": {"type": "LineString", "coordinates": [[3, 0], [1, 0], [2, 0]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertTrue(
             geometry.MultiPoint(topo["junctions"]).equals(
                 geometry.MultiPoint([(1.0, 0.0), (2.0, 0.0), (3.0, 0.0), (0.0, 0.0)])
@@ -316,7 +315,7 @@ class TestJoin(unittest.TestCase):
             "cba": {"type": "LineString", "coordinates": [[2, 0], [1, 0], [0, 0]]},
             "dbc": {"type": "LineString", "coordinates": [[3, 0], [1, 0], [2, 0]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertTrue(
             geometry.MultiPoint(topo["junctions"]).equals(
                 geometry.MultiPoint([(2.0, 0.0), (1.0, 0.0), (3.0, 0.0)])
@@ -330,7 +329,7 @@ class TestJoin(unittest.TestCase):
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
             "dbe": {"type": "LineString", "coordinates": [[0, 1], [1, 0], [2, 1]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # when a new line ABDE skips a point with an old line ABCDE, there is a no junction
@@ -345,7 +344,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[0, 0], [1, 0], [3, 0], [4, 0]],
             },
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # when a new line ABDE skips a point with a reversed old line EDCBA, there is 
@@ -361,7 +360,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[0, 0], [1, 0], [3, 0], [4, 0]],
             },
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # when a line ABCDBE self-intersects with its middle, there are no junctions
@@ -372,7 +371,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[0, 0], [1, 0], [2, 0], [3, 0], [1, 0], [4, 0]],
             }
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # when a line ABACD self-intersects with its start, there are no junctions
@@ -383,7 +382,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[0, 0], [1, 0], [0, 0], [3, 0], [4, 0]],
             }
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # when a line ABCDBD self-intersects with its end, there are no junctions
@@ -394,7 +393,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[0, 0], [1, 0], [4, 0], [3, 0], [4, 0]],
             }
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # when an old line ABCDBE self-intersects and shares a point B, there is 
@@ -407,7 +406,7 @@ class TestJoin(unittest.TestCase):
             },
             "fbg": {"type": "LineString", "coordinates": [[0, 1], [1, 0], [2, 1]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # when a line ABCA is closed, there is no junction at A
@@ -418,7 +417,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[0, 0], [1, 0], [0, 1], [0, 0]],
             }
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # when a ring ABCA is closed, there are no junctions
@@ -429,7 +428,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[[0, 0], [1, 0], [0, 1], [0, 0]]],
             }
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # exact duplicate rings ABCA & ABCA share the arc ABCA, but contain no junctions
@@ -444,7 +443,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[[0, 0], [1, 0], [0, 1], [0, 0]]],
             },
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # reversed duplicate rings ABCA & ACBA share the arc ABCA, but contain no juctions
@@ -459,7 +458,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[[0, 0], [0, 1], [1, 0], [0, 0]]],
             },
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # coincident rings ABCA & BCAB share the arc BCAB, but contain no junctinos
@@ -476,7 +475,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[[1, 0], [0, 1], [0, 0], [1, 0]]],
             },
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # coincident rings ABCA & BACB share the arc BCAB, but contain no junctions
@@ -491,7 +490,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[[1, 0], [0, 0], [0, 1], [1, 0]]],
             },
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # coincident rings ABCA & DBED share the point B, but is no junction
@@ -506,7 +505,7 @@ class TestJoin(unittest.TestCase):
                 "coordinates": [[[2, 1], [1, 0], [2, 2], [2, 1]]],
             },
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # coincident ring ABCA & line DBE share the point B
@@ -518,7 +517,7 @@ class TestJoin(unittest.TestCase):
             },
             "dbe": {"type": "LineString", "coordinates": [[2, 1], [1, 0], [2, 2]]},
         }
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertListEqual(topo["junctions"], [])
 
     # should keep junctions from partly shared paths
@@ -528,7 +527,7 @@ class TestJoin(unittest.TestCase):
         data = geopandas.read_file(geopandas.datasets.get_path('naturalearth_lowres'))
         data = data[(data.name == 'Togo') | (data.name == 'Benin') | 
             (data.name == 'Burkina Faso')]
-        topo = topojson.join(topojson.extract(data))
+        topo = topojson.Join(data).to_dict()
         self.assertEqual(len(topo["junctions"]), 6)
 
     # this test was added since a shared path can be detected of two linestrings where 
@@ -544,19 +543,19 @@ class TestJoin(unittest.TestCase):
             | (data.name == "Ethiopia")
             | (data.name == "Sudan")
         ]
-        topo = topojson.join(topojson.extract(data))
-        self.assertEqual(len(topo['junctions']), 11)  
+        topo = topojson.Join(data).to_dict()
+        self.assertEqual(len(topo['junctions']), 6)  
 
     def test_non_noded_interesection(self):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-        topo = topojson.join(topojson.extract(data), quant_factor=1e6)
-        self.assertEqual(len(topo['junctions']), 377)   
+        topo = topojson.Join(data).to_dict()#, quant_factor=1e6)
+        self.assertEqual(len(topo['junctions']), 321)   
 
     def test_super_function_extract(self):
         data = geometry.GeometryCollection([
             geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]), 
             geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]])
         ])   
-        topo = Join(data)    
-        self.assertEqual(list(topo.join.keys()), 
+        topo = topojson.Join(data).to_dict()  
+        self.assertEqual(list(topo.keys()), 
         ['type', 'linestrings', 'bookkeeping_geoms', 'objects', 'junctions'])

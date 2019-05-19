@@ -1,7 +1,5 @@
-# from .extract import Extract
-# from .join import Join
-# from .cut import Cut
-# from .dedup import Dedup
+import pprint
+import json
 from .hashmap import Hashmap
 
 # import copy
@@ -33,10 +31,19 @@ class Topology(Hashmap):
         self.settings.update({"snap_value_gridsize": snap_value_gridsize})
         self.settings.update({"simplify_factor": simplify_factor})
 
-        # execute previous step
-        self.topology = super().__init__(data)
+        # execute previous steps
+        super().__init__(data)
 
         # do something after hashmapping in necessary
+
+    def __repr__(self):
+        return "Topology(\n{}\n)".format(pprint.pformat(self.output))
+
+    def to_dict(self):
+        return self.output
+
+    def to_json(self):
+        return json.dumps(self.output)
 
 
 # def topology(

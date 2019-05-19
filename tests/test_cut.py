@@ -2,7 +2,6 @@ import unittest
 import topojson
 import geopandas
 from shapely import geometry
-from topojson.cut import Cut
 
 
 class TestCut(unittest.TestCase):
@@ -12,7 +11,7 @@ class TestCut(unittest.TestCase):
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
             "abc2": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
         }
-        topo = topojson.cut(topojson.join(topojson.extract(data)))
+        topo = topojson.Cut(data).to_dict()
         # print(topo)
         self.assertEqual(len(topo["junctions"]), 0)
         self.assertSequenceEqual(topo["bookkeeping_duplicates"].tolist(), [[1, 0]])
@@ -23,7 +22,7 @@ class TestCut(unittest.TestCase):
             "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
             "cba": {"type": "LineString", "coordinates": [[2, 0], [1, 0], [0, 0]]},
         }
-        topo = topojson.cut(topojson.join(topojson.extract(data)))
+        topo = topojson.Cut(data).to_dict()
         # print(topo)
         self.assertEqual(len(topo["junctions"]), 0)
         self.assertSequenceEqual(topo["bookkeeping_duplicates"].tolist(), [[1, 0]])
@@ -40,7 +39,7 @@ class TestCut(unittest.TestCase):
                 "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]],
             },
         }
-        topo = topojson.cut(topojson.join(topojson.extract(data)))
+        topo = topojson.Cut(data).to_dict()
         # print(topo)
         self.assertEqual(len(topo["junctions"]), 0)
         self.assertSequenceEqual(topo["bookkeeping_duplicates"].tolist(), [[1, 0]])
@@ -57,7 +56,7 @@ class TestCut(unittest.TestCase):
                 "coordinates": [[[0, 0], [2, 1], [1, 0], [0, 0]]],
             },
         }
-        topo = topojson.cut(topojson.join(topojson.extract(data)))
+        topo = topojson.Cut(data).to_dict()
         # print(topo)
         self.assertEqual(len(topo["junctions"]), 0)
         self.assertSequenceEqual(topo["bookkeeping_duplicates"].tolist(), [[1, 0]])
@@ -74,7 +73,7 @@ class TestCut(unittest.TestCase):
                 "coordinates": [[[1, 0], [2, 1], [0, 0], [1, 0]]],
             },
         }
-        topo = topojson.cut(topojson.join(topojson.extract(data)))
+        topo = topojson.Cut(data).to_dict()
         # print(topo)
         self.assertEqual(len(topo["junctions"]), 0)
         self.assertSequenceEqual(topo["bookkeeping_duplicates"].tolist(), [[1, 0]])
@@ -91,7 +90,7 @@ class TestCut(unittest.TestCase):
                 "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]],
             },
         }
-        topo = topojson.cut(topojson.join(topojson.extract(data)))
+        topo = topojson.Cut(data).to_dict()
         # print(topo)
         self.assertEqual(len(topo["junctions"]), 0)
         self.assertSequenceEqual(topo["bookkeeping_duplicates"].tolist(), [[1, 0]])
@@ -108,7 +107,7 @@ class TestCut(unittest.TestCase):
                 "coordinates": [[[1, 0], [2, 1], [0, 0], [1, 0]]],
             },
         }
-        topo = topojson.cut(topojson.join(topojson.extract(data)))
+        topo = topojson.Cut(data).to_dict()
         # print(topo)
         self.assertEqual(len(topo["junctions"]), 0)
         self.assertSequenceEqual(topo["bookkeeping_duplicates"].tolist(), [[1, 0]])
@@ -125,7 +124,7 @@ class TestCut(unittest.TestCase):
                 "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]],
             },
         }
-        topo = topojson.cut(topojson.join(topojson.extract(data)))
+        topo = topojson.Cut(data).to_dict()
         # print(topo)
         self.assertEqual(len(topo["junctions"]), 0)
         self.assertSequenceEqual(topo["bookkeeping_duplicates"].tolist(), [[1, 0]])
@@ -145,7 +144,7 @@ class TestCut(unittest.TestCase):
                 "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
             },
         }
-        topo = topojson.cut(topojson.join(topojson.extract(data)))
+        topo = topojson.Cut(data).to_dict()
         # print(topo)
         self.assertEqual(topo["bookkeeping_linestrings"].size, 6)
         self.assertSequenceEqual(topo["bookkeeping_duplicates"].tolist(), [[4, 1]])
@@ -155,7 +154,7 @@ class TestCut(unittest.TestCase):
     def test_to_cut_border_egypt_sudan(self):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         data = data[(data.name == "Egypt") | (data.name == "Sudan")]
-        topo = topojson.cut(topojson.join(topojson.extract(data)))
+        topo = topojson.Cut(data).to_dict()
         self.assertEqual(len(topo["bookkeeping_duplicates"].tolist()), 0)
 
     def test_nybb_fast_split(self):
@@ -163,7 +162,7 @@ class TestCut(unittest.TestCase):
         data = geopandas.read_file(nybb_path)
         data.set_index("BoroCode", inplace=True)
 
-        topo = topojson.cut(topojson.join(topojson.extract(data)))
+        topo = topojson.Cut(data).to_dict()
         self.assertEqual(topo["bookkeeping_linestrings"].size, 5618)
 
     # this test was added since the fast_split was really slow on geometries
@@ -173,7 +172,7 @@ class TestCut(unittest.TestCase):
         data = geopandas.read_file(
             "tests/files_geojson/mesh2d.geojson", driver="GeoJSON"
         )
-        topo = topojson.cut(topojson.join(topojson.extract(data)))
+        topo = topojson.Cut(data).to_dict()
         self.assertEqual(topo["bookkeeping_linestrings"].size, 11010)
 
     def test_super_function_cut(self):
@@ -183,7 +182,7 @@ class TestCut(unittest.TestCase):
                 geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]),
             ]
         )
-        topo = Cut(data)
+        topo = topojson.cut(data)
         self.assertEqual(
             list(topo.cut.keys()),
             [

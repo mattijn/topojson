@@ -1,23 +1,52 @@
-from .utils.dispatcher import methdispatch
+from ..utils.dispatcher import methdispatch
 import json
 import copy
 from shapely import geometry
 import logging
+import pprint
 
 try:
     import geopandas
 except ImportError:
-    from .utils.dummy import geopandas
+    from ..utils.dummy import geopandas
 
 try:
     import geojson
 except ImportError:
-    from .utils.dummy import geojson
+    from ..utils.dummy import geojson
 
 
 class Extract(object):
     """
-    Decompose geometries into linestrings and track record of the linestrings.
+    This class targets the following objectives:
+    1. Detection of geometrical type of the object
+    2. Extraction of linestrings from the object
+
+    The extract function is the first step in the topology computation.
+    The following sequence is adopted:
+    1. extract
+    2. join
+    3. cut
+    4. dedup
+    5. hashmap
+
+    Parameters
+    ----------
+    data : Union[shapely.geometry.LineString, shapely.geometry.MultiLineString,
+    shapely.geometry.Polygon, shapely.geometry.MultiPolygon, shapely.geometry.Point,
+    shapely.geometry.MultiPoint, shapely.geometry.GeometryCollection, geojson.Feature,
+    geojson.FeatureCollection, geopandas.GeoDataFrame, geopandas.GeoSeries, dict]
+        Different types of a geometry object, originating from shapely, geojson,
+        geopandas and dictionary of objects that prove a __geo_interface__.
+
+    Returns
+    -------
+    dict
+        object created including
+        - new key: type
+        - new key: linestrings
+        - new key: bookkeeping_geoms
+        - new key: objects    
     """
 
     def __init__(self, data):
@@ -26,7 +55,62 @@ class Extract(object):
         self.linestrings = []
         self.geomcollection_counter = 0
         self.invalid_geoms = 0
-        self.extract = self.extractor(data)
+        self.output = self.extractor(data)
+
+    def __repr__(self):
+        return "Extract(\n{}\n)".format(pprint.pformat(self.output))
+
+    def to_dict(self):
+        return self.output
+
+    def extractor(self, data):
+        """"
+        Entry point for the class Extract.
+
+        The extract function is the first step in the topology computation.
+        The following sequence is adopted:
+        1. extract
+        2. join
+        3. cut
+        4. dedup
+        5. hashmap
+
+        Returns an object including two new properties:
+
+        * linestrings - linestrings extracted from the hash, of the form [start, end], 
+        as shapely objects
+        * bookkeeping_geoms - record array storing index numbers of linestrings 
+        used in each object.
+
+        For each line or polygon geometry in the input hash, including nested
+        geometries as in geometry collections, the `coordinates` array is replaced
+        with an equivalent `"coordinates"` array that points to one of the 
+        linestrings as indexed in `bookkeeping_geoms`.
+
+        Points geometries are not collected within the new properties, but are placed 
+        directly into the `"coordinates"` array within each object.
+        """
+
+        self.data = data
+        self.serialize_geom_type(data)
+
+        # prepare to return object
+        data = {
+            "type": "Topology",
+            "linestrings": self.linestrings,
+            "bookkeeping_geoms": self.bookkeeping_geoms,
+            "objects": self.data,
+        }
+
+        # show the number of invalid geometries have been removed if any
+        if self.invalid_geoms > 0:
+            logging.warning(
+                "removed {} invalid geometric object{}".format(
+                    self.invalid_geoms, "" if self.invalid_geoms == 1 else "s"
+                )
+            )
+
+        return data
 
     @methdispatch
     def serialize_geom_type(self, geom):
@@ -341,98 +425,3 @@ class Extract(object):
             # reset geom collection counter and level
             self.geomcollection_counter = 0
             self.geom_level_1 = 0
-
-    def extractor(self, data):
-        """"
-        Entry point for the class Extract.
-
-        The extract function is the first step in the topology computation.
-        The following sequence is adopted:
-        1. extract
-        2. join
-        3. cut
-        4. dedup
-        5. hashmap
-
-        Returns an object including two new properties:
-
-        * linestrings - linestrings extracted from the hash, of the form [start, end], 
-        as shapely objects
-        * bookkeeping_geoms - record array storing index numbers of linestrings 
-        used in each object.
-
-        For each line or polygon geometry in the input hash, including nested
-        geometries as in geometry collections, the `coordinates` array is replaced
-        with an equivalent `"coordinates"` array that points to one of the 
-        linestrings as indexed in `bookkeeping_geoms`.
-
-        Points geometries are not collected within the new properties, but are placed 
-        directly into the `"coordinates"` array within each object.
-
-        Developping Notes
-        *
-        """
-
-        self.data = data
-        self.serialize_geom_type(data)
-
-        # prepare to return object
-        data = {
-            "type": "Topology",
-            "linestrings": self.linestrings,
-            "bookkeeping_geoms": self.bookkeeping_geoms,
-            "objects": self.data,
-        }
-
-        # show the number of invalid geometries have been removed if any
-        if self.invalid_geoms > 0:
-            logging.warning(
-                "removed {} invalid geometric object{}".format(
-                    self.invalid_geoms, "" if self.invalid_geoms == 1 else "s"
-                )
-            )
-
-        return data
-
-
-# def extract(data):
-#     """
-#     This function targets the following objectives:
-#     1. Detection of geometrical type of the object
-#     2. Extraction of linestrings from the object
-
-#     The extract function is the first step in the topology computation.
-#     The following sequence is adopted:
-#     1. extract
-#     2. join
-#     3. cut
-#     4. dedup
-#     5. hashmap
-
-#     Parameters
-#     ----------
-#     data : Union[shapely.geometry.LineString, shapely.geometry.MultiLineString,
-#     shapely.geometry.Polygon, shapely.geometry.MultiPolygon, shapely.geometry.Point,
-#     shapely.geometry.MultiPoint, shapely.geometry.GeometryCollection, geojson.Feature,
-#     geojson.FeatureCollection, geopandas.GeoDataFrame, geopandas.GeoSeries, dict]
-#         Different types of a geometry object, originating from shapely, geojson,
-#         geopandas and dictionary.
-
-#     Returns
-#     -------
-#     dict
-#         object created including
-#         - new key: type
-#         - new key: linestrings
-#         - new key: bookkeeping_geoms
-#         - new key: objects
-#     """
-
-#     # since we move and replace data in the object,
-#     # we need a deepcopy to avoid changing the input-data
-#     try:
-#         data = copy.deepcopy(data)
-#     except:
-#         data = data.copy()
-#     extractor = Extract()
-#     return extractor.main(data)

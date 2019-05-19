@@ -2,7 +2,6 @@ import unittest
 import topojson
 import geopandas
 from shapely import geometry
-from topojson.hashmap import Hashmap
 
 
 class TestHasmap(unittest.TestCase):
@@ -29,9 +28,7 @@ class TestHasmap(unittest.TestCase):
                 ],
             }
         }
-        topo = topojson.hashmap(
-            topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
-        )
+        topo = topojson.Hashmap(data).to_dict()
         # print(topo)
         self.assertEqual(
             topo["objects"]["data"]["geometries"][0]["arcs"], [[[4, 0]], [[1]], [[2]]]
@@ -48,9 +45,7 @@ class TestHasmap(unittest.TestCase):
                 "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
             },
         }
-        topo = topojson.hashmap(
-            topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
-        )
+        topo = topojson.Hashmap(data).to_dict()
         self.assertEqual(topo["objects"]["data"]["geometries"][0]["arcs"], [[-3, 0]])
         self.assertEqual(topo["objects"]["data"]["geometries"][1]["arcs"], [[1, 2]])
 
@@ -59,9 +54,7 @@ class TestHasmap(unittest.TestCase):
     def test_albania_greece(self):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         data = data[(data.name == "Albania") | (data.name == "Greece")]
-        topo = topojson.hashmap(
-            topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
-        )
+        topo = topojson.Hashmap(data).to_dict()
         self.assertEqual(len(topo["arcs"]), 3)
 
     # something is wrong with hashmapping in the example of benin
@@ -72,9 +65,7 @@ class TestHasmap(unittest.TestCase):
             | (data.name == "Benin")
             | (data.name == "Burkina Faso")
         ]
-        topo = topojson.hashmap(
-            topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
-        )
+        topo = topojson.Hashmap(data).to_dict()
         self.assertEqual(len(topo["arcs"]), 6)
 
     # something is wrong with hashmapping once a geometry has only shared arcs
@@ -87,9 +78,7 @@ class TestHasmap(unittest.TestCase):
             | (data.name == "Namibia")
             | (data.name == "Zambia")
         ]
-        topo = topojson.hashmap(
-            topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
-        )
+        topo = topojson.Hashmap(data).to_dict()
         self.assertEqual(len(topo["arcs"]), 14)
 
     # this test was added since the shared_arcs bookkeeping is doing well, but the
@@ -103,9 +92,7 @@ class TestHasmap(unittest.TestCase):
             | (data.name == "Mozambique")
             | (data.name == "Zambia")
         ]
-        topo = topojson.hashmap(
-            topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
-        )
+        topo = topojson.Hashmap(data).to_dict()
         self.assertEqual(len(topo["arcs"]), 18)
 
     def test_super_function_hashmap(self):
@@ -115,5 +102,5 @@ class TestHasmap(unittest.TestCase):
                 geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]),
             ]
         )
-        topo = Hashmap(data)
+        topo = topojson.Hashmap(data).to_dict()
         self.assertEqual(list(topo.hashmap.keys()), ["type", "objects", "arcs"])

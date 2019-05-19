@@ -1,7 +1,6 @@
 import unittest
 import topojson
 import geopandas
-from topojson.dedup import Dedup
 from shapely import geometry
 
 
@@ -24,7 +23,7 @@ class TestDedup(unittest.TestCase):
                 "coordinates": [[[17, 2], [3, 2], [10, 16], [17, 2]]],
             },
         }
-        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        topo = topojson.Dedup(data).to_dict()
         # print(topo)
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
         self.assertEqual(topo["bookkeeping_geoms"], [[0, 1], [2], [3]])
@@ -40,7 +39,7 @@ class TestDedup(unittest.TestCase):
                 "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
             },
         }
-        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        topo = topojson.Dedup(data).to_dict()
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
         self.assertEqual(topo["bookkeeping_shared_arcs"], [2])
         self.assertEqual(topo["bookkeeping_arcs"], [[2, 0], [1, 2]])
@@ -56,7 +55,7 @@ class TestDedup(unittest.TestCase):
                 "coordinates": [[[0, 0], [0, 1], [1, 0], [0, 0]]],
             },
         }
-        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        topo = topojson.Dedup(data).to_dict()
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
         self.assertEqual(topo["bookkeeping_shared_arcs"], [0])
         self.assertEqual(topo["bookkeeping_arcs"], [[0], [0]])
@@ -73,7 +72,7 @@ class TestDedup(unittest.TestCase):
                 "coordinates": [[0, 1], [1, 0], [2, 0], [3, 1]],
             },
         }
-        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        topo = topojson.Dedup(data).to_dict()
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
         self.assertEqual(topo["bookkeeping_shared_arcs"], [4])
         self.assertEqual(topo["bookkeeping_arcs"], [[0, 4, 1, 2], [3, 4, 5]])
@@ -87,7 +86,7 @@ class TestDedup(unittest.TestCase):
             | (data.name == "Benin")
             | (data.name == "Burkina Faso")
         ]
-        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        topo = topojson.Dedup(data).to_dict()
         self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 3)
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
 
@@ -104,7 +103,7 @@ class TestDedup(unittest.TestCase):
             | (data.name == "Mozambique")
             | (data.name == "Zambia")
         ]
-        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        topo = topojson.Dedup(data).to_dict()
         self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 10)
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
 
@@ -113,7 +112,7 @@ class TestDedup(unittest.TestCase):
     def test_no_shared_paths_in_geoms(self):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         data = data[(data.name == "Togo") | (data.name == "Liberia")]
-        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        topo = topojson.Dedup(data).to_dict()
         self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 0)
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
 
@@ -128,7 +127,7 @@ class TestDedup(unittest.TestCase):
                 "coordinates": [[0, 2], [1, 1], [2, 2], [3, 1], [4, 2]],
             },
         }
-        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        topo = topojson.Dedup(data).to_dict()
         # test pass, but 'bookkeeping_shared_arcs' should not be 0...
         # splitting method needs to be improved
         self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 0)
@@ -141,7 +140,7 @@ class TestDedup(unittest.TestCase):
                 geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]),
             ]
         )
-        topo = Dedup(data)
+        topo = topojson.Dedup(data).to_dict()
         self.assertEqual(
             list(topo.dedup.keys()),
             [
