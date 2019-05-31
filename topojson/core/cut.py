@@ -1,6 +1,6 @@
 from shapely import geometry
-from ..utils.ops import fast_split
-from ..utils.ops import select_unique_combs
+from ..ops import fast_split
+from ..ops import select_unique_combs
 import itertools
 import numpy as np
 import pprint

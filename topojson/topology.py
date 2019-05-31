@@ -1,6 +1,6 @@
 import pprint
 import json
-from .hashmap import Hashmap
+from .core.hashmap import Hashmap
 
 # import copy
 

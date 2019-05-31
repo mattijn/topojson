@@ -4,7 +4,8 @@ from shapely.wkb import loads
 from shapely.ops import shared_paths
 from shapely.ops import linemerge
 from shapely import speedups
-from ..utils.ops import select_unique_combs
+from ..ops import select_unique_combs
+from ..ops import prequantize
 import numpy as np
 import itertools
 import copy
@@ -110,7 +111,7 @@ class Join(Extract):
         # if set to None or a value < 1 (True equals 1) no quantizing is applied.
         if quant_factor is not None:
             if quant_factor > 1:
-                kx, ky, x0, y0 = self.prequantize(data["linestrings"], quant_factor)
+                kx, ky, x0, y0 = prequantize(data["linestrings"], quant_factor)
                 data["transform"] = {"scale": [kx, ky], "translate": [x0, y0]}
 
         # create list with unique combinations of lines using a rdtree
@@ -158,43 +159,6 @@ class Join(Extract):
         data["junctions"] = self.junctions
 
         return data
-
-    def prequantize(self, linestrings, quant_factor=1e6):
-        """
-        Function that applies quantization. Quantization removes information by 
-        reducing the precision of each coordinate, effectively snapping each point 
-        to a regular grid
-
-        Parameters
-        ----------
-        linestrings: list of shapely.geometry.LineStrings
-            LineStrings that will be quantized
-        quant_factor : int
-            Quantization factor. Normally this varies between 1e4, 1e5, 1e6. Where a 
-            higher number means a bigger grid where the coordinates can snap to. 
-
-        Returns
-        -------
-        kx, ky, x0, y0: int
-            Scale (kx, ky) and translation (x0, y0) values
-        """
-
-        x0, y0, x1, y1 = geometry.MultiLineString(linestrings).bounds
-        kx = 1 / ((quant_factor - 1) / (x1 - x0))
-        ky = 1 / ((quant_factor - 1) / (y1 - y0))
-
-        for ls in linestrings:
-            ls_xy = np.array(ls.xy)
-            ls_xy = (
-                np.array([(ls_xy[0] - x0) / kx, (ls_xy[1] - y0) / ky])
-                .T.round()
-                .astype(int)
-            )
-            ls.coords = ls_xy[
-                np.insert(np.absolute(np.diff(ls_xy, 1, axis=0)).sum(axis=1), 0, 1) != 0
-            ]
-
-        return kx, ky, x0, y0
 
     def shared_segs(self, g1, g2):
         """

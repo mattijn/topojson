@@ -7,7 +7,7 @@ from .core.join import Join
 from .core.cut import Cut
 from .core.dedup import Dedup
 from .core.hashmap import Hashmap
-from .core.topology import Topology
+from .topology import Topology
 
 
 def topology(data):
