@@ -1,19 +1,22 @@
-from ..utils.dispatcher import methdispatch
 import json
 import copy
 from shapely import geometry
 import logging
 import pprint
+from ..utils import singledispatch_class
+from ..utils import TopoOptions
+from ..ops import winding_order
+
 
 try:
     import geopandas
 except ImportError:
-    from ..utils.dummy import geopandas
+    from ..utils import geopandas
 
 try:
     import geojson
 except ImportError:
-    from ..utils.dummy import geojson
+    from ..utils import geojson
 
 
 class Extract(object):
@@ -37,7 +40,7 @@ class Extract(object):
     shapely.geometry.MultiPoint, shapely.geometry.GeometryCollection, geojson.Feature,
     geojson.FeatureCollection, geopandas.GeoDataFrame, geopandas.GeoSeries, dict]
         Different types of a geometry object, originating from shapely, geojson,
-        geopandas and dictionary of objects that prove a __geo_interface__.
+        geopandas and dictionary of objects that contain a __geo_interface__.
 
     Returns
     -------
@@ -49,8 +52,12 @@ class Extract(object):
         - new key: objects    
     """
 
-    def __init__(self, data):
-        # initation topology items
+    def __init__(self, data, **kwargs):
+        # initation topology options
+        if "options" in kwargs and isinstance(kwargs["options"], TopoOptions):
+            self.options = kwargs["options"]
+        else:
+            self.options = TopoOptions(**kwargs)
         self.bookkeeping_geoms = []
         self.linestrings = []
         self.geomcollection_counter = 0
@@ -100,6 +107,7 @@ class Extract(object):
             "linestrings": self.linestrings,
             "bookkeeping_geoms": self.bookkeeping_geoms,
             "objects": self.data,
+            "options": self.options,
         }
 
         # show the number of invalid geometries have been removed if any
@@ -112,7 +120,7 @@ class Extract(object):
 
         return data
 
-    @methdispatch
+    @singledispatch_class
     def serialize_geom_type(self, geom):
         """
         This function handles the different types that can occur within known 
@@ -198,6 +206,10 @@ class Extract(object):
 
         idx_bk = len(self.bookkeeping_geoms)
         idx_ls = len(self.linestrings)
+
+        # orient the outer polygon clockwise and the inner polygon counterclockwise
+        # to conform TopoJSON standard
+        geom = winding_order(geom=geom, order=self.options.winding_order)
 
         boundary = geom.boundary
         # catch ring with holes

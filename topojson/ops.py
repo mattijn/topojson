@@ -1,6 +1,7 @@
 import itertools
 import numpy as np
 from shapely import geometry
+from shapely import wkt
 from shapely.ops import transform
 from shapely.strtree import STRtree
 import pprint
@@ -216,7 +217,7 @@ def prequantize(linestrings, quant_factor=1e6):
             np.insert(np.absolute(np.diff(ls_xy, 1, axis=0)).sum(axis=1), 0, 1) != 0
         ]
 
-    return kx, ky, x0, y0
+    return {"scale": [kx, ky], "translate": [x0, y0]}
 
 
 def simplify(linestrings, epsilon, algorithm="dp", package="simplification"):
@@ -250,11 +251,17 @@ def simplify(linestrings, epsilon, algorithm="dp", package="simplification"):
     -------
     simp_linestrings: list of shapely.geometry.LineStrings
         LineStrings that are simplified
+
+    Docs
+    * https://observablehq.com/@lemonnish/minify-topojson-in-the-browser
+    * https://github.com/topojson/topojson-simplify#planarTriangleArea
+    * https://www.jasondavies.com/simplify/
+    * https://bost.ocks.org/mike/simplify/
     """
     return
 
 
-def winding_order(geom_collection, order="CW_CCW"):
+def winding_order(geom, order="CW_CCW"):
     """
     Function that force a certain winding order on the resulting output geometries. One 
     can choose between "CCW_CW" and "CW_CCW".
@@ -277,7 +284,7 @@ def winding_order(geom_collection, order="CW_CCW"):
 
     Parameters
     ----------
-    geom_collection : list of geometries or shapely.geometry.GeometryCollection
+    geom : geometry or shapely.geometry.GeometryCollection
         Geometry objects where the winding order will be forced upon.
     order : str, optional
         Choose "CW_CCW" for clockwise for exterior- and counterclockwise for 
@@ -286,32 +293,44 @@ def winding_order(geom_collection, order="CW_CCW"):
 
     Returns
     -------
-    geom_collection : list of geometries or shapely.geometry.GeometryCollection
+    geom : geometry or shapely.geometry.GeometryCollection
         Geometry objects where the chosen winding order is forced upon.
     """
 
-    # Orient the shape counter clockwise to be Vega conform
-    geom_collection = transform(geometry.polygon.orient, geom_collection)
+    # orient the outer polygon clockwise and the inner polygon to be counterclockwise
+    # to conform TopoJSON standard
+    if order == "CW_CCW":
+        geom = geometry.polygon.orient(geom, sign=-1.0)
+    elif order == "CCW_CW":
+        geom = geometry.polygon.orient(geom, sign=1.0)
+    else:
+        raise NameError("parameter {} was not recognized".format(order))
 
-    return geom_collection
+    return geom
 
 
-def round_coordinates(linestrings, precision):
+def round_coordinates(linestrings, rounding_precision):
     """
-    Round all coordinates to a specified precision, e.g. precision=0.001 on the 
-    resulting output geometries (after the topology is computed).
+    Round all coordinates to a specified precision, e.g. rounding_precision=3 will round
+    to 3 decimals on the resulting output geometries (after the topology is computed).
 
     Parameters
     ----------
     linestrings: list of shapely.geometry.LineStrings
-        LineStrings that will be simplified
-    precision : int
-        Precision value. Up till how many coordinates the coordinates should be rounded.
+        LineStrings of which the coordinates will be rounded
+    rounding_precision : int
+        Precision value. Up till how many decimales the coordinates should be rounded.
     
     Returns
     -------
-    round_linestrings: list of shapely.geometry.LineStrings
+    linestrings: list of shapely.geometry.LineStrings
+        LineStrings of which the coordinates will be rounded
     """
+    for idx, geom in enumerate(linestrings):
+        linestrings[idx] = wkt.loads(
+            wkt.dumps(geom, rounding_precision=rounding_precision)
+        )
+    return linestrings
 
 
 def prettify(topojson_object):
@@ -331,7 +350,7 @@ def prettify(topojson_object):
     return pprint.pprint(topojson_object)
 
 
-def properties(topojson_object, position="nested"):
+def properties_level(topojson_object, position="nested"):
     """
     Define where the attributes of the geometry object should be placed. Choose between
     "nested" or "foreign. Default is "nested" where the attribute information is placed
@@ -345,6 +364,10 @@ def properties(topojson_object, position="nested"):
     position : str, optional
         [description], by default "nested"
     """
+
+    import warnings
+
+    warnings.warn(("\nNot yet implemened."), DeprecationWarning, stacklevel=2)
 
 
 def delta_encoding(linestrings, prequantized=True):
