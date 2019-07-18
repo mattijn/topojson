@@ -14,5 +14,5 @@ classifiers = ["License :: OSI Approved :: BSD License"]
 
 [tool.flit.metadata.requires-extra]
 test = ["unittest"]
-dev = ["geojson", "geopandas"]
+dev = ["geojson", "fiona", "geopandas"]
 

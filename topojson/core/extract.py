@@ -38,9 +38,9 @@ class Extract(object):
     data : Union[shapely.geometry.LineString, shapely.geometry.MultiLineString,
     shapely.geometry.Polygon, shapely.geometry.MultiPolygon, shapely.geometry.Point,
     shapely.geometry.MultiPoint, shapely.geometry.GeometryCollection, geojson.Feature,
-    geojson.FeatureCollection, geopandas.GeoDataFrame, geopandas.GeoSeries, dict]
+    geojson.FeatureCollection, geopandas.GeoDataFrame, geopandas.GeoSeries, dict, list]
         Different types of a geometry object, originating from shapely, geojson,
-        geopandas and dictionary of objects that contain a __geo_interface__.
+        geopandas and dictionary or list of objects that contain a __geo_interface__.
 
     Returns
     -------
@@ -62,7 +62,7 @@ class Extract(object):
         self.linestrings = []
         self.geomcollection_counter = 0
         self.invalid_geoms = 0
-        self.output = self.extractor(data)
+        self.output = self.extractor(copy.deepcopy(data))
 
     def __repr__(self):
         return "Extract(\n{}\n)".format(pprint.pformat(self.output))
@@ -391,6 +391,21 @@ class Extract(object):
 
         self.obj = geom.__geo_interface__
         self.extract_featurecollection(self.obj)
+
+    @serialize_geom_type.register(list)
+    def extract_list(self, geom):
+        """*geom* type is List instance.
+        
+        Parameters
+        ----------
+        geom : list
+            List instance
+        """
+        # convert list to indexed-dictionary
+        data = dict(enumerate(geom))
+
+        # new data dictionary is created, throw the geometries back to main()
+        self.extractor(data)
 
     @serialize_geom_type.register(dict)
     def extract_dictionary(self, geom):

@@ -14,20 +14,15 @@ The package can be used as follow:
 ```python
 import topojson
 
-data = {
-    "abc": {
-        "type": "Polygon",
-        "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
-    },
-    "def": {
-        "type": "Polygon",
-        "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
-    },
-}
+data = [
+    {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
+    {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}
+]
 
 topojson.topology(data)
 ```
 
+```
     {'type': 'Topology',
      'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[0, -4, 1]]},
         {'type': 'Polygon', 'arcs': [[2, 3]]}],
@@ -36,6 +31,7 @@ topojson.topology(data)
       [[1.0, 1.0], [0.0, 1.0], [0.0, 0.0]],
       [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
       [[1.0, 1.0], [1.0, 0.0]]]}
+```
 
 The result is TopoJSON.
 
@@ -53,6 +49,7 @@ The following geometry types are registered as correct geographical input data:
 - `shapely.geometry.MultiPoint`
 - `shapely.geometry.GeometryCollection`
 - `dict` of objects that provide a valid `__geo_interface__`
+- `list` of objects that provide a valid `__geo_interface__`
 
 ## Installation
 
@@ -73,6 +70,37 @@ Download dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/ for Windo
 The packages `geopandas` and `geojson` are solely used in the tests and recognized as types with the extractor.
 
 ## Examples and tutorial notebooks
+
+### Type: `list`
+
+The list should contain items that supports the **geo**interface\_\_
+
+```python
+import topojson
+
+list_geoms = [
+    {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
+    {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}
+]
+```
+
+#
+
+```python
+topojson.topology(list_geoms)
+```
+
+```python
+    {'type': 'Topology',
+     'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[-3, 0]]},
+        {'type': 'Polygon', 'arcs': [[1, 2]]}],
+       'type': 'GeometryCollection'}},
+     'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
+      [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
+      [[1.0, 1.0], [1.0, 0.0]]]}
+```
+
+#
 
 ### Type: `dict`
 

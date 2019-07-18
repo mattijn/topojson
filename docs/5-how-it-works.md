@@ -34,4 +34,6 @@ The computation of the topology consists of the following sequence:
 5. `hashmap`:
    - Resolves bookkeeping results to object arcs.
 
-The names are borrowed from the JavaScript variant of TopoJSON, to establish a certain synergy between the packages, even though the code differs significant (and even the TopoJSON output).
+The names are borrowed from the JavaScript variant of TopoJSON, to establish a certain synergy between the packages, even though the code differs significant (and sometimes even the TopoJSON output).
+
+The addopted approach involves secure bookkeeping on multiple levels in order to succesfully pass all steps.

@@ -20,7 +20,38 @@ If you have geographical input data which object type is in the following list, 
 - `shapely.geometry.MultiPoint`
 - `shapely.geometry.GeometryCollection`
 - `dict` of objects that provide a valid `__geo_interface__`
-- `list` of objects that provide a valid `__geo_interface__` (not support yet!)
+- `list` of objects that provide a valid `__geo_interface__`
+
+### Type: `list`
+
+The list should contain items that supports the **geo**interface\_\_
+
+```python
+import topojson
+
+list_geoms = [
+    {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
+    {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}
+]
+```
+
+#
+
+```python
+topojson.topology(list_geoms)
+```
+
+```python
+    {'type': 'Topology',
+     'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[-3, 0]]},
+        {'type': 'Polygon', 'arcs': [[1, 2]]}],
+       'type': 'GeometryCollection'}},
+     'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
+      [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
+      [[1.0, 1.0], [1.0, 0.0]]]}
+```
+
+#
 
 ### Type: `dict`
 
