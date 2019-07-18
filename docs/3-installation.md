@@ -16,13 +16,29 @@ The library is installed succesfully if the following code will not give you any
 
 ```python
 import topojson
-import shapely
 
+data = [
+    {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
+    {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}
+]
 
+topojson.topology(data)
+```
 
 ```
 
-<h2>Depdencies</h2>
+    {'type': 'Topology',
+     'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[0, -4, 1]]},
+        {'type': 'Polygon', 'arcs': [[2, 3]]}],
+       'type': 'GeometryCollection'}},
+     'arcs': [[[0.0, 0.0], [1.0, 0.0]],
+      [[1.0, 1.0], [0.0, 1.0], [0.0, 0.0]],
+      [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
+      [[1.0, 1.0], [1.0, 0.0]]]}
+
+```
+
+<h2>Dependencies</h2>
 Topojson has the following minimal dependencies, all of which are installed automatically with the above installation commands:
 
 - numpy
@@ -37,17 +53,9 @@ To run the full test suite and for buidling the documentation a few additional d
 
 - unittest
 - geojson
+- fiona
 - geopandas
 
 <h2>Development Install</h2>
 
-The topojson source repository is available on GitHub. Once you have cloned the repository and installed all the above dependencies, run the following command from the root of the repository to install the master version:
-
-```python3 -m pip install -e .
-To install development dependencies as well, run
-
-\$ pip install -e .[dev]
-If you do not wish to clone the source repository, you can install the development version directly from GitHub using:
-
-\$ pip install git+https://github.com/mattijn/topojson
-```
+How to install?

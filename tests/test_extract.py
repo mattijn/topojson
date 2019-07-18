@@ -219,3 +219,10 @@ class TestExtract(unittest.TestCase):
         self.assertEqual(len(topo["bookkeeping_geoms"]), 2)
         self.assertEqual(len(topo["linestrings"]), 2)
 
+    def test_geo_interface_from_list(self):
+        data = [
+            {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
+            {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
+        ]
+        topo = Extract(data).to_dict()
+        self.assertEqual(len(topo["linestrings"]), 2)
