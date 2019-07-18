@@ -4,17 +4,87 @@ from shapely.ops import linemerge
 import itertools
 import numpy as np
 import copy
+import pprint
+from .cut import Cut
 
 
-class Dedup:
+class Dedup(Cut):
     """
     Dedup duplicates and merge contiguous arcs
     """
 
-    def __init__(self):
+    def __init__(self, data, **kwargs):
+        # execute previous step
+        super().__init__(data, **kwargs)
+
         # initation topology items
         self.shared_arcs_idx = []
         self.merged_arcs_idx = []
+
+        # execute main function of Dedup
+        self.output = self.deduper(self.output)
+
+    def __repr__(self):
+        return "Dedup(\n{}\n)".format(pprint.pformat(self.output))
+
+    def to_dict(self):
+        return self.output
+
+    def deduper(self, data):
+        """
+        Deduplication of linestrings that contain duplicates
+
+        The dedup function is the fourth step in the topology computation.
+        The following sequence is adopted:
+        1. extract
+        2. join
+        3. cut 
+        4. dedup
+        5. hashmap     
+        """
+
+        # deduplicate equal geometries
+        # create numpy array from bookkeeping_geoms variable for numerical computation
+        array_bk = self.index_array(data["bookkeeping_linestrings"])
+        array_bk_sarcs = None
+        if data["bookkeeping_duplicates"].size != 0:
+            array_bk_sarcs, dup_pair_list = self.deduplicate(
+                data["bookkeeping_duplicates"], data["linestrings"], array_bk
+            )
+
+        # apply a shapely linemerge to merge all contiguous line-elements
+        # first create a mask for shared arcs to select only non-duplicates
+        mask = np.isin(array_bk, array_bk_sarcs)
+        array_bk_ndp = copy.deepcopy(array_bk.astype(float))
+
+        # only do merging of arcs if there are contigous arcs in geoms
+        if array_bk_ndp[mask].size != 0:
+            # make sure the idx of shared arcs are set to np.nan
+            array_bk_ndp[mask] = np.nan
+
+            # slice array_bk_ndp for geoms (rows) containing np.nan values
+            slice_idx = np.all(~np.isnan(array_bk_ndp)[:, [0, -1]], axis=1)
+            sliced_array_bk_ndp = array_bk_ndp[slice_idx]
+
+            # apply linemerge on geoms containing contigious arcs and maintain
+            # bookkeeping
+            self.merge_contigious_arcs(data, sliced_array_bk_ndp)
+
+            # pop the merged contigious arcs and maintain bookkeeping.
+            self.pop_merged_arcs(data, array_bk, array_bk_sarcs)
+
+        # prepare to return object
+        del data["bookkeeping_linestrings"]
+        data["bookkeeping_arcs"] = self.list_from_array(array_bk)
+        if data["bookkeeping_duplicates"].size != 0:
+            data["bookkeeping_shared_arcs"] = array_bk_sarcs.astype(int).tolist()
+            data["bookkeeping_duplicates"] = self.list_from_array(
+                data["bookkeeping_duplicates"][dup_pair_list != -99]
+            )
+        else:
+            data["bookkeeping_shared_arcs"] = []
+
+        return data
 
     def index_array(self, nested_lists):
         """
@@ -191,66 +261,3 @@ class Dedup:
 
         list_bk = [obj[~np.isnan(obj)].astype(int).tolist() for obj in array_bk]
         return list_bk
-
-    def main(self, data):
-        """
-        Deduplication of linestrings that contain duplicates
-
-        The dedup function is the fourth step in the topology computation.
-        The following sequence is adopted:
-        1. extract
-        2. join
-        3. cut 
-        4. dedup
-        5. hashmap     
- 
-        """
-
-        # deduplicate equal geometries
-        # create numpy array from bookkeeping_geoms variable for numerical computation
-        array_bk = self.index_array(data["bookkeeping_linestrings"])
-        array_bk_sarcs = None
-        if data["bookkeeping_duplicates"].size != 0:
-            array_bk_sarcs, dup_pair_list = self.deduplicate(
-                data["bookkeeping_duplicates"], data["linestrings"], array_bk
-            )
-
-        # apply a shapely linemerge to merge all contiguous line-elements
-        # first create a mask for shared arcs to select only non-duplicates
-        mask = np.isin(array_bk, array_bk_sarcs)
-        array_bk_ndp = copy.deepcopy(array_bk.astype(float))
-
-        # only do merging of arcs if there are contigous arcs in geoms
-        if array_bk_ndp[mask].size != 0:
-            # make sure the idx of shared arcs are set to np.nan
-            array_bk_ndp[mask] = np.nan
-
-            # slice array_bk_ndp for geoms (rows) containing np.nan values
-            slice_idx = np.all(~np.isnan(array_bk_ndp)[:, [0, -1]], axis=1)
-            sliced_array_bk_ndp = array_bk_ndp[slice_idx]
-
-            # apply linemerge on geoms containing contigious arcs and maintain
-            # bookkeeping
-            self.merge_contigious_arcs(data, sliced_array_bk_ndp)
-
-            # pop the merged contigious arcs and maintain bookkeeping.
-            self.pop_merged_arcs(data, array_bk, array_bk_sarcs)
-
-        # prepare to return object
-        del data["bookkeeping_linestrings"]
-        data["bookkeeping_arcs"] = self.list_from_array(array_bk)
-        if data["bookkeeping_duplicates"].size != 0:
-            data["bookkeeping_shared_arcs"] = array_bk_sarcs.astype(int).tolist()
-            data["bookkeeping_duplicates"] = self.list_from_array(
-                data["bookkeeping_duplicates"][dup_pair_list != -99]
-            )
-        else:
-            data["bookkeeping_shared_arcs"] = []
-
-        return data
-
-
-def dedup(data):
-    data = copy.deepcopy(data)
-    deduper = Dedup()
-    return deduper.main(data)

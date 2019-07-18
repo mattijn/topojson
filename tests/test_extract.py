@@ -1,6 +1,6 @@
 import json
 import unittest
-import topojson
+from topojson.core.extract import Extract
 from shapely import geometry
 import geopandas
 import geojson
@@ -13,7 +13,7 @@ class TestExtract(unittest.TestCase):
             "foo": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
             "bar": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
         }
-        topo = topojson.extract(data)
+        topo = Extract(data).to_dict()
         self.assertEqual(len(topo["linestrings"]), 2)
 
     # assess if a multipolygon with hole is processed into the right number of rings
@@ -32,14 +32,14 @@ class TestExtract(unittest.TestCase):
                 ],
             }
         }
-        topo = topojson.extract(data)
+        topo = Extract(data).to_dict()
         self.assertEqual(len(topo["bookkeeping_geoms"]), 3)
         self.assertEqual(len(topo["linestrings"]), 4)
 
     # a LineString without coordinates is ke polygon geometry
     def test_empty_linestring(self):
         data = {"empty_ls": {"type": "LineString", "coordinates": None}}
-        topo = topojson.extract(data)
+        topo = Extract(data).to_dict()
         self.assertEqual(topo["objects"]["empty_ls"]["arcs"], None)
 
     # invalid polygon geometry
@@ -54,7 +54,7 @@ class TestExtract(unittest.TestCase):
                 "coordinates": [[[0, 0], [2, 0], [1, 1], [0, 0]]],
             },
         }
-        topo = topojson.extract(data)
+        topo = Extract(data).to_dict()
         self.assertEqual(len(topo["linestrings"]), 1)
 
     # test multiliinestring
@@ -69,7 +69,7 @@ class TestExtract(unittest.TestCase):
                 ],
             }
         }
-        topo = topojson.extract(data)
+        topo = Extract(data).to_dict()
         self.assertEqual(len(topo["linestrings"]), 3)
 
     # test nested geojosn geometrycollection collection
@@ -94,7 +94,7 @@ class TestExtract(unittest.TestCase):
                 ],
             }
         }
-        topo = topojson.extract(data)
+        topo = Extract(data).to_dict()
         self.assertEqual(
             len(topo["objects"]["foo"]["geometries"][0]["geometries"][0]["arcs"]), 1
         )
@@ -110,7 +110,7 @@ class TestExtract(unittest.TestCase):
                 ],
             },
         }
-        topo = topojson.extract(data)
+        topo = Extract(data).to_dict()
         self.assertEqual(len(topo["linestrings"]), 2)
 
     # test feature type
@@ -128,7 +128,7 @@ class TestExtract(unittest.TestCase):
                 },
             },
         }
-        topo = topojson.extract(data)
+        topo = Extract(data).to_dict()
         self.assertEqual(len(topo["linestrings"]), 2)
 
     # test feature collection including geometry collection
@@ -161,7 +161,7 @@ class TestExtract(unittest.TestCase):
                 ],
             }
         }
-        topo = topojson.extract(data)
+        topo = Extract(data).to_dict()
         # print(topology)
         self.assertEqual(len(topo["objects"]), 2)
         self.assertEqual(len(topo["bookkeeping_geoms"]), 2)
@@ -178,7 +178,7 @@ class TestExtract(unittest.TestCase):
     def test_geojson_feat_col_geom_col(self):
         with open("tests/files_geojson/feature_collection.geojson") as f:
             data = geojson.load(f)
-        topo = topojson.extract(data)
+        topo = Extract(data).to_dict()
         self.assertEqual(len(topo["objects"]), 1)
         self.assertEqual(len(topo["bookkeeping_geoms"]), 3)
         self.assertEqual(len(topo["linestrings"]), 3)
@@ -187,7 +187,7 @@ class TestExtract(unittest.TestCase):
     def test_geojson_feature_geom_col(self):
         with open("tests/files_geojson/feature.geojson") as f:
             data = geojson.load(f)
-        topo = topojson.extract(data)
+        topo = Extract(data).to_dict()
         self.assertEqual(len(topo["objects"]), 1)
         self.assertEqual(len(topo["bookkeeping_geoms"]), 3)
         self.assertEqual(len(topo["linestrings"]), 3)
@@ -201,7 +201,7 @@ class TestExtract(unittest.TestCase):
                 geometry.Polygon([(2, 0), (3, 0), (3, 1), (2, 1)]),
             ]
         )
-        topo = topojson.extract(data)
+        topo = Extract(data).to_dict()
         self.assertEqual(len(topo["objects"]), 3)
         self.assertEqual(len(topo["bookkeeping_geoms"]), 3)
         self.assertEqual(len(topo["linestrings"]), 3)
@@ -214,7 +214,7 @@ class TestExtract(unittest.TestCase):
                 geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]),
             ]
         )
-        topo = topojson.extract(data)
+        topo = Extract(data).to_dict()
         self.assertEqual(len(topo["objects"]), 1)
         self.assertEqual(len(topo["bookkeeping_geoms"]), 2)
         self.assertEqual(len(topo["linestrings"]), 2)

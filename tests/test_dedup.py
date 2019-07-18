@@ -1,6 +1,8 @@
 import unittest
 import topojson
 import geopandas
+from shapely import geometry
+from topojson.core.dedup import Dedup
 
 
 class TestDedup(unittest.TestCase):
@@ -22,7 +24,7 @@ class TestDedup(unittest.TestCase):
                 "coordinates": [[[17, 2], [3, 2], [10, 16], [17, 2]]],
             },
         }
-        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        topo = Dedup(data).to_dict()
         # print(topo)
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
         self.assertEqual(topo["bookkeeping_geoms"], [[0, 1], [2], [3]])
@@ -38,7 +40,7 @@ class TestDedup(unittest.TestCase):
                 "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
             },
         }
-        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        topo = Dedup(data).to_dict()
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
         self.assertEqual(topo["bookkeeping_shared_arcs"], [2])
         self.assertEqual(topo["bookkeeping_arcs"], [[2, 0], [1, 2]])
@@ -54,7 +56,7 @@ class TestDedup(unittest.TestCase):
                 "coordinates": [[[0, 0], [0, 1], [1, 0], [0, 0]]],
             },
         }
-        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        topo = Dedup(data).to_dict()
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
         self.assertEqual(topo["bookkeeping_shared_arcs"], [0])
         self.assertEqual(topo["bookkeeping_arcs"], [[0], [0]])
@@ -71,7 +73,7 @@ class TestDedup(unittest.TestCase):
                 "coordinates": [[0, 1], [1, 0], [2, 0], [3, 1]],
             },
         }
-        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        topo = Dedup(data).to_dict()
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
         self.assertEqual(topo["bookkeeping_shared_arcs"], [4])
         self.assertEqual(topo["bookkeeping_arcs"], [[0, 4, 1, 2], [3, 4, 5]])
@@ -85,7 +87,7 @@ class TestDedup(unittest.TestCase):
             | (data.name == "Benin")
             | (data.name == "Burkina Faso")
         ]
-        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        topo = Dedup(data).to_dict()
         self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 3)
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
 
@@ -102,8 +104,8 @@ class TestDedup(unittest.TestCase):
             | (data.name == "Mozambique")
             | (data.name == "Zambia")
         ]
-        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
-        self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 10)
+        topo = Dedup(data).to_dict()
+        self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 9)
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
 
     # this test was added since there is no test for non-intersecting geometries.
@@ -111,11 +113,11 @@ class TestDedup(unittest.TestCase):
     def test_no_shared_paths_in_geoms(self):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         data = data[(data.name == "Togo") | (data.name == "Liberia")]
-        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
+        topo = Dedup(data).to_dict()
         self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 0)
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
 
-    # this test was added since the local variable 'array_bk_sarcs' was
+    # this test was added since the local variable "array_bk_sarcs" was
     # referenced before assignment. As was raised in:
     # https://github.com/mattijn/topojson/issues/3
     def test_array_bk_sarcs_reference(self):
@@ -126,8 +128,31 @@ class TestDedup(unittest.TestCase):
                 "coordinates": [[0, 2], [1, 1], [2, 2], [3, 1], [4, 2]],
             },
         }
-        topo = topojson.dedup(topojson.cut(topojson.join(topojson.extract(data))))
-        # test pass, but 'bookkeeping_shared_arcs' should not be 0...
+        topo = Dedup(data).to_dict()
+        # test pass, but "bookkeeping_shared_arcs" should not be 0...
         # splitting method needs to be improved
         self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 0)
         self.assertEqual(len(topo["junctions"]), 4)
+
+    def test_super_function_dedup(self):
+        data = geometry.GeometryCollection(
+            [
+                geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]),
+                geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]),
+            ]
+        )
+        topo = Dedup(data).to_dict()
+        self.assertEqual(
+            list(topo.keys()),
+            [
+                "type",
+                "linestrings",
+                "bookkeeping_geoms",
+                "objects",
+                "options",
+                "junctions",
+                "bookkeeping_duplicates",
+                "bookkeeping_arcs",
+                "bookkeeping_shared_arcs",
+            ],
+        )
