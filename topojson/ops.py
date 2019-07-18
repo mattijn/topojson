@@ -297,8 +297,8 @@ def winding_order(geom, order="CW_CCW"):
         Geometry objects where the chosen winding order is forced upon.
     """
 
-    # orient the outer polygon clockwise and the inner polygon to be counterclockwise
-    # to conform TopoJSON standard
+    # CW_CWW will orient the outer polygon clockwise and the inner polygon to be
+    # counterclockwise to conform TopoJSON standard
     if order == "CW_CCW":
         geom = geometry.polygon.orient(geom, sign=-1.0)
     elif order == "CCW_CW":
