@@ -156,7 +156,7 @@ class TestCut(unittest.TestCase):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         data = data[(data.name == "Egypt") | (data.name == "Sudan")]
         topo = Cut(data).to_dict()
-        self.assertEqual(len(topo["bookkeeping_duplicates"].tolist()), 0)
+        self.assertEqual(len(topo["bookkeeping_duplicates"].tolist()), 1)
 
     def test_nybb_fast_split(self):
         nybb_path = geopandas.datasets.get_path("nybb")

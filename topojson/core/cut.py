@@ -35,9 +35,9 @@ class Cut(Join):
         - new key: bookkeeping_linestrings
     """
 
-    def __init__(self, data):
+    def __init__(self, data, **kwargs):
         # execute previous step
-        super().__init__(data)
+        super().__init__(data, **kwargs)
 
         # initation topology items
         self.duplicates = []

@@ -105,7 +105,7 @@ class TestDedup(unittest.TestCase):
             | (data.name == "Zambia")
         ]
         topo = Dedup(data).to_dict()
-        self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 10)
+        self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 9)
         self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
 
     # this test was added since there is no test for non-intersecting geometries.

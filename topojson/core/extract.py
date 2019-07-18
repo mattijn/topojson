@@ -57,7 +57,7 @@ class Extract(object):
         if "options" in kwargs and isinstance(kwargs["options"], TopoOptions):
             self.options = kwargs["options"]
         else:
-            self.options = TopoOptions(**kwargs)
+            self.options = TopoOptions(kwargs)
         self.bookkeeping_geoms = []
         self.linestrings = []
         self.geomcollection_counter = 0
@@ -208,8 +208,9 @@ class Extract(object):
         idx_ls = len(self.linestrings)
 
         # orient the outer polygon clockwise and the inner polygon counterclockwise
-        # to conform TopoJSON standard
-        geom = winding_order(geom=geom, order=self.options.winding_order)
+        # to conform TopoJSON standard (CW_CCW)
+        if self.options.winding_order != None:
+            geom = winding_order(geom=geom, order=self.options.winding_order)
 
         boundary = geom.boundary
         # catch ring with holes

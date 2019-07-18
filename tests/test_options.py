@@ -26,6 +26,6 @@ class TestOptions(unittest.TestCase):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         data = data[(data.name == "South Africa")]
 
-        topo = Extract(data, winding_order="CW_CCW").to_dict()
+        topo = Extract(data, options={"winding_order": "CW_CCW"}).to_dict()
         self.assertEqual(len(topo["objects"]), 1)
         self.assertEqual(isinstance(topo["options"], TopoOptions), True)

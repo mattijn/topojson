@@ -29,7 +29,7 @@ class TestHasmap(unittest.TestCase):
                 ],
             }
         }
-        topo = Hashmap(data).to_dict()
+        topo = Hashmap(data, options={"winding_order": None}).to_dict()
         # print(topo)
         self.assertEqual(
             topo["objects"]["data"]["geometries"][0]["arcs"], [[[4, 0]], [[1]], [[2]]]
@@ -56,7 +56,7 @@ class TestHasmap(unittest.TestCase):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         data = data[(data.name == "Albania") | (data.name == "Greece")]
         topo = Hashmap(data).to_dict()
-        self.assertEqual(len(topo["arcs"]), 3)
+        self.assertEqual(len(topo["arcs"]), 4)
 
     # something is wrong with hashmapping in the example of benin
     def test_benin_surrounding_countries(self):
@@ -80,7 +80,7 @@ class TestHasmap(unittest.TestCase):
             | (data.name == "Zambia")
         ]
         topo = Hashmap(data).to_dict()
-        self.assertEqual(len(topo["arcs"]), 14)
+        self.assertEqual(len(topo["arcs"]), 13)
 
     # this test was added since the shared_arcs bookkeeping is doing well, but the
     # wrong arc gots deleted. How come?
@@ -94,7 +94,7 @@ class TestHasmap(unittest.TestCase):
             | (data.name == "Zambia")
         ]
         topo = Hashmap(data).to_dict()
-        self.assertEqual(len(topo["arcs"]), 18)
+        self.assertEqual(len(topo["arcs"]), 17)
 
     def test_super_function_hashmap(self):
         data = geometry.GeometryCollection(

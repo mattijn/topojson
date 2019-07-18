@@ -33,22 +33,43 @@ setattr(geojson, "FeatureCollection", FeatureCollection)
 class TopoOptions(object):
     def __init__(
         self,
+        object={},
         snap_vertices=None,
         simplify=None,
         snap_value_gridsize=None,
         simplify_factor=None,
-        winding_order="CW_CCW",
+        winding_order=None,  # default should become "CW_CCW",
     ):
-        if snap_vertices:
-            self.snap_vertices = snap_vertices
-        if simplify:
-            self.simplify = simplify
-        if snap_value_gridsize:
-            self.snap_value_gridsize = snap_value_gridsize
-        if simplify_factor:
-            self.simplify_factor = simplify_factor
-        if winding_order:
-            self.winding_order = winding_order
+        # get all arguments and check if `object` is created.
+        # If so, use the key values of `object`, otherwise ignore `object`
+        arguments = locals()
+        if bool(arguments["object"]) != False:
+            arguments = arguments["object"]["options"]
+
+        if "snap_vertices" in arguments:
+            self.snap_vertices = arguments["snap_vertices"]
+        else:
+            self.snap_vertices = None
+
+        if "simplify" in arguments:
+            self.simplify = arguments["simplify"]
+        else:
+            self.simplify = None
+
+        if "snap_value_gridsize" in arguments:
+            self.snap_value_gridsize = arguments["snap_value_gridsize"]
+        else:
+            self.snap_value_gridsize = None
+
+        if "simplify_factor" in arguments:
+            self.simplify_factor = arguments["simplify_factor"]
+        else:
+            self.simplify_factor = None
+
+        if "winding_order" in arguments:
+            self.winding_order = arguments["winding_order"]
+        else:
+            self.simplify_factor = None
 
     def __repr__(self):
         return "TopoOptions(\n  {}\n)".format(pprint.pformat(self.__dict__))
