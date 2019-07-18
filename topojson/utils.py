@@ -76,3 +76,41 @@ def singledispatch_class(func):
     wrapper.register = dispatcher.register
     update_wrapper(wrapper, dispatcher)
     return wrapper
+
+
+def serialize_as_geodataframe(topo_object, url=False):
+    """
+    Convert a topology dictionary or string into a GeoDataFrame.
+
+    Parameters
+    ----------
+    topo_object : dict, str
+        a complete object representing an topojson encoded file as 
+        dict, str-object or str-url
+    
+    Returns
+    -------
+    gdf : geopandas.GeoDataFrame
+        topojson object parsed GeoDataFrame
+    """
+    import fiona
+    import geopandas
+    import json
+
+    # parse the object as byte string
+    if isinstance(topo_object, dict):
+        bytes_topo = str.encode(json.dumps(topo_object))
+    elif url == True:
+        import requests
+
+        request = requests.get(topo_object)
+        bytes_topo = bytes(request.content)
+    else:
+        bytes_topo = str.encode(topo_object)
+    # into an in-memory file
+    vsimem = fiona.ogrext.buffer_to_virtual_file(bytes_topo)
+
+    # read the features from a fiona collection into a GeoDataFrame
+    with fiona.Collection(vsimem, driver="TopoJSON") as f:
+        gdf = geopandas.GeoDataFrame.from_features(f, crs=f.crs)
+    return gdf

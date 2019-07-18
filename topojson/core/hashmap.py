@@ -4,6 +4,7 @@ from simplification import cutil
 import copy
 import pprint
 from .dedup import Dedup
+from ..utils import serialize_as_geodataframe
 
 
 class Hashmap(Dedup):
@@ -26,6 +27,11 @@ class Hashmap(Dedup):
 
     def to_dict(self):
         return self.output
+
+    def to_gdf(self):
+        topo_object = copy.copy(self.output)
+        del topo_object["options"]
+        return serialize_as_geodataframe(topo_object)
 
     def hashmapper(self, data, simplify_factor=None):
         """
