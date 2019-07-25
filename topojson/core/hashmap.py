@@ -5,6 +5,7 @@ import copy
 import pprint
 from .dedup import Dedup
 from ..utils import serialize_as_geodataframe
+from ..utils import serialize_as_svg
 
 
 class Hashmap(Dedup):
@@ -32,6 +33,9 @@ class Hashmap(Dedup):
         topo_object = copy.copy(self.output)
         del topo_object["options"]
         return serialize_as_geodataframe(topo_object)
+
+    def plot(self, separate=False):
+        serialize_as_svg(self.output)
 
     def hashmapper(self, data, simplify_factor=None):
         """

@@ -4,6 +4,7 @@ from shapely import geometry
 import logging
 import pprint
 from ..utils import singledispatch_class
+from ..utils import serialize_as_svg
 from ..utils import TopoOptions
 from ..ops import winding_order
 
@@ -69,6 +70,9 @@ class Extract(object):
 
     def to_dict(self):
         return self.output
+
+    def plot(self, separate=False):
+        serialize_as_svg(self.output)
 
     def extractor(self, data):
         """"
@@ -145,6 +149,7 @@ class Extract(object):
         - geopandas.GeoDataFrame
         - geopandas.GeoSeries
         - dict of objects that provide a __geo_interface__
+        - list of objects that provide a __geo_interface__        
 
         Any non-registered geometry wil return as an error that cannot be mapped.
         """

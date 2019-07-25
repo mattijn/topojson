@@ -6,6 +6,7 @@ from shapely.ops import linemerge
 from shapely import speedups
 from ..ops import select_unique_combs
 from ..ops import prequantize
+from ..utils import serialize_as_svg
 import numpy as np
 import itertools
 import copy
@@ -65,6 +66,9 @@ class Join(Extract):
 
     def to_dict(self):
         return self.output
+
+    def plot(self, separate=False):
+        serialize_as_svg(self.output)
 
     def joiner(self, data, quant_factor=None):
         """

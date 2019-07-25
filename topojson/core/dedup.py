@@ -6,6 +6,7 @@ import numpy as np
 import copy
 import pprint
 from .cut import Cut
+from ..utils import serialize_as_svg
 
 
 class Dedup(Cut):
@@ -29,6 +30,9 @@ class Dedup(Cut):
 
     def to_dict(self):
         return self.output
+
+    def plot(self, separate=False):
+        serialize_as_svg(self.output)
 
     def deduper(self, data):
         """

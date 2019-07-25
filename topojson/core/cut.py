@@ -1,6 +1,7 @@
 from shapely import geometry
 from ..ops import fast_split
 from ..ops import select_unique_combs
+from ..utils import serialize_as_svg
 import itertools
 import numpy as np
 import pprint
@@ -51,6 +52,9 @@ class Cut(Join):
 
     def to_dict(self):
         return self.output
+
+    def plot(self, separate=False):
+        serialize_as_svg(self.output)
 
     def cutter(self, data):
         """

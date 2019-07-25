@@ -1,6 +1,9 @@
 import pprint
 import json
+import copy
 from .hashmap import Hashmap
+from ..utils import serialize_as_geodataframe
+from ..utils import serialize_as_svg
 
 
 class Topology(Hashmap):
@@ -23,6 +26,14 @@ class Topology(Hashmap):
 
     def to_json(self):
         return json.dumps(self.output)
+
+    def to_gdf(self):
+        topo_object = copy.copy(self.output)
+        del topo_object["options"]
+        return serialize_as_geodataframe(topo_object)
+
+    def plot(self, separate=False):
+        serialize_as_svg(self.output)
 
 
 # def topology(

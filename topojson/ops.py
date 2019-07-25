@@ -52,6 +52,8 @@ def fast_split(line, splitter):
     list of numpy.array
         If more than 1 item, the line was split. Each item in the list is a 
         array of coordinates. 
+
+    TODO: Check how this: https://stackoverflow.com/a/328110/2459096 can help
     """
 
     # previously did convert geometries of coordinates from LineString and (Multi)Point

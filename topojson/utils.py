@@ -135,3 +135,17 @@ def serialize_as_geodataframe(topo_object, url=False):
     with fiona.Collection(vsimem, driver="TopoJSON") as f:
         gdf = geopandas.GeoDataFrame.from_features(f, crs=f.crs)
     return gdf
+
+
+def serialize_as_svg(topo_object, separate=False):
+    from IPython.display import SVG, display
+    from shapely import geometry
+
+    if separate:
+        for ix, line in enumerate(topo_object["linestrings"]):
+            svg = line._repr_svg_()
+            print(ix, line.wkt)
+            display(SVG(svg))
+    else:
+        display(geometry.MultiLineString(topo_object["linestrings"]))
+
