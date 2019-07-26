@@ -68,7 +68,7 @@ class Join(Extract):
         return self.output
 
     def plot(self, separate=False):
-        serialize_as_svg(self.output)
+        serialize_as_svg(self.output, separate)
 
     def joiner(self, data, quant_factor=None):
         """

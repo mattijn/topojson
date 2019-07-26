@@ -32,7 +32,7 @@ class Dedup(Cut):
         return self.output
 
     def plot(self, separate=False):
-        serialize_as_svg(self.output)
+        serialize_as_svg(self.output, separate)
 
     def deduper(self, data):
         """

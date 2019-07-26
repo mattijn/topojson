@@ -35,6 +35,80 @@ def asvoid(arr):
     return arr.view(np.dtype((np.void, arr.dtype.itemsize * arr.shape[-1])))
 
 
+def insert_coords_in_line(line, tree_splitter):
+    """
+    Insert coordinates that are on the line, but where no vertices exists
+
+    Parameters
+    ----------
+    line : numpy.array 
+        numpy array with coordinates representing a line segment
+    tree_splitter: STRtree
+        a STRtree splitter object   
+
+    Returns
+    -------
+    new_ls_xy : numpy.array 
+        numpy array with inserted coordinates, if any, representing a line segment  
+    pts_xy_on_line : numpy.array
+        numpy array with with coordinates that are on the line
+
+    TODO: Check if numpy is quicker to detect if a point is on a line segment
+          See also -> https://stackoverflow.com/a/328110/2459096               
+    """
+
+    # get junctions that contain within bbox line
+    pts_within_bbox = tree_splitter.query(line)
+
+    # select junctions that are within tolerance of line
+    tol_dist = 1e-8
+    pts_on_line = list(
+        itertools.compress(
+            pts_within_bbox, [line.distance(pt) < tol_dist for pt in pts_within_bbox]
+        )
+    )
+
+    if len(pts_on_line) == 0:
+        # no point on line, nothing to insert, nothing to split
+        return None, None
+
+    # convert shapely linestring and multipoint to numpy array
+    ls_xy = np.array(line.xy).T
+    pts_xy_on_line = np.squeeze(np.array([pt.xy for pt in pts_on_line]), axis=(2,))
+
+    # select junctions having non existing vertices in linestring
+    tol_float_prc = 1e8
+    pts_xy_nonexst = pts_xy_on_line[
+        ~np.in1d(
+            asvoid(np.around(pts_xy_on_line * tol_float_prc).astype(int)),
+            asvoid(np.around(ls_xy * tol_float_prc).astype(int)),
+        )
+    ]
+    if pts_xy_nonexst.size == 0:
+        return ls_xy, pts_xy_on_line
+
+    # compute the distance from the beginning of the linestring for each junction on line
+    splitter_dist = np.array(
+        [line.project(pt) for pt in geometry.MultiPoint(pts_xy_nonexst)]
+    )
+    splitter_dist = splitter_dist[splitter_dist > 0]
+
+    # get eucledian distance of all coords of line
+    ls_xy_roll = np.roll(ls_xy, 1, axis=0)
+    roll_min_ls = ls_xy_roll - ls_xy
+    eucl_dist = np.sqrt(np.einsum("ij,ij->i", roll_min_ls, roll_min_ls))
+
+    # the first distance is computed from the first point to the last point, set to 0
+    eucl_dist[0] = 0
+    ls_cumsum = eucl_dist.cumsum()
+
+    # include junctions in linestring
+    insert_idx = np.searchsorted(ls_cumsum, splitter_dist)
+    new_ls_xy = np.insert(ls_xy, insert_idx, pts_xy_nonexst, axis=0)
+
+    return new_ls_xy, pts_xy_on_line
+
+
 def fast_split(line, splitter):
     """
     Split a LineString (numpy.array) with a Point or MultiPoint. 
@@ -45,15 +119,13 @@ def fast_split(line, splitter):
     line : numpy.array 
         numpy array with coordinates that you like to be split
     splitter : numpy.array
-        numpy array with coordates on wich the line should be tried splitting
+        numpy array with coordiates on wich the line should be tried splitting   
     
     Returns
     -------
     list of numpy.array
         If more than 1 item, the line was split. Each item in the list is a 
         array of coordinates. 
-
-    TODO: Check how this: https://stackoverflow.com/a/328110/2459096 can help
     """
 
     # previously did convert geometries of coordinates from LineString and (Multi)Point

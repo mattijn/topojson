@@ -72,7 +72,7 @@ class Extract(object):
         return self.output
 
     def plot(self, separate=False):
-        serialize_as_svg(self.output)
+        serialize_as_svg(self.output, separate)
 
     def extractor(self, data):
         """"

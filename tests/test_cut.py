@@ -173,6 +173,8 @@ class TestCut(unittest.TestCase):
         data = geopandas.read_file(
             "tests/files_geojson/mesh2d.geojson", driver="GeoJSON"
         )
+        # previous test ran in 8.798s (best of 3)
+        # current test ran in 8.182s (best of 3)
         topo = Cut(data).to_dict()
         self.assertEqual(topo["bookkeeping_linestrings"].size, 11010)
 

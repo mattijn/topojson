@@ -1,11 +1,13 @@
-from shapely import geometry
-from ..ops import fast_split
-from ..ops import select_unique_combs
-from ..utils import serialize_as_svg
 import itertools
 import numpy as np
 import pprint
+from shapely import geometry
+from shapely.strtree import STRtree
 from .join import Join
+from ..ops import insert_coords_in_line
+from ..ops import fast_split
+from ..ops import select_unique_combs
+from ..utils import serialize_as_svg
 
 
 class Cut(Join):
@@ -54,7 +56,7 @@ class Cut(Join):
         return self.output
 
     def plot(self, separate=False):
-        serialize_as_svg(self.output)
+        serialize_as_svg(self.output, separate)
 
     def cutter(self, data):
         """
@@ -89,13 +91,17 @@ class Cut(Join):
             if isinstance(mp, geometry.Point):
                 mp = geometry.MultiPoint([mp])
 
-            splitter = np.squeeze(np.array([pt.xy for pt in mp]), axis=(2,))
+            # create spatial index on junctions
+            tree_splitter = STRtree(mp)
+            # splitter = np.squeeze(np.array([pt.xy for pt in mp]), axis=(2,))
             slist = []
             for ls in data["linestrings"]:
                 # slines = split(ls, mp)
-                line = np.array(ls.xy).T
-                slines = fast_split(line, splitter)
-                slist.append(list(geometry.MultiLineString(slines)))
+                line, splitter = insert_coords_in_line(ls, tree_splitter)
+                # prev function returns Nones if there is nothing to split
+                if line is not None:
+                    slines = fast_split(line, splitter)
+                    slist.append(list(geometry.MultiLineString(slines)))
 
             # flatten the splitted linestrings, create bookkeeping_geoms array
             # and find duplicates

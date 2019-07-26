@@ -33,7 +33,7 @@ class Topology(Hashmap):
         return serialize_as_geodataframe(topo_object)
 
     def plot(self, separate=False):
-        serialize_as_svg(self.output)
+        serialize_as_svg(self.output, separate)
 
 
 # def topology(
