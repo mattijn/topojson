@@ -1,4 +1,4 @@
-__version__ = "1.0rc2"
+__version__ = "1.0rc3"
 __doc__ = "Encode geographic data as topology in Python! 🌍"
 
 

@@ -6,6 +6,7 @@ import numpy as np
 import copy
 import pprint
 from .cut import Cut
+from ..utils import serialize_as_svg
 
 
 class Dedup(Cut):
@@ -30,6 +31,9 @@ class Dedup(Cut):
     def to_dict(self):
         return self.output
 
+    def plot(self, separate=False):
+        serialize_as_svg(self.output, separate)
+
     def deduper(self, data):
         """
         Deduplication of linestrings that contain duplicates
@@ -45,6 +49,7 @@ class Dedup(Cut):
 
         # deduplicate equal geometries
         # create numpy array from bookkeeping_geoms variable for numerical computation
+        # DOUBLE CHECK WHATS HAPPENING HERE .... bookkeepings_geoms is not used here...
         array_bk = self.index_array(data["bookkeeping_linestrings"])
         array_bk_sarcs = None
         if data["bookkeeping_duplicates"].size != 0:

@@ -129,9 +129,7 @@ class TestDedup(unittest.TestCase):
             },
         }
         topo = Dedup(data).to_dict()
-        # test pass, but "bookkeeping_shared_arcs" should not be 0...
-        # splitting method needs to be improved
-        self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 0)
+        self.assertEqual(len(topo["bookkeeping_shared_arcs"]), 1)
         self.assertEqual(len(topo["junctions"]), 4)
 
     def test_super_function_dedup(self):

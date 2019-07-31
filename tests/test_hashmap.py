@@ -29,7 +29,7 @@ class TestHasmap(unittest.TestCase):
                 ],
             }
         }
-        topo = Hashmap(data, options={"winding_order": None}).to_dict()
+        topo = Hashmap(data).to_dict()
         # print(topo)
         self.assertEqual(
             topo["objects"]["data"]["geometries"][0]["arcs"], [[[4, 0]], [[1]], [[2]]]
@@ -105,3 +105,48 @@ class TestHasmap(unittest.TestCase):
         )
         topo = Hashmap(data).to_dict()
         self.assertEqual(list(topo.keys()), ["type", "objects", "options", "arcs"])
+
+    # this test was added since geometries of only linestrings resulted in a topojson
+    # file that returns an empty geodataframe when reading
+    def test_linestrings_parsed_to_gdf(self):
+        data = [
+            {"type": "LineString", "coordinates": [[4, 0], [2, 2], [0, 0]]},
+            {
+                "type": "LineString",
+                "coordinates": [[0, 2], [1, 1], [2, 2], [3, 1], [4, 2]],
+            },
+        ]
+        topo = Hashmap(data).to_gdf()
+        self.assertNotEqual(topo["geometry"][0].wkt, "GEOMETRYCOLLECTION EMPTY")
+        self.assertEqual(topo["geometry"][0].type, "LineString")
+
+    # this test was added since objects with nested geometreycollections seems not
+    # being parsed in the topojson format.
+    # TODO: Not sure if this supposed to be done like this. Need further investigation.
+    # Pass for now:
+    def test_hashing_of_nested_geometrycollection(self):
+        data = {
+            "foo": {
+                "type": "GeometryCollection",
+                "geometries": [
+                    {
+                        "type": "GeometryCollection",
+                        "geometries": [
+                            {
+                                "type": "LineString",
+                                "coordinates": [[0.1, 0.2], [0.3, 0.4]],
+                            }
+                        ],
+                    },
+                    {
+                        "type": "Polygon",
+                        "coordinates": [[[0.5, 0.6], [0.7, 0.8], [0.9, 1.0]]],
+                    },
+                ],
+            }
+        }
+        topo = Hashmap(data).to_dict()  # .to_gdf()
+        self.assertEqual(topo["objects"]["data"]["type"], "GeometryCollection")
+        # topo = Hashmap(data).to_gdf()
+        # self.assertNotEqual(topo["geometry"][0].wkt, "GEOMETRYCOLLECTION EMPTY")
+

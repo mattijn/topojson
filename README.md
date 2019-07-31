@@ -73,7 +73,7 @@ The packages `geopandas` and `geojson` are solely used in the tests and recogniz
 
 ### Type: `list`
 
-The list should contain items that supports the **geo**interface\_\_
+The list should contain items that supports the `__geo_interface__`
 
 ```python
 import topojson

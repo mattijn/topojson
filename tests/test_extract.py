@@ -226,3 +226,29 @@ class TestExtract(unittest.TestCase):
         ]
         topo = Extract(data).to_dict()
         self.assertEqual(len(topo["linestrings"]), 2)
+
+    # duplicate rotated geometry bar with hole interior in geometry foo
+    def test_extract_geomcol_multipolygon_polygon(self):
+        data = {
+            "foo": {
+                "type": "GeometryCollection",
+                "geometries": [
+                    {
+                        "type": "MultiPolygon",
+                        "coordinates": [
+                            [
+                                [[10, 20], [20, 0], [0, 0], [3, 13], [10, 20]],
+                                [[3, 2], [10, 16], [17, 2], [3, 2]],
+                            ],
+                            [[[10, 4], [14, 4], [10, 12], [10, 4]]],
+                        ],
+                    },
+                    {
+                        "type": "Polygon",
+                        "coordinates": [[[20, 0], [35, 5], [10, 20], [20, 0]]],
+                    },
+                ],
+            }
+        }
+        topo = Extract(data).to_dict()
+        self.assertEqual(len(topo["linestrings"]), 4)
