@@ -98,10 +98,12 @@ class Cut(Join):
             for ls in data["linestrings"]:
                 # slines = split(ls, mp)
                 line, splitter = insert_coords_in_line(ls, tree_splitter)
-                # prev function returns Nones if there is nothing to split
-                if line is not None:
+                # prev function returns None for splitter if there is nothing to split
+                if splitter is not None:
                     slines = fast_split(line, splitter)
                     slist.append(list(geometry.MultiLineString(slines)))
+                else:
+                    slist.append([ls])
 
             # flatten the splitted linestrings, create bookkeeping_geoms array
             # and find duplicates

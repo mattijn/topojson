@@ -200,3 +200,31 @@ class TestCut(unittest.TestCase):
             ],
         )
 
+    # this geometry is added on several classes (extract and hashmap). Not yet clear in
+    # which phase it is going wrong
+    def test_cut_geomcol_multipolygon_polygon(self):
+        data = {
+            "foo": {
+                "type": "GeometryCollection",
+                "geometries": [
+                    {
+                        "type": "MultiPolygon",
+                        "coordinates": [
+                            [
+                                [[10, 20], [20, 0], [0, 0], [10, 20]],
+                                [[3, 2], [10, 16], [17, 2], [3, 2]],
+                            ],
+                            [[[6, 4], [14, 4], [10, 12], [6, 4]]],
+                        ],
+                    },
+                    {
+                        "type": "Polygon",
+                        "coordinates": [[[20, 0], [35, 5], [10, 20], [20, 0]]],
+                    },
+                ],
+            }
+        }
+        topo = Cut(data).to_dict()
+        # print(topo)
+        self.assertEqual(topo["bookkeeping_linestrings"].size, 8)
+

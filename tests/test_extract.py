@@ -251,4 +251,4 @@ class TestExtract(unittest.TestCase):
             }
         }
         topo = Extract(data).to_dict()
-        self.assertEqual(len(topo["linestrings"]), 2)
+        self.assertEqual(len(topo["linestrings"]), 4)

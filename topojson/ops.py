@@ -68,12 +68,13 @@ def insert_coords_in_line(line, tree_splitter):
         )
     )
 
+    # convert shapely linestring to numpy array
+    ls_xy = np.array(line.xy).T
     if len(pts_on_line) == 0:
         # no point on line, nothing to insert, nothing to split
-        return None, None
+        return ls_xy, None
 
-    # convert shapely linestring and multipoint to numpy array
-    ls_xy = np.array(line.xy).T
+    # convert multipoint to numpy array if there are points on line
     pts_xy_on_line = np.squeeze(np.array([pt.xy for pt in pts_on_line]), axis=(2,))
 
     # select junctions having non existing vertices in linestring
