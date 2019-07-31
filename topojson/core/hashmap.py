@@ -107,26 +107,9 @@ class Hashmap(Dedup):
             if "geometries" in feat:
                 feat["type"] = feat["geometries"][0]["type"]
 
-            if feat["type"] == "LineString":
-                f_arc = feat["arcs"][0]
-                feat["arcs"] = f_arc
+            self.resolve_arcs(feat)
 
-            if feat["type"] == "Polygon":
-                if "geometries" in feat:
-                    f_arc = feat["geometries"][0]["arcs"]
-                else:
-                    f_arc = feat["arcs"]
-
-                feat["arcs"] = f_arc
-
-            if feat["type"] == "MultiPolygon":
-                if "geometries" in feat:
-                    f_arcs = feat["geometries"][0]["arcs"]
-                else:
-                    f_arcs["arcs"]
-                feat["arcs"] = [[arc] for arc in f_arcs]
-
-            feat.pop("geometries", None)
+            # feat.pop("geometries", None)
             objects["geometries"].append(feat)
 
         data["objects"] = {}
@@ -347,3 +330,35 @@ class Hashmap(Dedup):
                 for d in v:
                     for result in self.resolve_objects(key, d):
                         yield result
+
+    def resolve_arcs(self, feat):
+        """
+        Function that resolves the arcs based on the type of the feature
+        """
+        if feat["type"] == "LineString":
+            f_arc = feat["arcs"][0]
+            feat["arcs"] = f_arc
+
+        elif feat["type"] == "Polygon":
+            if "geometries" in feat:
+                f_arc = feat["geometries"][0]["arcs"]
+            else:
+                f_arc = feat["arcs"]
+
+            feat["arcs"] = f_arc
+            feat.pop("geometries", None)
+
+        elif feat["type"] == "MultiPolygon":
+            if "geometries" in feat:
+                f_arcs = feat["geometries"][0]["arcs"]
+            else:
+                f_arcs["arcs"]
+            feat["arcs"] = [[arc] for arc in f_arcs]
+            feat.pop("geometries", None)
+
+        elif feat["type"] == "GeometryCollection":
+            feat["geometries"] = [
+                self.resolve_arcs(feat) for feat in feat["geometries"]
+            ]
+
+        return feat
