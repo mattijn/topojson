@@ -49,6 +49,7 @@ class Dedup(Cut):
 
         # deduplicate equal geometries
         # create numpy array from bookkeeping_geoms variable for numerical computation
+        # DOUBLE CHECK WHATS HAPPENING HERE .... bookkeepings_geoms is not used here...
         array_bk = self.index_array(data["bookkeeping_linestrings"])
         array_bk_sarcs = None
         if data["bookkeeping_duplicates"].size != 0:
