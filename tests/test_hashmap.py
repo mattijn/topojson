@@ -105,3 +105,18 @@ class TestHasmap(unittest.TestCase):
         )
         topo = Hashmap(data).to_dict()
         self.assertEqual(list(topo.keys()), ["type", "objects", "options", "arcs"])
+
+    # this test was added since geometries of only linestrings resulted in a topojson
+    # file that returns an empty geodataframe when reading
+    def test_linestrings_parsed_to_gdf(self):
+        data = [
+            {"type": "LineString", "coordinates": [[4, 0], [2, 2], [0, 0]]},
+            {
+                "type": "LineString",
+                "coordinates": [[0, 2], [1, 1], [2, 2], [3, 1], [4, 2]],
+            },
+        ]
+        topo = Hashmap(data).to_gdf()
+        self.assertNotEqual(topo["geometry"][0].wkt, "GEOMETRYCOLLECTION EMPTY")
+        self.assertEqual(topo["geometry"][0].type, "LineString")
+

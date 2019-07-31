@@ -3,9 +3,11 @@ from itertools import compress
 from simplification import cutil
 import copy
 import pprint
+import json
 from .dedup import Dedup
 from ..utils import serialize_as_geodataframe
 from ..utils import serialize_as_svg
+from ..utils import serialize_as_json
 
 
 class Hashmap(Dedup):
@@ -29,13 +31,18 @@ class Hashmap(Dedup):
     def to_dict(self):
         return self.output
 
+    def to_json(self, fp=None):
+        topo_object = copy.copy(self.output)
+        del topo_object["options"]
+        return serialize_as_json(topo_object, fp)
+
     def to_gdf(self):
         topo_object = copy.copy(self.output)
         del topo_object["options"]
         return serialize_as_geodataframe(topo_object)
 
-    def plot(self, separate=False):
-        serialize_as_svg(self.output, separate)
+    # def plot(self, separate=False):
+    #     serialize_as_svg(self.output, separate)
 
     def hashmapper(self, data, simplify_factor=None):
         """
@@ -99,6 +106,10 @@ class Hashmap(Dedup):
 
             if "geometries" in feat:
                 feat["type"] = feat["geometries"][0]["type"]
+
+            if feat["type"] == "LineString":
+                f_arc = feat["arcs"][0]
+                feat["arcs"] = f_arc
 
             if feat["type"] == "Polygon":
                 if "geometries" in feat:

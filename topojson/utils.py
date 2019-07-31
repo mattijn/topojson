@@ -1,6 +1,7 @@
 from functools import singledispatch, update_wrapper
 from types import SimpleNamespace
 import pprint
+import json
 
 # ----------- dummy files for geopandas and geojson ----------
 class GeoDataFrame(object):
@@ -137,7 +138,7 @@ def serialize_as_geodataframe(topo_object, url=False):
     return gdf
 
 
-def serialize_as_svg(topo_object, separate=False):
+def serialize_as_svg(topo_object, separate):
     from IPython.display import SVG, display
     from shapely import geometry
 
@@ -149,3 +150,9 @@ def serialize_as_svg(topo_object, separate=False):
     else:
         display(geometry.MultiLineString(topo_object["linestrings"]))
 
+
+def serialize_as_json(topo_object, fp):
+    if fp:
+        return print(json.dumps(topo_object), f=fp)
+    else:
+        return json.dumps(topo_object)
