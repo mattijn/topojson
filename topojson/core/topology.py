@@ -50,6 +50,22 @@ class Topology(Hashmap):
             topo_object, mesh, color, tooltip, projection, objectname
         )
 
+        # if simplify_factor is not None:
+        #     if simplify_factor >= 1:
+        #         for idx, ls in enumerate(data["linestrings"]):
+        #             self.data["linestrings"][idx] = cutil.simplify_coords(
+        #                 np.array(ls), simplify_factor
+        #             )
+        #         self.simplified = True
+
+        # else:
+        # if simplify_factor is not None:
+        #     if simplify_factor >= 1:
+        #         for idx, ls in enumerate(data["linestrings"]):
+        #             self.data["linestrings"][idx] = cutil.simplify_coords(
+        #                 np.array(ls), simplify_factor
+        #             ).tolist()
+        # else:
 
 
 # def topology(

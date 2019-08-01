@@ -86,23 +86,6 @@ class Hashmap(Dedup):
             for idx, ls in enumerate(data["linestrings"]):
                 self.data["linestrings"][idx] = np.array(ls).tolist()
 
-            # if simplify_factor is not None:
-            #     if simplify_factor >= 1:
-            #         for idx, ls in enumerate(data["linestrings"]):
-            #             self.data["linestrings"][idx] = cutil.simplify_coords(
-            #                 np.array(ls), simplify_factor
-            #             )
-            #         self.simplified = True
-
-        # else:
-        # if simplify_factor is not None:
-        #     if simplify_factor >= 1:
-        #         for idx, ls in enumerate(data["linestrings"]):
-        #             self.data["linestrings"][idx] = cutil.simplify_coords(
-        #                 np.array(ls), simplify_factor
-        #             ).tolist()
-        # else:
-
         objects = {}
         objects["geometries"] = []
         objects["type"] = "GeometryCollection"
