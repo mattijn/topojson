@@ -5,11 +5,11 @@ import copy
 import pprint
 import json
 from .dedup import Dedup
+from ..ops import delta_encoding
 from ..utils import serialize_as_geodataframe
 from ..utils import serialize_as_svg
 from ..utils import serialize_as_json
 from ..utils import serialize_as_altair
-
 
 
 class Hashmap(Dedup):
@@ -22,7 +22,7 @@ class Hashmap(Dedup):
         super().__init__(data, **kwargs)
 
         # initation topology items
-        self.simp = False
+        self.simplified = False
 
         # execute main function of Hashmap
         self.output = self.hashmapper(self.output)
@@ -79,37 +79,38 @@ class Hashmap(Dedup):
         # resolve bookkeeping to arcs in objects, including backward check of arcs
         list(self.resolve_objects("arcs", self.data["objects"]))
 
-        # parse the linestrings into list of coordinates
-        # only if linestrings are quantized, apply delta encoding.
-        if "transform" in data.keys():
-            if simplify_factor is not None:
-                if simplify_factor >= 1:
-                    for idx, ls in enumerate(data["linestrings"]):
-                        self.data["linestrings"][idx] = cutil.simplify_coords(
-                            np.array(ls), simplify_factor
-                        )
-                    self.simp = True
-
+        # apply delta-encoding or parse linestrings to list of coordinates directly
+        if not self.options.delta_encode:
             for idx, ls in enumerate(data["linestrings"]):
-                if self.simp:
-                    ls = ls.astype(int)
-                else:
-                    ls = np.array(ls).astype(int)
-                ls_p1 = copy.copy(ls[0])
-                ls -= np.roll(ls, 1, axis=0)
-                ls[0] = ls_p1
-                self.data["linestrings"][idx] = ls.tolist()
-
+                self.data["linestrings"][idx] = np.array(ls).tolist()
+        elif self.options.delta_encode and self.options.prequantize > 0:
+            self.data["linestrings"] = delta_encoding(
+                data["linestrings"], prequantized=True
+            )
         else:
-            if simplify_factor is not None:
-                if simplify_factor >= 1:
-                    for idx, ls in enumerate(data["linestrings"]):
-                        self.data["linestrings"][idx] = cutil.simplify_coords(
-                            np.array(ls), simplify_factor
-                        ).tolist()
-            else:
-                for idx, ls in enumerate(data["linestrings"]):
-                    self.data["linestrings"][idx] = np.array(ls).tolist()
+            import warnings
+
+            warnings.warn(
+                "currenly only applies delta encoding after prequantization",
+                stacklevel=2,
+            )
+
+            # if simplify_factor is not None:
+            #     if simplify_factor >= 1:
+            #         for idx, ls in enumerate(data["linestrings"]):
+            #             self.data["linestrings"][idx] = cutil.simplify_coords(
+            #                 np.array(ls), simplify_factor
+            #             )
+            #         self.simplified = True
+
+        # else:
+        # if simplify_factor is not None:
+        #     if simplify_factor >= 1:
+        #         for idx, ls in enumerate(data["linestrings"]):
+        #             self.data["linestrings"][idx] = cutil.simplify_coords(
+        #                 np.array(ls), simplify_factor
+        #             ).tolist()
+        # else:
 
         objects = {}
         objects["geometries"] = []

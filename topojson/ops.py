@@ -51,10 +51,7 @@ def insert_coords_in_line(line, tree_splitter):
     new_ls_xy : numpy.array 
         numpy array with inserted coordinates, if any, representing a line segment  
     pts_xy_on_line : numpy.array
-        numpy array with with coordinates that are on the line
-
-    TODO: Check if numpy is quicker to detect if a point is on a line segment
-          See also -> https://stackoverflow.com/a/328110/2459096               
+        numpy array with with coordinates that are on the line             
     """
 
     # get junctions that contain within bbox line
@@ -135,7 +132,6 @@ def fast_split(line, splitter):
     # splitter = np.squeeze(np.array([pt.xy for pt in splitter]), axis=(2,))
 
     # locate index of splitter coordinates in linestring
-    # TODO: maybe a r-tree indexer on the `splitter` can improve the timings
     tol = 1e8
     splitter_indices = np.flatnonzero(
         np.in1d(
@@ -280,17 +276,23 @@ def prequantize(linestrings, quant_factor=1e6):
     """
 
     x0, y0, x1, y1 = geometry.MultiLineString(linestrings).bounds
+
     kx = 1 / ((quant_factor - 1) / (x1 - x0))
     ky = 1 / ((quant_factor - 1) / (y1 - y0))
 
     for ls in linestrings:
         ls_xy = np.array(ls.xy)
         ls_xy = (
-            np.array([(ls_xy[0] - x0) / kx, (ls_xy[1] - y0) / ky]).T.round().astype(int)
+            np.array([(ls_xy[0] - x0) / kx, (ls_xy[1] - y0) / ky]).round().astype(int).T
         )
-        ls.coords = ls_xy[
+        # get boolean slice where consecutive repeating coordinates are filtered
+        bool_slice = (
             np.insert(np.absolute(np.diff(ls_xy, 1, axis=0)).sum(axis=1), 0, 1) != 0
-        ]
+        )
+        if not bool_slice.sum() == 1:
+            ls.coords = ls_xy[bool_slice]
+        # else:
+        #     ls.coords = ls_xy[[0, -1]]
 
     return {"scale": [kx, ky], "translate": [x0, y0]}
 
@@ -316,7 +318,7 @@ def simplify(linestrings, epsilon, algorithm="dp", package="simplification"):
         30-100 for "vw". 
     algorithm : str, optional
         Choose between `dp` for Douglas-Peucker and `vw` for Visvalingam–Whyatt.
-        Defaults to `rdp`, as its evaluation maintains to be good (Song & Miao, 2016).
+        Defaults to `dp`, as its evaluation maintains to be good (Song & Miao, 2016).
     package : str, optional
         Choose between `simplification` or `shapely`. Both pachakges contains 
         simplification algorithms (`shapely` only `rdp`, and `simplification` both `rdp`
@@ -455,7 +457,7 @@ def delta_encoding(linestrings, prequantized=True):
     ----------
     linestrings : list of shapely.geometry.LineStrings
         LineStrings that will be delta-encoded
-    quantized : bool, optional
+    prequantized : bool, optional
         set to True if the linestrings are prequantized , by default True
 
     Returns

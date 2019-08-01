@@ -28,13 +28,15 @@ class FeatureCollection(object):
 geojson = SimpleNamespace()
 setattr(geojson, "Feature", Feature)
 setattr(geojson, "FeatureCollection", FeatureCollection)
-# //--------- dummy files for geopandas and geojson ----------
 
 # ----------------- topology options object ------------------
 class TopoOptions(object):
     def __init__(
         self,
         object={},
+        compute_topology=True,
+        prequantize=False,
+        delta_encode=False,
         snap_vertices=None,
         simplify=None,
         snap_value_gridsize=None,
@@ -46,6 +48,21 @@ class TopoOptions(object):
         arguments = locals()
         if bool(arguments["object"]) != False:
             arguments = arguments["object"]["options"]
+
+        if "compute_topology" in arguments:
+            self.compute_topology = arguments["compute_topology"]
+        else:
+            self.compute_topology = True
+
+        if "prequantize" in arguments:
+            self.prequantize = arguments["prequantize"]
+        else:
+            self.prequantize = False
+
+        if "delta_encode" in arguments:
+            self.delta_encode = arguments["delta_encode"]
+        else:
+            self.delta_encode = False
 
         if "snap_vertices" in arguments:
             self.snap_vertices = arguments["snap_vertices"]
@@ -70,13 +87,10 @@ class TopoOptions(object):
         if "winding_order" in arguments:
             self.winding_order = arguments["winding_order"]
         else:
-            self.simplify_factor = None
+            self.winding_order = None
 
     def __repr__(self):
         return "TopoOptions(\n  {}\n)".format(pprint.pformat(self.__dict__))
-
-
-# //--------------- topology options object ------------------
 
 
 def singledispatch_class(func):
@@ -100,6 +114,7 @@ def singledispatch_class(func):
     return wrapper
 
 
+# ----------------- serialization functions ------------------
 def serialize_as_geodataframe(topo_object, url=False):
     """
     Convert a topology dictionary or string into a GeoDataFrame.
@@ -174,7 +189,7 @@ def serialize_as_altair(
             values=topo_object, format=alt.DataFormat(mesh=objectname, type="topojson")
         )
         chart = (
-            alt.Chart(data)
+            alt.Chart(data, width=300)
             .mark_geoshape(filled=False)
             .project(type=projection, reflectY=True)
         )
@@ -188,9 +203,11 @@ def serialize_as_altair(
         if tooltip == True:
             tooltip = [color]
         chart = (
-            alt.Chart(data)
+            alt.Chart(data, width=300)
             .mark_geoshape()
-            .encode(color=color, tooltip=tooltip)
+            .encode(
+                color=alt.Color(color, legend=alt.Legend(columns=2)), tooltip=tooltip
+            )
             .project(type=projection, reflectY=True)
         )
 

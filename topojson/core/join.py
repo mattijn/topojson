@@ -70,7 +70,7 @@ class Join(Extract):
     def plot(self, separate=False):
         serialize_as_svg(self.output, separate)
 
-    def joiner(self, data, quant_factor=None):
+    def joiner(self, data):
         """
         Entry point for the class Join. This function identiefs junctions 
         (intersection points) of shared paths.
@@ -107,16 +107,19 @@ class Join(Extract):
             - new key: transform (if quant_factor is not None)        
         """
 
-        if not data["linestrings"]:
+        # prequantize linestrings if required
+        if self.options.prequantize > 0:
+            # set default if not specifically given in the options
+            if type(self.options.prequantize) == bool:
+                quant_factor = 1e6
+            else:
+                quant_factor = self.options.prequantize
+
+            data["transform"] = prequantize(data["linestrings"], quant_factor)
+
+        if not self.options.compute_topology or not data["linestrings"]:
             data["junctions"] = self.junctions
             return data
-
-        # quantize linestrings before comparing
-        # if set to None or a value < 1 (True equals 1) no quantizing is applied.
-        if quant_factor is not None:
-            if quant_factor > 1:
-                kx, ky, x0, y0 = prequantize(data["linestrings"], quant_factor)
-                data["transform"] = {"scale": [kx, ky], "translate": [x0, y0]}
 
         # create list with unique combinations of lines using a rdtree
         line_combs = select_unique_combs(data["linestrings"])
