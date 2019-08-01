@@ -205,6 +205,7 @@ class TestExtract(unittest.TestCase):
         self.assertEqual(len(topo["objects"]), 3)
         self.assertEqual(len(topo["bookkeeping_geoms"]), 3)
         self.assertEqual(len(topo["linestrings"]), 3)
+        # TEST FAILS because of https://github.com/geopandas/geopandas/issues/1070
 
     # test shapely geometry collection.
     def test_shapely_geometrycollection(self):

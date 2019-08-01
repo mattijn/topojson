@@ -3,8 +3,7 @@ import unittest
 from shapely import geometry
 import geopandas
 import geojson
-
-# from topojson.utils import TopoOptions
+from topojson.utils import TopoOptions
 import topojson
 
 
