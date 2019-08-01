@@ -50,8 +50,6 @@ class Topology(Hashmap):
             topo_object, mesh, color, tooltip, projection, objectname
         )
 
-    # def plot(self, separate=False):
-    #     serialize_as_svg(self.output, separate)
 
 
 # def topology(

@@ -11,6 +11,7 @@ from ..utils import serialize_as_json
 from ..utils import serialize_as_altair
 
 
+
 class Hashmap(Dedup):
     """
     dedup duplicates and merge contiguous arcs
