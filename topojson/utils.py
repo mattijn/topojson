@@ -156,3 +156,43 @@ def serialize_as_json(topo_object, fp):
         return print(json.dumps(topo_object), f=fp)
     else:
         return json.dumps(topo_object)
+
+
+def serialize_as_altair(
+    topo_object,
+    mesh=True,
+    color=None,
+    tooltip=True,
+    projection="identity",
+    objectname="data",
+):
+    import altair as alt
+
+    # create a mesh visualization
+    if mesh and color is None:
+        data = alt.InlineData(
+            values=topo_object, format=alt.DataFormat(mesh=objectname, type="topojson")
+        )
+        chart = (
+            alt.Chart(data)
+            .mark_geoshape(filled=False)
+            .project(type=projection, reflectY=True)
+        )
+
+    # creating a chloropleth visualisation
+    elif color is not None:
+        data = alt.InlineData(
+            values=topo_object,
+            format=alt.DataFormat(feature=objectname, type="topojson"),
+        )
+        if tooltip == True:
+            tooltip = [color]
+        chart = (
+            alt.Chart(data)
+            .mark_geoshape()
+            .encode(color=color, tooltip=tooltip)
+            .project(type=projection, reflectY=True)
+        )
+
+    return chart
+

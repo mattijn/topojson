@@ -5,6 +5,7 @@ from .hashmap import Hashmap
 from ..utils import serialize_as_geodataframe
 from ..utils import serialize_as_svg
 from ..utils import serialize_as_json
+from ..utils import serialize_as_altair
 
 
 class Topology(Hashmap):
@@ -34,6 +35,20 @@ class Topology(Hashmap):
         topo_object = copy.copy(self.output)
         del topo_object["options"]
         return serialize_as_geodataframe(topo_object)
+
+    def to_alt(
+        self,
+        mesh=True,
+        color=None,
+        tooltip=True,
+        projection="identity",
+        objectname="data",
+    ):
+        topo_object = copy.copy(self.output)
+        del topo_object["options"]
+        return serialize_as_altair(
+            topo_object, mesh, color, tooltip, projection, objectname
+        )
 
     # def plot(self, separate=False):
     #     serialize_as_svg(self.output, separate)
