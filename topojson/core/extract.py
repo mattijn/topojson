@@ -71,7 +71,7 @@ class Extract(object):
     def to_dict(self):
         return self.output
 
-    def plot(self, separate=False):
+    def to_svg(self, separate=False):
         serialize_as_svg(self.output, separate)
 
     def extractor(self, data):

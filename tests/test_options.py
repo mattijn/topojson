@@ -40,8 +40,8 @@ class TestOptions(unittest.TestCase):
             },
         ]
 
-        no_topo = topojson.Topology(data, options={"compute_topology": False}).to_dict()
-        topo = topojson.Topology(data, options={"compute_topology": True}).to_dict()
+        no_topo = topojson.Topology(data, options={"topology": False}).to_dict()
+        topo = topojson.Topology(data, options={"topology": True}).to_dict()
 
         self.assertEqual(len(topo["arcs"]), 5)
         self.assertEqual(len(no_topo["arcs"]), 2)
@@ -50,9 +50,32 @@ class TestOptions(unittest.TestCase):
     def test_prequantization(self):
 
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[
+            (data.name == "Botswana")
+            | (data.name == "South Africa")
+            | (data.name == "Zimbabwe")
+            | (data.name == "Mozambique")
+            | (data.name == "Zambia")
+        ]
 
         topo = topojson.Topology(
-            data, options={"compute_topology": False, "prequantize": 1e4}
+            data, options={"topology": False, "prequantize": 1e4}
         ).to_dict()
-        self.assertEqual(len(topo["objects"]), 1)
-        self.assertEqual(isinstance(topo["options"], TopoOptions), True)
+        self.assertEqual("transform" in topo.keys(), True)
+
+    # test prequantization without computing topology
+    def test_prequantization_including_delta_encoding(self):
+
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[
+            (data.name == "Botswana")
+            | (data.name == "South Africa")
+            | (data.name == "Zimbabwe")
+            | (data.name == "Mozambique")
+            | (data.name == "Zambia")
+        ]
+
+        topo = topojson.Topology(
+            data, options={"topology": False, "prequantize": 1e4, "delta_encode": True}
+        ).to_dict()
+        self.assertEqual("transform" in topo.keys(), True)

@@ -447,7 +447,7 @@ def properties_level(topojson_object, position="nested"):
     warnings.warn(("\nNot yet implemened."), DeprecationWarning, stacklevel=2)
 
 
-def delta_encoding(linestrings, prequantized=True):
+def delta_encoding(linestrings):
     """
     Function to apply delta-encoding to linestrings. Delta-encoding is a technique ..
 
@@ -457,8 +457,6 @@ def delta_encoding(linestrings, prequantized=True):
     ----------
     linestrings : list of shapely.geometry.LineStrings
         LineStrings that will be delta-encoded
-    prequantized : bool, optional
-        set to True if the linestrings are prequantized , by default True
 
     Returns
     -------
@@ -467,10 +465,7 @@ def delta_encoding(linestrings, prequantized=True):
     """
 
     for idx, ls in enumerate(linestrings):
-        if prequantized:
-            ls = ls.astype(int)
-        else:
-            ls = np.array(ls).astype(int)
+        ls = np.array(ls).astype(int)
         ls_p1 = copy.copy(ls[0])
         ls -= np.roll(ls, 1, axis=0)
         ls[0] = ls_p1

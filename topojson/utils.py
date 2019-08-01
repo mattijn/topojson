@@ -34,12 +34,9 @@ class TopoOptions(object):
     def __init__(
         self,
         object={},
-        compute_topology=True,
+        topology=True,
         prequantize=False,
-        delta_encode=False,
-        snap_vertices=None,
         simplify=None,
-        snap_value_gridsize=None,
         simplify_factor=None,
         winding_order=None,  # default should become "CW_CCW",
     ):
@@ -49,35 +46,20 @@ class TopoOptions(object):
         if bool(arguments["object"]) != False:
             arguments = arguments["object"]["options"]
 
-        if "compute_topology" in arguments:
-            self.compute_topology = arguments["compute_topology"]
+        if "topology" in arguments:
+            self.topology = arguments["topology"]
         else:
-            self.compute_topology = True
+            self.topology = True
 
         if "prequantize" in arguments:
             self.prequantize = arguments["prequantize"]
         else:
             self.prequantize = False
 
-        if "delta_encode" in arguments:
-            self.delta_encode = arguments["delta_encode"]
-        else:
-            self.delta_encode = False
-
-        if "snap_vertices" in arguments:
-            self.snap_vertices = arguments["snap_vertices"]
-        else:
-            self.snap_vertices = None
-
         if "simplify" in arguments:
             self.simplify = arguments["simplify"]
         else:
             self.simplify = None
-
-        if "snap_value_gridsize" in arguments:
-            self.snap_value_gridsize = arguments["snap_value_gridsize"]
-        else:
-            self.snap_value_gridsize = None
 
         if "simplify_factor" in arguments:
             self.simplify_factor = arguments["simplify_factor"]
