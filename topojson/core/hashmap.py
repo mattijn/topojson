@@ -79,38 +79,12 @@ class Hashmap(Dedup):
         # resolve bookkeeping to arcs in objects, including backward check of arcs
         list(self.resolve_objects("arcs", self.data["objects"]))
 
-        # apply delta-encoding or parse linestrings to list of coordinates directly
-        if not self.options.delta_encode:
+        # apply delta-encoding if prequantization is applied
+        if self.options.prequantize > 0:
+            self.data["linestrings"] = delta_encoding(data["linestrings"])
+        else:
             for idx, ls in enumerate(data["linestrings"]):
                 self.data["linestrings"][idx] = np.array(ls).tolist()
-        elif self.options.delta_encode and self.options.prequantize > 0:
-            self.data["linestrings"] = delta_encoding(
-                data["linestrings"], prequantized=True
-            )
-        else:
-            import warnings
-
-            warnings.warn(
-                "currenly only applies delta encoding after prequantization",
-                stacklevel=2,
-            )
-
-            # if simplify_factor is not None:
-            #     if simplify_factor >= 1:
-            #         for idx, ls in enumerate(data["linestrings"]):
-            #             self.data["linestrings"][idx] = cutil.simplify_coords(
-            #                 np.array(ls), simplify_factor
-            #             )
-            #         self.simplified = True
-
-        # else:
-        # if simplify_factor is not None:
-        #     if simplify_factor >= 1:
-        #         for idx, ls in enumerate(data["linestrings"]):
-        #             self.data["linestrings"][idx] = cutil.simplify_coords(
-        #                 np.array(ls), simplify_factor
-        #             ).tolist()
-        # else:
 
         objects = {}
         objects["geometries"] = []
@@ -123,7 +97,6 @@ class Hashmap(Dedup):
 
             self.resolve_arcs(feat)
 
-            # feat.pop("geometries", None)
             objects["geometries"].append(feat)
 
         data["objects"] = {}

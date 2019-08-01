@@ -67,7 +67,7 @@ class Join(Extract):
     def to_dict(self):
         return self.output
 
-    def plot(self, separate=False):
+    def to_svg(self, separate=False):
         serialize_as_svg(self.output, separate)
 
     def joiner(self, data):
@@ -117,7 +117,7 @@ class Join(Extract):
 
             data["transform"] = prequantize(data["linestrings"], quant_factor)
 
-        if not self.options.compute_topology or not data["linestrings"]:
+        if not self.options.topology or not data["linestrings"]:
             data["junctions"] = self.junctions
             return data
 
