@@ -2,6 +2,7 @@ import pprint
 import json
 import copy
 from .hashmap import Hashmap
+from ..ops import properties_foreign
 from ..utils import serialize_as_geodataframe
 from ..utils import serialize_as_svg
 from ..utils import serialize_as_json
@@ -49,6 +50,12 @@ class Topology(Hashmap):
         return serialize_as_altair(
             topo_object, mesh, color, tooltip, projection, objectname
         )
+
+    def flatten_properties(self):
+        objects = self.output["objects"]["data"]["geometries"]
+        if objects:
+            objects = properties_foreign(objects)
+            self.output["objects"]["data"]["geometries"] = objects
 
         # if simplify_factor is not None:
         #     if simplify_factor >= 1:

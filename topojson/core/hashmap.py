@@ -95,7 +95,7 @@ class Hashmap(Dedup):
         for idx, feature in enumerate(data["objects"]):
             feat = data["objects"][feature]
 
-            if "geometries" in feat:
+            if "geometries" in feat and len(feat["geometries"]) == 1:
                 feat["type"] = feat["geometries"][0]["type"]
 
             self.resolve_arcs(feat)
@@ -374,7 +374,7 @@ class Hashmap(Dedup):
             if "geometries" in feat:
                 f_arcs = feat["geometries"][0]["arcs"]
             else:
-                f_arcs["arcs"]
+                f_arcs = feat["arcs"]
             feat["arcs"] = [[arc] for arc in f_arcs]
             feat.pop("geometries", None)
 
