@@ -162,6 +162,44 @@ def fast_split(line, splitter):
     return slines
 
 
+def signed_area(ring):
+    """
+    compute the signed area of a ring (polygon)
+    
+    note: implementation is numpy variant of shapely's version:
+    https://github.com/Toblerity/Shapely/blob/master/shapely/algorithms/cga.py
+    
+    Parameters
+    ----------
+    ring : shapely.geometry.LinearRing
+        an exterior or inner ring of a shapely.geometry.Polygon
+    
+    Returns
+    -------
+    float
+        the signed area
+    """
+    xs, ys = np.array(ring.coords.xy)
+    signed_area = (xs * (np.roll(ys, -1) - np.roll(ys, +1))).sum() / 2
+    return signed_area
+
+
+def is_ccw(ring):
+    """provide information if a given ring is clockwise or counterclockwise.
+    
+    Parameters
+    ----------
+    ring : shapely.geometry.LinearRing
+        an exterior or inner ring of a shapely.geometry.Polygon
+    
+    Returns
+    -------
+    boolean
+        True if ring is counterclockwise and False if ring is clockwise
+    """
+    return signed_area(ring) >= 0.0
+
+
 def get_matches(geoms, tree_idx):
     """
     Function to return the indici of the rtree that intersects with the input geometries
@@ -374,8 +412,8 @@ def winding_order(geom, order="CW_CCW"):
         Geometry objects where the chosen winding order is forced upon.
     """
 
-    # CW_CWW will orient the outer polygon clockwise and the inner polygon to be
-    # counterclockwise to conform TopoJSON standard
+    # CW_CWW will orient the outer polygon clockwise and the inner polygon counter-
+    # clockwise to conform TopoJSON standard
     if order == "CW_CCW":
         geom = geometry.polygon.orient(geom, sign=-1.0)
     elif order == "CCW_CW":

@@ -4,8 +4,11 @@ from simplification import cutil
 import copy
 import pprint
 import json
+from shapely import geometry
+from shapely.ops import linemerge
 from .dedup import Dedup
 from ..ops import delta_encoding
+from ..ops import is_ccw
 from ..utils import serialize_as_geodataframe
 from ..utils import serialize_as_svg
 from ..utils import serialize_as_json
@@ -279,7 +282,39 @@ class Hashmap(Dedup):
         _, idx_arcs = np.unique(comb_arc_ids, return_index=True)
         arc_ids = comb_arc_ids[np.sort(idx_arcs)].tolist()
 
+        if order == 3:
+            # since alignment is done based on the first two arcs, need a double-check
+            # if it follows the required order of the ring
+            if self.inner and self.options.winding_order == "CCW_CW":
+                need_ccw = False
+            elif not self.inner and (
+                self.options.winding_order == "CW_CCW"
+                or self.options.winding_order is None
+            ):
+                need_ccw = False
+            else:
+                need_ccw = True
+
+            arc_ids = self.resolve_orient(arc_ids, need_ccw)
+
         return arc_ids
+
+    def resolve_orient(self, arcs_idx_geom, need_ccw):
+        arcs_geom = []
+        for arc_idx in arcs_idx_geom:
+            if arc_idx < 0:
+                arc = copy.copy(self.data["linestrings"][~arc_idx])
+                arc.coords = list(arc.coords)[::-1]
+                arcs_geom.append(arc)
+            else:
+                arc = self.data["linestrings"][arc_idx]
+                arcs_geom.append(arc)
+        lring = geometry.LinearRing(linemerge(arcs_geom))
+
+        if is_ccw(lring) != need_ccw:
+            arcs_idx_geom = (np.array(arcs_idx_geom) * -1 - 1).tolist()
+
+        return arcs_idx_geom
 
     def resolve_bookkeeping(self, geoms):
         """
@@ -290,10 +325,10 @@ class Hashmap(Dedup):
         arcs = []
         for geom in geoms:
             arcs_in_geom = self.data["bookkeeping_geoms"][geom]
-            for arc_ref in arcs_in_geom:
+            for idx_arc, arc_ref in enumerate(arcs_in_geom):
                 arc_ids = self.data["bookkeeping_arcs"][arc_ref]
                 if len(arc_ids) > 1:
-                    # print('detect backwards if shared arcs: {}'.format(arc_ids))
+                    self.inner = True if idx_arc > 0 else False
                     arc_ids = self.backward_arcs(arc_ids)
 
                 arcs.append(arc_ids)
