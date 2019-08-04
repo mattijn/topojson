@@ -150,3 +150,14 @@ class TestHasmap(unittest.TestCase):
         # topo = Hashmap(data).to_gdf()
         # self.assertNotEqual(topo["geometry"][0].wkt, "GEOMETRYCOLLECTION EMPTY")
 
+    # this test was added because the winding order is still giving issues.
+    # see related issue: https://github.com/mattijn/topojson/issues/30
+    def test_winding_order_geom_solely_shared_arcs(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[
+            (data.name == "Jordan")
+            | (data.name == "Palestine")
+            | (data.name == "Israel")
+        ]
+        topo = Hashmap(data).to_dict()
+        self.assertEqual(topo["objects"]["data"]["geometries"][1]["arcs"], [[1, -6]])
