@@ -30,9 +30,9 @@ class TestHasmap(unittest.TestCase):
             }
         }
         topo = Hashmap(data).to_dict()
-        # print(topo)
         self.assertEqual(
-            topo["objects"]["data"]["geometries"][0]["arcs"], [[[4, 0]], [[1]], [[2]]]
+            topo["objects"]["data"]["geometries"][0]["geometries"][0]["arcs"],
+            [[[4, 0]], [[1]], [[2]]],
         )
 
     def test_hashmap_backward_polygon(self):
@@ -104,7 +104,10 @@ class TestHasmap(unittest.TestCase):
             ]
         )
         topo = Hashmap(data).to_dict()
+        geoms = topo["objects"]["data"]["geometries"][0]["geometries"]
         self.assertEqual(list(topo.keys()), ["type", "objects", "options", "arcs"])
+        self.assertEqual(geoms[0]["arcs"], [[-3, 0]])
+        self.assertEqual(geoms[1]["arcs"], [[1, 2]])
 
     # this test was added since geometries of only linestrings resulted in a topojson
     # file that returns an empty geodataframe when reading
@@ -122,7 +125,6 @@ class TestHasmap(unittest.TestCase):
 
     # this test was added since objects with nested geometreycollections seems not
     # being parsed in the topojson format.
-    # TODO: Not sure if this supposed to be done like this. Need further investigation.
     # Pass for now:
     def test_hashing_of_nested_geometrycollection(self):
         data = {

@@ -63,7 +63,15 @@ class Extract(object):
         self.linestrings = []
         self.geomcollection_counter = 0
         self.invalid_geoms = 0
-        self.output = self.extractor(copy.deepcopy(data))
+
+        # FIXME: try except is not necessary once the following issue is fixed:
+        # https://github.com/geopandas/geopandas/issues/1070
+        try:
+            deep_data = copy.deepcopy(data)
+            self.output = self.extractor(deep_data)
+        except TypeError:
+            shallow_data = data.copy()
+            self.output = self.extractor(shallow_data)
 
     def __repr__(self):
         return "Extract(\n{}\n)".format(pprint.pformat(self.output))

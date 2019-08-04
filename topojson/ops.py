@@ -200,6 +200,49 @@ def is_ccw(ring):
     return signed_area(ring) >= 0.0
 
 
+def properties_foreign(objects):
+    """
+    Try to parse the object properties as foreign members. Reserved keys are:
+    ["type", "bbox", "coordinates", "geometries", "geometry", "properties", "features"]
+
+    If these keys are detected they will not be set as a foreign member and will remain
+    nested within properties. 
+
+    Only if the 
+    
+    Parameters
+    ----------
+    objects : [type]
+        [description]
+    """
+    reserved_keys = [
+        "type",
+        "bbox",
+        "coordinates",
+        "geometries",
+        "geometry",
+        "properties",
+        "features",
+        "arcs",
+    ]
+    reserved_keys_used = bool(
+        set(objects[0]["properties"].keys()).intersection(reserved_keys)
+    )
+
+    for obj in objects:
+        reserved_keys = False
+        for k, v in list(obj["properties"].items()):
+
+            if not reserved_keys_used or k in reserved_keys:
+                obj[k] = v
+                obj["properties"].pop(k, None)
+
+        if not reserved_keys_used:
+            obj.pop("properties", None)
+
+    return objects
+
+
 def get_matches(geoms, tree_idx):
     """
     Function to return the indici of the rtree that intersects with the input geometries
