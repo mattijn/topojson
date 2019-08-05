@@ -67,11 +67,10 @@ class Extract(object):
         # FIXME: try except is not necessary once the following issue is fixed:
         # https://github.com/geopandas/geopandas/issues/1070
         try:
-            deep_data = copy.deepcopy(data)
-            self.output = self.extractor(deep_data)
+            copydata = copy.deepcopy(data)
         except TypeError:
-            shallow_data = data.copy()
-            self.output = self.extractor(shallow_data)
+            copydata = data.copy()
+        self.output = self.extractor(copydata)
 
     def __repr__(self):
         return "Extract(\n{}\n)".format(pprint.pformat(self.output))
@@ -437,9 +436,14 @@ class Extract(object):
             self.obj = self.data[self.key]
 
             # determine firstly if type of geom is an object that provide a
-            # __geo_interface__. If not then the object might be a GeoJSON Feature or
-            # FeatureCollection otherwise it is not a recognized object and it will be
-            # removed
+            # __geo_interface__.
+            if hasattr(self.obj, "__geo_interface__"):
+                self.obj = self.obj.__geo_interface__
+                self.data[self.key] = self.obj
+
+            # Try to parse the geom with shapely. If not then the object might be
+            # a GeoJSON Feature or FeatureCollection otherwise it is not a recognized
+            # geometric object and it will be removed
             try:
                 geom = geometry.shape(self.obj)
                 # object can be mapped, but may not be valid. remove invalid objects
