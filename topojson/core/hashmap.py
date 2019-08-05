@@ -1,13 +1,11 @@
 import numpy as np
 from itertools import compress
-from simplification import cutil
 import copy
 import pprint
 import json
 from shapely import geometry
 from shapely.ops import linemerge
 from .dedup import Dedup
-from ..ops import delta_encoding
 from ..ops import is_ccw
 from ..utils import serialize_as_geodataframe
 from ..utils import serialize_as_svg
@@ -60,7 +58,7 @@ class Hashmap(Dedup):
             topo_object, mesh, color, tooltip, projection, objectname
         )
 
-    def hashmapper(self, data, simplify_factor=None):
+    def hashmapper(self, data):
         """
         Hashmap function resolves bookkeeping results to object arcs.
 
@@ -82,17 +80,10 @@ class Hashmap(Dedup):
         # resolve bookkeeping to arcs in objects, including backward check of arcs
         list(self.resolve_objects("arcs", self.data["objects"]))
 
-        # apply delta-encoding if prequantization is applied
-        if self.options.prequantize > 0:
-            self.data["linestrings"] = delta_encoding(data["linestrings"])
-        else:
-            for idx, ls in enumerate(data["linestrings"]):
-                self.data["linestrings"][idx] = np.array(ls).tolist()
-
         objects = {}
         objects["geometries"] = []
         objects["type"] = "GeometryCollection"
-        for idx, feature in enumerate(data["objects"]):
+        for feature in data["objects"]:
             feat = data["objects"][feature]
 
             if "geometries" in feat and len(feat["geometries"]) == 1:
@@ -107,8 +98,6 @@ class Hashmap(Dedup):
 
         # prepare to return object
         data = self.data
-        data["arcs"] = data["linestrings"]
-        del data["linestrings"]
         del data["junctions"]
         del data["bookkeeping_geoms"]
         del data["bookkeeping_duplicates"]

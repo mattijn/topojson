@@ -416,7 +416,16 @@ def simplify(linestrings, epsilon, algorithm="dp", package="simplification"):
     * https://www.jasondavies.com/simplify/
     * https://bost.ocks.org/mike/simplify/
     """
-    return
+    if package == "shapely":
+        for idx, ls in enumerate(linestrings):
+            linestrings[idx] = ls.simplify(epsilon, preserve_topology=False)
+
+    if package == "simplification":
+        from simplification import cutil
+
+        for idx, ls in enumerate(linestrings):
+            linestrings[idx] = cutil.simplify_coords(np.array(ls), epsilon)
+    return linestrings
 
 
 def winding_order(geom, order="CW_CCW"):
