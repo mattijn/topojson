@@ -1,8 +1,11 @@
 import pprint
 import json
 import copy
+import numpy as np
 from .hashmap import Hashmap
 from ..ops import properties_foreign
+from ..ops import simplify
+from ..ops import delta_encoding
 from ..utils import serialize_as_geodataframe
 from ..utils import serialize_as_svg
 from ..utils import serialize_as_json
@@ -19,7 +22,8 @@ class Topology(Hashmap):
         # execute previous steps
         super().__init__(data, **kwargs)
 
-        # do something after hashmapping in necessary
+        # execute main function of Topology
+        self.output = self.topologic(self.output)
 
     def __repr__(self):
         return "Topology(\n{}\n)".format(pprint.pformat(self.output))
@@ -57,6 +61,31 @@ class Topology(Hashmap):
             objects = properties_foreign(objects)
             self.output["objects"]["data"]["geometries"] = objects
 
+    def topologic(self, data):
+
+        # toposimplify linestrings if required
+        if self.options.toposimplify > 0:
+            # set default if not specifically given in the options
+            if type(self.options.toposimplify) == bool:
+                simplify_factor = 2
+            else:
+                simplify_factor = self.options.toposimplify
+
+            data["linestrings"] = simplify(
+                data["linestrings"], simplify_factor, package="shapely"
+            )
+
+        # apply delta-encoding if prequantization is applied
+        if self.options.prequantize > 0:
+            self.data["linestrings"] = delta_encoding(data["linestrings"])
+        else:
+            for idx, ls in enumerate(data["linestrings"]):
+                self.data["linestrings"][idx] = np.array(ls).tolist()
+
+        data["arcs"] = data["linestrings"]
+        del data["linestrings"]
+
+        return data
         # if simplify_factor is not None:
         #     if simplify_factor >= 1:
         #         for idx, ls in enumerate(data["linestrings"]):

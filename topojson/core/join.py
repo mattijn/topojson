@@ -5,6 +5,7 @@ from shapely.ops import shared_paths
 from shapely.ops import linemerge
 from shapely import speedups
 from ..ops import select_unique_combs
+from ..ops import simplify
 from ..ops import prequantize
 from ..utils import serialize_as_svg
 import numpy as np
@@ -106,6 +107,18 @@ class Join(Extract):
             - new key: junctions
             - new key: transform (if quant_factor is not None)        
         """
+
+        # presimplify linestrings if required
+        if self.options.presimplify > 0:
+            # set default if not specifically given in the options
+            if type(self.options.presimplify) == bool:
+                simplify_factor = 2
+            else:
+                simplify_factor = self.options.presimplify
+
+            data["linestrings"] = simplify(
+                data["linestrings"], simplify_factor, package="shapely"
+            )
 
         # prequantize linestrings if required
         if self.options.prequantize > 0:
