@@ -6,6 +6,7 @@ from shapely.strtree import STRtree
 from .join import Join
 from ..ops import insert_coords_in_line
 from ..ops import fast_split
+from ..ops import np_array_from_lists
 from ..ops import select_unique_combs
 from ..utils import serialize_as_svg
 
@@ -112,7 +113,7 @@ class Cut(Join):
             self.bookkeeping_linestrings = bk_array.astype(float)
 
         else:
-            bk_array = self.index_array(data["bookkeeping_geoms"]).ravel()
+            bk_array = np_array_from_lists(data["bookkeeping_geoms"]).ravel()
             bk_array = np.expand_dims(bk_array[~np.isnan(bk_array)].astype(int), axis=1)
             self.segments_list = data["linestrings"]
             self.find_duplicates(data["linestrings"])
@@ -124,22 +125,6 @@ class Cut(Join):
         data["bookkeeping_linestrings"] = self.bookkeeping_linestrings
 
         return data
-
-    def index_array(self, parameter_list):
-        """
-        Create numpy array from list of lists. The number of lists and and the max 
-        length determines the size of the array.
-        
-        Parameters
-        ----------
-        parameter_list : list of lists
-            each lists contains values
-        
-        """
-        array_bk = np.array(
-            list(itertools.zip_longest(*parameter_list, fillvalue=np.nan))
-        ).T
-        return array_bk
 
     def flatten_and_index(self, slist):
         """
@@ -169,7 +154,7 @@ class Cut(Join):
         ]
         # index array
         list_bk = [range(len(segmntlist))[s[0] : s[1]] for s in slice_pair]
-        array_bk = self.index_array(list_bk)
+        array_bk = np_array_from_lists(list_bk)
 
         return segmntlist, array_bk
 

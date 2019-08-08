@@ -36,8 +36,10 @@ class TopoOptions(object):
         object={},
         topology=True,
         prequantize=False,
+        topoquantize=False,
         presimplify=False,
         toposimplify=False,
+        simplifypackage="simplification",
         winding_order=None,  # default should become "CW_CCW",
     ):
         # get all arguments and check if `object` is created.
@@ -56,6 +58,11 @@ class TopoOptions(object):
         else:
             self.prequantize = False
 
+        if "topquantize" in arguments:
+            self.topoquantize = arguments["topoquantize"]
+        else:
+            self.topoquantize = False
+
         if "presimplify" in arguments:
             self.presimplify = arguments["presimplify"]
         else:
@@ -65,6 +72,11 @@ class TopoOptions(object):
             self.toposimplify = arguments["toposimplify"]
         else:
             self.toposimplify = False
+
+        if "simplifypackage" in arguments:
+            self.simplifypackage = arguments["simplifypackage"]
+        else:
+            self.simplifypackage = "simplification"
 
         if "winding_order" in arguments:
             self.winding_order = arguments["winding_order"]

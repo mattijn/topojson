@@ -4,6 +4,9 @@ import copy
 import numpy as np
 from .hashmap import Hashmap
 from ..ops import properties_foreign
+from ..ops import np_array_from_arcs
+from ..ops import dequantize
+from ..ops import quantize
 from ..ops import simplify
 from ..ops import delta_encoding
 from ..utils import serialize_as_geodataframe
@@ -61,6 +64,54 @@ class Topology(Hashmap):
             objects = properties_foreign(objects)
             self.output["objects"]["data"]["geometries"] = objects
 
+    def topoquantize(self, value):
+        print("topology.quantize called {}".format(value))
+        return self
+
+    def toposimplify(self, epsilon):
+        arcs = self.output["arcs"]
+        np_arcs = np_array_from_arcs(arcs)
+
+        # dequantize if quantization is applied
+        if "transform" in self.output.keys():
+
+            transform = self.output["transform"]
+            scale = transform["scale"]
+            translate = transform["translate"]
+
+            np_arcs = dequantize(np_arcs, scale, translate)
+
+            # x0, y0 = np.nanmin(np_arcs, axis=1).min(axis=0)
+            # x1, y1 = np.nanmax(np_arcs, axis=1).max(axis=0)
+            # self.data["bbox"] = (x0, y0, x1, y1)
+        # else:
+        #     x0, y0 = np.nanmin(np_arcs, axis=1).min(axis=0)
+        #     x1, y1 = np.nanmax(np_arcs, axis=1).max(axis=0)
+        #     self.data["bbox"] = (x0, y0, x1, y1)
+
+        simpl_arcs = simplify(np_arcs, epsilon, package=self.options.simplifypackage)
+
+        # quantize aqain if quantization was applied
+        if "transform" in self.output.keys():
+            if self.options.topoquantize > 0:
+                # set default if not specifically given in the options
+                if type(self.options.topoquantize) == bool:
+                    quant_factor = 1e6
+                else:
+                    quant_factor = self.options.topoquantize
+            elif self.options.prequantize > 0:
+                # set default if not specifically given in the options
+                if type(self.options.prequantize) == bool:
+                    quant_factor = 1e6
+                else:
+                    quant_factor = self.options.prequantize
+
+            transform = quantize(simpl_arcs, self.output["bbox"], quant_factor)
+            simpl_arcs = delta_encoding(simpl_arcs)
+            self.output["transform"] = transform
+            self.output["arcs"] = simpl_arcs
+        return self
+
     def topologic(self, data):
 
         # toposimplify linestrings if required
@@ -72,7 +123,9 @@ class Topology(Hashmap):
                 simplify_factor = self.options.toposimplify
 
             data["linestrings"] = simplify(
-                data["linestrings"], simplify_factor, package="shapely"
+                data["linestrings"],
+                simplify_factor,
+                package=self.options.simplifypackage,
             )
 
         # apply delta-encoding if prequantization is applied

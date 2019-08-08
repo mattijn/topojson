@@ -78,3 +78,12 @@ class TestOptions(unittest.TestCase):
             data, options={"topology": False, "prequantize": 1e4, "delta_encode": True}
         ).to_dict()
         self.assertEqual("transform" in topo.keys(), True)
+
+    # test toposimplify
+    def test_toposimplify_including_prequantization(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[(data.name == "Antarctica")]
+        topo = topojson.Topology(
+            data, options={"prequantize": True, "simplifypackage": "simplification"}
+        )
+        topos = topo.toposimplify(2)
