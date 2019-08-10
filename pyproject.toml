@@ -7,12 +7,12 @@ module = "topojson"
 author = "Mattijn van Hoek"
 author-email = "mattijn@gmail.com"
 home-page = "https://github.com/mattijn/topojson"
-requires = ["numpy", "shapely", "simplification"]
+requires = ["numpy", "shapely", "geojson", "simplification"]
 keywords = "topojson python github topology geojson"
 description-file = "README.md"
 classifiers = ["License :: OSI Approved :: BSD License"]
 
 [tool.flit.metadata.requires-extra]
 test = ["unittest"]
-dev = ["geojson", "fiona", "geopandas"]
+dev = ["geojson", "fiona", "geopandas", "altair", "ipywidgets"]
 
