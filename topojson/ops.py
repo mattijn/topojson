@@ -243,6 +243,52 @@ def properties_foreign(objects):
     return objects
 
 
+def np_array_from_lists(nested_lists):
+    """
+    Function to create numpy array from nested lists. The shape of the numpy array 
+    are the number of nested lists (rows) x the length of the longest nested list 
+    (columns). Rows that contain less values are filled with np.nan values.        
+    
+    Parameters
+    ----------
+    nested_lists : list of lists
+        list containing nested lists of different sizes.
+    
+    Returns
+    -------
+    numpy.ndarray
+        array created from nested lists, np.nan is used to fill the array
+    """
+
+    np_array = np.array(list(itertools.zip_longest(*nested_lists, fillvalue=np.nan))).T
+    return np_array
+
+
+def lists_from_np_array(np_array):
+    """
+    Function to convert numpy array to list, where elements set as np.nan 
+    are filtered
+    """
+
+    nested_lists = [obj[~np.isnan(obj)].astype(int).tolist() for obj in np_array]
+    return nested_lists
+
+
+def np_array_from_arcs(arcs):
+    max_len_arc = len(max(arcs, key=len))
+    no_arcs = len(arcs)
+    np_array = np.empty((no_arcs, max_len_arc, 2))
+    np_array.fill(np.nan)
+    for idx in range(no_arcs):
+        np_array[idx, 0 : len(arcs[idx])] = arcs[idx]
+    return np_array
+
+
+def dequantize(np_arcs, scale, translate):
+    dequantized_arcs = np_arcs.cumsum(axis=1) * scale + translate
+    return dequantized_arcs
+
+
 def get_matches(geoms, tree_idx):
     """
     Function to return the indici of the rtree that intersects with the input geometries
@@ -334,11 +380,10 @@ def select_unique_combs(linestrings):
     return uniq_line_combs
 
 
-def prequantize(linestrings, quant_factor=1e6):
+def quantize(linestrings, bbox, quant_factor=1e6):
     """
-    Function that applies quantization prior computing topology. Quantization removes 
-    information by reducing the precision of each coordinate, effectively snapping each 
-    point to a regular grid.
+    Function that applies quantization. Quantization removes information by reducing 
+    the precision of each coordinate, effectively snapping each point to a regular grid.
 
     Parameters
     ----------
@@ -350,19 +395,22 @@ def prequantize(linestrings, quant_factor=1e6):
 
     Returns
     -------
-    kx, ky, x0, y0 : int
-        Scale (kx, ky) and translation (x0, y0) values
-    linestrings : list of shapely.geometry.LineStrings    
-        LineStrings that are quantized 
+    transform : dict
+        scale (kx, ky) and translation (x0, y0) values
+    bbox : array
+        bbox of all linestrings
     """
 
-    x0, y0, x1, y1 = geometry.MultiLineString(linestrings).bounds
+    x0, y0, x1, y1 = bbox
 
     kx = 1 / ((quant_factor - 1) / (x1 - x0))
     ky = 1 / ((quant_factor - 1) / (y1 - y0))
 
-    for ls in linestrings:
-        ls_xy = np.array(ls.xy)
+    for idx, ls in enumerate(linestrings):
+        if hasattr(ls, "xy"):
+            ls_xy = np.array(ls.xy)
+        else:
+            ls_xy = np.array(ls).T
         ls_xy = (
             np.array([(ls_xy[0] - x0) / kx, (ls_xy[1] - y0) / ky]).round().astype(int).T
         )
@@ -371,14 +419,22 @@ def prequantize(linestrings, quant_factor=1e6):
             np.insert(np.absolute(np.diff(ls_xy, 1, axis=0)).sum(axis=1), 0, 1) != 0
         )
         if not bool_slice.sum() == 1:
-            ls.coords = ls_xy[bool_slice]
-        # else:
-        #     ls.coords = ls_xy[[0, -1]]
+            if hasattr(ls, "coords"):
+                ls.coords = ls_xy[bool_slice]
+            else:
+                linestrings[idx] = ls_xy[bool_slice].tolist()
+    transform = {"scale": [kx, ky], "translate": [x0, y0]}
 
-    return {"scale": [kx, ky], "translate": [x0, y0]}
+    return linestrings, transform
 
 
-def simplify(linestrings, epsilon, algorithm="dp", package="simplification"):
+def simplify(
+    linestrings,
+    epsilon,
+    algorithm="dp",
+    package="simplification",
+    input_as="linestring",
+):
     """
     Function that simplifies linestrings. The goal of line simplification is to reduce 
     the number of points by deleting some trivial points, but without destroying the 
@@ -404,6 +460,11 @@ def simplify(linestrings, epsilon, algorithm="dp", package="simplification"):
         Choose between `simplification` or `shapely`. Both pachakges contains 
         simplification algorithms (`shapely` only `rdp`, and `simplification` both `rdp`
         and `vw` but quicker).
+    input_as : str, optional
+        Choose between `linestring` or `array`. This function is being called from 
+        different locations with different input types. Choose `linestring` if the input
+        type are shapely.geometry.LineString or `array` if the input are numpy.array 
+        coordinates
 
     Returns
     -------
@@ -417,15 +478,35 @@ def simplify(linestrings, epsilon, algorithm="dp", package="simplification"):
     * https://bost.ocks.org/mike/simplify/
     """
     if package == "shapely":
-        for idx, ls in enumerate(linestrings):
-            linestrings[idx] = ls.simplify(epsilon, preserve_topology=False)
 
-    if package == "simplification":
+        if input_as == "array":
+            list_arcs = []
+            for ls in linestrings:
+                coords_to_simp = ls[~np.isnan(ls)[:, 0]]
+                simple_ls = geometry.LineString(coords_to_simp)
+                simple_ls = simple_ls.simplify(epsilon, preserve_topology=False)
+                list_arcs.append(np.array(simple_ls).tolist())
+        elif input_as == "linestring":
+            for idx, ls in enumerate(linestrings):
+                linestrings[idx] = ls.simplify(epsilon, preserve_topology=False)
+            list_arcs = linestrings
+
+    elif package == "simplification":
         from simplification import cutil
 
-        for idx, ls in enumerate(linestrings):
-            linestrings[idx] = cutil.simplify_coords(np.array(ls), epsilon)
-    return linestrings
+        if input_as == "array":
+            list_arcs = []
+            for ls in linestrings:
+                coords_to_simp = ls[~np.isnan(ls)[:, 0]]
+                simple_ls = cutil.simplify_coords(coords_to_simp, epsilon)
+                list_arcs.append(simple_ls.tolist())
+        elif input_as == "linestring":
+            for ls in linestrings:
+                coords_to_simp = np.array(ls)
+                simple_ls = cutil.simplify_coords(coords_to_simp, epsilon)
+                ls.coords = simple_ls
+            list_arcs = linestrings
+    return list_arcs
 
 
 def winding_order(geom, order="CW_CCW"):

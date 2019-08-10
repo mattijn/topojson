@@ -6,7 +6,7 @@ from shapely.ops import linemerge
 from shapely import speedups
 from ..ops import select_unique_combs
 from ..ops import simplify
-from ..ops import prequantize
+from ..ops import quantize
 from ..utils import serialize_as_svg
 import numpy as np
 import itertools
@@ -117,8 +117,14 @@ class Join(Extract):
                 simplify_factor = self.options.presimplify
 
             data["linestrings"] = simplify(
-                data["linestrings"], simplify_factor, package="shapely"
+                data["linestrings"],
+                simplify_factor,
+                package="shapely",
+                input_as="linestring",
             )
+
+        # compute the bounding box of input geometry
+        data["bbox"] = geometry.asMultiLineString(data["linestrings"]).bounds
 
         # prequantize linestrings if required
         if self.options.prequantize > 0:
@@ -128,7 +134,9 @@ class Join(Extract):
             else:
                 quant_factor = self.options.prequantize
 
-            data["transform"] = prequantize(data["linestrings"], quant_factor)
+            data["linestrings"], data["transform"] = quantize(
+                data["linestrings"], data["bbox"], quant_factor
+            )
 
         if not self.options.topology or not data["linestrings"]:
             data["junctions"] = self.junctions

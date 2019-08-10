@@ -148,6 +148,7 @@ class TestDedup(unittest.TestCase):
                 "bookkeeping_geoms",
                 "objects",
                 "options",
+                "bbox",
                 "junctions",
                 "bookkeeping_duplicates",
                 "bookkeeping_arcs",

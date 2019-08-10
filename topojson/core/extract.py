@@ -401,7 +401,11 @@ class Extract(object):
             GeoDataFrame or GeoSeries instance
         """
 
-        self.obj = geom.__geo_interface__
+        try:
+            self.obj = geom.__geo_interface__
+        except ValueError as e:
+            raise SystemExit(e)
+
         self.extract_featurecollection(self.obj)
 
     @serialize_geom_type.register(list)

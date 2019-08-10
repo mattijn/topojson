@@ -191,6 +191,7 @@ class TestCut(unittest.TestCase):
                 "bookkeeping_geoms",
                 "objects",
                 "options",
+                "bbox",
                 "junctions",
                 "bookkeeping_duplicates",
                 "bookkeeping_linestrings",

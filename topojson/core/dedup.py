@@ -6,6 +6,8 @@ import numpy as np
 import copy
 import pprint
 from .cut import Cut
+from ..ops import np_array_from_lists
+from ..ops import lists_from_np_array
 from ..utils import serialize_as_svg
 
 
@@ -49,7 +51,7 @@ class Dedup(Cut):
 
         # deduplicate equal geometries
         # create numpy array from bookkeeping_geoms variable for numerical computation
-        array_bk = self.index_array(data["bookkeeping_linestrings"])
+        array_bk = np_array_from_lists(data["bookkeeping_linestrings"])
         array_bk_sarcs = None
         if data["bookkeeping_duplicates"].size != 0:
             array_bk_sarcs, dup_pair_list = self.deduplicate(
@@ -79,38 +81,16 @@ class Dedup(Cut):
 
         # prepare to return object
         del data["bookkeeping_linestrings"]
-        data["bookkeeping_arcs"] = self.list_from_array(array_bk)
+        data["bookkeeping_arcs"] = lists_from_np_array(array_bk)
         if data["bookkeeping_duplicates"].size != 0:
             data["bookkeeping_shared_arcs"] = array_bk_sarcs.astype(int).tolist()
-            data["bookkeeping_duplicates"] = self.list_from_array(
+            data["bookkeeping_duplicates"] = lists_from_np_array(
                 data["bookkeeping_duplicates"][dup_pair_list != -99]
             )
         else:
             data["bookkeeping_shared_arcs"] = []
 
         return data
-
-    def index_array(self, nested_lists):
-        """
-        Function to create numpy array from nested lists. The shape of the numpy array 
-        are the number of nested lists (rows) x the length of the longest nested list 
-        (columns). Rows that contain less values are filled with np.nan values.        
-        
-        Parameters
-        ----------
-        nested_lists : list of lists
-            list containing nested lists of different sizes.
-        
-        Returns
-        -------
-        numpy.ndarray
-            array created from nested lists, np.nan is used to fill the array
-        """
-
-        array_bk = np.array(
-            list(itertools.zip_longest(*nested_lists, fillvalue=np.nan))
-        ).T
-        return array_bk
 
     def find_merged_linestring(self, data, no_ndp_arcs, ndp_arcs, ndp_arcs_bk):
         """
@@ -256,12 +236,3 @@ class Dedup(Cut):
             with np.errstate(invalid="ignore"):
                 array_bk[array_bk > idx_pop] -= 1
                 array_bk_sarcs[array_bk_sarcs > idx_pop] -= 1
-
-    def list_from_array(self, array_bk):
-        """
-        Function to convert numpy array to list, where elements set as np.nan 
-        are filtered
-        """
-
-        list_bk = [obj[~np.isnan(obj)].astype(int).tolist() for obj in array_bk]
-        return list_bk
