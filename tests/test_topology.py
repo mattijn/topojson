@@ -3,8 +3,8 @@ import unittest
 from shapely import geometry
 import geopandas
 import geojson
-from topojson.utils import TopoOptions
 import topojson
+from topojson.utils import TopoOptions
 
 
 class TestTopology(unittest.TestCase):
@@ -30,8 +30,7 @@ class TestTopology(unittest.TestCase):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         data = data[(data.name == "South Africa")]
 
-        topo_options = TopoOptions(winding_order="CW_CCW")
-        topo = topojson.Topology(data, options=topo_options).to_dict()
+        topo = topojson.Topology(data, winding_order="CW_CCW").to_dict()
         self.assertEqual(len(topo["objects"]), 1)
         self.assertEqual(isinstance(topo["options"], TopoOptions), True)
 
@@ -41,7 +40,7 @@ class TestTopology(unittest.TestCase):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         data = data[(data.name == "South Africa")]
 
-        topo = topojson.Topology(data, options={"winding_order": "CW_CCW"}).to_dict()
+        topo = topojson.Topology(data, winding_order="CW_CCW").to_dict()
         self.assertEqual(len(topo["objects"]), 1)
         self.assertEqual(isinstance(topo["options"], TopoOptions), True)
 
@@ -54,8 +53,8 @@ class TestTopology(unittest.TestCase):
             },
         ]
 
-        no_topo = topojson.Topology(data, options={"topology": False}).to_dict()
-        topo = topojson.Topology(data, options={"topology": True}).to_dict()
+        no_topo = topojson.Topology(data, topology=False, prequantize=False).to_dict()
+        topo = topojson.Topology(data, topology=True, prequantize=False).to_dict()
 
         self.assertEqual(len(topo["arcs"]), 5)
         self.assertEqual(len(no_topo["arcs"]), 2)
@@ -72,9 +71,7 @@ class TestTopology(unittest.TestCase):
             | (data.name == "Zambia")
         ]
 
-        topo = topojson.Topology(
-            data, options={"topology": False, "prequantize": 1e4}
-        ).to_dict()
+        topo = topojson.Topology(data, topology=False, prequantize=1e4).to_dict()
         self.assertEqual("transform" in topo.keys(), True)
 
     # test prequantization without computing topology
@@ -89,45 +86,41 @@ class TestTopology(unittest.TestCase):
             | (data.name == "Zambia")
         ]
 
-        topo = topojson.Topology(
-            data, options={"topology": False, "prequantize": 1e4, "delta_encode": True}
-        ).to_dict()
+        topo = topojson.Topology(data, topology=False, prequantize=1e4).to_dict()
         self.assertEqual("transform" in topo.keys(), True)
 
     def test_toposimplify_set_in_options(self):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         data = data[(data.name == "Antarctica")]
         topo = topojson.Topology(
-            data,
-            options={
-                "prequantize": True,
-                "simplifypackage": "shapely",
-                "toposimplify": 4,
-            },
+            data, prequantize=True, simplify_with="shapely", toposimplify=4
         ).to_dict()
         self.assertEqual("transform" in topo.keys(), True)
 
     def test_toposimplify_as_chaining(self):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         data = data[(data.name == "Antarctica")]
-        topo = topojson.Topology(
-            data, options={"prequantize": True, "simplifypackage": "shapely"}
-        )
+        topo = topojson.Topology(data, prequantize=True, simplify_with="shapely")
         topos = topo.toposimplify(2).to_dict()
         self.assertEqual("transform" in topos.keys(), True)
 
     def test_topoquantize_as_chaining(self):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         data = data[(data.name == "Antarctica")]
-        topo = topojson.Topology(
-            data, options={"prequantize": False, "simplifypackage": "shapely"}
-        )
+        topo = topojson.Topology(data, prequantize=False, simplify_with="shapely")
         topos = topo.topoquantize(1e2).to_dict()
         self.assertEqual("transform" in topos.keys(), True)
 
     def test_prequantize_topoquantize_as_chaining(self):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         data = data[(data.name == "Antarctica")]
-        topo = topojson.Topology(data, options={"prequantize": 1e6, "topology": True})
+        topo = topojson.Topology(data, prequantize=1e6, topology=True)
         topos = topo.topoquantize(1e5).to_dict()
+        self.assertEqual("transform" in topos.keys(), True)
+
+    def test_topology_to_svg(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[(data.name == "Antarctica")]
+        topo = topojson.Topology(data, prequantize=1e6, topology=True)
+        topo.to_svg()
         self.assertEqual("transform" in topos.keys(), True)

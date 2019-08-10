@@ -15,12 +15,12 @@ from ..utils import serialize_as_altair
 
 class Hashmap(Dedup):
     """
-    dedup duplicates and merge contiguous arcs
+    hash arcs based on their type
     """
 
-    def __init__(self, data, **kwargs):
+    def __init__(self, data, options={}):
         # execute previous step
-        super().__init__(data, **kwargs)
+        super().__init__(data, options)
 
         # initation topology items
         self.simplified = False
@@ -33,6 +33,9 @@ class Hashmap(Dedup):
 
     def to_dict(self):
         return self.output
+
+    def to_svg(self, separate=False):
+        serialize_as_svg(self.output, separate)
 
     def to_json(self, fp=None):
         topo_object = copy.copy(self.output)
