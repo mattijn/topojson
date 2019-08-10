@@ -9,36 +9,24 @@ _TopoJSON_ encodes geographic data structures into a shared topology. This repos
 
 ## Usage
 
-The package can be used as follow:
+The package can be used in multiple different ways, with the purpose to create a TopoJSON topology:
 
 ```python
 import topojson
-import json
 
 data = [
     {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
     {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}
 ]
 
-tj_json = topojson.Topology(data, prequantize=False, topology=True).to_json()
-json.loads(tj_json)
+topojson.Topology(data, prequantize=False, topology=True).to_json()
 ```
 
 ```
-{'type': 'Topology',
- 'linestrings': [[[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]],
-  [[1.0, 0.0], [1.0, 1.0]],
-  [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]],
- 'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[-2, 0]]},
-    {'type': 'Polygon', 'arcs': [[1, 2]]}],
-   'type': 'GeometryCollection'}},
- 'bbox': [0.0, 0.0, 2.0, 1.0],
- 'arcs': [[[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]],
-  [[1.0, 0.0], [1.0, 1.0]],
-  [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]]}
+'{"type": "Topology", "linestrings": [[[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]], [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]], "objects": {"data": {"geometries": [{"type": "Polygon", "arcs": [[-2, 0]]}, {"type": "Polygon", "arcs": [[1, 2]]}], "type": "GeometryCollection"}}, "bbox": [0.0, 0.0, 2.0, 1.0], "arcs": [[[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]], [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]]}'
 ```
 
-The result is TopoJSON.
+The is TopoJSON.
 
 The following geometry types are registered as correct geographical input data:
 
@@ -150,7 +138,7 @@ dictionary = {
 topojson.Topology(dictionary, prequantize=False, topology=True).to_svg()
 ```
 
-
+<img src="images/svg_repr.png" alt="svg">
 
 #
 
@@ -197,7 +185,7 @@ gdf.head()
 </table>
 </div>
 
-<img src="images/geodataframe_plot.png" alt="Logo">
+<img src="images/geodataframe_plot.png" alt="geodataframe">
 
 #
 
