@@ -19,7 +19,8 @@ data = [
     {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}
 ]
 
-topojson.Topology(data, prequantize=False, topology=True).to_json()
+tj = topojson.Topology(data, prequantize=False, topology=True)
+tj.to_json()
 ```
 
 ```json
@@ -85,7 +86,8 @@ list_geoms = [
 #
 
 ```python
-topojson.Topology(data, prequantize=False, topology=True).to_dict()
+tj = topojson.Topology(data, prequantize=False, topology=True)
+tj.to_dict()
 ```
 
 ```python
@@ -135,7 +137,8 @@ dictionary = {
 #
 
 ```python
-topojson.Topology(dictionary, prequantize=False, topology=True).to_svg()
+tj = topojson.Topology(dictionary, prequantize=False, topology=True)
+tj.to_svg()
 ```
 
 <img src="images/svg_repr.png" alt="svg">
@@ -190,7 +193,8 @@ gdf.head()
 #
 
 ```python
-topojson.Topology(gdf, prequantize=False, topology=True).to_alt(color='properties.name:N')
+tj = topojson.Topology(gdf, prequantize=False, topology=True)
+tj.to_alt(color='properties.name:N')
 ```
 
 <img src="images/altair_chart.png" alt="altair">
@@ -216,7 +220,8 @@ feature_collection = FeatureCollection([feature_1, feature_2])
 #
 
 ```python
-topojson.Topology(feature_collection, prequantize=False, topology=True).to_gdf()
+tj = topojson.Topology(feature_collection, prequantize=False, topology=True)
+tj.to_gdf()
 ```
 
 <table border="1" class="dataframe">
