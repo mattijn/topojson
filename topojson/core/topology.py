@@ -14,6 +14,7 @@ from ..utils import serialize_as_geodataframe
 from ..utils import serialize_as_svg
 from ..utils import serialize_as_json
 from ..utils import serialize_as_altair
+from ..utils import serialize_as_ipywidgets
 
 
 class Topology(Hashmap):
@@ -65,11 +66,10 @@ class Topology(Hashmap):
         is known to be quicker than shapely.
         Default is "shapely".
     simplify_algorithm : str
-        Choose between `dp` for Douglas-Peucker and `vw` for 
-        Visvalingam-Whyatt. `vw` can only be selected if `simplify_with` 
-        is set to `simplification`.
-        Default is "dp", since it still "produces the most accurate 
-        generalization" (Chi & Cheung, 2006).
+        Currently only support Douglas-Peucker. Next release will include
+        Visvalingam-Whyatt.    
+        Default is `dp`, since it still "produces the most accurate 
+        generalization" (Chi & Cheung, 2006).       
     winding_order : str
         Determines the winding order of the features in the output 
         geometry. Choose between `CW_CCW` for clockwise orientation for
@@ -130,6 +130,15 @@ class Topology(Hashmap):
         del topo_object["options"]
         return serialize_as_altair(
             topo_object, mesh, color, tooltip, projection, objectname
+        )
+
+    def to_widget(
+        self,
+        slider_toposimplify={"min": 0, "max": 10, "step": 0.01, "value": 0.01},
+        slider_topoquantize={"min": 1, "max": 6, "step": 0.5, "value": 1e5, "base": 10},
+    ):
+        return serialize_as_ipywidgets(
+            self, toposimplify=slider_toposimplify, topoquantize=slider_topoquantize
         )
 
     def flatten_properties(self):
