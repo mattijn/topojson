@@ -232,3 +232,37 @@ def serialize_as_altair(
 
     return chart
 
+
+def serialize_as_ipywidgets(
+    topo_object,
+    toposimplify={"min": 0, "max": 10, "step": 0.01, "value": 0.01},
+    topoquantize={"min": 1, "max": 6, "step": 0.5, "value": 1e5, "base": 10},
+):
+    from ipywidgets import interact, fixed
+    import ipywidgets as widgets
+
+    style = {"description_width": "initial"}
+    ts = toposimplify
+    tq = topoquantize
+    eps = widgets.FloatSlider(
+        min=ts["min"],
+        max=ts["max"],
+        step=ts["step"],
+        value=ts["value"],
+        description="Toposimplify Factor",
+        style=style,
+    )
+    qnt = widgets.FloatLogSlider(
+        min=tq["min"],
+        max=tq["max"],
+        step=tq["step"],
+        value=tq["value"],
+        base=tq["base"],
+        description="Topoquantize Factor",
+        style=style,
+    )
+
+    def toposimpquant(epsilon, quant, topo):
+        return topo.toposimplify(epsilon).topoquantize(quant).to_alt()
+
+    interact(toposimpquant, epsilon=eps, quant=qnt, topo=fixed(topo_object))
