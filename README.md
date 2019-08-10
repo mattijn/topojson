@@ -193,23 +193,7 @@ gdf.head()
 topojson.Topology(gdf, prequantize=False, topology=True).to_alt(color='properties.name:N')
 ```
 
-```python
-    {'type': 'Topology',
-     'objects': {'data': {'geometries': [{'id': '0',
-         'type': 'Polygon',
-         'properties': {'name': 'abc'},
-         'bbox': (0.0, 0.0, 1.0, 1.0),
-         'arcs': [[-3, 0]]},
-        {'id': '1',
-         'type': 'Polygon',
-         'properties': {'name': 'def'},
-         'bbox': (1.0, 0.0, 2.0, 1.0),
-         'arcs': [[1, 2]]}],
-       'type': 'GeometryCollection'}},
-     'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
-      [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
-      [[1.0, 1.0], [1.0, 0.0]]]}
-```
+<img src="images/altair_chart.png" alt="altair">
 
 #
 
