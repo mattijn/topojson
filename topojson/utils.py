@@ -58,7 +58,7 @@ class TopoOptions(object):
         else:
             self.prequantize = False
 
-        if "topquantize" in arguments:
+        if "topoquantize" in arguments:
             self.topoquantize = arguments["topoquantize"]
         else:
             self.topoquantize = False

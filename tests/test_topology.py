@@ -7,7 +7,22 @@ from topojson.utils import TopoOptions
 import topojson
 
 
-class TestOptions(unittest.TestCase):
+class TestTopology(unittest.TestCase):
+
+    # this test was added since geometries of only linestrings resulted in a topojson
+    # file that returns an empty geodataframe when reading
+    def test_linestrings_parsed_to_gdf(self):
+        data = [
+            {"type": "LineString", "coordinates": [[4, 0], [2, 2], [0, 0]]},
+            {
+                "type": "LineString",
+                "coordinates": [[0, 2], [1, 1], [2, 2], [3, 1], [4, 2]],
+            },
+        ]
+        topo = topojson.Topology(data).to_gdf()
+        self.assertNotEqual(topo["geometry"][0].wkt, "GEOMETRYCOLLECTION EMPTY")
+        self.assertEqual(topo["geometry"][0].type, "LineString")
+
     # test winding order using TopoOptions object
     def test_winding_order_TopoOptions(self):
         from topojson.utils import TopoOptions
@@ -79,11 +94,40 @@ class TestOptions(unittest.TestCase):
         ).to_dict()
         self.assertEqual("transform" in topo.keys(), True)
 
-    # test toposimplify
-    def test_toposimplify_including_prequantization(self):
+    def test_toposimplify_set_in_options(self):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         data = data[(data.name == "Antarctica")]
         topo = topojson.Topology(
-            data, options={"prequantize": True, "simplifypackage": "simplification"}
+            data,
+            options={
+                "prequantize": True,
+                "simplifypackage": "shapely",
+                "toposimplify": 4,
+            },
+        ).to_dict()
+        self.assertEqual("transform" in topo.keys(), True)
+
+    def test_toposimplify_as_chaining(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[(data.name == "Antarctica")]
+        topo = topojson.Topology(
+            data, options={"prequantize": True, "simplifypackage": "shapely"}
         )
-        topos = topo.toposimplify(2)
+        topos = topo.toposimplify(2).to_dict()
+        self.assertEqual("transform" in topos.keys(), True)
+
+    def test_topoquantize_as_chaining(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[(data.name == "Antarctica")]
+        topo = topojson.Topology(
+            data, options={"prequantize": False, "simplifypackage": "shapely"}
+        )
+        topos = topo.topoquantize(1e2).to_dict()
+        self.assertEqual("transform" in topos.keys(), True)
+
+    def test_prequantize_topoquantize_as_chaining(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[(data.name == "Antarctica")]
+        topo = topojson.Topology(data, options={"prequantize": 1e6, "topology": True})
+        topos = topo.topoquantize(1e5).to_dict()
+        self.assertEqual("transform" in topos.keys(), True)

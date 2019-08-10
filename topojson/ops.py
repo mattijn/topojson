@@ -410,7 +410,7 @@ def quantize(linestrings, bbox, quant_factor=1e6):
         if hasattr(ls, "xy"):
             ls_xy = np.array(ls.xy)
         else:
-            ls_xy = np.array(ls)
+            ls_xy = np.array(ls).T
         ls_xy = (
             np.array([(ls_xy[0] - x0) / kx, (ls_xy[1] - y0) / ky]).round().astype(int).T
         )
@@ -423,13 +423,18 @@ def quantize(linestrings, bbox, quant_factor=1e6):
                 ls.coords = ls_xy[bool_slice]
             else:
                 linestrings[idx] = ls_xy[bool_slice].tolist()
-
     transform = {"scale": [kx, ky], "translate": [x0, y0]}
 
-    return transform
+    return linestrings, transform
 
 
-def simplify(linestrings, epsilon, algorithm="dp", package="simplification"):
+def simplify(
+    linestrings,
+    epsilon,
+    algorithm="dp",
+    package="simplification",
+    input_as="linestring",
+):
     """
     Function that simplifies linestrings. The goal of line simplification is to reduce 
     the number of points by deleting some trivial points, but without destroying the 
@@ -455,6 +460,11 @@ def simplify(linestrings, epsilon, algorithm="dp", package="simplification"):
         Choose between `simplification` or `shapely`. Both pachakges contains 
         simplification algorithms (`shapely` only `rdp`, and `simplification` both `rdp`
         and `vw` but quicker).
+    input_as : str, optional
+        Choose between `linestring` or `array`. This function is being called from 
+        different locations with different input types. Choose `linestring` if the input
+        type are shapely.geometry.LineString or `array` if the input are numpy.array 
+        coordinates
 
     Returns
     -------
@@ -468,21 +478,34 @@ def simplify(linestrings, epsilon, algorithm="dp", package="simplification"):
     * https://bost.ocks.org/mike/simplify/
     """
     if package == "shapely":
-        list_arcs = []
-        for ls in linestrings:
-            coords_to_simp = ls[~np.isnan(ls)[:, 0]]
-            simple_ls = geometry.LineString(coords_to_simp)
-            simple_ls.simplify(epsilon, preserve_topology=False)
-            list_arcs.append(np.array(simple_ls.coords).tolist())
 
-    if package == "simplification":
+        if input_as == "array":
+            list_arcs = []
+            for ls in linestrings:
+                coords_to_simp = ls[~np.isnan(ls)[:, 0]]
+                simple_ls = geometry.LineString(coords_to_simp)
+                simple_ls = simple_ls.simplify(epsilon, preserve_topology=False)
+                list_arcs.append(np.array(simple_ls).tolist())
+        elif input_as == "linestring":
+            for idx, ls in enumerate(linestrings):
+                linestrings[idx] = ls.simplify(epsilon, preserve_topology=False)
+            list_arcs = linestrings
+
+    elif package == "simplification":
         from simplification import cutil
 
-        list_arcs = []
-        for ls in linestrings:
-            coords_to_simp = ls[~np.isnan(ls)[:, 0]]
-            simple_ls = cutil.simplify_coords(coords_to_simp, epsilon)
-            list_arcs.append(simple_ls.tolist())
+        if input_as == "array":
+            list_arcs = []
+            for ls in linestrings:
+                coords_to_simp = ls[~np.isnan(ls)[:, 0]]
+                simple_ls = cutil.simplify_coords(coords_to_simp, epsilon)
+                list_arcs.append(simple_ls.tolist())
+        elif input_as == "linestring":
+            for ls in linestrings:
+                coords_to_simp = np.array(ls)
+                simple_ls = cutil.simplify_coords(coords_to_simp, epsilon)
+                ls.coords = simple_ls
+            list_arcs = linestrings
     return list_arcs
 
 

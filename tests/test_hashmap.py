@@ -56,7 +56,7 @@ class TestHasmap(unittest.TestCase):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         data = data[(data.name == "Albania") | (data.name == "Greece")]
         topo = Hashmap(data).to_dict()
-        self.assertEqual(len(topo["arcs"]), 4)
+        self.assertEqual(len(topo["linestrings"]), 4)
 
     # something is wrong with hashmapping in the example of benin
     def test_benin_surrounding_countries(self):
@@ -67,7 +67,7 @@ class TestHasmap(unittest.TestCase):
             | (data.name == "Burkina Faso")
         ]
         topo = Hashmap(data).to_dict()
-        self.assertEqual(len(topo["arcs"]), 6)
+        self.assertEqual(len(topo["linestrings"]), 6)
 
     # something is wrong with hashmapping once a geometry has only shared arcs
     def test_geom_surrounding_many_geometries(self):
@@ -80,7 +80,7 @@ class TestHasmap(unittest.TestCase):
             | (data.name == "Zambia")
         ]
         topo = Hashmap(data).to_dict()
-        self.assertEqual(len(topo["arcs"]), 13)
+        self.assertEqual(len(topo["linestrings"]), 13)
 
     # this test was added since the shared_arcs bookkeeping is doing well, but the
     # wrong arc gots deleted. How come?
@@ -94,7 +94,7 @@ class TestHasmap(unittest.TestCase):
             | (data.name == "Zambia")
         ]
         topo = Hashmap(data).to_dict()
-        self.assertEqual(len(topo["arcs"]), 17)
+        self.assertEqual(len(topo["linestrings"]), 17)
 
     def test_super_function_hashmap(self):
         data = geometry.GeometryCollection(
@@ -105,23 +105,11 @@ class TestHasmap(unittest.TestCase):
         )
         topo = Hashmap(data).to_dict()
         geoms = topo["objects"]["data"]["geometries"][0]["geometries"]
-        self.assertEqual(list(topo.keys()), ["type", "objects", "options", "arcs"])
+        self.assertEqual(
+            list(topo.keys()), ["type", "linestrings", "objects", "options", "bbox"]
+        )
         self.assertEqual(geoms[0]["arcs"], [[-3, 0]])
         self.assertEqual(geoms[1]["arcs"], [[1, 2]])
-
-    # this test was added since geometries of only linestrings resulted in a topojson
-    # file that returns an empty geodataframe when reading
-    def test_linestrings_parsed_to_gdf(self):
-        data = [
-            {"type": "LineString", "coordinates": [[4, 0], [2, 2], [0, 0]]},
-            {
-                "type": "LineString",
-                "coordinates": [[0, 2], [1, 1], [2, 2], [3, 1], [4, 2]],
-            },
-        ]
-        topo = Hashmap(data).to_gdf()
-        self.assertNotEqual(topo["geometry"][0].wkt, "GEOMETRYCOLLECTION EMPTY")
-        self.assertEqual(topo["geometry"][0].type, "LineString")
 
     # this test was added since objects with nested geometreycollections seems not
     # being parsed in the topojson format.

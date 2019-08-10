@@ -559,4 +559,4 @@ class TestJoin(unittest.TestCase):
         ])   
         topo = Join(data).to_dict()  
         self.assertEqual(list(topo.keys()), 
-        ["type", "linestrings", "bookkeeping_geoms", "objects", "options", "junctions"])
+        ["type", "linestrings", "bookkeeping_geoms", "objects", "options","bbox", "junctions"])
