@@ -53,12 +53,12 @@ class Extract(object):
         - new key: objects    
     """
 
-    def __init__(self, data, **kwargs):
+    def __init__(self, data, options={}):
         # initation topology options
-        if "options" in kwargs and isinstance(kwargs["options"], TopoOptions):
-            self.options = kwargs["options"]
+        if isinstance(options, TopoOptions):
+            self.options = options
         else:
-            self.options = TopoOptions(kwargs)
+            self.options = TopoOptions(options)
         self.bookkeeping_geoms = []
         self.linestrings = []
         self.geomcollection_counter = 0

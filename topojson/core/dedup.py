@@ -16,9 +16,9 @@ class Dedup(Cut):
     Dedup duplicates and merge contiguous arcs
     """
 
-    def __init__(self, data, **kwargs):
+    def __init__(self, data, options={}):
         # execute previous step
-        super().__init__(data, **kwargs)
+        super().__init__(data, options)
 
         # initation topology items
         self.shared_arcs_idx = []

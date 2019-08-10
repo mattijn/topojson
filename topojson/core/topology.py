@@ -9,6 +9,7 @@ from ..ops import dequantize
 from ..ops import quantize
 from ..ops import simplify
 from ..ops import delta_encoding
+from ..utils import TopoOptions
 from ..utils import serialize_as_geodataframe
 from ..utils import serialize_as_svg
 from ..utils import serialize_as_json
@@ -17,22 +18,95 @@ from ..utils import serialize_as_altair
 
 class Topology(Hashmap):
     """
-    dedup duplicates and merge contiguous arcs
+    Returns a TopoJSON topology for the specified geometric object.       
+    TopoJSON is an extension of GeoJSON providing multiple approaches 
+    to compress the geographical input data. These options include 
+    simplifying the linestrings or quantizing the coordinates but 
+    foremost the computation of a topology.
+
+    Parameters
+    ----------
+    data : _any_ geometric type
+        Geometric data that should be converted into TopoJSON
+    topology : boolean
+        Specifiy if the topology should be computed for deriving the 
+        TopoJSON. 
+        Default is True.
+    prequantize : boolean or int
+        If the prequantization parameter is specified, the input geometry 
+        is quantized prior to computing the topology, the returned 
+        topology is quantized, and its arcs are delta-encoded. 
+        Quantization is recommended to improve the quality of the topology
+        if the input geometry is messy (i.e., small floating point error 
+        means that adjacent boundaries do not have identical values); 
+        typical values are powers of ten, such as 1e4, 1e5 or 1e6. 
+        Default is True (which correspond to a quantize factor of 1e6).
+    topoquantize : boolean or int
+        If the topoquantization parameter is specified, the input geometry
+        is quantized after the topology is constructed. If the topology is
+        already quantized this will be resolved first before the 
+        topoquantization is applied.
+        Default is False.
+    presimplify : boolean or float
+        Apply presimplify to remove unnecessary points from linestrings 
+        before the topology is constructed. This will simplify the input 
+        geometries. 
+        Default is False.
+    topoimplify : boolean or float
+        Apply toposimplify to remove unnecessary points from arcs after 
+        the topology is constructed. This will simplify the constructed 
+        arcs without altering the topological relations. 
+        Default is 0.0001.
+    simplify_with : str
+        Sets the package to use for simplifying (both pre- and 
+        toposimplify). Choose between `shapely` or `simplification`. 
+        Shapely adopts solely Douglas-Peucker and simplification both 
+        Douglas-Peucker and Visvalingam-Whyatt. The pacakge simplification
+        is known to be quicker than shapely.
+        Default is "shapely".
+    simplify_algorithm : str
+        Choose between `dp` for Douglas-Peucker and `vw` for 
+        Visvalingam-Whyatt. `vw` can only be selected if `simplify_with` 
+        is set to `simplification`.
+        Default is "dp", since it still "produces the most accurate 
+        generalization" (Chi & Cheung, 2006).
+    winding_order : str
+        Determines the winding order of the features in the output 
+        geometry. Choose between `CW_CCW` for clockwise orientation for
+        outer rings and counter-clockwise for interior rings. Or `CCW_CW` 
+        for counter-clockwise for outer rings and clockwise for interior 
+        rings. 
+        Default is `CW_CCW`.
     """
 
-    def __init__(self, data, **kwargs):
+    def __init__(
+        self,
+        data,
+        topology=True,
+        prequantize=True,
+        topoquantize=False,
+        presimplify=False,
+        toposimplify=0.0001,
+        simplify_with="shapely",
+        simplify_algorithm="dp",
+        winding_order="CW_CCW",
+    ):
 
+        options = TopoOptions(locals())
         # execute previous steps
-        super().__init__(data, **kwargs)
+        super().__init__(data, options)
 
         # execute main function of Topology
-        self.output = self.topologic(self.output)
+        self.output = self._topologic(self.output)
 
     def __repr__(self):
         return "Topology(\n{}\n)".format(pprint.pformat(self.output))
 
     def to_dict(self):
         return self.output
+
+    def to_svg(self, separate=False):
+        serialize_as_svg(self.output, separate)
 
     def to_json(self, fp=None):
         topo_object = copy.copy(self.output)
@@ -110,7 +184,7 @@ class Topology(Hashmap):
             np_arcs = dequantize(np_arcs, scale, translate)
 
         result.output["arcs"] = simplify(
-            np_arcs, epsilon, package=result.options.simplifypackage, input_as=_input_as
+            np_arcs, epsilon, package=result.options.simplify_with, input_as=_input_as
         )
 
         # quantize aqain if quantization was applied
@@ -139,7 +213,7 @@ class Topology(Hashmap):
         else:
             return result
 
-    def topologic(self, data):
+    def _topologic(self, data):
         self.output["arcs"] = data["linestrings"]
 
         # apply delta-encoding if prequantization is applied
@@ -153,67 +227,10 @@ class Topology(Hashmap):
         if self.options.toposimplify > 0:
             # set default if not specifically given in the options
             if type(self.options.toposimplify) == bool:
-                simplify_factor = 2
+                simplify_factor = 0.0001
             else:
                 simplify_factor = self.options.toposimplify
 
             self.toposimplify(epsilon=simplify_factor, _input_as="array", inplace=True)
 
         return self.output
-        # if simplify_factor is not None:
-        #     if simplify_factor >= 1:
-        #         for idx, ls in enumerate(data["linestrings"]):
-        #             self.data["linestrings"][idx] = cutil.simplify_coords(
-        #                 np.array(ls), simplify_factor
-        #             )
-        #         self.simplified = True
-
-        # else:
-        # if simplify_factor is not None:
-        #     if simplify_factor >= 1:
-        #         for idx, ls in enumerate(data["linestrings"]):
-        #             self.data["linestrings"][idx] = cutil.simplify_coords(
-        #                 np.array(ls), simplify_factor
-        #             ).tolist()
-        # else:
-
-
-# def topology(
-#     data, snap_vertices=False, snap_value_gridsize=1e6, simplify=False, simplify_factor=1
-# ):
-
-
-#     # execute the topoloy
-#     super().__init__(data)
-
-
-#     # initialize classes
-#     extractor = Extract()
-#     joiner = Join()
-#     cutter = Cut()
-#     deduper = Dedup()
-#     hashmapper = Hashmap()
-
-#     # copy data
-#     try:
-#         data = copy.deepcopy(data)
-#     except:
-#         data = data.copy()
-
-#     # apply topology to data
-#     data = extractor.main(data)
-
-#     if snap_vertices:
-#         data = joiner.main(data, quant_factor=gridsize_to_snap)
-#     else:
-#         data = joiner.main(data, quant_factor=None)
-
-#     data = cutter.main(data)
-#     data = deduper.main(data)
-#     if simplify:
-#         data = hashmapper.main(data, simplify_factor=simplify_factor)
-#     else:
-#         data = hashmapper.main(data, simplify_factor=None)
-
-#     return data
-

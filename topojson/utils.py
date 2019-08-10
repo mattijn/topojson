@@ -33,20 +33,19 @@ setattr(geojson, "FeatureCollection", FeatureCollection)
 class TopoOptions(object):
     def __init__(
         self,
-        object={},
+        object=None,
         topology=True,
         prequantize=False,
         topoquantize=False,
         presimplify=False,
         toposimplify=False,
-        simplifypackage="simplification",
-        winding_order=None,  # default should become "CW_CCW",
+        simplify_with="shapely",
+        winding_order=None,
     ):
-        # get all arguments and check if `object` is created.
-        # If so, use the key values of `object`, otherwise ignore `object`
+        # get all arguments
         arguments = locals()
-        if bool(arguments["object"]) != False:
-            arguments = arguments["object"]["options"]
+        if arguments["object"]:
+            arguments = arguments["object"]
 
         if "topology" in arguments:
             self.topology = arguments["topology"]
@@ -73,10 +72,10 @@ class TopoOptions(object):
         else:
             self.toposimplify = False
 
-        if "simplifypackage" in arguments:
-            self.simplifypackage = arguments["simplifypackage"]
+        if "simplify_with" in arguments:
+            self.simplify_with = arguments["simplify_with"]
         else:
-            self.simplifypackage = "simplification"
+            self.simplify_with = "shapely"
 
         if "winding_order" in arguments:
             self.winding_order = arguments["winding_order"]
@@ -151,13 +150,39 @@ def serialize_as_svg(topo_object, separate):
     from IPython.display import SVG, display
     from shapely import geometry
 
+    keys = topo_object.keys()
+    if "arcs" in keys:
+        arcs = topo_object["arcs"]
+        # dequantize if quantization is applied
+        if "transform" in keys:
+            from .ops import dequantize
+            from .ops import np_array_from_arcs
+            import numpy as np
+
+            np_arcs = np_array_from_arcs(arcs)
+
+            transform = topo_object["transform"]
+            scale = transform["scale"]
+            translate = transform["translate"]
+
+            np_arcs = dequantize(np_arcs, scale, translate)
+            l_arcs = []
+            for ls in np_arcs:
+                l_arcs.append(ls[~np.isnan(ls)[:, 0]].tolist())
+            arcs = l_arcs
+
+        arcs = [geometry.LineString(arc) for arc in arcs]
+
+    else:
+        arcs = topo_object["linestrings"]
+
     if separate:
-        for ix, line in enumerate(topo_object["linestrings"]):
+        for ix, line in enumerate(arcs):
             svg = line._repr_svg_()
             print(ix, line.wkt)
             display(SVG(svg))
     else:
-        display(geometry.MultiLineString(topo_object["linestrings"]))
+        display(geometry.MultiLineString(arcs))
 
 
 def serialize_as_json(topo_object, fp):
