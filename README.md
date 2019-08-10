@@ -85,6 +85,7 @@ list_geoms = [
 
 #
 
+#### apply Topology and present as dict
 ```python
 tj = topojson.Topology(data, prequantize=False, topology=True)
 tj.to_dict()
@@ -136,6 +137,7 @@ dictionary = {
 
 #
 
+#### apply Topology and present as scalable vector graphic
 ```python
 tj = topojson.Topology(dictionary, prequantize=False, topology=True)
 tj.to_svg()
@@ -192,6 +194,8 @@ gdf.head()
 
 #
 
+#### apply Topology and present as `altair` chart (if installed)
+
 ```python
 tj = topojson.Topology(gdf, prequantize=False, topology=True)
 tj.to_alt(color='properties.name:N')
@@ -219,6 +223,7 @@ feature_collection = FeatureCollection([feature_1, feature_2])
 
 #
 
+#### apply Topology and present as `geodataframe` (if `geopandas` is installed)
 ```python
 tj = topojson.Topology(feature_collection, prequantize=False, topology=True)
 tj.to_gdf()
