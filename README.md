@@ -70,7 +70,7 @@ For the interactive experience also install `ipywidgets`.
 
 ## Examples and tutorial notebooks
 
-### Type: `list`
+### Input Type: `list`
 
 The list should contain items that supports the `__geo_interface__`
 
@@ -85,7 +85,7 @@ list_geoms = [
 
 #
 
-#### apply Topology and present as dict
+#### apply Topology and present the output as dict
 ```python
 tj = topojson.Topology(data, prequantize=False, topology=True)
 tj.to_dict()
@@ -116,7 +116,7 @@ tj.to_dict()
 
 #
 
-### Type: `dict`
+### Input Type: `dict`
 
 The dictionary should be structured like {`key1`: `obj1`, `key2`: `obj2`}.
 
@@ -137,7 +137,7 @@ dictionary = {
 
 #
 
-#### apply Topology and present as scalable vector graphic
+#### apply Topology and present the output as scalable vector graphic
 ```python
 tj = topojson.Topology(dictionary, prequantize=False, topology=True)
 tj.to_svg()
@@ -147,7 +147,7 @@ tj.to_svg()
 
 #
 
-### Type: `GeoDataFrame` from package `geopandas` (if installed)
+### Input Type: `GeoDataFrame` from package `geopandas` (if installed)
 
 ```python
 import geopandas
@@ -194,7 +194,7 @@ gdf.head()
 
 #
 
-#### apply Topology and present as `altair` chart (if installed)
+#### apply Topology and present output as `altair` chart (if installed)
 
 ```python
 tj = topojson.Topology(gdf, prequantize=False, topology=True)
@@ -205,7 +205,7 @@ tj.to_alt(color='properties.name:N')
 
 #
 
-### Type: `FeatureCollection` from package `geojson` (if installed)
+### Input Type: `FeatureCollection` from package `geojson` (if installed)
 
 ```python
 from geojson import Feature, Polygon, FeatureCollection
@@ -223,7 +223,7 @@ feature_collection = FeatureCollection([feature_1, feature_2])
 
 #
 
-#### apply Topology and present as `geodataframe` (if `geopandas` is installed)
+#### apply Topology and present output as `geodataframe` (if `geopandas` is installed)
 ```python
 tj = topojson.Topology(feature_collection, prequantize=False, topology=True)
 tj.to_gdf()
