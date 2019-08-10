@@ -13,24 +13,29 @@ The package can be used as follow:
 
 ```python
 import topojson
+import json
 
 data = [
     {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
     {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}
 ]
 
-topojson.topology(data)
+tj_json = topojson.Topology(data, prequantize=False, topology=True).to_json()
+json.loads(tj_json)
 ```
 
 ```
-    {'type': 'Topology',
-     'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[0, -4, 1]]},
-        {'type': 'Polygon', 'arcs': [[2, 3]]}],
-       'type': 'GeometryCollection'}},
-     'arcs': [[[0.0, 0.0], [1.0, 0.0]],
-      [[1.0, 1.0], [0.0, 1.0], [0.0, 0.0]],
-      [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
-      [[1.0, 1.0], [1.0, 0.0]]]}
+{'type': 'Topology',
+ 'linestrings': [[[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]],
+  [[1.0, 0.0], [1.0, 1.0]],
+  [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]],
+ 'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[-2, 0]]},
+    {'type': 'Polygon', 'arcs': [[1, 2]]}],
+   'type': 'GeometryCollection'}},
+ 'bbox': [0.0, 0.0, 2.0, 1.0],
+ 'arcs': [[[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]],
+  [[1.0, 0.0], [1.0, 1.0]],
+  [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]]}
 ```
 
 The result is TopoJSON.
@@ -53,7 +58,7 @@ The following geometry types are registered as correct geographical input data:
 
 ## Installation
 
-The package is released on PyPi as version `1.0rc2`. Installation can be done by:
+The package is released on PyPi as version `1.0rc3`. Installation can be done by:
 
 ```
 python3 -m pip install topojson
@@ -64,10 +69,15 @@ The required dependencies are:
 - `numpy`
 - `shapely`
 - `simplification`
+- `geojson`
 
 Download dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/ for Windows where possible and use `pip` for Linux and Mac.
 
 The packages `geopandas` and `geojson` are solely used in the tests and recognized as types with the extractor.
+
+For better experience make sure you have `altair` installed as well.
+For the interactive experience also install `ipywidgets`.
+
 
 ## Examples and tutorial notebooks
 
@@ -87,17 +97,30 @@ list_geoms = [
 #
 
 ```python
-topojson.topology(list_geoms)
+topojson.Topology(data, prequantize=False, topology=True).to_dict()
 ```
 
 ```python
-    {'type': 'Topology',
-     'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[-3, 0]]},
-        {'type': 'Polygon', 'arcs': [[1, 2]]}],
-       'type': 'GeometryCollection'}},
-     'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
-      [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
-      [[1.0, 1.0], [1.0, 0.0]]]}
+{'type': 'Topology',
+ 'linestrings': [[[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]],
+  [[1.0, 0.0], [1.0, 1.0]],
+  [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]],
+ 'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[-2, 0]]},
+    {'type': 'Polygon', 'arcs': [[1, 2]]}],
+   'type': 'GeometryCollection'}},
+ 'options': TopoOptions(
+   {'prequantize': False,
+  'presimplify': False,
+  'simplify_with': 'shapely',
+  'topology': True,
+  'topoquantize': False,
+  'toposimplify': 0.0001,
+  'winding_order': 'CW_CCW'}
+ ),
+ 'bbox': (0.0, 0.0, 2.0, 1.0),
+ 'arcs': [[[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]],
+  [[1.0, 0.0], [1.0, 1.0]],
+  [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]]}
 ```
 
 #
@@ -110,11 +133,11 @@ The dictionary should be structured like {`key1`: `obj1`, `key2`: `obj2`}.
 import topojson
 
 dictionary = {
-    "abc": {
+    0: {
         "type": "Polygon",
         "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
     },
-    "def": {
+    1: {
         "type": "Polygon",
         "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
     }
@@ -124,18 +147,10 @@ dictionary = {
 #
 
 ```python
-topojson.topology(dictionary)
+topojson.Topology(dictionary, prequantize=False, topology=True).to_svg()
 ```
 
-```python
-    {'type': 'Topology',
-     'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[-3, 0]]},
-        {'type': 'Polygon', 'arcs': [[1, 2]]}],
-       'type': 'GeometryCollection'}},
-     'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
-      [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
-      [[1.0, 1.0], [1.0, 0.0]]]}
-```
+
 
 #
 
@@ -187,7 +202,7 @@ gdf.head()
 #
 
 ```python
-topojson.topology(gdf)
+topojson.Topology(gdf, prequantize=False, topology=True).to_alt(color='properties.name:N')
 ```
 
 ```python
@@ -229,18 +244,35 @@ feature_collection = FeatureCollection([feature_1, feature_2])
 #
 
 ```python
-topojson.topology(feature_collection)
+topojson.Topology(feature_collection, prequantize=False, topology=True).to_gdf()
 ```
 
-```python
-    {'type': 'Topology',
-     'objects': {'data': {'geometries': [{"arcs": [[-3, 0]], "properties": {"name": "abc"}, "type": "Polygon"},
-        {"arcs": [[1, 2]], "properties": {"name": "def"}, "type": "Polygon"}],
-       'type': 'GeometryCollection'}},
-     'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
-      [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
-      [[1.0, 1.0], [1.0, 0.0]]]}
-```
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+      <th>id</th>
+      <th>name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>POLYGON ((1 1, 1 0, 0 0, 0 1, 1 1))</td>
+      <td>None</td>
+      <td>abc</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>POLYGON ((1 0, 1 1, 2 1, 2 0, 1 0))</td>
+      <td>None</td>
+      <td>def</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
 
 #
 
@@ -250,6 +282,9 @@ The notebooks folder of this GitHub repository also contains a Jupyter Notebook 
 [l2]: https://github.com/mattijn/topojson/tree/master/tests
 
 ## Changelog
+
+Version `1.0rc3`:
+- TODO
 
 Version `1.0rc2`:
 
