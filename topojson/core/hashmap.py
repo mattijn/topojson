@@ -7,7 +7,6 @@ from shapely import geometry
 from shapely.ops import linemerge
 from .dedup import Dedup
 from ..ops import is_ccw
-from ..utils import serialize_as_geodataframe
 from ..utils import serialize_as_svg
 from ..utils import serialize_as_json
 from ..utils import serialize_as_altair
@@ -41,11 +40,6 @@ class Hashmap(Dedup):
         topo_object = copy.copy(self.output)
         del topo_object["options"]
         return serialize_as_json(topo_object, fp)
-
-    def to_gdf(self):
-        topo_object = copy.copy(self.output)
-        del topo_object["options"]
-        return serialize_as_geodataframe(topo_object)
 
     def to_alt(
         self,

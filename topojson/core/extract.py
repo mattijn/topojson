@@ -5,6 +5,7 @@ import logging
 import pprint
 from ..utils import singledispatch_class
 from ..utils import serialize_as_svg
+
 from ..utils import TopoOptions
 from ..ops import winding_order
 
@@ -69,7 +70,10 @@ class Extract(object):
         try:
             copydata = copy.deepcopy(data)
         except TypeError:
-            copydata = data.copy()
+            if hasattr(data, "copy"):
+                copydata = data.copy()
+            else:
+                copydata = data
         self.output = self.extractor(copydata)
 
     def __repr__(self):
@@ -156,12 +160,21 @@ class Extract(object):
         - geopandas.GeoDataFrame
         - geopandas.GeoSeries
         - dict of objects that provide a __geo_interface__
-        - list of objects that provide a __geo_interface__        
+        - list of objects that provide a __geo_interface__
+        - object that provide a __geo_interface__
+        - TopoJSON string
+        - GeoJSON string    
 
         Any non-registered geometry wil return as an error that cannot be mapped.
         """
 
-        return print("error: {} cannot be mapped".format(geom))
+        # maybe the object has an __geo_interface__
+        if hasattr(self.data, "__geo_interface__"):
+            data = copy.deepcopy(self.data.__geo_interface__)
+            self.data = [data]
+            self.extract_list([data])
+        else:
+            return print("error: {} cannot be mapped".format(geom))
 
     @serialize_geom_type.register(geometry.LineString)
     def extract_line(self, geom):
@@ -423,6 +436,24 @@ class Extract(object):
         # new data dictionary is created, throw the geometries back to main()
         self.extractor(data)
 
+    @serialize_geom_type.register(str)
+    def extract_string(self, geom):
+        """*geom* type is String instance.
+        
+        Parameters
+        ----------
+        geom : str
+            String instance
+        """
+        if '"type": "Topology"' in geom:
+            from ..utils import serialize_as_geodataframe
+
+            geom = json.loads(geom)
+            data = serialize_as_geodataframe(geom)
+        else:
+            data = geojson.loads(geom)
+        self.extractor(data)
+
     @serialize_geom_type.register(dict)
     def extract_dictionary(self, geom):
         """*geom* type is Dictionary instance.
@@ -459,6 +490,8 @@ class Extract(object):
             except ValueError:
                 # object might be a GeoJSON Feature or FeatureCollection
                 geom = geojson.loads(geojson.dumps(self.obj))
+            except AttributeError:
+                geom = geojson.loads(self.obj)
             except (IndexError, TypeError):
                 # object is not valid
                 self.invalid_geoms += 1

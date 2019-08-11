@@ -10,11 +10,8 @@ from ..ops import quantize
 from ..ops import simplify
 from ..ops import delta_encoding
 from ..utils import TopoOptions
-from ..utils import serialize_as_geodataframe
 from ..utils import serialize_as_svg
 from ..utils import serialize_as_json
-from ..utils import serialize_as_altair
-from ..utils import serialize_as_ipywidgets
 
 
 class Topology(Hashmap):
@@ -97,7 +94,7 @@ class Topology(Hashmap):
         super().__init__(data, options)
 
         # execute main function of Topology
-        self.output = self._topologic(self.output)
+        self.output = self.worker(self.output)
 
     def __repr__(self):
         return "Topology(\n{}\n)".format(pprint.pformat(self.output))
@@ -114,6 +111,8 @@ class Topology(Hashmap):
         return serialize_as_json(topo_object, fp)
 
     def to_gdf(self):
+        from ..utils import serialize_as_geodataframe
+
         topo_object = copy.copy(self.output)
         del topo_object["options"]
         return serialize_as_geodataframe(topo_object)
@@ -126,6 +125,8 @@ class Topology(Hashmap):
         projection="identity",
         objectname="data",
     ):
+        from ..utils import serialize_as_altair
+
         topo_object = copy.copy(self.output)
         del topo_object["options"]
         return serialize_as_altair(
@@ -137,8 +138,13 @@ class Topology(Hashmap):
         slider_toposimplify={"min": 0, "max": 10, "step": 0.01, "value": 0.01},
         slider_topoquantize={"min": 1, "max": 6, "step": 0.5, "value": 1e5, "base": 10},
     ):
+
+        from ..utils import serialize_as_ipywidgets
+
         return serialize_as_ipywidgets(
-            self, toposimplify=slider_toposimplify, topoquantize=slider_topoquantize
+            topo_object=self,
+            toposimplify=slider_toposimplify,
+            topoquantize=slider_topoquantize,
         )
 
     def flatten_properties(self):
@@ -222,8 +228,9 @@ class Topology(Hashmap):
         else:
             return result
 
-    def _topologic(self, data):
+    def worker(self, data):
         self.output["arcs"] = data["linestrings"]
+        del data["linestrings"]
 
         # apply delta-encoding if prequantization is applied
         if self.options.prequantize > 0:

@@ -238,7 +238,8 @@ def serialize_as_ipywidgets(
     toposimplify={"min": 0, "max": 10, "step": 0.01, "value": 0.01},
     topoquantize={"min": 1, "max": 6, "step": 0.5, "value": 1e5, "base": 10},
 ):
-    from ipywidgets import interact, fixed
+    from ipywidgets import interact
+    from ipywidgets import fixed
     import ipywidgets as widgets
 
     style = {"description_width": "initial"}
@@ -262,7 +263,8 @@ def serialize_as_ipywidgets(
         style=style,
     )
 
-    def toposimpquant(epsilon, quant, topo):
-        return topo.toposimplify(epsilon).topoquantize(quant).to_alt()
+    return interact(toposimpquant, epsilon=eps, quant=qnt, topo=fixed(topo_object))
 
-    interact(toposimpquant, epsilon=eps, quant=qnt, topo=fixed(topo_object))
+
+def toposimpquant(epsilon, quant, topo):
+    return topo.toposimplify(epsilon).topoquantize(quant).to_alt()
