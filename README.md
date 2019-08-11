@@ -265,8 +265,13 @@ The notebooks folder of this GitHub repository also contains a Jupyter Notebook 
 
 ## Changelog
 
+Version `1.0rc4`:
+- no `linestring` key in topojson
+- serialize `str` of TopoJSON or GeoJSON data
+- add `vw` as algoritm type and update widget
+
 Version `1.0rc3`:
-- TODO
+- long list
 
 Version `1.0rc2`:
 
@@ -278,7 +283,6 @@ Version `1.0rc2`:
 - removed `rdtree` as dependency, use `SRTtree` from `shapely` instead
 
 Version `1.0rc1`:
-
 - initial release
 
 [i1]: https://github.com/mattijn/topojson/issues/1
