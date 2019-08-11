@@ -121,6 +121,30 @@ class TestTopology(unittest.TestCase):
     def test_topology_to_svg(self):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
         data = data[(data.name == "Antarctica")]
+        topo = topojson.Topology(data, prequantize=1e6, presimplify=50, topology=True)
+        svg = topo.to_svg()
+        self.assertEqual(svg, None)
+
+    def test_topology_with_arcs_without_linestrings(self):
+        data = [
+            {
+                "type": "Polygon",
+                "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
+            },
+            {
+                "type": "Polygon",
+                "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
+            },
+        ]
+
+        topo = topojson.Topology(data, prequantize=False, topology=True).to_dict()
+        self.assertEqual("linestrings" in topo.keys(), False)
+
+    def test_topology_widget(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[(data.continent == "Africa")]
+
         topo = topojson.Topology(data, prequantize=1e6, topology=True)
-        topo.to_svg()
-        self.assertEqual("transform" in topos.keys(), True)
+        widget = topo.to_widget()
+
+        self.assertEqual(len(widget.widget.children), 3)

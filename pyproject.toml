@@ -13,6 +13,5 @@ description-file = "README.md"
 classifiers = ["License :: OSI Approved :: BSD License"]
 
 [tool.flit.metadata.requires-extra]
-test = ["unittest"]
 dev = ["geojson", "fiona", "geopandas", "altair", "ipywidgets"]
 
