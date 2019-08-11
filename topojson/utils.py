@@ -40,6 +40,7 @@ class TopoOptions(object):
         presimplify=False,
         toposimplify=False,
         simplify_with="shapely",
+        simplify_algorithm="dp",
         winding_order=None,
     ):
         # get all arguments
@@ -76,6 +77,11 @@ class TopoOptions(object):
             self.simplify_with = arguments["simplify_with"]
         else:
             self.simplify_with = "shapely"
+
+        if "simplify_algorithm" in arguments:
+            self.simplify_algorithm = arguments["simplify_algorithm"]
+        else:
+            self.simplify_algorithm = "dp"
 
         if "winding_order" in arguments:
             self.winding_order = arguments["winding_order"]
@@ -233,11 +239,7 @@ def serialize_as_altair(
     return chart
 
 
-def serialize_as_ipywidgets(
-    topo_object,
-    toposimplify={"min": 0, "max": 10, "step": 0.01, "value": 0.01},
-    topoquantize={"min": 1, "max": 6, "step": 0.5, "value": 1e5, "base": 10},
-):
+def serialize_as_ipywidgets(topo_object, toposimplify, topoquantize):
     from ipywidgets import interact
     from ipywidgets import fixed
     import ipywidgets as widgets
@@ -245,6 +247,17 @@ def serialize_as_ipywidgets(
     style = {"description_width": "initial"}
     ts = toposimplify
     tq = topoquantize
+
+    # set to simplification package for speed
+    topo_object.output["options"].simplify_with = "simplification"
+
+    alg = widgets.RadioButtons(
+        options=[("Douglas-Peucker", "dp"), ("Visvalingam-Whyatt", "vw")],
+        value="dp",
+        description="Simplify algortihm",
+        disabled=False,
+        style=style,
+    )
     eps = widgets.FloatSlider(
         min=ts["min"],
         max=ts["max"],
@@ -263,8 +276,11 @@ def serialize_as_ipywidgets(
         style=style,
     )
 
-    return interact(toposimpquant, epsilon=eps, quant=qnt, topo=fixed(topo_object))
+    return interact(
+        toposimpquant, epsilon=eps, quant=qnt, algo=alg, topo=fixed(topo_object)
+    )
 
 
-def toposimpquant(epsilon, quant, topo):
+def toposimpquant(epsilon, quant, algo, topo):
+    topo.output["options"].simplify_algorithm = algo
     return topo.toposimplify(epsilon).topoquantize(quant).to_alt()

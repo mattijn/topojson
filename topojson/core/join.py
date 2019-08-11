@@ -119,7 +119,8 @@ class Join(Extract):
             data["linestrings"] = simplify(
                 data["linestrings"],
                 simplify_factor,
-                package="shapely",
+                algorithm=self.options.simplify_algorithm,
+                package=self.options.simplify_with,
                 input_as="linestring",
             )
 

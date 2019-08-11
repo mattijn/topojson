@@ -148,3 +148,29 @@ class TestTopology(unittest.TestCase):
         widget = topo.to_widget()
 
         self.assertEqual(len(widget.widget.children), 3)
+
+    def test_topology_simplification_vw(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[(data.continent == "South America")]
+        topo = topojson.Topology(
+            data,
+            prequantize=False,
+            topology=True,
+            toposimplify=1,
+            simplify_with="simplification",
+            simplify_algorithm="vw",
+        ).to_dict()
+        self.assertEqual(len(topo["arcs"][0]), 4)
+
+    def test_topology_simplification_dp(self):
+        data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        data = data[(data.continent == "South America")]
+        topo = topojson.Topology(
+            data,
+            prequantize=False,
+            topology=True,
+            toposimplify=1,
+            simplify_with="simplification",
+            simplify_algorithm="dp",
+        ).to_dict()
+        self.assertEqual(len(topo["arcs"][0]), 3)
