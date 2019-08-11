@@ -458,8 +458,8 @@ def simplify(
         Defaults to `dp`, as its evaluation maintains to be good (Song & Miao, 2016).
     package : str, optional
         Choose between `simplification` or `shapely`. Both pachakges contains 
-        simplification algorithms (`shapely` only `rdp`, and `simplification` both `rdp`
-        and `vw` but quicker).
+        simplification algorithms (`shapely` only `dp`, and `simplification` both `dp`
+        and `vw`).
     input_as : str, optional
         Choose between `linestring` or `array`. This function is being called from 
         different locations with different input types. Choose `linestring` if the input
@@ -494,18 +494,31 @@ def simplify(
     elif package == "simplification":
         from simplification import cutil
 
+        if algorithm == "vw":
+            alg = cutil.simplify_coords_vw
+
+        else:
+            alg = cutil.simplify_coords
+
         if input_as == "array":
             list_arcs = []
             for ls in linestrings:
                 coords_to_simp = ls[~np.isnan(ls)[:, 0]]
-                simple_ls = cutil.simplify_coords(coords_to_simp, epsilon)
+                simple_ls = alg(coords_to_simp, epsilon)
                 list_arcs.append(simple_ls.tolist())
         elif input_as == "linestring":
             for ls in linestrings:
                 coords_to_simp = np.array(ls)
-                simple_ls = cutil.simplify_coords(coords_to_simp, epsilon)
+                simple_ls = alg(coords_to_simp, epsilon)
                 ls.coords = simple_ls
             list_arcs = linestrings
+    else:
+        raise NameError(
+            "Could not recognize parameter for `simplify_with`. Choose between \
+                'shapely' or 'simplification'. '{}' was given".format(
+                package
+            )
+        )
     return list_arcs
 
 
