@@ -44,10 +44,11 @@ The following geometry types are registered as correct geographical input data:
 - `shapely.geometry.GeometryCollection`
 - `dict` of objects that provide a valid `__geo_interface__`
 - `list` of objects that provide a valid `__geo_interface__`
+- `str` objects with TopoJSON or GeoJSON geographic structures
 
 ## Installation
 
-The package is released on PyPi as version `1.0rc3`. Installation can be done by:
+The package is released on PyPi as version `1.0rc4`. Installation can be done by:
 
 ```
 python3 -m pip install topojson
