@@ -147,7 +147,7 @@ class TestTopology(unittest.TestCase):
         topo = topojson.Topology(data, prequantize=1e6, topology=True)
         widget = topo.to_widget()
 
-        self.assertEqual(len(widget.widget.children), 3)
+        self.assertEqual(len(widget.widget.children), 4)
 
     def test_topology_simplification_vw(self):
         data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))

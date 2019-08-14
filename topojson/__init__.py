@@ -1,4 +1,4 @@
-__version__ = "1.0rc4"
+__version__ = "1.0rc5"
 __doc__ = """
 topojson - a powerful library to encode geographic data as topology in Python!🌍
 ===============================================================================
