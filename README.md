@@ -58,9 +58,9 @@ In the example above the output is parsed to a JSON string (`.to_json()`), but t
 
 &ast; optional dependencies
 
-TopoJSON is merely designed to create smaller files than its GeoJSON counterpart. It is capable of doing so through a few options of which the following are currently available: compute topology, quantize the input and/or output, simplify the input and/or output.
+The TopoJSON format is merely designed to create smaller files than its GeoJSON counterpart. It is capable of doing so through a few options of which the following are currently available: compute topology, quantize the input and/or output, simplify the input and/or output.
 
-The following parameters can be used to control these options for generating the TopoJSON object. Detailed information can be found in the docstring of the [`topojson.Topology()`](https://github.com/mattijn/topojson/blob/master/topojson/core/topology.py#L18:L79) class.
+The following parameters can be used to control these options for generating the `Topology()` object. Detailed information can be found in the docstring of the [`topojson.Topology()`](https://github.com/mattijn/topojson/blob/master/topojson/core/topology.py#L18:L79) class.
 
 - topology 
 - prequantize 
