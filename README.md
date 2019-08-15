@@ -5,7 +5,7 @@
 
 [Ready for Beta Users!]
 
-_TopoJSON_ encodes geographic data structures into a shared topology. This repository describes the development of a **Python** implementation of this TopoJSON format. A TopoJSON topology represents one or more geometries that share sequences of positions called arcs.
+_TopoJSON_ encodes geographic data structures into a shared topology. This repository describes the development of a **Python** implementation of this TopoJSON format. 
 
 ## Usage
 
@@ -22,14 +22,12 @@ data = [
 tj = topojson.Topology(data, prequantize=False, topology=True)
 tj.to_json()
 ```
-
+What results in the following TopoJSON object:
 ```python
 '{"type": "Topology", "objects": {"data": {"geometries": [{"type": "Polygon", "arcs": [[-2, 0]]}, {"type": "Polygon", "arcs": [[1, 2]]}], "type": "GeometryCollection"}}, "bbox": [0.0, 0.0, 2.0, 1.0], "arcs": [[[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]], [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]]}'
 ```
 
-This is TopoJSON.
-
-The following geometry types are registered as correct geographical input data:
+The following geographical input data types are recognized:
 
 - `geojson.Feature`
 - `geojson.FeatureCollection`
@@ -46,32 +44,65 @@ The following geometry types are registered as correct geographical input data:
 - `list` of objects that provide a valid `__geo_interface__`
 - `str` objects with TopoJSON or GeoJSON geographic structures
 
+In the example above the output is parsed to a JSON string (`.to_json()`), but this is not the only thing we can do. Multiple functions are available to serialize the Topology object.
+
+| Functions                       	| Required Packages                                           	|
+|---------------------------------	|-------------------------------------------------------------	|
+| topojson.Topology().to_json()   	| Shapely, NumPy                                              	|
+| topojson.Topology().to_dict()   	| Shapely, NumPy                                              	|
+| topojson.Topology().to_svg()    	| Shapely, NumPy                                              	|
+| topojson.Topology().to_alt()    	| Shapely, NumPy, Altair*                                      	|
+| topojson.Topology().to_gdf()    	| Shapely, NumPy, GeoPandas*                                   	|
+| topojson.Topology().to_widget() 	| Shapely, NumPy, Simplification*, ipywidgets* (+ labextension) 	|
+
+* optional dependencies
+
+TopoJSON is merely designed to create smaller files than its GeoJSON counterpart. It is capable of doing so through a few options computing from which the following are currently available a topology, quantizing the input and/or output and simplifying the input and/or output.
+
+The following parameters can be used to control these options for generating the TopoJSON object. Detailed information can be found in the docstring of the [`topojson.Topology()`](https://github.com/mattijn/topojson/blob/master/topojson/core/topology.py#L18:L79) class.
+
+- topology 
+- prequantize 
+- topoquantize 
+- presimplify 
+- toposimplify 
+- simplify_with 
+- simplify_algorithm   
+- winding_order
+
+
 ## Installation
 
-The package is released on PyPi as version `1.0rc4`. Installation can be done by:
+The current package is released on PyPi as version `1.0rc4`.
+Installation can be done by:
 
 ```
 python3 -m pip install topojson
 ```
 
-The required dependencies are:
+Topojson depends on the following packages: 
 
-- `numpy`
-- `shapely`
-- `simplification`
-- `geojson`
+- numpy
+- shapely
 
-Download dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/ for Windows where possible and use `pip` for Linux and Mac.
+Windows users: download the dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/ 
+OS X or linux: use `pip` as usual
 
-The packages `geopandas` and `geojson` are solely used in the tests and recognized as types with the extractor.
-To make all tests pass you must have version >=0.5.0 of `geopandas` in combination with `fiona` version >=1.8.6.
-Shapely version 1.7a2 is recommended (because of https://github.com/Toblerity/Shapely/pull/733), but all tests pass from version >=1.6.3.
+Further, optional dependencies are:
+- altair (enlarge the experience by visualizing your TopoJSON output)
+- simplification (more and quicker simplification options)
+- geojson (parse string input with GeoJSON data)
+- geopandas (with `fiona` version >=1.8.6!, parse your TopoJSON output directly into a GeoDataFrame - converting it to GeoJSON)
+- ipywidgets + (lab)extension (make your life complete with the interactive experience)
 
-For better experience make sure you have `altair` installed as well.
-For the interactive experience also install `ipywidgets`.
+## Get in touch
+
+For now, just use the Github issues. So that can be usage questions, bug reports, feature suggestions or anything related.
 
 
 ## Examples and tutorial notebooks
+
+The followig examples present different input types parsed to different output types. The output types are not depended on the used input type, but are just shown as possible examples.
 
 ### Input Type: `list`
 
@@ -260,10 +291,18 @@ tj.to_gdf()
 
 #
 
-The notebooks folder of this GitHub repository also contains a Jupyter Notebook with a [tutorial][l1]. The many [tests][l2] as part of this package also can be used as example material.
+Currently parsing TopoJSON as string input requires `geopandas` (`fiona` version >=1.8.6) and parsing GeoJSON as string in requires the package `geojson`
+The package `simplification` is used when one want to adopt the Visvalingam-Whyatt algorithm for simplifying or for having a speedup on the Douglas-Peucker algorithm (compared to the `shapely`-integrated version)
 
-[l1]: https://github.com/mattijn/topojson/blob/master/notebooks/example%20usage.ipynb
-[l2]: https://github.com/mattijn/topojson/tree/master/tests
+The `.to_widget()` function depends on `ipywidgets` and can be a bit tricky to get it working. But if you do, something like the following will show up:
+
+<img src="images/ipywidgets.gif" alt="ipywidgets">
+
+Start from `In [5]` in the following notebook https://nbviewer.jupyter.org/github/mattijn/topojson/blob/master/notebooks/ipywidgets_interaction.ipynb to get these ipywidgets working.
+
+The many [tests][l1] as part of this package also can be used as example material.
+
+[l1]: https://github.com/mattijn/topojson/tree/master/tests
 
 ## Changelog
 
@@ -291,6 +330,11 @@ Version `1.0rc1`:
 [i2]: https://github.com/mattijn/topojson/issues/2
 [i3]: https://github.com/mattijn/topojson/issues/3
 [i4]: https://github.com/mattijn/topojson/issues/4
+
+## Tests
+
+There are many tests writen to make sure all type of corner-cases are covered. To make sure all tests will pass, you must have version >=0.5.0 of `geopandas` in combination with `fiona` version >=1.8.6.
+Shapely version 1.7a2 is recommended (because of https://github.com/Toblerity/Shapely/pull/733), but all tests pass from version >=1.6.3.
 
 ## Development Notes
 
