@@ -85,9 +85,8 @@ Topojson depends on the following packages:
 - numpy
 - shapely
 
-Windows users: download the dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/ 
-
-OS X or linux: use `pip` as usual
+Windows users: download the dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/.
+OS X or Linux users: use `pip` as usual
 
 Further, optional dependencies are:
 - altair (enlarge the experience by visualizing your TopoJSON output)
@@ -98,12 +97,16 @@ Further, optional dependencies are:
 
 ## Get in touch
 
-For now, just use the Github issues. So that can be usage questions, bug reports, feature suggestions or anything related.
+For now, just use the Github issues. That can be:
+- usage questions
+- bug reports
+- feature suggestions
+- or anything related
 
 
 ## Examples and tutorial notebooks
 
-The followig examples present different input types parsed to different output types. The output types are not depended on the used input type, but are just shown as possible examples.
+The followig examples present different input types parsed to different output types. The output types are not dependent on the used input type and vice versa, but are just shown as possible examples.
 
 ### Input Type: `list`
 
