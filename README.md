@@ -296,19 +296,22 @@ tj.to_gdf()
 
 #
 
-Currently parsing TopoJSON as string input requires `geopandas` (`fiona` version >=1.8.6) and parsing GeoJSON as string in requires the package `geojson`
-The package `simplification` is used when one want to adopt the Visvalingam-Whyatt algorithm for simplifying or for having a speedup on the Douglas-Peucker algorithm (compared to the `shapely`-integrated version)
+Currently parsing TopoJSON as string input requires `geopandas` (`fiona` version >=1.8.6) and parsing GeoJSON as string requires the package `geojson`. 
 
-The `.to_widget()` function depends on `ipywidgets` and can be a bit tricky to get it working. But if you do, something like the following will show up:
+The package `simplification` can be used if you want to adopt the Visvalingam-Whyatt algorithm for simplifying or for having a speedup on the Douglas-Peucker algorithm (compared to the `shapely`-integrated version).
+
+
+The `.to_widget()` function depends on `ipywidgets` and can be a bit tricky to get it installed and properly working. But if you do, something like the following will show up:
 
 <img src="images/ipywidgets.gif" alt="ipywidgets">
 
-Start from `In [5]` in the following [notebook](https://nbviewer.jupyter.org/github/mattijn/topojson/blob/master/notebooks/ipywidgets_interaction.ipynb) to get these ipywidgets working and use the ipywidgets website, but I run very often in errors like:
+Use the ipywidgets website for installation and start from `In [5]` in the following [notebook](https://nbviewer.jupyter.org/github/mattijn/topojson/blob/master/notebooks/ipywidgets_interaction.ipynb) to get these ipywidgets working, but I run very often in errors like the following:
 ```
 [IPKernelApp] WARNING | No such comm: xxxyyyzzz123etc.
 ```
+Any suggestion how to solve this error is much appreciated!
 
-The many [tests][l1] as part of this package also can be used as example material.
+Futher, the many [tests][l1] as part of this package also can be used as example material.
 
 [l1]: https://github.com/mattijn/topojson/tree/master/tests
 
