@@ -107,7 +107,7 @@ For now, just use the Github issues. That can be:
 
 ## Examples and tutorial notebooks
 
-The followig examples present different input types parsed to different output types. The output types are not dependent on the used input type and vice versa, but are just shown as possible examples.
+The followig examples present different input types parsed to different output types. The input types are not dependent on the used output type and vice versa, they are just possible examples.
 
 ### Input Type: `list`
 
