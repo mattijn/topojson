@@ -3,7 +3,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/topojson.svg)](https://pypi.org/project/topojson)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
-[Ready for Beta Users! (break it, but please report it)]
+[Ready for Beta Users!] - (break it, but please report it)
 
 _TopoJSON_ encodes geographic data structures into a shared topology. This repository describes the development of a **Python** implementation of this TopoJSON format. 
 
