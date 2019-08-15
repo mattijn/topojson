@@ -86,6 +86,7 @@ Topojson depends on the following packages:
 - shapely
 
 Windows users: download the dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/ 
+
 OS X or linux: use `pip` as usual
 
 Further, optional dependencies are:
