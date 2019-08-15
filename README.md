@@ -9,7 +9,7 @@ _TopoJSON_ encodes geographic data structures into a shared topology. This repos
 
 ## Usage
 
-The package can be used in multiple different ways, with the purpose to create a TopoJSON topology:
+The package can be used in multiple different ways, with the main purpose to create a TopoJSON topology:
 
 ```python
 import topojson
@@ -64,6 +64,8 @@ The required dependencies are:
 Download dependencies from https://www.lfd.uci.edu/~gohlke/pythonlibs/ for Windows where possible and use `pip` for Linux and Mac.
 
 The packages `geopandas` and `geojson` are solely used in the tests and recognized as types with the extractor.
+To make all tests pass you must have version >=0.5.0 of `geopandas` in combination with `fiona` version >=1.8.6.
+Shapely version 1.7a2 is recommended (because of https://github.com/Toblerity/Shapely/pull/733), but all tests pass from version >=1.6.3.
 
 For better experience make sure you have `altair` installed as well.
 For the interactive experience also install `ipywidgets`.
