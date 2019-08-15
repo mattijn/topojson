@@ -6,7 +6,7 @@
 _[Ready for Beta Users! With other words: break it, but please report it]_
 # 
 
-_TopoJSON_ encodes geographic data structures into a shared topology. This repository describes the development of a **Python** implementation of this TopoJSON format. 
+_Topojson_ encodes geographic data structures into a shared topology. This repository describes the development of a **Python** implementation of the TopoJSON format. 
 
 ## Usage
 
