@@ -55,7 +55,7 @@ In the example above the output is parsed to a JSON string (`.to_json()`), but t
 | topojson.Topology().to_gdf()    	| Shapely, NumPy, GeoPandas*                                   	|
 | topojson.Topology().to_widget() 	| Shapely, NumPy, Simplification*, ipywidgets* (+ labextension) 	|
 
-* * optional dependencies
+&ast; optional dependencies
 
 TopoJSON is merely designed to create smaller files than its GeoJSON counterpart. It is capable of doing so through a few options of which the following are currently available: compute topology, quantize the input and/or output, simplify the input and/or output.
 
@@ -298,7 +298,10 @@ The `.to_widget()` function depends on `ipywidgets` and can be a bit tricky to g
 
 <img src="images/ipywidgets.gif" alt="ipywidgets">
 
-Start from `In [5]` in the following notebook https://nbviewer.jupyter.org/github/mattijn/topojson/blob/master/notebooks/ipywidgets_interaction.ipynb to get these ipywidgets working.
+Start from `In [5]` in the following [notebook](https://nbviewer.jupyter.org/github/mattijn/topojson/blob/master/notebooks/ipywidgets_interaction.ipynb) to get these ipywidgets working and use the ipywidgets website, but I run very often in errors like:
+```
+[IPKernelApp] WARNING | No such comm: xxxyyyzzz123etc.
+```
 
 The many [tests][l1] as part of this package also can be used as example material.
 
