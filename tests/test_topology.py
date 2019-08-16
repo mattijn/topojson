@@ -173,4 +173,4 @@ class TestTopology(unittest.TestCase):
             simplify_with="simplification",
             simplify_algorithm="dp",
         ).to_dict()
-        self.assertEqual(len(topo["arcs"][0]), 3)
+        self.assertEqual(len(topo["arcs"][0]), 3) 
