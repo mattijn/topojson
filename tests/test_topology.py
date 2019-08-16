@@ -32,7 +32,7 @@ class TestTopology(unittest.TestCase):
 
         topo = topojson.Topology(data, winding_order="CW_CCW").to_dict()
         self.assertEqual(len(topo["objects"]), 1)
-        self.assertEqual(isinstance(topo["options"], TopoOptions), True)
+        self.assertEqual(isinstance(topo["options"], dict), True)
 
     # test winding order using kwarg variables
     def test_winding_order_kwarg_vars(self):
@@ -42,7 +42,7 @@ class TestTopology(unittest.TestCase):
 
         topo = topojson.Topology(data, winding_order="CW_CCW").to_dict()
         self.assertEqual(len(topo["objects"]), 1)
-        self.assertEqual(isinstance(topo["options"], TopoOptions), True)
+        self.assertEqual(isinstance(topo["options"], dict), True)
 
     def test_computing_topology(self):
         data = [
