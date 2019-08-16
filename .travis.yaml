@@ -7,11 +7,6 @@ python:
   - "nightly"
 dist: xenial
 
-# safelist
-branches:
-  only:
-  - master
-
 jobs:
   include:
     - stage: TEST
