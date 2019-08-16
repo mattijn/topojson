@@ -66,7 +66,9 @@ class Join(Extract):
         return "Join(\n{}\n)".format(pprint.pformat(self.output))
 
     def to_dict(self):
-        return self.output
+        topo_object = copy.copy(self.output)
+        topo_object["options"] = vars(topo_object["options"])
+        return topo_object
 
     def to_svg(self, separate=False):
         serialize_as_svg(self.output, separate)
