@@ -102,14 +102,16 @@ class Topology(Hashmap):
         return "Topology(\n{}\n)".format(pprint.pformat(self.output))
 
     def to_dict(self):
-        return self.output
+        topo_object = copy.copy(self.output)
+        topo_object["options"] = vars(topo_object["options"])
+        return topo_object
 
     def to_svg(self, separate=False):
         serialize_as_svg(self.output, separate)
 
     def to_json(self, fp=None):
         topo_object = copy.copy(self.output)
-        del topo_object["options"]
+        topo_object["options"] = vars(topo_object["options"])
         return serialize_as_json(topo_object, fp)
 
     def to_gdf(self):
