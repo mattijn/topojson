@@ -1,13 +1,27 @@
 {
-  "python.unitTest.unittestArgs": ["-v", "-s", "./tests", "-p", "test_*.py"],
-  "python.unitTest.pyTestEnabled": false,
-  "python.unitTest.nosetestsEnabled": false,
-  "python.unitTest.unittestEnabled": true,
+  "python.testing.unittestArgs": [
+    "-v",
+    "-s",
+    "./tests",
+    "-p",
+    "test_*.py"
+  ],
+  "python.testing.pytestEnabled": false,
+  "python.testing.nosetestsEnabled": false,
+  "python.testing.unittestEnabled": true,
   "python.formatting.provider": "black",
-  "python.formatting.blackArgs": ["--line-length", "88", "--py36"],
+  "python.formatting.blackArgs": [
+    "--line-length",
+    "88",
+    "--py36"
+  ],
   "editor.formatOnSave": true,
   "[python]": {
-    "editor.rulers": [88, 120]
+    "editor.rulers": [
+      88,
+      120
+    ]
   },
-  "python.pythonPath": "/usr/local/bin/python3"
+  "python.pythonPath": "C:\\Python37\\python.exe"
+  //"python.pythonPath": "/usr/local/bin/python3"
 }

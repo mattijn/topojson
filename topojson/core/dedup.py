@@ -85,7 +85,7 @@ class Dedup(Cut):
         del data["bookkeeping_linestrings"]
         data["bookkeeping_arcs"] = lists_from_np_array(array_bk)
         if data["bookkeeping_duplicates"].size != 0:
-            data["bookkeeping_shared_arcs"] = array_bk_sarcs.astype(int).tolist()
+            data["bookkeeping_shared_arcs"] = array_bk_sarcs.astype(np.int64).tolist()
             data["bookkeeping_duplicates"] = lists_from_np_array(
                 data["bookkeeping_duplicates"][dup_pair_list != -99]
             )
@@ -194,7 +194,7 @@ class Dedup(Cut):
 
         for arcs_geom_bk in sliced_array_bk_ndp:
             # set number of arcs before trying linemerge
-            ndp_arcs_bk = arcs_geom_bk[~np.isnan(arcs_geom_bk)].astype(int)
+            ndp_arcs_bk = arcs_geom_bk[~np.isnan(arcs_geom_bk)].astype(np.int64)
             no_ndp_arcs_bk = len(ndp_arcs_bk)
 
             # apply linemerge

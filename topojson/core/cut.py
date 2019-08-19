@@ -117,7 +117,9 @@ class Cut(Join):
 
         else:
             bk_array = np_array_from_lists(data["bookkeeping_geoms"]).ravel()
-            bk_array = np.expand_dims(bk_array[~np.isnan(bk_array)].astype(int), axis=1)
+            bk_array = np.expand_dims(
+                bk_array[~np.isnan(bk_array)].astype(np.int64), axis=1
+            )
             self.segments_list = data["linestrings"]
             self.find_duplicates(data["linestrings"])
             self.bookkeeping_linestrings = bk_array
