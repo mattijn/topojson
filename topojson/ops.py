@@ -31,7 +31,7 @@ def asvoid(arr):
         np.array([-0.]).view(np.void) != np.array([0.]).view(np.void)
         Adding 0. converts -0. to 0.
         """
-        arr += 0.
+        arr += 0.0
     return arr.view(np.dtype((np.void, arr.dtype.itemsize * arr.shape[-1])))
 
 
@@ -78,8 +78,8 @@ def insert_coords_in_line(line, tree_splitter):
     tol_float_prc = 1e8
     pts_xy_nonexst = pts_xy_on_line[
         ~np.in1d(
-            asvoid(np.around(pts_xy_on_line * tol_float_prc).astype(int)),
-            asvoid(np.around(ls_xy * tol_float_prc).astype(int)),
+            asvoid(np.around(pts_xy_on_line * tol_float_prc).astype(np.int64)),
+            asvoid(np.around(ls_xy * tol_float_prc).astype(np.int64)),
         )
     ]
     if pts_xy_nonexst.size == 0:
@@ -135,8 +135,8 @@ def fast_split(line, splitter):
     tol = 1e8
     splitter_indices = np.flatnonzero(
         np.in1d(
-            asvoid(np.around(line * tol).astype(int)),
-            asvoid(np.around(splitter * tol).astype(int)),
+            asvoid(np.around(line * tol).astype(np.int64)),
+            asvoid(np.around(splitter * tol).astype(np.int64)),
         )
     )
 
@@ -148,7 +148,7 @@ def fast_split(line, splitter):
 
     # split the linestring where each sub-array includes the split-point
     # create a new array with the index elements repeated
-    tmp_indices = np.zeros(line.shape[0], dtype=int)
+    tmp_indices = np.zeros(line.shape[0], dtype=np.int64)
     tmp_indices[splitter_indices] = 1
     tmp_indices += 1
     ls_xy = np.repeat(line, tmp_indices, axis=0)
@@ -270,7 +270,7 @@ def lists_from_np_array(np_array):
     are filtered
     """
 
-    nested_lists = [obj[~np.isnan(obj)].astype(int).tolist() for obj in np_array]
+    nested_lists = [obj[~np.isnan(obj)].astype(np.int64).tolist() for obj in np_array]
     return nested_lists
 
 
@@ -412,7 +412,10 @@ def quantize(linestrings, bbox, quant_factor=1e6):
         else:
             ls_xy = np.array(ls).T
         ls_xy = (
-            np.array([(ls_xy[0] - x0) / kx, (ls_xy[1] - y0) / ky]).round().astype(int).T
+            np.array([(ls_xy[0] - x0) / kx, (ls_xy[1] - y0) / ky])
+            .round()
+            .astype(np.int64)
+            .T
         )
         # get boolean slice where consecutive repeating coordinates are filtered
         bool_slice = (
@@ -649,7 +652,7 @@ def delta_encoding(linestrings):
     """
 
     for idx, ls in enumerate(linestrings):
-        ls = np.array(ls).astype(int)
+        ls = np.array(ls).astype(np.int64)
         ls_p1 = copy.copy(ls[0])
         ls -= np.roll(ls, 1, axis=0)
         ls[0] = ls_p1
