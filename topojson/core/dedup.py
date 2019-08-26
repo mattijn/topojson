@@ -35,8 +35,8 @@ class Dedup(Cut):
         topo_object["options"] = vars(topo_object["options"])
         return topo_object
 
-    def to_svg(self, separate=False):
-        serialize_as_svg(self.output, separate)
+    def to_svg(self, separate=False, include_junctions=False):
+        serialize_as_svg(self.output, separate, include_junctions)
 
     def deduper(self, data):
         """
@@ -119,7 +119,7 @@ class Dedup(Cut):
                 ndp_arcs[segment_idx].contains(data["linestrings"][i])
                 for i in ndp_arcs_bk
             ].count(True)
-            if merged_arcs_bool == 2:
+            if merged_arcs_bool >= 2:
                 return segment_idx
 
     def deduplicate(self, dup_pair_list, linestring_list, array_bk):
@@ -207,19 +207,18 @@ class Dedup(Cut):
             # if lengths are equal, than no merge did occur and no need to solve the
             # bookkeeping
             if no_ndp_arcs != no_ndp_arcs_bk:
-                # assumes that only first and last item of non-duplicate arcs can merge
-                idx_keep = ndp_arcs_bk[-1]
-                idx_pop = ndp_arcs_bk[0]
-
                 # get the idx of the linestring which was merged
                 idx_merg_arc = self.find_merged_linestring(
                     data, no_ndp_arcs, ndp_arcs, ndp_arcs_bk
                 )
-                # idx_merged_arc = np.nonzero(np.array(m_arcs).sum(axis=1) == 2)[0][0]
+
+                # keep last arc of non-duplicate arcs and pop the remaining arcs
+                idx_keep = ndp_arcs_bk[-1]
+                idx_pop = np.delete(ndp_arcs_bk, -1)
 
                 # replace linestring of idx_keep with merged linestring
                 data["linestrings"][idx_keep] = ndp_arcs[idx_merg_arc]
-                self.merged_arcs_idx.append(idx_pop)
+                self.merged_arcs_idx.extend(idx_pop.tolist())
 
     def pop_merged_arcs(self, data, array_bk, array_bk_sarcs):
         """

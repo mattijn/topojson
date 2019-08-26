@@ -59,8 +59,8 @@ class Cut(Join):
         topo_object["options"] = vars(topo_object["options"])
         return topo_object
 
-    def to_svg(self, separate=False):
-        serialize_as_svg(self.output, separate)
+    def to_svg(self, separate=False, include_junctions=False):
+        serialize_as_svg(self.output, separate, include_junctions)
 
     def cutter(self, data):
         """
