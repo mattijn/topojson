@@ -167,5 +167,5 @@ class TestDedup(unittest.TestCase):
         ]
         topo = Dedup(data).to_dict()
         self.assertEqual(len(topo["junctions"]), 6)
-        self.assertEqual(len(topo["booking_dupicates"]), 0)
+        self.assertEqual(len(topo["bookkeeping_duplicates"]), 0)
 
