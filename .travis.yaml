@@ -8,17 +8,9 @@ python:
 dist: xenial
 
 jobs:
-  include:
-    - stage: TEST
-      before_install:
-        - pip install -U pip flit
-      install:
-        - flit install --deps develop
-      script: python -m unittest
-
-    - stage: PRODUCTION
-      before_install:
-        - pip install -U pip flit
-      install:
-        - flit install --deps production
-      script: python -c "import topojson"
+before_install:
+  - pip install -U pip flit codecov
+install:
+  - flit install --deps develop
+script: python -m unittest discover
+after_success: codecov
