@@ -74,7 +74,7 @@ The following parameters can be used to control these options for generating the
 
 ## Installation
 
-The current package is released on PyPi as version `1.0rc4`.
+The current package is released on PyPi as version `1.0rc5`.
 Installation can be done by:
 
 ```
@@ -317,13 +317,21 @@ Futher, the many [tests][l1] as part of this package also can be used as example
 
 ## Changelog
 
+Version `1.0rc5`:
+- change `TopoOptions` in `to_dict` to be serializable #46
+- changed all `int` to `np.int64`, since it is platform specific #49, #45
+
 Version `1.0rc4`:
 - no `linestring` key in topojson
 - serialize `str` of TopoJSON or GeoJSON data
 - add `vw` as algoritm type and update widget
 
 Version `1.0rc3`:
-- long list
+- changed class object to inherit sequence
+- removed the `topojson.topology` function
+- introducted the `topojson.Topology` class
+- speedups and bug fixes, see PR#15-#36
+- introduced multiple options see #8
 
 Version `1.0rc2`:
 
