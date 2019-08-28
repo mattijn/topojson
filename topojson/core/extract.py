@@ -173,6 +173,13 @@ class Extract(object):
         # maybe the object has an __geo_interface__
         if hasattr(self.data, "__geo_interface__"):
             data = copy.deepcopy(self.data.__geo_interface__)
+            # convert type _Array or array to list
+            for key in data.keys():
+                if str(type(data[key]).__name__).startswith(("_Array", "array")):
+                    data[key] = data[key].tolist()
+
+            # convert (nested) tuples to lists
+            data = json.loads(json.dumps(data))
             self.data = [data]
             self.extract_list([data])
         else:
