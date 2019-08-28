@@ -94,7 +94,7 @@ class TestHasmap(unittest.TestCase):
             | (data.name == "Zambia")
         ]
         topo = Hashmap(data).to_dict()
-        self.assertEqual(len(topo["linestrings"]), 15)
+        self.assertEqual(len(topo["linestrings"]), 17)
 
     def test_super_function_hashmap(self):
         data = geometry.GeometryCollection(
