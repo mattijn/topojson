@@ -15,7 +15,7 @@ from ..utils import serialize_as_json
 
 
 class Topology(Hashmap):
-    """
+    """ 
     Returns a TopoJSON topology for the specified geometric object.       
     TopoJSON is an extension of GeoJSON providing multiple approaches 
     to compress the geographical input data. These options include 
