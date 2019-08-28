@@ -28,22 +28,9 @@ What results in the following TopoJSON object:
 '{"type": "Topology", "objects": {"data": {"geometries": [{"type": "Polygon", "arcs": [[-2, 0]]}, {"type": "Polygon", "arcs": [[1, 2]]}], "type": "GeometryCollection"}}, "bbox": [0.0, 0.0, 2.0, 1.0], "arcs": [[[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]], [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]]}'
 ```
 
-The following geographical input data types are recognized:
+More or less all Python objects containing geographical data are supported through the `__geo_interface__` attribute. This includes at least the Python packages `geojson`, `shapely`, `geopandas`, `pyshp`.
 
-- `geojson.Feature`
-- `geojson.FeatureCollection`
-- `geopandas.GeoDataFrame`
-- `geopandas.GeoSeries`
-- `shapely.geometry.LineString`
-- `shapely.geometry.MultiLineString`
-- `shapely.geometry.Polygon`
-- `shapely.geometry.MultiPolygon`
-- `shapely.geometry.Point`
-- `shapely.geometry.MultiPoint`
-- `shapely.geometry.GeometryCollection`
-- `dict` of objects that provide a valid `__geo_interface__`
-- `list` of objects that provide a valid `__geo_interface__`
-- `str` objects with TopoJSON or GeoJSON geographic structures
+Moreover a `dict` of objects that provide a valid `__geo_interface__`, a `list` of objects that provide a valid `__geo_interface__` and `str` objects with TopoJSON or GeoJSON geographic structures are supported too.
 
 In the example above the output is parsed to a JSON string (`.to_json()`), but this is not the only thing we can do. Multiple functions are available to serialize the Topology object.
 
@@ -54,7 +41,7 @@ In the example above the output is parsed to a JSON string (`.to_json()`), but t
 | topojson.Topology().to_svg()    	| Shapely, NumPy                                              	|
 | topojson.Topology().to_alt()    	| Shapely, NumPy, Altair*                                      	|
 | topojson.Topology().to_gdf()    	| Shapely, NumPy, GeoPandas*                                   	|
-| topojson.Topology().to_widget() 	| Shapely, NumPy, Simplification*, ipywidgets* (+ labextension) 	|
+| topojson.Topology().to_widget() 	| Shapely, NumPy, Altair*, Simplification*, ipywidgets* (+ labextension) 	|
 
 &ast; optional dependencies
 
@@ -71,6 +58,14 @@ The following parameters can be used to control these options for generating the
 - simplify_algorithm   
 - winding_order
 
+Where the `toposimplify` and `topoquantize` are supported by chaining as well. Meaning you could first compute the Topology (which can be cost-intensive) and afterwards apply the simplify and quantize settings on the computed Topology and visualize till pleased.
+
+```python
+tj = topojson.Topology(data, prequantize=False, topology=True)
+tj.toposimplify(1).topoquantize(1e6).to_svg()
+```
+
+Or use the ipywidget approach described more below for an interactive approach.
 
 ## Installation
 
@@ -305,11 +300,11 @@ The `.to_widget()` function depends on `ipywidgets` and can be a bit tricky to g
 
 <img src="images/ipywidgets.gif" alt="ipywidgets">
 
-Use the ipywidgets website for installation and start from `In [5]` in the following [notebook](https://nbviewer.jupyter.org/github/mattijn/topojson/blob/master/notebooks/ipywidgets_interaction.ipynb) to get these ipywidgets working, but I run very often in errors like the following:
+To install, use the ipywidgets website for installation.  I ran very often in errors like the following:
 ```
 [IPKernelApp] WARNING | No such comm: xxxyyyzzz123etc.
 ```
-Any suggestion how to solve this error is much appreciated!
+To solve this error I found out that I'd first had to pip uninstall JupyterLab, then install the lab extension of ipywidgets and then install JupyterLab again. Then when starting JupyterLab for the first time it asks to rebuild to include the ipywidgets lab extension. Click Yes or OK and after JupyterLab relaunch, these errors did appear for me anymore (both Windows and macOS). If you got all installed I suggest starting from `In [5]` in the following [notebook](https://nbviewer.jupyter.org/github/mattijn/topojson/blob/master/notebooks/ipywidgets_interaction.ipynb) to test if all works.
 
 Futher, the many [tests][l1] as part of this package also can be used as example material.
 
