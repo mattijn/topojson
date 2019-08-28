@@ -21,6 +21,7 @@ dev = [
     "fiona >=1.8.6", 
     "geopandas", 
     "altair", 
-    "ipywidgets"
+    "ipywidgets",
+    "pytest=^5.1.1"
 ]
 
