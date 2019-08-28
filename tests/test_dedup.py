@@ -158,7 +158,7 @@ class TestDedup(unittest.TestCase):
         )
 
     # this test was added since there is an error stating the following during Dedup:
-    # TypeError: list indices must be integers or slices, not NoneType
+    # TypeError: list indices must be integers or slices, not NoneType, see #50
     def test_s2_geometries(self):
         data = [
             wkt.loads(

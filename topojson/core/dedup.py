@@ -119,8 +119,10 @@ class Dedup(Cut):
                 ndp_arcs[segment_idx].contains(data["linestrings"][i])
                 for i in ndp_arcs_bk
             ].count(True)
-            if merged_arcs_bool >= 2:
-                return segment_idx
+            if merged_arcs_bool == 2:
+                return segment_idx, "first_last"
+            elif merged_arcs_bool == len(ndp_arcs_bk):
+                return segment_idx, "all"
 
     def deduplicate(self, dup_pair_list, linestring_list, array_bk):
         """
@@ -208,17 +210,20 @@ class Dedup(Cut):
             # bookkeeping
             if no_ndp_arcs != no_ndp_arcs_bk:
                 # get the idx of the linestring which was merged
-                idx_merg_arc = self.find_merged_linestring(
+                idx_merg_arc, consec_behavior = self.find_merged_linestring(
                     data, no_ndp_arcs, ndp_arcs, ndp_arcs_bk
                 )
 
                 # keep last arc of non-duplicate arcs and pop the remaining arcs
                 idx_keep = ndp_arcs_bk[-1]
-                idx_pop = np.delete(ndp_arcs_bk, -1)
-
                 # replace linestring of idx_keep with merged linestring
                 data["linestrings"][idx_keep] = ndp_arcs[idx_merg_arc]
-                self.merged_arcs_idx.extend(idx_pop.tolist())
+                if consec_behavior == "first_last":
+                    idx_pop = ndp_arcs_bk[0]
+                    self.merged_arcs_idx.append(idx_pop)
+                elif consec_behavior == "all":
+                    idx_pop = np.delete(ndp_arcs_bk, -1)
+                    self.merged_arcs_idx.extend(idx_pop.tolist())
 
     def pop_merged_arcs(self, data, array_bk, array_bk_sarcs):
         """
