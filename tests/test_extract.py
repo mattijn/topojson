@@ -263,10 +263,10 @@ class TestExtract(unittest.TestCase):
         topo = Extract(data).to_dict()
         self.assertEqual(len(topo["linestrings"]), 4)
 
-    # def test_extract_geo_interface_shapefile(self):
-    #     import shapefile
+    def test_extract_geo_interface_shapefile(self):
+        import shapefile
 
-    #     data = shapefile.Reader("tests/files_shapefile/southamerica.shp")
-    #     topo = Extract(data).to_dict()
-    #     self.assertEqual(len(topo["linestrings"]), 4)
+        data = shapefile.Reader("tests/files_shapefile/southamerica.shp")
+        topo = Extract(data).to_dict()
+        self.assertEqual(len(topo["linestrings"]), 15)
 
