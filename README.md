@@ -300,11 +300,12 @@ The `.to_widget()` function depends on `ipywidgets` and can be a bit tricky to g
 
 <img src="images/ipywidgets.gif" alt="ipywidgets">
 
-To install, use the ipywidgets website for installation.  I ran very often in errors like the following:
+To install, use the ipywidgets website for installation.  
+Initially I ran very often in errors like the following after I thought I'd install everything correctly:
 ```
 [IPKernelApp] WARNING | No such comm: xxxyyyzzz123etc.
 ```
-To solve this error I found out that I'd first had to pip uninstall JupyterLab, then install the lab extension of ipywidgets and then install JupyterLab again. Then when starting JupyterLab for the first time it asks to rebuild to include the ipywidgets lab extension. Click Yes or OK and after JupyterLab relaunch, these errors did appear for me anymore (both Windows and macOS). If you got all installed I suggest starting from `In [5]` in the following [notebook](https://nbviewer.jupyter.org/github/mattijn/topojson/blob/master/notebooks/ipywidgets_interaction.ipynb) to test if all works.
+To solve this error I found out that I'd first had to pip uninstall JupyterLab, then install the lab extension of ipywidgets and then install JupyterLab again. Then when starting JupyterLab for the first time it asks to rebuild to include the ipywidgets lab extension. Click Yes or OK and wait till JupyterLab refresh, afterwards these errors did not appear for me anymore (both Windows and macOS). If you got all installed I suggest starting from `In [5]` in the following [notebook](https://nbviewer.jupyter.org/github/mattijn/topojson/blob/master/notebooks/ipywidgets_interaction.ipynb) to test if all works.
 
 Futher, the many [tests][l1] as part of this package also can be used as example material.
 
