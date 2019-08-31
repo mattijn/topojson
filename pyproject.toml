@@ -7,11 +7,20 @@ module = "topojson"
 author = "Mattijn van Hoek"
 author-email = "mattijn@gmail.com"
 home-page = "https://github.com/mattijn/topojson"
-requires = ["numpy", "shapely", "geojson", "simplification"]
+requires = ["numpy", "shapely"]
 keywords = "topojson python github topology geojson"
 description-file = "README.md"
 classifiers = ["License :: OSI Approved :: BSD License"]
 
 [tool.flit.metadata.requires-extra]
-dev = ["geojson", "fiona", "geopandas", "altair", "ipywidgets"]
+dev = [
+    "shapely >=1.7a2",
+    "geojson", 
+    "simplification", 
+    "pyshp", 
+    "fiona >=1.8.6", 
+    "geopandas", 
+    "altair", 
+    "ipywidgets"
+]
 
