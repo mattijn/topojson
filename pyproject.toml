@@ -13,6 +13,7 @@ description-file = "README.md"
 classifiers = ["License :: OSI Approved :: BSD License"]
 
 [tool.flit.metadata.requires-extra]
+<<<<<<< HEAD
 dev = [
     "shapely >=1.7a2",
     "geojson", 
@@ -24,4 +25,7 @@ dev = [
     "ipywidgets",
     "pytest=^5.1.1"
 ]
+=======
+dev = ["fiona", "geopandas", "altair", "ipywidgets", "pytest=^5.1.1"]
+>>>>>>> 0f4e4fef1c138bdbd4bf73e88b48f8443bb7289b
 
