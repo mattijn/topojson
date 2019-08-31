@@ -11,5 +11,5 @@ before_install:
   - pip install -U pip flit codecov
 install:
   - flit install --deps develop
-script: python -m unittest .tests/
+script: python -m unittest discover
 after_success: codecov
