@@ -2,7 +2,8 @@ import itertools
 import numpy as np
 from shapely import geometry
 from shapely import wkt
-from shapely.ops import transform
+
+# from shapely.ops import transform
 from shapely.strtree import STRtree
 import pprint
 import copy
@@ -11,14 +12,14 @@ import copy
 def asvoid(arr):
     """
     Utility function to create a 1-dimensional numpy void object (bytes)
-    of a 2-dimensional array. This is useful for the function numpy.in1d(), 
-    since it only accepts 1-dimensional objects.    
-    
+    of a 2-dimensional array. This is useful for the function numpy.in1d(),
+    since it only accepts 1-dimensional objects.
+
     Parameters
     ----------
     arr : numpy.array
         2-dimensional numpy array
-    
+
     Returns
     -------
     numpy.void
@@ -41,17 +42,17 @@ def insert_coords_in_line(line, tree_splitter):
 
     Parameters
     ----------
-    line : numpy.array 
+    line : numpy.array
         numpy array with coordinates representing a line segment
     tree_splitter: STRtree
-        a STRtree splitter object   
+        a STRtree splitter object
 
     Returns
     -------
-    new_ls_xy : numpy.array 
-        numpy array with inserted coordinates, if any, representing a line segment  
+    new_ls_xy : numpy.array
+        numpy array with inserted coordinates, if any, representing a line segment
     pts_xy_on_line : numpy.array
-        numpy array with with coordinates that are on the line             
+        numpy array with with coordinates that are on the lin
     """
 
     # get junctions that contain within bbox line
@@ -109,21 +110,21 @@ def insert_coords_in_line(line, tree_splitter):
 
 def fast_split(line, splitter):
     """
-    Split a LineString (numpy.array) with a Point or MultiPoint. 
+    Split a LineString (numpy.array) with a Point or MultiPoint.
     This function is a replacement for the shapely.ops.split function, but faster.
-    
+
     Parameters
     ----------
-    line : numpy.array 
+    line : numpy.array
         numpy array with coordinates that you like to be split
     splitter : numpy.array
-        numpy array with coordiates on wich the line should be tried splitting   
-    
+        numpy array with coordiates on wich the line should be tried splitting
+
     Returns
     -------
     list of numpy.array
-        If more than 1 item, the line was split. Each item in the list is a 
-        array of coordinates. 
+        If more than 1 item, the line was split. Each item in the list is a
+        array of coordinates.
     """
 
     # previously did convert geometries of coordinates from LineString and (Multi)Point
@@ -165,15 +166,15 @@ def fast_split(line, splitter):
 def signed_area(ring):
     """
     compute the signed area of a ring (polygon)
-    
+
     note: implementation is numpy variant of shapely's version:
     https://github.com/Toblerity/Shapely/blob/master/shapely/algorithms/cga.py
-    
+
     Parameters
     ----------
     ring : shapely.geometry.LinearRing
         an exterior or inner ring of a shapely.geometry.Polygon
-    
+
     Returns
     -------
     float
@@ -186,12 +187,12 @@ def signed_area(ring):
 
 def is_ccw(ring):
     """provide information if a given ring is clockwise or counterclockwise.
-    
+
     Parameters
     ----------
     ring : shapely.geometry.LinearRing
         an exterior or inner ring of a shapely.geometry.Polygon
-    
+
     Returns
     -------
     boolean
@@ -206,10 +207,10 @@ def properties_foreign(objects):
     ["type", "bbox", "coordinates", "geometries", "geometry", "properties", "features"]
 
     If these keys are detected they will not be set as a foreign member and will remain
-    nested within properties. 
+    nested within properties.
 
-    Only if the 
-    
+    Only if the
+
     Parameters
     ----------
     objects : [type]
@@ -245,15 +246,15 @@ def properties_foreign(objects):
 
 def np_array_from_lists(nested_lists):
     """
-    Function to create numpy array from nested lists. The shape of the numpy array 
-    are the number of nested lists (rows) x the length of the longest nested list 
-    (columns). Rows that contain less values are filled with np.nan values.        
-    
+    Function to create numpy array from nested lists. The shape of the numpy array
+    are the number of nested lists (rows) x the length of the longest nested list
+    (columns). Rows that contain less values are filled with np.nan values.
+
     Parameters
     ----------
     nested_lists : list of lists
         list containing nested lists of different sizes.
-    
+
     Returns
     -------
     numpy.ndarray
@@ -266,7 +267,7 @@ def np_array_from_lists(nested_lists):
 
 def lists_from_np_array(np_array):
     """
-    Function to convert numpy array to list, where elements set as np.nan 
+    Function to convert numpy array to list, where elements set as np.nan
     are filtered
     """
 
@@ -292,18 +293,18 @@ def dequantize(np_arcs, scale, translate):
 def get_matches(geoms, tree_idx):
     """
     Function to return the indici of the rtree that intersects with the input geometries
-    
+
     Parameters
     ----------
     geoms : list
         list of geometries to compare against the STRtree
     tree_idx: STRtree
         a STRtree indexing object
-        
+
     Returns
     -------
     list
-        list of tuples, where the key of each tuple is the linestring index and the 
+        list of tuples, where the key of each tuple is the linestring index and the
         value of each key is a list of junctions intersecting bounds of linestring.
     """
 
@@ -319,14 +320,14 @@ def get_matches(geoms, tree_idx):
 
 def select_unique(data):
     """
-    Function to return unique pairs within a numpy array. 
+    Function to return unique pairs within a numpy array.
     Example: input as [[1,2], [2,1]] will return as [[1,2]]
 
     Parameters
     ----------
     data : numpy.array
         2 dimensional array, where each row is a couple
-    
+
     Returns
     -------
     numpy.array
@@ -345,12 +346,12 @@ def select_unique_combs(linestrings):
     Each combination created contains a couple of two linestrings where the enveloppe
     overlaps each other.
     Linestrings with non-overlapping enveloppes are not returned as combination.
-    
+
     Parameters
     ----------
     linestrings : list of LineString
         list where each item is a shapely LineString
-    
+
     Returns
     -------
     numpy.array
@@ -382,7 +383,7 @@ def select_unique_combs(linestrings):
 
 def quantize(linestrings, bbox, quant_factor=1e6):
     """
-    Function that applies quantization. Quantization removes information by reducing 
+    Function that applies quantization. Quantization removes information by reducing
     the precision of each coordinate, effectively snapping each point to a regular grid.
 
     Parameters
@@ -390,8 +391,8 @@ def quantize(linestrings, bbox, quant_factor=1e6):
     linestrings: list of shapely.geometry.LineStrings
         LineStrings that will be quantized
     quant_factor : int
-        Quantization factor. Normally this varies between 1e4, 1e5, 1e6. Where a 
-        higher number means a bigger grid where the coordinates can snap to. 
+        Quantization factor. Normally this varies between 1e4, 1e5, 1e6. Where a
+        higher number means a bigger grid where the coordinates can snap to.
 
     Returns
     -------
@@ -426,9 +427,9 @@ def quantize(linestrings, bbox, quant_factor=1e6):
                 ls.coords = ls_xy[bool_slice]
             else:
                 linestrings[idx] = ls_xy[bool_slice].tolist()
-    transform = {"scale": [kx, ky], "translate": [x0, y0]}
+    transform_ = {"scale": [kx, ky], "translate": [x0, y0]}
 
-    return linestrings, transform
+    return linestrings, transform_
 
 
 def simplify(
@@ -439,14 +440,14 @@ def simplify(
     input_as="linestring",
 ):
     """
-    Function that simplifies linestrings. The goal of line simplification is to reduce 
-    the number of points by deleting some trivial points, but without destroying the 
+    Function that simplifies linestrings. The goal of line simplification is to reduce
+    the number of points by deleting some trivial points, but without destroying the
     essential shape of the lines in the process.
-    
-    One can choose between the Douglas-Peucker ["dp"] algorithm (which simplifies 
-    a line based upon vertical interval) and Visvalingam–Whyatt ["vw"] (which 
+
+    One can choose between the Douglas-Peucker ["dp"] algorithm (which simplifies
+    a line based upon vertical interval) and Visvalingam–Whyatt ["vw"] (which
     progressively removes points with the least-perceptible change).
-    
+
     https://pdfs.semanticscholar.org/9877/cdf50a15367bcb86649b67df8724425c5451.pdf
 
     Parameters
@@ -454,19 +455,19 @@ def simplify(
     linestrings: list of shapely.geometry.LineStrings
         LineStrings that will be simplified
     epsilon : int
-        Simplification factor. Normally this varies 1.0, 0.1 or 0.001 for "rdp" and 
-        30-100 for "vw". 
+        Simplification factor. Normally this varies 1.0, 0.1 or 0.001 for "rdp" and
+        30-100 for "vw".
     algorithm : str, optional
         Choose between `dp` for Douglas-Peucker and `vw` for Visvalingam–Whyatt.
         Defaults to `dp`, as its evaluation maintains to be good (Song & Miao, 2016).
     package : str, optional
-        Choose between `simplification` or `shapely`. Both pachakges contains 
+        Choose between `simplification` or `shapely`. Both pachakges contains
         simplification algorithms (`shapely` only `dp`, and `simplification` both `dp`
         and `vw`).
     input_as : str, optional
-        Choose between `linestring` or `array`. This function is being called from 
+        Choose between `linestring` or `array`. This function is being called from
         different locations with different input types. Choose `linestring` if the input
-        type are shapely.geometry.LineString or `array` if the input are numpy.array 
+        type are shapely.geometry.LineString or `array` if the input are numpy.array
         coordinates
 
     Returns
@@ -527,21 +528,21 @@ def simplify(
 
 def winding_order(geom, order="CW_CCW"):
     """
-    Function that force a certain winding order on the resulting output geometries. One 
+    Function that force a certain winding order on the resulting output geometries. One
     can choose between "CCW_CW" and "CW_CCW".
-    
-    "CW_CCW" implies clockwise for exterior polygons and counterclockwise for interior 
-    polygons (aka the geographical right-hand-rule where the right hand is in the area 
+
+    "CW_CCW" implies clockwise for exterior polygons and counterclockwise for interior
+    polygons (aka the geographical right-hand-rule where the right hand is in the area
     of interest as you walk the line).
 
-    "CCW_CW" implies counterclockwise for exterior polygons and clockwise for interior 
-    polygons (aka the mathematical right-hand-rule where the right hand curls around 
-    the polygon's exterior with your thumb pointing "up" (toward space), signing a 
+    "CCW_CW" implies counterclockwise for exterior polygons and clockwise for interior
+    polygons (aka the mathematical right-hand-rule where the right hand curls around
+    the polygon's exterior with your thumb pointing "up" (toward space), signing a
     positive area for the polygon in the signed area sense).
 
-    TopoJSON, and so this package, defaults to "CW_CCW"*, but depending on the 
+    TopoJSON, and so this package, defaults to "CW_CCW"*, but depending on the
     application you might decide differently.
-    
+
     * https://bl.ocks.org/mbostock/a7bdfeb041e850799a8d3dce4d8c50c8
 
     Only applies to Polygons and MultiPolygons.
@@ -551,8 +552,8 @@ def winding_order(geom, order="CW_CCW"):
     geom : geometry or shapely.geometry.GeometryCollection
         Geometry objects where the winding order will be forced upon.
     order : str, optional
-        Choose "CW_CCW" for clockwise for exterior- and counterclockwise for 
-        interior polygons or "CCW_CW" for counterclockwise for exterior- and clockwise 
+        Choose "CW_CCW" for clockwise for exterior- and counterclockwise for
+        interior polygons or "CCW_CW" for counterclockwise for exterior- and clockwise
         for interior polygons, by default "CW_CCW".
 
     Returns
@@ -584,7 +585,7 @@ def round_coordinates(linestrings, rounding_precision):
         LineStrings of which the coordinates will be rounded
     rounding_precision : int
         Precision value. Up till how many decimales the coordinates should be rounded.
-    
+
     Returns
     -------
     linestrings: list of shapely.geometry.LineStrings
@@ -620,7 +621,7 @@ def properties_level(topojson_object, position="nested"):
     "nested" or "foreign. Default is "nested" where the attribute information is placed
     within the "properties" ditctionary, part of the geometry.
     "foreign", tries to place the attributes on the same level as the geometry.
-    
+
     Parameters
     ----------
     topojson_object : topojson.Topojson
@@ -639,7 +640,7 @@ def delta_encoding(linestrings):
     Function to apply delta-encoding to linestrings. Delta-encoding is a technique ..
 
     Replace in Hashmapper class.
-    
+
     Parameters
     ----------
     linestrings : list of shapely.geometry.LineStrings
@@ -648,7 +649,7 @@ def delta_encoding(linestrings):
     Returns
     -------
     linestrings : list of shapely.geometry.LineStrings
-        LineStrings that are delta-encoded 
+        LineStrings that are delta-encoded
     """
 
     for idx, ls in enumerate(linestrings):
@@ -659,4 +660,3 @@ def delta_encoding(linestrings):
         linestrings[idx] = ls.tolist()
 
     return linestrings
-

@@ -70,19 +70,19 @@ class Cut(Join):
         The following sequence is adopted:
         1. extract
         2. join
-        3. cut 
-        4. dedup 
-        5. hashmap         
-        
+        3. cut
+        4. dedup
+        5. hashmap
+
         Parameters
         ----------
         data : dict
             object created by the method topojson.join.
-        
+
         Returns
         -------
         dict
-            object updated and expanded with 
+            object updated and expanded with
             - updated key: linestrings
             - new key: bookkeeping_duplicates
             - new key: bookkeeping_linestrings
@@ -133,14 +133,14 @@ class Cut(Join):
 
     def flatten_and_index(self, slist):
         """
-        Function to create a flattened list of splitted linestrings and create a 
+        Function to create a flattened list of splitted linestrings and create a
         numpy array of the bookkeeping_geoms for tracking purposes.
-        
+
         Parameters
         ----------
         slist : list of LineString
             list of splitted LineStrings
-        
+
         Returns
         -------
         list
@@ -166,15 +166,15 @@ class Cut(Join):
     def find_duplicates(self, segments_list):
         """
         Function for solely detecting and recording duplicate LineStrings.
-        Firstly creates couple-combinations of LineStrings. A couple is defined 
+        Firstly creates couple-combinations of LineStrings. A couple is defined
         as two linestrings where the enveloppe overlaps. Indexes of duplicates are
         appended to the list self.duplicates.
-        
+
         Parameters
         ----------
         segments_list : list of LineString
-            list of valid LineStrings 
-        
+            list of valid LineStrings
+
         """
 
         # create list with unique combinations of lines using a rdtree
