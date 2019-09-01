@@ -1,0 +1,15 @@
+language: python
+cache: pip
+python:
+  - "3.6"
+  - "3.7"
+  - "3.7-dev"
+dist: xenial
+
+jobs:
+before_install:
+  - pip install -U pip flit codecov
+install:
+  - flit install --deps develop
+script: python -m unittest discover
+after_success: codecov
