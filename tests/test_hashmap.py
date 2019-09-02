@@ -4,7 +4,7 @@ from shapely import geometry
 from topojson.core.hashmap import Hashmap
 
 # duplicate rotated geometry bar with hole interior in geometry foo
-def test_hashmap_geomcol_multipolygon_polygon(self):
+def test_hashmap_geomcol_multipolygon_polygon():
     data = {
         "foo": {
             "type": "GeometryCollection",
@@ -35,7 +35,7 @@ def test_hashmap_geomcol_multipolygon_polygon(self):
     ]
 
 
-def test_hashmap_backward_polygon(self):
+def test_hashmap_backward_polygon():
     data = {
         "abc": {
             "type": "Polygon",
@@ -54,7 +54,7 @@ def test_hashmap_backward_polygon(self):
 
 # this test should catch a shared boundary and a hashed multipolgon
 # related to https://github.com/Toblerity/Shapely/issues/535
-def test_albania_greece(self):
+def test_albania_greece():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[(data.name == "Albania") | (data.name == "Greece")]
     topo = Hashmap(data).to_dict()
@@ -63,7 +63,7 @@ def test_albania_greece(self):
 
 
 # something is wrong with hashmapping in the example of benin
-def test_benin_surrounding_countries(self):
+def test_benin_surrounding_countries():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[
         (data.name == "Togo") | (data.name == "Benin") | (data.name == "Burkina Faso")
@@ -74,7 +74,7 @@ def test_benin_surrounding_countries(self):
 
 
 # something is wrong with hashmapping once a geometry has only shared arcs
-def test_geom_surrounding_many_geometries(self):
+def test_geom_surrounding_many_geometries():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[
         (data.name == "Botswana")
@@ -90,7 +90,7 @@ def test_geom_surrounding_many_geometries(self):
 
 # this test was added since the shared_arcs bookkeeping is doing well, but the
 # wrong arc gots deleted. How come?
-def test_shared_arcs_ordering_issues(self):
+def test_shared_arcs_ordering_issues():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[
         (data.name == "Botswana")
@@ -103,7 +103,7 @@ def test_shared_arcs_ordering_issues(self):
     assert len(topo["linestrings"]) == 17
 
 
-def test_super_function_hashmap(self):
+def test_super_function_hashmap():
     data = geometry.GeometryCollection(
         [
             geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]),
@@ -121,7 +121,7 @@ def test_super_function_hashmap(self):
 # this test was added since objects with nested geometreycollections seems not
 # being parsed in the topojson format.
 # Pass for now:
-def test_hashing_of_nested_geometrycollection(self):
+def test_hashing_of_nested_geometrycollection():
     data = {
         "foo": {
             "type": "GeometryCollection",
@@ -146,7 +146,7 @@ def test_hashing_of_nested_geometrycollection(self):
 
 # this test was added because the winding order is still giving issues.
 # see related issue: https://github.com/mattijn/topojson/issues/30
-def test_winding_order_geom_solely_shared_arcs(self):
+def test_winding_order_geom_solely_shared_arcs():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[
         (data.name == "Jordan") | (data.name == "Palestine") | (data.name == "Israel")
