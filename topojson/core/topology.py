@@ -1,6 +1,4 @@
 import pprint
-
-# import json
 import copy
 import numpy as np
 from .hashmap import Hashmap
