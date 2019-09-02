@@ -3,7 +3,6 @@ from shapely import geometry
 import geopandas
 import geojson
 import topojson
-from topojson.utils import TopoOptions
 
 
 # this test was added since geometries of only linestrings resulted in a topojson
@@ -21,8 +20,6 @@ def test_linestrings_parsed_to_gdf():
 
 # test winding order using TopoOptions object
 def test_winding_order_TopoOptions():
-    from topojson.utils import TopoOptions
-
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[(data.name == "South Africa")]
     topo = topojson.Topology(data, winding_order="CW_CCW").to_dict()
