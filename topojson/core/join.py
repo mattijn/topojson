@@ -8,10 +8,13 @@ from ..ops import select_unique_combs
 from ..ops import simplify
 from ..ops import quantize
 from ..utils import serialize_as_svg
-import numpy as np
-import itertools
+
+# import numpy as np
+
+# import itertools
 import copy
-import warnings
+
+# import warnings
 import pprint
 from .extract import Extract
 
@@ -47,7 +50,7 @@ class Join(Extract):
     dict
         object expanded with
         - new key: junctions
-        - new key: transform (if quant_factor is not None)    
+        - new key: transform (if quant_factor is not None)
     """
 
     def __init__(self, data, options={}):
@@ -70,27 +73,27 @@ class Join(Extract):
         topo_object["options"] = vars(topo_object["options"])
         return topo_object
 
-    def to_svg(self, separate=False):
-        serialize_as_svg(self.output, separate)
+    def to_svg(self, separate=False, include_junctions=False):
+        serialize_as_svg(self.output, separate, include_junctions)
 
     def joiner(self, data):
         """
-        Entry point for the class Join. This function identiefs junctions 
+        Entry point for the class Join. This function identiefs junctions
         (intersection points) of shared paths.
 
         The join function is the second step in the topology computation.
         The following sequence is adopted:
         1. extract
         2. join
-        3. cut 
-        4. dedup 
-        5. hashmap  
+        3. cut
+        4. dedup
+        5. hashmap
 
         Detects the junctions of shared paths from the specified hash of linestrings.
-        
-        After decomposing all geometric objects into linestrings it is necessary to 
-        detect the junctions or start and end-points of shared paths so these paths can 
-        be 'merged' in the next step. Merge is quoted as in fact only one of the 
+
+        After decomposing all geometric objects into linestrings it is necessary to
+        detect the junctions or start and end-points of shared paths so these paths can
+        be 'merged' in the next step. Merge is quoted as in fact only one of the
         shared path is kept and the other path is removed.
 
         Parameters
@@ -101,13 +104,13 @@ class Join(Extract):
             quantization factor, used to constrain float numbers to integer values.
             - Use 1e4 for 5 valued values (00001-99999)
             - Use 1e6 for 7 valued values (0000001-9999999)
-        
+
         Returns
         -------
         dict
-            object expanded with 
+            object expanded with
             - new key: junctions
-            - new key: transform (if quant_factor is not None)        
+            - new key: transform (if quant_factor is not None)
         """
 
         # presimplify linestrings if required
@@ -178,7 +181,7 @@ class Join(Extract):
         # coordinates that appear multiple times are not junctions
         for coords in s_coords:
             self.junctions.extend(
-                [geometry.Point(i) for i in coords if coords.count(i) is 1]
+                [geometry.Point(i) for i in coords if coords.count(i) == 1]
             )
 
         # junctions can appear multiple times in multiple segments, remove duplicates
@@ -195,12 +198,12 @@ class Join(Extract):
         """
         This function returns the segments that are shared with two input geometries.
         The shapely function `shapely.ops.shared_paths()` is adopted and can catch
-        both the shared paths with the same direction for both inputs as well as the 
+        both the shared paths with the same direction for both inputs as well as the
         shared paths with the opposite direction for one the two inputs.
 
         The returned object extents the `segments` property with detected segments.
-        Where each seperate segment is a linestring between two points.        
-        
+        Where each seperate segment is a linestring between two points.
+
         Parameters
         ----------
         g1 : shapely.geometry.LineString

@@ -51,7 +51,7 @@ class Extract(object):
         - new key: type
         - new key: linestrings
         - new key: bookkeeping_geoms
-        - new key: objects    
+        - new key: objects
     """
 
     def __init__(self, data, options={}):
@@ -84,8 +84,8 @@ class Extract(object):
         topo_object["options"] = vars(topo_object["options"])
         return topo_object
 
-    def to_svg(self, separate=False):
-        serialize_as_svg(self.output, separate)
+    def to_svg(self, separate=False, include_junctions=False):
+        serialize_as_svg(self.output, separate, include_junctions)
 
     def extractor(self, data):
         """"
@@ -101,17 +101,17 @@ class Extract(object):
 
         Returns an object including two new properties:
 
-        * linestrings - linestrings extracted from the hash, of the form [start, end], 
+        * linestrings - linestrings extracted from the hash, of the form [start, end],
         as shapely objects
-        * bookkeeping_geoms - record array storing index numbers of linestrings 
+        * bookkeeping_geoms - record array storing index numbers of linestrings
         used in each object.
 
         For each line or polygon geometry in the input hash, including nested
         geometries as in geometry collections, the `coordinates` array is replaced
-        with an equivalent `"coordinates"` array that points to one of the 
+        with an equivalent `"coordinates"` array that points to one of the
         linestrings as indexed in `bookkeeping_geoms`.
 
-        Points geometries are not collected within the new properties, but are placed 
+        Points geometries are not collected within the new properties, but are placed
         directly into the `"coordinates"` array within each object.
         """
 
@@ -140,13 +140,13 @@ class Extract(object):
     @singledispatch_class
     def serialize_geom_type(self, geom):
         """
-        This function handles the different types that can occur within known 
-        geographical data. Each type is registerd as its own function and called when 
-        found, if none of the types match the input geom the current function is 
-        executed. 
+        This function handles the different types that can occur within known
+        geographical data. Each type is registerd as its own function and called when
+        found, if none of the types match the input geom the current function is
+        executed.
 
-        The adoption of the dispatcher approach makes the usage of multiple if-else 
-        statements not needed, since the dispatcher redirects the `geom` input to the 
+        The adoption of the dispatcher approach makes the usage of multiple if-else
+        statements not needed, since the dispatcher redirects the `geom` input to the
         function which handles that partical geometry type.
 
         The following geometry types are registered:
@@ -165,7 +165,7 @@ class Extract(object):
         - list of objects that provide a __geo_interface__
         - object that provide a __geo_interface__
         - TopoJSON string
-        - GeoJSON string    
+        - GeoJSON string
 
         Any non-registered geometry wil return as an error that cannot be mapped.
         """
@@ -173,6 +173,13 @@ class Extract(object):
         # maybe the object has an __geo_interface__
         if hasattr(self.data, "__geo_interface__"):
             data = copy.deepcopy(self.data.__geo_interface__)
+            # convert type _Array or array to list
+            for key in data.keys():
+                if str(type(data[key]).__name__).startswith(("_Array", "array")):
+                    data[key] = data[key].tolist()
+
+            # convert (nested) tuples to lists
+            data = json.loads(json.dumps(data))
             self.data = [data]
             self.extract_list([data])
         else:
@@ -181,7 +188,7 @@ class Extract(object):
     @serialize_geom_type.register(geometry.LineString)
     def extract_line(self, geom):
         """*geom* type is LineString instance.
-        
+
         Parameters
         ----------
         geom : shapely.geometry.LineString
@@ -210,8 +217,8 @@ class Extract(object):
 
     @serialize_geom_type.register(geometry.MultiLineString)
     def extract_multiline(self, geom):
-        """*geom* type is MultiLineString instance. 
-        
+        """*geom* type is MultiLineString instance.
+
         Parameters
         ----------
         geom : shapely.geometry.MultiLineString
@@ -224,7 +231,7 @@ class Extract(object):
     @serialize_geom_type.register(geometry.Polygon)
     def extract_ring(self, geom):
         """*geom* type is Polygon instance.
-        
+
         Parameters
         ----------
         geom : shapely.geometry.Polygon
@@ -236,7 +243,7 @@ class Extract(object):
 
         # orient the outer polygon clockwise and the inner polygon counterclockwise
         # to conform TopoJSON standard (CW_CCW)
-        if self.options.winding_order != None:
+        if self.options.winding_order is not None:
             geom = winding_order(geom=geom, order=self.options.winding_order)
 
         boundary = geom.boundary
@@ -263,7 +270,7 @@ class Extract(object):
 
     @serialize_geom_type.register(geometry.MultiPolygon)
     def extract_multiring(self, geom):
-        """*geom* type is MultiPolygon instance. 
+        """*geom* type is MultiPolygon instance.
 
         Parameters
         ----------
@@ -279,7 +286,7 @@ class Extract(object):
     def extract_point(self, geom):
         """*geom* type is Point or MultiPoint instance.
         coordinates are directly passed to "coordinates"
-        
+
         Parameters
         ----------
         geom : shapely.geometry.Point or shapely.geometry.MultiPoint
@@ -294,7 +301,7 @@ class Extract(object):
     @serialize_geom_type.register(geometry.GeometryCollection)
     def extract_geometrycollection(self, geom):
         """*geom* type is GeometryCollection instance.
-        
+
         Parameters
         ----------
         geom : shapely.geometry.GeometryCollection
@@ -348,7 +355,7 @@ class Extract(object):
     @serialize_geom_type.register(geojson.FeatureCollection)
     def extract_featurecollection(self, geom):
         """*geom* type is FeatureCollection instance.
-        
+
         Parameters
         ----------
         geom : geojson.FeatureCollection
@@ -378,7 +385,7 @@ class Extract(object):
     @serialize_geom_type.register(geojson.Feature)
     def extract_feature(self, geom):
         """*geom* type is Feature instance.
-        
+
         Parameters
         ----------
         geom : geojson.Feature
@@ -408,8 +415,8 @@ class Extract(object):
     @serialize_geom_type.register(geopandas.GeoDataFrame)
     @serialize_geom_type.register(geopandas.GeoSeries)
     def extract_geopandas(self, geom):
-        """*geom* type is GeoDataFrame or GeoSeries instance.        
-        
+        """*geom* type is GeoDataFrame or GeoSeries instance.
+
         Parameters
         ----------
         geom : geopandas.GeoDataFrame or geopandas.GeoSeries
@@ -426,7 +433,7 @@ class Extract(object):
     @serialize_geom_type.register(list)
     def extract_list(self, geom):
         """*geom* type is List instance.
-        
+
         Parameters
         ----------
         geom : list
@@ -441,7 +448,7 @@ class Extract(object):
     @serialize_geom_type.register(str)
     def extract_string(self, geom):
         """*geom* type is String instance.
-        
+
         Parameters
         ----------
         geom : str
@@ -459,7 +466,7 @@ class Extract(object):
     @serialize_geom_type.register(dict)
     def extract_dictionary(self, geom):
         """*geom* type is Dictionary instance.
-        
+
         Parameters
         ----------
         geom : dict

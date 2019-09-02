@@ -2,6 +2,7 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/topojson.svg)](https://pypi.org/project/topojson)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![build status](http://img.shields.io/travis/mattijn/topojson/master.svg?style=flat)](https://travis-ci.org/mattijn/topojson)
 
 _[Ready for Beta Users! With other words: break it, but please report it]_
 # 
@@ -28,22 +29,9 @@ What results in the following TopoJSON object:
 '{"type": "Topology", "objects": {"data": {"geometries": [{"type": "Polygon", "arcs": [[-2, 0]]}, {"type": "Polygon", "arcs": [[1, 2]]}], "type": "GeometryCollection"}}, "bbox": [0.0, 0.0, 2.0, 1.0], "arcs": [[[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]], [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]]}'
 ```
 
-The following geographical input data types are recognized:
+More or less all Python objects containing geographical data are supported through the `__geo_interface__` attribute. This includes at least the Python packages `geojson`, `shapely`, `geopandas`, `pyshp`.
 
-- `geojson.Feature`
-- `geojson.FeatureCollection`
-- `geopandas.GeoDataFrame`
-- `geopandas.GeoSeries`
-- `shapely.geometry.LineString`
-- `shapely.geometry.MultiLineString`
-- `shapely.geometry.Polygon`
-- `shapely.geometry.MultiPolygon`
-- `shapely.geometry.Point`
-- `shapely.geometry.MultiPoint`
-- `shapely.geometry.GeometryCollection`
-- `dict` of objects that provide a valid `__geo_interface__`
-- `list` of objects that provide a valid `__geo_interface__`
-- `str` objects with TopoJSON or GeoJSON geographic structures
+Moreover a `dict` of objects that provide a valid `__geo_interface__`, a `list` of objects that provide a valid `__geo_interface__` and `str` objects with TopoJSON or GeoJSON geographic structures are supported too.
 
 In the example above the output is parsed to a JSON string (`.to_json()`), but this is not the only thing we can do. Multiple functions are available to serialize the Topology object.
 
@@ -54,7 +42,7 @@ In the example above the output is parsed to a JSON string (`.to_json()`), but t
 | topojson.Topology().to_svg()    	| Shapely, NumPy                                              	|
 | topojson.Topology().to_alt()    	| Shapely, NumPy, Altair*                                      	|
 | topojson.Topology().to_gdf()    	| Shapely, NumPy, GeoPandas*                                   	|
-| topojson.Topology().to_widget() 	| Shapely, NumPy, Simplification*, ipywidgets* (+ labextension) 	|
+| topojson.Topology().to_widget() 	| Shapely, NumPy, Altair*, Simplification*, ipywidgets* (+ labextension) 	|
 
 &ast; optional dependencies
 
@@ -71,10 +59,18 @@ The following parameters can be used to control these options for generating the
 - simplify_algorithm   
 - winding_order
 
+Where the `toposimplify` and `topoquantize` are supported by chaining as well. Meaning you could first compute the Topology (which can be cost-intensive) and afterwards apply the simplify and quantize settings on the computed Topology and visualize till pleased.
+
+```python
+tj = topojson.Topology(data, prequantize=False, topology=True)
+tj.toposimplify(1).topoquantize(1e6).to_svg()
+```
+
+Or use the ipywidget approach described more below for an interactive approach.
 
 ## Installation
 
-The current package is released on PyPi as version `1.0rc4`.
+The current package is released on PyPi as version `1.0rc5`.
 Installation can be done by:
 
 ```
@@ -305,11 +301,12 @@ The `.to_widget()` function depends on `ipywidgets` and can be a bit tricky to g
 
 <img src="images/ipywidgets.gif" alt="ipywidgets">
 
-Use the ipywidgets website for installation and start from `In [5]` in the following [notebook](https://nbviewer.jupyter.org/github/mattijn/topojson/blob/master/notebooks/ipywidgets_interaction.ipynb) to get these ipywidgets working, but I run very often in errors like the following:
+To install, use the ipywidgets website for installation.  
+Initially I ran very often in errors like the following after I thought I'd install everything correctly:
 ```
 [IPKernelApp] WARNING | No such comm: xxxyyyzzz123etc.
 ```
-Any suggestion how to solve this error is much appreciated!
+To solve this error I found out that I'd first had to pip uninstall JupyterLab, then install the lab extension of ipywidgets and then install JupyterLab again. Then when starting JupyterLab for the first time it asks to rebuild to include the ipywidgets lab extension. Click Yes or OK and wait till JupyterLab refresh, afterwards these errors did not appear for me anymore (both Windows and macOS). If you got all installed I suggest starting from `In [5]` in the following [notebook](https://nbviewer.jupyter.org/github/mattijn/topojson/blob/master/notebooks/ipywidgets_interaction.ipynb) to test if all works.
 
 Futher, the many [tests][l1] as part of this package also can be used as example material.
 
@@ -317,13 +314,21 @@ Futher, the many [tests][l1] as part of this package also can be used as example
 
 ## Changelog
 
+Version `1.0rc5`:
+- change `TopoOptions` in `to_dict` to be serializable #46
+- changed all `int` to `np.int64`, since it is platform specific #49, #45
+
 Version `1.0rc4`:
 - no `linestring` key in topojson
 - serialize `str` of TopoJSON or GeoJSON data
 - add `vw` as algoritm type and update widget
 
 Version `1.0rc3`:
-- long list
+- changed class object to inherit sequence
+- removed the `topojson.topology` function
+- introducted the `topojson.Topology` class
+- speedups and bug fixes, see PR#15-#36
+- introduced multiple options see #8
 
 Version `1.0rc2`:
 

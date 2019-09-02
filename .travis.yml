@@ -1,0 +1,16 @@
+language: python
+cache: pip
+python:
+  - "3.6"
+  - "3.7"
+  - "3.7-dev"
+dist: xenial
+
+jobs:
+before_install:
+  - pip install -U pip flit codecov pytest flake8
+install:
+  - flit install --deps develop
+script: flake8 topojson
+script: python -m pytest tests
+after_success: codecov
