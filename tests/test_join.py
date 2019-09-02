@@ -165,7 +165,7 @@ def test_line_ABC_extends_new_line_AB():
     }
     topo = Join(data).to_dict()
     
-    assert geometry.MultiPoint(topo["junctions"]) == geometry.MultiPoint([(0.0, 0.0), (1.0, 0.0)])
+    assert geometry.MultiPoint(topo["junctions"]).equals(geometry.MultiPoint([(0.0, 0.0), (1.0, 0.0)]))
 
 # when a reversed old arc CBA extends a new arc AB, there is a junction at B
 def test_reversed_line_CBA_extends_new_line_AB():
@@ -223,7 +223,7 @@ def test_line_ABC_extends_line_AB():
     }
     topo = Join(data).to_dict()
 
-    assert geometry.MultiPoint(topo["junctions"]) == geometry.MultiPoint([(0.0, 0.0), (1.0, 0.0)])
+    assert geometry.MultiPoint(topo["junctions"]).equals(geometry.MultiPoint([(0.0, 0.0), (1.0, 0.0)]))
 
 # when a new line ABC extends a reversed old line BA, there is a junction at B
 def test_line_ABC_extends_line_BA():
@@ -256,7 +256,7 @@ def test_line_BC_start_middle_reversed_line_CBA():
     }
     topo = Join(data).to_dict()
 
-    assert geometry.MultiPoint(topo["junctions"]) == geometry.MultiPoint([(2.0, 0.0), (1.0, 0.0)])
+    assert geometry.MultiPoint(topo["junctions"]).equals(geometry.MultiPoint([(2.0, 0.0), (1.0, 0.0)]))
 
 
 # when a new line ABD deviates from an old line ABC, there is a junction at B
