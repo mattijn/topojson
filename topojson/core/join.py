@@ -1,4 +1,6 @@
 # pylint: disable=unsubscriptable-object
+import copy
+import pprint
 from shapely import geometry
 from shapely.wkb import loads
 from shapely.ops import shared_paths
@@ -8,14 +10,6 @@ from ..ops import select_unique_combs
 from ..ops import simplify
 from ..ops import quantize
 from ..utils import serialize_as_svg
-
-# import numpy as np
-
-# import itertools
-import copy
-
-# import warnings
-import pprint
 from .extract import Extract
 
 if speedups.available:

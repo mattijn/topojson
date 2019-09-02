@@ -1,10 +1,6 @@
-import numpy as np
-
-# from itertools import compress
 import copy
 import pprint
-
-# import json
+import numpy as np
 from shapely import geometry
 from shapely.ops import linemerge
 from .dedup import Dedup

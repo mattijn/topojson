@@ -1,12 +1,8 @@
-from shapely import geometry
-
-# from shapely.ops import split
-from shapely.ops import linemerge
-
-# import itertools
-import numpy as np
 import copy
 import pprint
+import numpy as np
+from shapely import geometry
+from shapely.ops import linemerge
 from .cut import Cut
 from ..ops import np_array_from_lists
 from ..ops import lists_from_np_array

@@ -1,11 +1,10 @@
 import json
 import copy
-from shapely import geometry
 import logging
 import pprint
+from shapely import geometry
 from ..utils import singledispatch_class
 from ..utils import serialize_as_svg
-
 from ..utils import TopoOptions
 from ..ops import winding_order
 
