@@ -1,7 +1,9 @@
 from shapely import geometry
-from shapely.ops import split
+
+# from shapely.ops import split
 from shapely.ops import linemerge
-import itertools
+
+# import itertools
 import numpy as np
 import copy
 import pprint
@@ -46,9 +48,9 @@ class Dedup(Cut):
         The following sequence is adopted:
         1. extract
         2. join
-        3. cut 
+        3. cut
         4. dedup
-        5. hashmap     
+        5. hashmap
         """
 
         # deduplicate equal geometries
@@ -96,9 +98,9 @@ class Dedup(Cut):
 
     def find_merged_linestring(self, data, no_ndp_arcs, ndp_arcs, ndp_arcs_bk):
         """
-        Function to find the index of LineString in a MultiLineString object which 
-        contains merged LineStrings. 
-        
+        Function to find the index of LineString in a MultiLineString object which
+        contains merged LineStrings.
+
         Parameters
         ----------
         data : dict
@@ -107,7 +109,7 @@ class Dedup(Cut):
             number of non-duplicate arcs
         ndp_arcs : array
             array containing index values of the related arcs
-        
+
         Returns
         -------
         int
@@ -127,7 +129,7 @@ class Dedup(Cut):
     def deduplicate(self, dup_pair_list, linestring_list, array_bk):
         """
         Function to deduplicate items
-        
+
         Parameters
         ----------
         dup_pair_list : numpy.ndarray
@@ -136,7 +138,7 @@ class Dedup(Cut):
             list of linestrings from which items will be removed.
         array_bk : numpy.ndarray
             array used for bookkeeping of linestrings.
-        
+
         Returns
         -------
         numpy.ndarray
@@ -181,17 +183,17 @@ class Dedup(Cut):
 
     def merge_contigious_arcs(self, data, sliced_array_bk_ndp):
         """
-        Function that iterate over geoms that contain shared arcs and try linemerge 
+        Function that iterate over geoms that contain shared arcs and try linemerge
         on remaining arcs. The merged contigious arc is placed back in the 'linestrings'
-        object. 
+        object.
         The arcs that can be popped are placed within the merged_arcs_idx list
-        
+
         Parameters
         ----------
         data : dict
             object that contains the 'linestrings'.
         sliced_array_bk_ndp : numpy.ndarray
-            bookkeeping array where shared linestrings are set to np.nan. 
+            bookkeeping array where shared linestrings are set to np.nan.
         """
 
         for arcs_geom_bk in sliced_array_bk_ndp:

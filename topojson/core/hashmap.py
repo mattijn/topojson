@@ -1,8 +1,10 @@
 import numpy as np
-from itertools import compress
+
+# from itertools import compress
 import copy
 import pprint
-import json
+
+# import json
 from shapely import geometry
 from shapely.ops import linemerge
 from .dedup import Dedup
@@ -65,10 +67,10 @@ class Hashmap(Dedup):
         The following sequence is adopted:
         1. extract
         2. join
-        3. cut 
-        4. dedup   
-        5. hashmap   
- 
+        3. cut
+        4. dedup
+        5. hashmap
+
         Developping Notes:
         * PostGIS Tips for Power Users: http://2010.foss4g.org/presentations/3369.pdf
         """
@@ -112,15 +114,15 @@ class Hashmap(Dedup):
         1 - follow the order of the first arc
         2 - follow the order of the last arc
         3 - align first two arcs and continue
-        
+
         Parameters
         ----------
         arc_ids : list
-            list containing the index values of the arcs 
+            list containing the index values of the arcs
         shared_bool : list
-            boolean list with same length as arc_ids, 
+            boolean list with same length as arc_ids,
             True means the arc is shared, False means it is a non-shared arc
-        
+
         Returns
         -------
         order_of_arc : numpy array
@@ -175,11 +177,11 @@ class Hashmap(Dedup):
         ----------
         arc_ids : list
             description of input
-        
+
         Returns
         -------
-        arc_ids : list   
-            description of output        
+        arc_ids : list
+            description of output
         """
 
         shared_bool = np.isin(arc_ids, self.data["bookkeeping_shared_arcs"])

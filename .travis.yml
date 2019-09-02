@@ -8,8 +8,9 @@ dist: xenial
 
 jobs:
 before_install:
-  - pip install -U pip flit codecov
+  - pip install -U pip flit codecov pytest flake8
 install:
   - flit install --deps develop
-script: python -m unittest discover
+script: flake8 topojson
+script: python -m pytest tests
 after_success: codecov

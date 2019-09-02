@@ -3,6 +3,7 @@ from types import SimpleNamespace
 import pprint
 import json
 
+
 # ----------- dummy files for geopandas and geojson ----------
 class GeoDataFrame(object):
     pass
@@ -28,6 +29,7 @@ class FeatureCollection(object):
 geojson = SimpleNamespace()
 setattr(geojson, "Feature", Feature)
 setattr(geojson, "FeatureCollection", FeatureCollection)
+
 
 # ----------------- topology options object ------------------
 class TopoOptions(object):
@@ -94,9 +96,9 @@ class TopoOptions(object):
 
 def singledispatch_class(func):
     """
-    The singledispatch function only applies to functions. This function creates a 
+    The singledispatch function only applies to functions. This function creates a
     wrapper around the singledispatch so it can be used for class instances.
-    
+
     Returns
     -------
     dispatch
@@ -121,9 +123,9 @@ def serialize_as_geodataframe(topo_object, url=False):
     Parameters
     ----------
     topo_object : dict, str
-        a complete object representing an topojson encoded file as 
+        a complete object representing an topojson encoded file as
         dict, str-object or str-url
-    
+
     Returns
     -------
     gdf : geopandas.GeoDataFrame
@@ -136,7 +138,7 @@ def serialize_as_geodataframe(topo_object, url=False):
     # parse the object as byte string
     if isinstance(topo_object, dict):
         bytes_topo = str.encode(json.dumps(topo_object))
-    elif url == True:
+    elif url is True:
         import requests
 
         request = requests.get(topo_object)
@@ -232,7 +234,7 @@ def serialize_as_altair(
             values=topo_object,
             format=alt.DataFormat(feature=objectname, type="topojson"),
         )
-        if tooltip == True:
+        if tooltip is True:
             tooltip = [color]
         chart = (
             alt.Chart(data, width=300)
