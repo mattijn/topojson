@@ -5,9 +5,10 @@
 [![build status](http://img.shields.io/travis/mattijn/topojson/master.svg?style=flat)](https://travis-ci.org/mattijn/topojson)
 
 _[Ready for Beta Users! With other words: break it, but please report it]_
-# 
 
-_Topojson_ encodes geographic data structures into a shared topology. This repository describes the development of a **Python** implementation of the TopoJSON format. 
+#
+
+_Topojson_ encodes geographic data structures into a shared topology. This repository describes the development of a **Python** implementation of the TopoJSON format.
 
 ## Usage
 
@@ -24,7 +25,9 @@ data = [
 tj = topojson.Topology(data, prequantize=False, topology=True)
 tj.to_json()
 ```
+
 What results in the following TopoJSON object:
+
 ```python
 '{"type": "Topology", "objects": {"data": {"geometries": [{"type": "Polygon", "arcs": [[-2, 0]]}, {"type": "Polygon", "arcs": [[1, 2]]}], "type": "GeometryCollection"}}, "bbox": [0.0, 0.0, 2.0, 1.0], "arcs": [[[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]], [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]]}'
 ```
@@ -35,28 +38,28 @@ Moreover a `dict` of objects that provide a valid `__geo_interface__`, a `list` 
 
 In the example above the output is parsed to a JSON string (`.to_json()`), but this is not the only thing we can do. Multiple functions are available to serialize the Topology object.
 
-| Functions                       	| Required Packages                                           	|
-|---------------------------------	|-------------------------------------------------------------	|
-| topojson.Topology().to_json()   	| Shapely, NumPy                                              	|
-| topojson.Topology().to_dict()   	| Shapely, NumPy                                              	|
-| topojson.Topology().to_svg()    	| Shapely, NumPy                                              	|
-| topojson.Topology().to_alt()    	| Shapely, NumPy, Altair*                                      	|
-| topojson.Topology().to_gdf()    	| Shapely, NumPy, GeoPandas*                                   	|
-| topojson.Topology().to_widget() 	| Shapely, NumPy, Altair*, Simplification*, ipywidgets* (+ labextension) 	|
+| Functions                       | Required Packages                                                       |
+| ------------------------------- | ----------------------------------------------------------------------- |
+| topojson.Topology().to_json()   | Shapely, NumPy                                                          |
+| topojson.Topology().to_dict()   | Shapely, NumPy                                                          |
+| topojson.Topology().to_svg()    | Shapely, NumPy                                                          |
+| topojson.Topology().to_alt()    | Shapely, NumPy, Altair\*                                                |
+| topojson.Topology().to_gdf()    | Shapely, NumPy, GeoPandas\*                                             |
+| topojson.Topology().to_widget() | Shapely, NumPy, Altair*, Simplification*, ipywidgets\* (+ labextension) |
 
-&ast; optional dependencies
+\* optional dependencies
 
 The TopoJSON format is merely designed to create smaller files than its GeoJSON counterpart. It is capable of doing so through a few options of which the following are currently available: compute topology, quantize the input and/or output, simplify the input and/or output.
 
 The following parameters can be used to control these options for generating the `Topology()` object. Detailed information can be found in the docstring of the [`topojson.Topology()`](https://github.com/mattijn/topojson/blob/master/topojson/core/topology.py#L18:L79) class.
 
-- topology 
-- prequantize 
-- topoquantize 
-- presimplify 
-- toposimplify 
-- simplify_with 
-- simplify_algorithm   
+- topology
+- prequantize
+- topoquantize
+- presimplify
+- toposimplify
+- simplify_with
+- simplify_algorithm
 - winding_order
 
 Where the `toposimplify` and `topoquantize` are supported by chaining as well. Meaning you could first compute the Topology (which can be cost-intensive) and afterwards apply the simplify and quantize settings on the computed Topology and visualize till pleased.
@@ -70,14 +73,13 @@ Or use the ipywidget approach described more below for an interactive approach.
 
 ## Installation
 
-The current package is released on PyPi as version `1.0rc5`.
 Installation can be done by:
 
 ```
 python3 -m pip install topojson
 ```
 
-Topojson depends on the following packages: 
+Topojson depends on the following packages:
 
 - numpy
 - shapely
@@ -86,6 +88,7 @@ Windows users: download the dependencies from https://www.lfd.uci.edu/~gohlke/py
 OS X or Linux users: use `pip` as usual
 
 Further, optional dependencies are:
+
 - altair (enlarge the experience by visualizing your TopoJSON output)
 - simplification (more and quicker simplification options)
 - geojson (parse string input with GeoJSON data)
@@ -95,11 +98,11 @@ Further, optional dependencies are:
 ## Get in touch
 
 For now, just use the Github issues. That can be:
+
 - usage questions
 - bug reports
 - feature suggestions
 - or anything related
-
 
 ## Examples and tutorial notebooks
 
@@ -121,6 +124,7 @@ list_geoms = [
 #
 
 #### apply Topology and present the output as dict
+
 ```python
 tj = topojson.Topology(data, prequantize=False, topology=True)
 tj.to_dict()
@@ -172,6 +176,7 @@ dictionary = {
 #
 
 #### apply Topology and present the output as scalable vector graphic
+
 ```python
 tj = topojson.Topology(dictionary, prequantize=False, topology=True)
 tj.to_svg()
@@ -258,6 +263,7 @@ feature_collection = FeatureCollection([feature_1, feature_2])
 #
 
 #### apply Topology and present output as `geodataframe` (if `geopandas` is installed)
+
 ```python
 tj = topojson.Topology(feature_collection, prequantize=False, topology=True)
 tj.to_gdf()
@@ -289,13 +295,11 @@ tj.to_gdf()
 </table>
 </div>
 
-
 #
 
-Currently parsing TopoJSON as string input requires `geopandas` (`fiona` version >=1.8.6) and parsing GeoJSON as string requires the package `geojson`. 
+Currently parsing TopoJSON as string input requires `geopandas` (`fiona` version >=1.8.6) and parsing GeoJSON as string requires the package `geojson`.
 
 The package `simplification` can be used if you want to adopt the Visvalingam-Whyatt algorithm for simplifying or for having a speedup on the Douglas-Peucker algorithm (compared to the `shapely`-integrated version).
-
 
 The `.to_widget()` function depends on `ipywidgets` and can be a bit tricky to get it installed and properly working. But if you do, something like the following will show up:
 
@@ -303,9 +307,11 @@ The `.to_widget()` function depends on `ipywidgets` and can be a bit tricky to g
 
 To install, use the ipywidgets website for installation.  
 Initially I ran very often in errors like the following after I thought I'd install everything correctly:
+
 ```
 [IPKernelApp] WARNING | No such comm: xxxyyyzzz123etc.
 ```
+
 To solve this error I found out that I'd first had to pip uninstall JupyterLab, then install the lab extension of ipywidgets and then install JupyterLab again. Then when starting JupyterLab for the first time it asks to rebuild to include the ipywidgets lab extension. Click Yes or OK and wait till JupyterLab refresh, afterwards these errors did not appear for me anymore (both Windows and macOS). If you got all installed I suggest starting from `In [5]` in the following [notebook](https://nbviewer.jupyter.org/github/mattijn/topojson/blob/master/notebooks/ipywidgets_interaction.ipynb) to test if all works.
 
 Futher, the many [tests][l1] as part of this package also can be used as example material.
@@ -314,16 +320,26 @@ Futher, the many [tests][l1] as part of this package also can be used as example
 
 ## Changelog
 
+Version `1.0rc6`:
+
+- fix linemerging of non-duplicate arcs #50
+- include `__geo_interface__` attributed as input #53
+- include travis testing on GitHub (thanks @Casyfill!)
+- migrate from unittests to pytest (thanks @Casyfill!)
+
 Version `1.0rc5`:
+
 - change `TopoOptions` in `to_dict` to be serializable #46
 - changed all `int` to `np.int64`, since it is platform specific #49, #45
 
 Version `1.0rc4`:
+
 - no `linestring` key in topojson
 - serialize `str` of TopoJSON or GeoJSON data
 - add `vw` as algoritm type and update widget
 
 Version `1.0rc3`:
+
 - changed class object to inherit sequence
 - removed the `topojson.topology` function
 - introducted the `topojson.Topology` class
@@ -340,6 +356,7 @@ Version `1.0rc2`:
 - removed `rdtree` as dependency, use `SRTtree` from `shapely` instead
 
 Version `1.0rc1`:
+
 - initial release
 
 [i1]: https://github.com/mattijn/topojson/issues/1
