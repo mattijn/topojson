@@ -9,6 +9,7 @@ from shapely import speedups
 from ..ops import select_unique_combs
 from ..ops import simplify
 from ..ops import quantize
+from ..ops import compare_bounds
 from ..utils import serialize_as_svg
 from .extract import Extract
 
@@ -124,7 +125,9 @@ class Join(Extract):
             )
 
         # compute the bounding box of input geometry
-        data["bbox"] = geometry.asMultiLineString(data["linestrings"]).bounds
+        lsbs = geometry.asMultiLineString(data["linestrings"]).bounds
+        ptbs = geometry.asMultiPoint(data["coordinates"]).bounds
+        data["bbox"] = compare_bounds(lsbs, ptbs)
 
         # prequantize linestrings if required
         if self.options.prequantize > 0:
@@ -136,6 +139,10 @@ class Join(Extract):
 
             data["linestrings"], data["transform"] = quantize(
                 data["linestrings"], data["bbox"], quant_factor
+            )
+
+            data["coordinates"], data["transform"] = quantize(
+                data["coordinates"], data["bbox"], quant_factor
             )
 
         if not self.options.topology or not data["linestrings"]:

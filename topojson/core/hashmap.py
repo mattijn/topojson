@@ -302,17 +302,24 @@ class Hashmap(Dedup):
 
         return arcs_idx_geom
 
-    def resolve_bookkeeping(self, geoms):
+    def resolve_bookkeeping(self, geoms, key):
         """
         Function that is activated once the key of interest in the find_arcs function
         is detected. It replaces the geom ids with the corresponding arc ids.
         """
 
+        if key == "arcs":
+            bk_objects = "bookkeeping_geoms"
+            bk_element = "bookkeeping_arcs"
+        elif key == "coordinates":
+            bk_objects = "bookkeeping_coords"
+            bk_element = "bookkeeping_?"
+
         arcs = []
         for geom in geoms:
-            arcs_in_geom = self.data["bookkeeping_geoms"][geom]
+            arcs_in_geom = self.data[bk_objects][geom]
             for idx_arc, arc_ref in enumerate(arcs_in_geom):
-                arc_ids = self.data["bookkeeping_arcs"][arc_ref]
+                arc_ids = self.data[bk_element][arc_ref]
                 if len(arc_ids) > 1:
                     self.inner = True if idx_arc > 0 else False
                     arc_ids = self.backward_arcs(arc_ids)
@@ -320,7 +327,7 @@ class Hashmap(Dedup):
                 arcs.append(arc_ids)
         return arcs
 
-    def resolve_objects(self, key, dictionary):
+    def resolve_objects(self, keys, dictionary):
         """
         Function that resolves the bookkeeping back to the arcs in the objects.
         Support also nested dicts such as GeometryCollections
@@ -328,15 +335,15 @@ class Hashmap(Dedup):
 
         for k, v in dictionary.items():
             # resolve when key equals 'arcs' and v contains arc indici
-            if k == key and v is not None:
-                dictionary[key] = self.resolve_bookkeeping(v)
+            if k in keys and v is not None:
+                dictionary[k] = self.resolve_bookkeeping(v, k)
                 yield v
             elif isinstance(v, dict):
-                for result in self.resolve_objects(key, v):
+                for result in self.resolve_objects(keys, v):
                     yield result
             elif isinstance(v, list):
                 for d in v:
-                    for result in self.resolve_objects(key, d):
+                    for result in self.resolve_objects(keys, d):
                         yield result
 
     def resolve_arcs(self, feat):
@@ -368,5 +375,22 @@ class Hashmap(Dedup):
             feat["geometries"] = [
                 self.resolve_arcs(feat) for feat in feat["geometries"]
             ]
+
+        elif feat["type"] == "Point":
+            if "geometries" in feat:
+                f_arc = feat["geometries"][0]["coordinates"]
+            else:
+                f_arc = feat["coordinates"]
+
+            feat["coordinates"] = f_arc
+            feat.pop("geometries", None)
+
+        elif feat["type"] == "MultiPoint":
+            if "geometries" in feat:
+                f_arcs = feat["geometries"][0]["coordinates"]
+            else:
+                f_arcs = feat["coordinates"]
+            feat["coordinates"] = [[arc] for arc in f_arcs]
+            feat.pop("geometries", None)
 
         return feat

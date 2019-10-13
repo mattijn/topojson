@@ -244,6 +244,38 @@ def properties_foreign(objects):
     return objects
 
 
+def compare_bounds(b0, b1):
+    """
+    Function that compares two bounds with each other. Returns the max bound.
+
+    Parameters
+    ----------
+    b0 : tuple
+        tuple of xmin, ymin, xmax, ymax
+    b1 : tuple
+        tuple of xmin, ymin, xmax, ymax        
+
+    Returns
+    -------
+    tuple
+        min of mins and max of maxs
+    """
+
+    if len(b0) and len(b1):
+        bounds = (
+            min(b0[0], b1[0]),
+            min(b0[1], b1[1]),
+            max(b0[2], b1[2]),
+            max(b0[3], b1[3]),
+        )
+    elif len(b0) and not len(b1):
+        bounds = b0
+    elif not len(b0) and len(b1):
+        bounds = b1
+
+    return bounds
+
+
 def np_array_from_lists(nested_lists):
     """
     Function to create numpy array from nested lists. The shape of the numpy array
@@ -404,6 +436,7 @@ def quantize(linestrings, bbox, quant_factor=1e6):
 
     x0, y0, x1, y1 = bbox
 
+    # ZeroDivisionError: float division by zero
     kx = 1 / ((quant_factor - 1) / (x1 - x0))
     ky = 1 / ((quant_factor - 1) / (y1 - y0))
 
