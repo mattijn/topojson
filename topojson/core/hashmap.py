@@ -75,7 +75,8 @@ class Hashmap(Dedup):
         self.data = data
 
         # resolve bookkeeping to arcs in objects, including backward check of arcs
-        list(self.resolve_objects("arcs", self.data["objects"]))
+        # resolve bookkeeping of coordinates in objects, including delta-encodig
+        list(self.resolve_objects(["arcs", "coordinates"], self.data["objects"]))
 
         objects = {}
         objects["geometries"] = []
@@ -97,6 +98,7 @@ class Hashmap(Dedup):
         data = self.data
         del data["junctions"]
         del data["bookkeeping_geoms"]
+        del data["bookkeeping_coords"]
         del data["bookkeeping_duplicates"]
         del data["bookkeeping_arcs"]
         del data["bookkeeping_shared_arcs"]
@@ -312,15 +314,14 @@ class Hashmap(Dedup):
             bk_objects = "bookkeeping_geoms"
             bk_element = "bookkeeping_arcs"
         elif key == "coordinates":
-            bk_objects = "bookkeeping_coords"
-            bk_element = "bookkeeping_?"
+            bk_objects = bk_element = "bookkeeping_coords"
 
         arcs = []
         for geom in geoms:
             arcs_in_geom = self.data[bk_objects][geom]
             for idx_arc, arc_ref in enumerate(arcs_in_geom):
                 arc_ids = self.data[bk_element][arc_ref]
-                if len(arc_ids) > 1:
+                if len(arc_ids) > 1 and key is not "coordinates":
                     self.inner = True if idx_arc > 0 else False
                     arc_ids = self.backward_arcs(arc_ids)
 
@@ -335,7 +336,7 @@ class Hashmap(Dedup):
 
         for k, v in dictionary.items():
             # resolve when key equals 'arcs' and v contains arc indici
-            if k in keys and v is not None:
+            if str(k) in keys and v is not None:
                 dictionary[k] = self.resolve_bookkeeping(v, k)
                 yield v
             elif isinstance(v, dict):

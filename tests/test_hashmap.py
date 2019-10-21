@@ -154,3 +154,61 @@ def test_winding_order_geom_solely_shared_arcs():
     topo = Hashmap(data).to_dict()
 
     assert topo["objects"]["data"]["geometries"][1]["arcs"] == [[1, -6]]
+
+
+def test_hashmap_point():
+    data = [{"type": "Point", "coordinates": [0.5, 0.5]}]
+    topo = Hashmap(data).to_dict()
+
+    assert topo["bbox"] == (0.5, 0.5, 0.5, 0.5)
+    assert len(topo["coordinates"]) == 1
+
+
+def test_hashmap_polygon_point():
+    data = [
+        {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
+        {"type": "Point", "coordinates": [0.5, 0.5]},
+    ]
+    topo = Hashmap(data).to_dict()
+
+    assert len(topo["coordinates"]) == 1
+    assert len(topo["linestrings"]) == 1
+
+
+def test_hashmap_polygon_point():
+    data = [
+        {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
+        {"type": "Point", "coordinates": [0.5, 0.5]},
+    ]
+    topo = Hashmap(data).to_dict()
+
+    assert len(topo["coordinates"]) == 1
+    assert len(topo["linestrings"]) == 1
+
+
+def test_hashmap_multipoint():
+    data = [{"type": "MultiPoint", "coordinates": [[0.5, 0.5], [1.0, 1.0]]}]
+    topo = Hashmap(data).to_dict()
+
+    assert len(topo["coordinates"]) == 2
+
+
+def test_hashmap_polygon():
+    data = [
+        {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]}
+    ]
+    topo = Hashmap(data).to_dict()
+
+    assert len(topo["linestrings"]) == 1
+
+
+def test_hashmap_point_multipoint():
+    data = [
+        {"type": "Point", "coordinates": [0.5, 0.5]},
+        {"type": "MultiPoint", "coordinates": [[0.5, 0.5], [1.0, 1.0]]},
+        {"type": "Point", "coordinates": [2.5, 3.5]},
+    ]
+    topo = Hashmap(data).to_dict()
+
+    assert len(topo["coordinates"]) == 4
+

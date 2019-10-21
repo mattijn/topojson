@@ -285,3 +285,16 @@ def test_extract_geo_interface_shapefile():
 
     assert len(topo["linestrings"]) == 15
 
+
+def test_extract_points():
+    data = [
+        {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
+        {"type": "Point", "coordinates": [0.5, 0.5]},
+    ]
+    topo = Extract(data).to_dict()
+
+    assert len(topo["bookkeeping_coords"]) == 1
+    assert len(topo["bookkeeping_geoms"]) == 1
+    assert topo["coordinates"][0].wkt == "POINT (0.5 0.5)"
+    assert "coordinates" in topo["objects"][1].keys()
+

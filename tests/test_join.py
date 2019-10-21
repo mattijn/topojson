@@ -553,3 +553,14 @@ def test_super_function_extract():
     topo = Join(data).to_dict()  
 
     assert list(topo.keys()) == ["type", "linestrings", "bookkeeping_geoms", "objects", "options","bbox", "junctions"]
+
+def test_join_point():
+    data = [
+        {
+            "type": "Point",
+            "coordinates": [0.5, 0.5]
+        }
+    ]
+
+    topo = Join(data).to_dict()  
+    assert topo["bbox"] == (0.5, 0.5, 0.5, 0.5)

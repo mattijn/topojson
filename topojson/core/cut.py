@@ -115,7 +115,7 @@ class Cut(Join):
             self.find_duplicates(self.segments_list)
             self.bookkeeping_linestrings = bk_array.astype(float)
 
-        else:
+        elif data["bookkeeping_geoms"]:
             bk_array = np_array_from_lists(data["bookkeeping_geoms"]).ravel()
             bk_array = np.expand_dims(
                 bk_array[~np.isnan(bk_array)].astype(np.int64), axis=1
@@ -123,6 +123,9 @@ class Cut(Join):
             self.segments_list = data["linestrings"]
             self.find_duplicates(data["linestrings"])
             self.bookkeeping_linestrings = bk_array
+
+        else:
+            self.segments_list = data["linestrings"]
 
         # prepare to return object
         data["linestrings"] = self.segments_list
