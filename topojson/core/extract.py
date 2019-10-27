@@ -214,9 +214,12 @@ class Extract(object):
             obj["arcs"].append(idx_bk)
             obj.pop("coordinates", None)
 
-        # when geometry is empty, treat as point
+        # when geometry is empty, set arcs key to None
         else:
-            self.extract_point(geom)
+            obj = self.obj
+            obj["arcs"] = None
+            obj.pop("coordinates", None)
+            # self.extract_point(geom)
 
     @serialize_geom_type.register(geometry.MultiLineString)
     def extract_multiline(self, geom):

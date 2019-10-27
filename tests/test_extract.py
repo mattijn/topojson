@@ -38,7 +38,7 @@ def test_multipolygon():
     assert len(topo["linestrings"]) == 4
 
 
-# a LineString without coordinates is ke polygon geometry
+# a LineString without coordinates is an empty polygon geometry
 def test_empty_linestring():
     data = {"empty_ls": {"type": "LineString", "coordinates": None}}
     topo = Extract(data).to_dict()

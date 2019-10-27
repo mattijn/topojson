@@ -455,11 +455,14 @@ def quantize(linestrings, bbox, quant_factor=1e6):
         bool_slice = (
             np.insert(np.absolute(np.diff(ls_xy, 1, axis=0)).sum(axis=1), 0, 1) != 0
         )
-        if not bool_slice.sum() == 1:
-            if hasattr(ls, "coords"):
+        if not bool_slice.sum() == 1 or isinstance(ls, geometry.Point):
+            if isinstance(ls, geometry.Point):
+                ls.coords = ls_xy[bool_slice][0]
+            elif hasattr(ls, "coords"):
                 ls.coords = ls_xy[bool_slice]
             else:
                 linestrings[idx] = ls_xy[bool_slice].tolist()
+
     transform_ = {"scale": [kx, ky], "translate": [x0, y0]}
 
     return linestrings, transform_
