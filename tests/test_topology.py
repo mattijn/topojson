@@ -175,3 +175,14 @@ def test_topology_simplification_dp():
     ).to_dict()
 
     assert len(topo["arcs"][0]) == 3
+
+
+def test_topology_point_multipoint():
+    data = [
+        {"type": "Point", "coordinates": [0.5, 0.5]},
+        {"type": "MultiPoint", "coordinates": [[0.5, 0.5], [1.0, 1.0]]},
+        {"type": "Point", "coordinates": [2.5, 3.5]},
+    ]
+    topo = topojson.Topology(data, topoquantize=True).to_dict()
+
+    assert len(topo["coordinates"]) == 4

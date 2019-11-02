@@ -190,24 +190,25 @@ class Topology(Hashmap):
         result = copy.deepcopy(self)
 
         arcs = result.output["arcs"]
-        np_arcs = np_array_from_arcs(arcs)
+        if arcs:
+            np_arcs = np_array_from_arcs(arcs)
 
-        # dequantize if quantization is applied
-        if "transform" in result.output.keys():
+            # dequantize if quantization is applied
+            if "transform" in result.output.keys():
 
-            transform = result.output["transform"]
-            scale = transform["scale"]
-            translate = transform["translate"]
+                transform = result.output["transform"]
+                scale = transform["scale"]
+                translate = transform["translate"]
 
-            np_arcs = dequantize(np_arcs, scale, translate)
+                np_arcs = dequantize(np_arcs, scale, translate)
 
-        result.output["arcs"] = simplify(
-            np_arcs,
-            epsilon,
-            algorithm=result.options.simplify_algorithm,
-            package=result.options.simplify_with,
-            input_as=_input_as,
-        )
+            result.output["arcs"] = simplify(
+                np_arcs,
+                epsilon,
+                algorithm=result.options.simplify_algorithm,
+                package=result.options.simplify_with,
+                input_as=_input_as,
+            )
 
         # quantize aqain if quantization was applied
         if "transform" in result.output.keys():
@@ -227,6 +228,11 @@ class Topology(Hashmap):
             result.output["arcs"], transform = quantize(
                 result.output["arcs"], result.output["bbox"], quant_factor
             )
+
+            result.output["coordinates"], transform = quantize(
+                result.output["coordinates"], result.output["bbox"], quant_factor
+            )
+
             result.output["arcs"] = delta_encoding(result.output["arcs"])
             result.output["transform"] = transform
         if inplace:
