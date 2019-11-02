@@ -272,6 +272,8 @@ def compare_bounds(b0, b1):
         bounds = b0
     elif not len(b0) and len(b1):
         bounds = b1
+    else:
+        bounds = []
 
     return bounds
 
