@@ -147,7 +147,9 @@ def test_super_function_dedup():
     assert list(topo.keys()) == [
         "type",
         "linestrings",
+        "coordinates",
         "bookkeeping_geoms",
+        "bookkeeping_coords",
         "objects",
         "options",
         "bbox",

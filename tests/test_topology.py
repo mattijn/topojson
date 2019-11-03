@@ -3,6 +3,7 @@ from shapely import geometry
 import geopandas
 import geojson
 import topojson
+import pytest
 
 
 # this test was added since geometries of only linestrings resulted in a topojson
@@ -175,3 +176,56 @@ def test_topology_simplification_dp():
     ).to_dict()
 
     assert len(topo["arcs"][0]) == 3
+
+
+def test_topology_polygon_point():
+    data = [
+        {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
+        {"type": "Point", "coordinates": [-0.5, 1.5]},
+    ]
+    topo = topojson.Topology(data, topoquantize=True).to_dict()
+
+    assert len(topo["arcs"]) == 1
+    assert topo["objects"]["data"]["geometries"][1]["coordinates"] == [0, 999999]
+
+
+def test_topology_point():
+    data = [{"type": "Point", "coordinates": [0.5, 0.5]}]
+    with pytest.raises(SystemExit) as topo:
+        topojson.Topology(data, topoquantize=True).to_dict()
+
+    assert topo.type == SystemExit
+    assert topo.value.code == "Cannot quantize when xmax-xmin OR ymax-ymin equals 0"
+
+
+def test_topology_multipoint():
+    data = [{"type": "MultiPoint", "coordinates": [[0.5, 0.5], [1.0, 1.0]]}]
+    topo = topojson.Topology(data, topoquantize=True).to_dict()
+
+    assert len(topo["arcs"]) == 0
+    assert topo["objects"]["data"]["geometries"][0]["coordinates"] == [
+        [0, 0],
+        [999999, 999999],
+    ]
+    assert topo["transform"]["translate"] == [0.5, 0.5]
+
+
+def test_topology_polygon():
+    data = [
+        {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]}
+    ]
+    topo = topojson.Topology(data, topoquantize=True).to_dict()
+
+    assert topo["transform"]["translate"] == [0.0, 0.0]
+
+
+def test_topology_point_multipoint():
+    data = [
+        {"type": "Point", "coordinates": [0.5, 0.5]},
+        {"type": "MultiPoint", "coordinates": [[0.5, 0.5], [1.0, 1.0]]},
+        {"type": "Point", "coordinates": [2.5, 3.5]},
+    ]
+    topo = topojson.Topology(data, topoquantize=True).to_dict()
+
+    assert topo["objects"]["data"]["geometries"][0]["coordinates"] == [0, 0]
+    assert topo["objects"]["data"]["geometries"][2]["coordinates"] == [999999, 999999]

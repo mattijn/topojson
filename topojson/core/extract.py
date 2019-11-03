@@ -60,7 +60,9 @@ class Extract(object):
         else:
             self.options = TopoOptions(options)
         self.bookkeeping_geoms = []
+        self.bookkeeping_coords = []
         self.linestrings = []
+        self.coordinates = []
         self.geomcollection_counter = 0
         self.invalid_geoms = 0
 
@@ -121,7 +123,9 @@ class Extract(object):
         data = {
             "type": "Topology",
             "linestrings": self.linestrings,
+            "coordinates": self.coordinates,
             "bookkeeping_geoms": self.bookkeeping_geoms,
+            "bookkeeping_coords": self.bookkeeping_coords,
             "objects": self.data,
             "options": self.options,
         }
@@ -210,9 +214,12 @@ class Extract(object):
             obj["arcs"].append(idx_bk)
             obj.pop("coordinates", None)
 
-        # when geometry is empty, treat as point
+        # when geometry is empty, set arcs key to None
         else:
-            self.extract_point(geom)
+            obj = self.obj
+            obj["arcs"] = None
+            obj.pop("coordinates", None)
+            # self.extract_point(geom)
 
     @serialize_geom_type.register(geometry.MultiLineString)
     def extract_multiline(self, geom):
@@ -280,22 +287,45 @@ class Extract(object):
         for ring in geom:
             self.extract_ring(ring)
 
-    @serialize_geom_type.register(geometry.MultiPoint)
     @serialize_geom_type.register(geometry.Point)
     def extract_point(self, geom):
-        """*geom* type is Point or MultiPoint instance.
+        """*geom* type is Point instance.
         coordinates are directly passed to "coordinates"
 
         Parameters
         ----------
-        geom : shapely.geometry.Point or shapely.geometry.MultiPoint
-            Point or MultiPoint instance
+        geom : shapely.geometry.Point
+            Point instance
         """
 
-        obj = self.obj
-        if "arcs" not in obj:
-            obj["arcs"] = obj["coordinates"]
-        obj.pop("coordinates", None)
+        # only process non-empty point geometries
+        if not geom.is_empty:
+            idx_bk = len(self.bookkeeping_coords)
+            idx_pt = len(self.coordinates)
+            # record index and store linestring geom
+            self.bookkeeping_coords.append([idx_pt])
+            self.coordinates.append(geom)
+
+            # track record in object as well
+            obj = self.obj
+            if "reset_coords" not in obj:
+                obj["coordinates"] = []
+                obj["reset_coords"] = True
+
+            obj["coordinates"].append(idx_bk)
+
+    @serialize_geom_type.register(geometry.MultiPoint)
+    def extract_multipoint(self, geom):
+        """*geom* type is MultiPoint instance.
+
+        Parameters
+        ----------
+        geom : shapely.geometry.MultiPoint
+            MultiPoint instance
+        """
+
+        for point in geom:
+            self.extract_point(point)
 
     @serialize_geom_type.register(geometry.GeometryCollection)
     def extract_geometrycollection(self, geom):

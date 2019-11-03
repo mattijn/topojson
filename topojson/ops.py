@@ -2,11 +2,10 @@ import itertools
 import numpy as np
 from shapely import geometry
 from shapely import wkt
-
-# from shapely.ops import transform
 from shapely.strtree import STRtree
 import pprint
 import copy
+import logging
 
 
 def asvoid(arr):
@@ -244,6 +243,40 @@ def properties_foreign(objects):
     return objects
 
 
+def compare_bounds(b0, b1):
+    """
+    Function that compares two bounds with each other. Returns the max bound.
+
+    Parameters
+    ----------
+    b0 : tuple
+        tuple of xmin, ymin, xmax, ymax
+    b1 : tuple
+        tuple of xmin, ymin, xmax, ymax        
+
+    Returns
+    -------
+    tuple
+        min of mins and max of maxs
+    """
+
+    if len(b0) and len(b1):
+        bounds = (
+            min(b0[0], b1[0]),
+            min(b0[1], b1[1]),
+            max(b0[2], b1[2]),
+            max(b0[3], b1[3]),
+        )
+    elif len(b0) and not len(b1):
+        bounds = b0
+    elif not len(b0) and len(b1):
+        bounds = b1
+    else:
+        bounds = []
+
+    return bounds
+
+
 def np_array_from_lists(nested_lists):
     """
     Function to create numpy array from nested lists. The shape of the numpy array
@@ -403,9 +436,12 @@ def quantize(linestrings, bbox, quant_factor=1e6):
     """
 
     x0, y0, x1, y1 = bbox
-
-    kx = 1 / ((quant_factor - 1) / (x1 - x0))
-    ky = 1 / ((quant_factor - 1) / (y1 - y0))
+    try:
+        kx = 1 / ((quant_factor - 1) / (x1 - x0))
+        ky = 1 / ((quant_factor - 1) / (y1 - y0))
+    except ZeroDivisionError:
+        # ZeroDivisionError: float division by zero
+        raise SystemExit("Cannot quantize when xmax-xmin OR ymax-ymin equals 0")
 
     for idx, ls in enumerate(linestrings):
         if hasattr(ls, "xy"):
@@ -422,11 +458,14 @@ def quantize(linestrings, bbox, quant_factor=1e6):
         bool_slice = (
             np.insert(np.absolute(np.diff(ls_xy, 1, axis=0)).sum(axis=1), 0, 1) != 0
         )
-        if not bool_slice.sum() == 1:
-            if hasattr(ls, "coords"):
+        if not bool_slice.sum() == 1 or isinstance(ls, geometry.Point):
+            if isinstance(ls, geometry.Point):
+                ls.coords = ls_xy[bool_slice][0]
+            elif hasattr(ls, "coords"):
                 ls.coords = ls_xy[bool_slice]
             else:
                 linestrings[idx] = ls_xy[bool_slice].tolist()
+
     transform_ = {"scale": [kx, ky], "translate": [x0, y0]}
 
     return linestrings, transform_
