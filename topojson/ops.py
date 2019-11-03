@@ -2,11 +2,10 @@ import itertools
 import numpy as np
 from shapely import geometry
 from shapely import wkt
-
-# from shapely.ops import transform
 from shapely.strtree import STRtree
 import pprint
 import copy
+import logging
 
 
 def asvoid(arr):
@@ -437,10 +436,12 @@ def quantize(linestrings, bbox, quant_factor=1e6):
     """
 
     x0, y0, x1, y1 = bbox
-
-    # ZeroDivisionError: float division by zero
-    kx = 1 / ((quant_factor - 1) / (x1 - x0))
-    ky = 1 / ((quant_factor - 1) / (y1 - y0))
+    try:
+        kx = 1 / ((quant_factor - 1) / (x1 - x0))
+        ky = 1 / ((quant_factor - 1) / (y1 - y0))
+    except ZeroDivisionError:
+        # ZeroDivisionError: float division by zero
+        raise SystemExit("Cannot quantize when xmax-xmin OR ymax-ymin equals 0")
 
     for idx, ls in enumerate(linestrings):
         if hasattr(ls, "xy"):

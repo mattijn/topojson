@@ -1,6 +1,7 @@
 import pprint
 import copy
 import numpy as np
+import itertools
 from .hashmap import Hashmap
 from ..ops import properties_foreign
 from ..ops import np_array_from_arcs
@@ -101,7 +102,8 @@ class Topology(Hashmap):
         return "Topology(\n{}\n)".format(pprint.pformat(self.output))
 
     def to_dict(self):
-        topo_object = copy.copy(self.output)
+        topo_object = copy.deepcopy(self.output)
+        topo_object = self.resolve_coords(topo_object)
         topo_object["options"] = vars(topo_object["options"])
         return topo_object
 
@@ -109,14 +111,16 @@ class Topology(Hashmap):
         serialize_as_svg(self.output, separate, include_junctions)
 
     def to_json(self, fp=None):
-        topo_object = copy.copy(self.output)
+        topo_object = copy.deepcopy(self.output)
+        topo_object = self.resolve_coords(topo_object)
         topo_object["options"] = vars(topo_object["options"])
         return serialize_as_json(topo_object, fp)
 
     def to_gdf(self):
         from ..utils import serialize_as_geodataframe
 
-        topo_object = copy.copy(self.output)
+        topo_object = copy.deepcopy(self.output)
+        topo_object = self.resolve_coords(topo_object)
         del topo_object["options"]
         return serialize_as_geodataframe(topo_object)
 
@@ -130,7 +134,8 @@ class Topology(Hashmap):
     ):
         from ..utils import serialize_as_altair
 
-        topo_object = copy.copy(self.output)
+        topo_object = copy.deepcopy(self.output)
+        topo_object = self.resolve_coords(topo_object)
         del topo_object["options"]
         return serialize_as_altair(
             topo_object, mesh, color, tooltip, projection, objectname
@@ -244,6 +249,26 @@ class Topology(Hashmap):
             # self.output["transform"] = result.output["transform"]
         else:
             return result
+
+    def resolve_coords(self, data):
+        geoms = data["objects"]["data"]["geometries"]
+        for idx, feat in enumerate(geoms):
+            if feat["type"] in ["Point", "MultiPoint"]:
+
+                lofl = feat["coordinates"]
+                repeat = 1 if feat["type"] == "Point" else 2
+
+                for _ in range(repeat):
+                    lofl = list(itertools.chain(*lofl))
+
+                for idx, val in enumerate(lofl):
+                    coord = data["coordinates"][val]
+                    lofl[idx] = [int(coord.xy[0][0]), int(coord.xy[1][0])]
+
+                feat["coordinates"] = lofl[0] if len(lofl) == 1 else lofl
+                feat.pop("reset_coords", None)
+        data.pop("coordinates", None)
+        return data
 
     def worker(self, data):
         self.output["arcs"] = data["linestrings"]
