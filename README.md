@@ -322,6 +322,11 @@ Futher, the many [tests][l1] as part of this package also can be used as example
 
 ## Changelog
 
+Version `1.0rc7`:
+
+- major refactoring to include quantization of points
+- and to hash combinations of polygons/linestrings with points #61
+
 Version `1.0rc6`:
 
 - fix linemerging of non-duplicate arcs #50
