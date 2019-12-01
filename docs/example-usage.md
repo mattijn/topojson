@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Example usage
-nav_order: 4
+nav_order: 3
 ---
 
 <h1>Example Usage</h1>
