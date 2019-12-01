@@ -137,6 +137,7 @@ class Extract(object):
                     self.invalid_geoms, "" if self.invalid_geoms == 1 else "s"
                 )
             )
+            self.invalid_geoms = 0
 
         return data
 
