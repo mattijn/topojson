@@ -154,7 +154,7 @@ def serialize_as_geodataframe(topo_object, url=False):
     return gdf
 
 
-def serialize_as_svg(topo_object, separate, include_junctions=False):
+def serialize_as_svg(topo_object, separate=False, include_junctions=False):
     from IPython.display import SVG, display
     from shapely import geometry
 
@@ -184,12 +184,21 @@ def serialize_as_svg(topo_object, separate, include_junctions=False):
     else:
         arcs = topo_object["linestrings"]
 
-    if separate:
+    if separate and not include_junctions:
         for ix, line in enumerate(arcs):
             svg = line._repr_svg_()
             print(ix, line.wkt)
             display(SVG(svg))
-    elif include_junctions:
+    elif separate and include_junctions:
+        pts = topo_object["junctions"]
+        for ix, line in enumerate(arcs):
+            svg = geometry.GeometryCollection(
+                [line, geometry.MultiPoint(pts)]
+            )._repr_svg_()
+            print(ix, line.wkt)
+            display(SVG(svg))
+
+    elif not separate and include_junctions:
         pts = topo_object["junctions"]
         display(
             geometry.GeometryCollection(
