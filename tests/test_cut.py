@@ -219,3 +219,27 @@ def test_cut_geomcol_multipolygon_polygon():
 
     assert topo["bookkeeping_linestrings"].size == 8
 
+
+# this test is added since its seems no extra junctions are placed at lines where other
+# linestrings have shared paths but no shared junctions.
+def test_cut_linemerge_multilinestring():
+    data = [
+        {"type": "LineString", "coordinates": [(0, 0), (10, 0), (10, 5), (20, 5)]},
+        {
+            "type": "LineString",
+            "coordinates": [
+                (5, 0),
+                (25, 0),
+                (25, 5),
+                (16, 5),
+                (16, 10),
+                (14, 10),
+                (14, 5),
+                (0, 5),
+            ],
+        },
+    ]
+    topo = Cut(data).to_dict()
+
+    assert len(topo["linestrings"]) == 12
+    assert len(topo["junctions"]) == 7

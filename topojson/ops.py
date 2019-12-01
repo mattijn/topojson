@@ -91,6 +91,12 @@ def insert_coords_in_line(line, tree_splitter):
     )
     splitter_dist = splitter_dist[splitter_dist > 0]
 
+    # sort distance of non-existing junctions and apply sorting to the splitter distance
+    # and corresponing junction coordinates to be inserted.
+    sort_idx = splitter_dist.argsort()
+    splitter_dist = splitter_dist[sort_idx]
+    pts_xy_nonexst = pts_xy_nonexst[sort_idx]
+
     # get eucledian distance of all coords of line
     ls_xy_roll = np.roll(ls_xy, 1, axis=0)
     roll_min_ls = ls_xy_roll - ls_xy
