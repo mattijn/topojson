@@ -195,6 +195,18 @@ class Join(Extract):
 
         return data
 
+    def validate_linemerge(self, merged_line):
+        """
+        Return list of linestrings. If the linemerge was a MultiLineString 
+        then returns a list of multiple single linestrings
+        """
+
+        if not isinstance(merged_line, geometry.LineString):
+            merged_line = [ls for ls in merged_line]
+        else:
+            merged_line = [merged_line]
+        return merged_line
+
     def shared_segs(self, g1, g2):
         """
         This function returns the segments that are shared with two input geometries.
@@ -235,9 +247,10 @@ class Join(Extract):
                 shared_segments = backward
             else:
                 # both backward and forward contains objects, so combine
-                shared_segments = geometry.MultiLineString(
-                    [linemerge(forward), linemerge(backward)]
-                )
+                forward = self.validate_linemerge(linemerge(forward))
+                backward = self.validate_linemerge(linemerge(backward))
+
+                shared_segments = geometry.MultiLineString(forward + backward)
 
             # add shared paths to segments
             self.segments.extend([list(shared_segments)])

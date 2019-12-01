@@ -574,3 +574,19 @@ def test_join_prequantize_points():
     topo = Join(data, options={"prequantize": True}).to_dict()
 
     assert topo["bbox"] == (-0.5, 0.0, 1.0, 1.5)
+
+def test_join_linemerge_multilinestring():
+    data = [
+        {
+            "type": "LineString",
+            "coordinates": [(0, 0), (10, 0), (10, 5), (20, 5)],
+        },
+        {
+            "type": "LineString",
+            "coordinates": [(5, 0), (25, 0), (25, 5), (16, 5), (16, 10), (14, 10), (14, 5), (0, 5)],
+        }
+    ]
+    topo = Join(data).to_dict()
+
+    assert len(topo["linestrings"]) == 2
+    assert len(topo["junctions"]) == 7

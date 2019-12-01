@@ -173,3 +173,25 @@ def test_s2_geometries():
     assert len(topo["junctions"]) == 6
     assert len(topo["bookkeeping_duplicates"]) == 0
 
+
+def test_dedup_linemerge_multilinestring():
+    data = [
+        {"type": "LineString", "coordinates": [(0, 0), (10, 0), (10, 5), (20, 5)]},
+        {
+            "type": "LineString",
+            "coordinates": [
+                (5, 0),
+                (25, 0),
+                (25, 5),
+                (16, 5),
+                (16, 10),
+                (14, 10),
+                (14, 5),
+                (0, 5),
+            ],
+        },
+    ]
+    topo = Dedup(data).to_dict()
+
+    assert len(topo["linestrings"]) == 9
+    assert len(topo["junctions"]) == 7
