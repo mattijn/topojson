@@ -1,20 +1,21 @@
 ---
 layout: default
 title: How it works
-nav_order: 5
+nav_order: 4
 ---
 
 <h1>How it works</h1>
 
-With topojson it is possible to reduce the file size of your geographical data if you are aiming for usage browser-based visualization (eg. visualizations in JupyterLab or on the Web).
+With topojson it is possible to reduce the file size of your geographical data. This is often useful if you are aiming for browser-based visualizations (eg. visualizations in JupyterLab or on the Web).
 
-It was shortly explained before by stating we can do so through:
+As explained before we can do so through:
 
-1. Eliminating redundancy through topology computation
-2. Fixed-precision integer encodig of coordinates and
-3. Simplification and quantization of coordinates
+1. Eliminating redundancy through computation of a topology
+2. Fixed-precision integer encoding of coordinates and
+3. Simplification and quantization of arcs
 
-So how does this work?
+
+<h2>So how does this work?</h2>
 While the second and third point might have a significant impact on the filesize reduction, we will start with the first. The computation of the topology, since it is basically the core of this library.
 
 The computation of the topology consists of the following sequence:
@@ -37,3 +38,7 @@ The computation of the topology consists of the following sequence:
 The names are borrowed from the JavaScript variant of TopoJSON, to establish a certain synergy between the packages, even though the code differs significant (and sometimes even the TopoJSON output).
 
 The addopted approach involves secure bookkeeping on multiple levels in order to succesfully pass all steps.
+
+Info urls
+https://stackoverflow.com/questions/14740705/difference-between-geojson-and-topojson
+https://stackoverflow.com/questions/18900022/topojson-quantization-vs-simplification
