@@ -4,9 +4,7 @@
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![build status](http://img.shields.io/travis/mattijn/topojson/master.svg?style=flat)](https://travis-ci.org/mattijn/topojson)
 
-
 _[Its not yet version 1.0, but that's merely because of missing documentation. With other words: you should be safe to use it!]_
-
 
 #
 
@@ -321,6 +319,11 @@ Futher, the many [tests][l1] as part of this package also can be used as example
 [l1]: https://github.com/mattijn/topojson/tree/master/tests
 
 ## Changelog
+
+Version `1.0rc8`:
+
+- complex shared paths are registered correctly #63
+- new insterted junctions are inserted in right order #64
 
 Version `1.0rc7`:
 
