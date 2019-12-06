@@ -4,7 +4,7 @@ title: Installation
 nav_order: 2
 ---
 
-<h1>Installation</h1>
+# Installation
 
 Topojson can be installed through PyPI by the following command:
 
@@ -38,7 +38,8 @@ topojson.topology(data)
 
 ```
 
-<h2>Dependencies</h2>
+## Dependencies
+
 Topojson has the following minimal dependencies, all of which are installed automatically with the above installation commands:
 
 - numpy
@@ -56,6 +57,6 @@ To run the full test suite and for buidling the documentation a few additional d
 - fiona
 - geopandas
 
-<h2>Development Install</h2>
+## Development Install
 
 How to install?

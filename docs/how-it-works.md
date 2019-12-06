@@ -4,7 +4,7 @@ title: How it works
 nav_order: 4
 ---
 
-<h1>How it works</h1>
+# How it works
 
 With topojson it is possible to reduce the file size of your geographical data. This is often useful if you are aiming for browser-based visualizations (eg. visualizations in JupyterLab or on the Web).
 
@@ -14,8 +14,8 @@ As explained before we can do so through:
 2. Fixed-precision integer encoding of coordinates and
 3. Simplification and quantization of arcs
 
+## So how does this work?
 
-<h2>So how does this work?</h2>
 While the second and third point might have a significant impact on the filesize reduction, we will start with the first. The computation of the topology, since it is basically the core of this library.
 
 The computation of the topology consists of the following sequence:

@@ -4,7 +4,7 @@ title: Example usage
 nav_order: 3
 ---
 
-<h1>Example Usage</h1>
+# Example Usage
 
 If you have geographical input data which object type is in the following list, you have good luck this library is useful for you:
 
