@@ -22,7 +22,7 @@ data = [
     {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}
 ]
 
-topojson.topology(data)
+topojson.Topology(data)
 ```
 
 ```

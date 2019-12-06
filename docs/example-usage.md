@@ -38,7 +38,7 @@ list_geoms = [
 #
 
 ```python
-topojson.topology(list_geoms)
+topojson.Topology(list_geoms)
 ```
 
 ```python
@@ -75,7 +75,7 @@ dictionary = {
 #
 
 ```python
-topojson.topology(dictionary)
+topojson.Topology(dictionary)
 ```
 
 ```python
@@ -138,7 +138,7 @@ gdf.head()
 #
 
 ```python
-topojson.topology(gdf)
+topojson.Topology(gdf)
 ```
 
 ```python
@@ -180,7 +180,7 @@ feature_collection = FeatureCollection([feature_1, feature_2])
 #
 
 ```python
-topojson.topology(feature_collection)
+topojson.Topology(feature_collection)
 ```
 
 ```python
