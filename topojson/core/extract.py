@@ -36,10 +36,7 @@ class Extract(object):
 
     Parameters
     ----------
-    data : Union[shapely.geometry.LineString, shapely.geometry.MultiLineString,
-    shapely.geometry.Polygon, shapely.geometry.MultiPolygon, shapely.geometry.Point,
-    shapely.geometry.MultiPoint, shapely.geometry.GeometryCollection, geojson.Feature,
-    geojson.FeatureCollection, geopandas.GeoDataFrame, geopandas.GeoSeries, dict, list]
+    data : _any_ geometric type
         Different types of a geometry object, originating from shapely, geojson,
         geopandas and dictionary or list of objects that contain a __geo_interface__.
 

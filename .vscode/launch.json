@@ -5,46 +5,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Current File (Integrated Terminal)",
+      "name": "Python: TopoJSON",
       "type": "python",
       "request": "launch",
       "program": "${workspaceFolder}/topojson/__init__.py",
       "console": "integratedTerminal",
       "justMyCode": false
-    },
-    {
-      "name": "Python: Attach",
-      "type": "python",
-      "request": "attach",
-      "port": 5678,
-      "host": "localhost"
-    },
-    {
-      "name": "Python: Django",
-      "type": "python",
-      "request": "launch",
-      "program": "${workspaceFolder}/manage.py",
-      "console": "integratedTerminal",
-      "args": ["runserver", "--noreload", "--nothreading"],
-      "django": true
-    },
-    {
-      "name": "Python: Flask",
-      "type": "python",
-      "request": "launch",
-      "module": "flask",
-      "env": {
-        "FLASK_APP": "app.py"
-      },
-      "args": ["run", "--no-debugger", "--no-reload"],
-      "jinja": true
-    },
-    {
-      "name": "Python: Current File (External Terminal)",
-      "type": "python",
-      "request": "launch",
-      "program": "${file}",
-      "console": "externalTerminal"
     }
   ]
 }

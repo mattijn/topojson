@@ -26,9 +26,9 @@ class Cut(Join):
     4. dedup
     5. hashmap
 
-    Parameters
+    # Arguments
     ----------
-    data : dict
+    data : dict 
         object created by the method topojson.Join.
 
     Returns

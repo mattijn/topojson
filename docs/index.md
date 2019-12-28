@@ -23,7 +23,7 @@ With topojson it is possible to reduce the size of your geographical data, mostl
 ## User Guide
 
 - [How it works](how-it-works)
-- [API-reference](api=reference)
+- [API-reference](api-reference)
 
 ## Bug Reports & Questions
 
