@@ -4,7 +4,7 @@ title: Overview
 nav_order: 1
 ---
 
-# Encode Geographic Data as Topology in Python!
+# Encode geographic data as topology in Python!
 
 Topojson is a library that is capable of creating a topojson encoded format of merely any geographical object in Python.
 
@@ -16,7 +16,6 @@ With topojson it is possible to reduce the size of your geographical data, mostl
 
 ## Getting Started
 
-- [Overview](index)
 - [Installation](installation)
 - [Example usage](example-usage)
 

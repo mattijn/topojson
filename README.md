@@ -182,7 +182,7 @@ tj = topojson.Topology(dictionary, prequantize=False, topology=True)
 tj.to_svg()
 ```
 
-<img src="images/svg_repr.png" alt="svg">
+<img src="docs/images/svg_repr.png" alt="svg">
 
 #
 
@@ -240,7 +240,7 @@ tj = topojson.Topology(gdf, prequantize=False, topology=True)
 tj.to_alt(color='properties.name:N')
 ```
 
-<img src="images/altair_chart.png" alt="altair">
+<img src="docs/images/altair_chart.png" alt="altair">
 
 #
 
@@ -303,7 +303,7 @@ The package `simplification` can be used if you want to adopt the Visvalingam-Wh
 
 The `.to_widget()` function depends on `ipywidgets` and can be a bit tricky to get it installed and properly working. But if you do, something like the following will show up:
 
-<img src="images/ipywidgets.gif" alt="ipywidgets">
+<img src="docs/images/ipywidgets.gif" alt="ipywidgets">
 
 To install, use the ipywidgets website for installation.  
 Initially I ran very often in errors like the following after I thought I'd install everything correctly:

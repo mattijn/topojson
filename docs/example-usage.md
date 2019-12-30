@@ -4,27 +4,21 @@ title: Example usage
 nav_order: 3
 ---
 
-# Example Usage
+# Example usage
 
-If you have geographical input data which object type is in the following list, you have good luck this library is useful for you:
+This library can be useful for you if you have if one of the following geographical input data:
 
-- `geojson.Feature`
-- `geojson.FeatureCollection`
-- `geopandas.GeoDataFrame`
-- `geopandas.GeoSeries`
-- `shapely.geometry.LineString`
-- `shapely.geometry.MultiLineString`
-- `shapely.geometry.Polygon`
-- `shapely.geometry.MultiPolygon`
-- `shapely.geometry.Point`
-- `shapely.geometry.MultiPoint`
-- `shapely.geometry.GeometryCollection`
+- `geojson.Feature` or a `geojson.FeatureCollection`
+- `geopandas.GeoDataFrame` or a `geopandas.GeoSeries`
+- any `shapely.geometry` object (eg. `Multi-``LineString` / `Multi-``Polygon` / `Multi-``Point` / `GeometryCollection`)
+- any object that support the `__geo_interface__`
+- any object that can be parsed into a shapely `shape`
 - `dict` of objects that provide a valid `__geo_interface__`
 - `list` of objects that provide a valid `__geo_interface__`
 
 ### Type: `list`
 
-The list should contain items that supports the **geo**interface\_\_
+The list should contain items that supports the `__geo_interface__`
 
 ```python
 import topojson
@@ -33,11 +27,7 @@ list_geoms = [
     {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
     {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}
 ]
-```
 
-#
-
-```python
 topojson.Topology(list_geoms)
 ```
 
@@ -70,11 +60,7 @@ dictionary = {
         "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
     }
 }
-```
 
-#
-
-```python
 topojson.Topology(dictionary)
 ```
 
@@ -133,7 +119,7 @@ gdf.head()
 </table>
 </div>
 
-<img src="../images/geodataframe_plot.png" alt="Plot GeoDataFrame">
+<img src="images/geodataframe_plot.png" alt="Plot GeoDataFrame">
 
 #
 
