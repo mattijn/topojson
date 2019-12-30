@@ -12,9 +12,9 @@ This library can be useful for you if you have if one of the following geographi
 - `geopandas.GeoDataFrame` or a `geopandas.GeoSeries`
 - any `shapely.geometry` object (eg. `Multi-``LineString` / `Multi-``Polygon` / `Multi-``Point` / `GeometryCollection`)
 - any object that support the `__geo_interface__`
-- any object that can be parsed into a shapely `shape`
-- `dict` of objects that provide a valid `__geo_interface__`
-- `list` of objects that provide a valid `__geo_interface__`
+- any object that can be parsed into a `__geo_interface__`
+- `dict` of objects that provide a valid `__geo_interface__` or can be parsed into one
+- `list` of objects that provide a valid `__geo_interface__` or can be parsed into one
 
 * * * 
 
@@ -22,24 +22,33 @@ This library can be useful for you if you have if one of the following geographi
 The list should contain items that supports the `__geo_interface__`
 
 ```python
-import topojson
+import topojson as tp
 
 list_geoms = [
     {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
     {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}
 ]
 
-topojson.Topology(list_geoms)
+tp.Topology(list_geoms, prequantize=False).to_json()
 ```
 
 ```python
-{'type': 'Topology',
-  'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[-3, 0]]},
-    {'type': 'Polygon', 'arcs': [[1, 2]]}],
-    'type': 'GeometryCollection'}},
-  'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
-  [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
-  [[1.0, 1.0], [1.0, 0.0]]]}
+{
+    "type": "Topology",
+    "objects": {
+        "data": {
+            "geometries": [
+                {"type": "Polygon", "arcs": [[-2, 0]]}, {"type": "Polygon", "arcs": [[1, 2]]}
+            ],
+            "type": "GeometryCollection"
+        }
+    },
+    "bbox": [0.0, 0.0, 2.0, 1.0],
+    "arcs": [
+        [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]],
+        [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]
+    ]
+}
 ```
 
 * * * 
@@ -48,7 +57,7 @@ topojson.Topology(list_geoms)
 The dictionary should be structured like {`key1`: `obj1`, `key2`: `obj2`}.
 
 ```python
-import topojson
+import topojson as tp
 
 dictionary = {
     "abc": {
@@ -61,17 +70,26 @@ dictionary = {
     }
 }
 
-topojson.Topology(dictionary)
+tp.Topology(dictionary, prequantize=False).to_json()
 ```
 
 ```python
-{'type': 'Topology',
-  'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[-3, 0]]},
-    {'type': 'Polygon', 'arcs': [[1, 2]]}],
-    'type': 'GeometryCollection'}},
-  'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
-  [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
-  [[1.0, 1.0], [1.0, 0.0]]]}
+{
+    "type": "Topology",
+    "objects": {
+        "data": {
+            "geometries": [
+                {"type": "Polygon", "arcs": [[-2, 0]]}, {"type": "Polygon", "arcs": [[1, 2]]}
+            ],
+            "type": "GeometryCollection"
+        }
+    },
+    "bbox": [0.0, 0.0, 2.0, 1.0],
+    "arcs": [
+        [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]],
+        [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]
+    ]
+}
 ```
 
 * * * 
@@ -81,8 +99,8 @@ From the package `geopandas` (if installed)
 
 ```python
 import geopandas
-import topojson
 from shapely import geometry
+import topojson as tp
 %matplotlib inline
 
 gdf = geopandas.GeoDataFrame({
@@ -105,25 +123,39 @@ gdf.head()
 <img src="images/geodataframe_plot.png" alt="Plot GeoDataFrame">
 
 ```python
-topojson.Topology(gdf)
+tp.Topology(gdf, prequantize=False).to_json()
 ```
 
 ```python
-{'type': 'Topology',
-  'objects': {'data': {'geometries': [{'id': '0',
-      'type': 'Polygon',
-      'properties': {'name': 'abc'},
-      'bbox': (0.0, 0.0, 1.0, 1.0),
-      'arcs': [[-3, 0]]},
-    {'id': '1',
-      'type': 'Polygon',
-      'properties': {'name': 'def'},
-      'bbox': (1.0, 0.0, 2.0, 1.0),
-      'arcs': [[1, 2]]}],
-    'type': 'GeometryCollection'}},
-  'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
-  [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
-  [[1.0, 1.0], [1.0, 0.0]]]}
+{
+    "type": "Topology",
+    "objects": {
+        "data": {
+            "geometries": [
+                {
+                    "id": "0",
+                    "type": "Polygon",
+                    "properties": {"name": "abc"},
+                    "bbox": [0.0, 0.0, 1.0, 1.0],
+                    "arcs": [[-2, 0]]
+                },
+                {
+                    "id": "1",
+                    "type": "Polygon",
+                    "properties": {"name": "def"},
+                    "bbox": [1.0, 0.0, 2.0, 1.0],
+                    "arcs": [[1, 2]]
+                }
+            ],
+            "type": "GeometryCollection"
+        }
+    },
+    "bbox": [0.0, 0.0, 2.0, 1.0],
+    "arcs": [
+        [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]],
+        [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]
+    ]
+}
 ```
 
 * * * 
@@ -133,6 +165,7 @@ From the package `geojson` (if installed)
 
 ```python
 from geojson import Feature, Polygon, FeatureCollection
+import topojson as tp
 
 feature_1 = Feature(
     geometry=Polygon([[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]),
@@ -144,15 +177,25 @@ feature_2 = Feature(
 )
 feature_collection = FeatureCollection([feature_1, feature_2])
 
-topojson.Topology(feature_collection)
+tp.Topology(feature_collection, prequantize=False).to_json()
 ```
 
 ```python
-{'type': 'Topology',
-  'objects': {'data': {'geometries': [{"arcs": [[-3, 0]], "properties": {"name": "abc"}, "type": "Polygon"},
-    {"arcs": [[1, 2]], "properties": {"name": "def"}, "type": "Polygon"}],
-    'type': 'GeometryCollection'}},
-  'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
-  [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
-  [[1.0, 1.0], [1.0, 0.0]]]}
+{
+    "type": "Topology",
+    "objects": {
+        "data": {
+            "geometries": [
+                {"type": "Polygon", "properties": {"name": "abc"}, "arcs": [[-2, 0]]},
+                {"type": "Polygon", "properties": {"name": "def"}, "arcs": [[1, 2]]}
+            ],
+            "type": "GeometryCollection"
+        }
+    },
+    "bbox": [0.0, 0.0, 2.0, 1.0],
+    "arcs": [
+        [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]],
+        [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]
+    ]
+}
 ```
