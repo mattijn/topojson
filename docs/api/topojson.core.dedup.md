@@ -38,17 +38,15 @@ Dedup.find_merged_linestring(self, data, no_ndp_arcs, ndp_arcs, ndp_arcs_bk)
 Function to find the index of LineString in a MultiLineString object which
 contains merged LineStrings.
 
->#### Parameters
-> + 
-###### `data` : (dict)
+> #### Parameters
+> + ###### `data` : (dict)
     object that contains the 'linestrings'
-> + 
-###### `no_ndp_arcs` : (int)
+> + ###### `no_ndp_arcs` : (int)
     number of non-duplicate arcs
 ndp_arcs : array
     array containing index values of the related arcs
 
->#### Returns
+> #### Returns
 int
     index of LineString that contains merged LineStrings
 
@@ -59,18 +57,15 @@ Dedup.deduplicate(self, dup_pair_list, linestring_list, array_bk)
 
 Function to deduplicate items
 
->#### Parameters
-> + 
-###### `dup_pair_list` : (numpy.ndarray)
+> #### Parameters
+> + ###### `dup_pair_list` : (numpy.ndarray)
     array containing pair of indexes that refer to duplicate linestrings.
-> + 
-###### `linestring_list` : (list of shapely.geometry.LineStrings)
+> + ###### `linestring_list` : (list of shapely.geometry.LineStrings)
     list of linestrings from which items will be removed.
-> + 
-###### `array_bk` : (numpy.ndarray)
+> + ###### `array_bk` : (numpy.ndarray)
     array used for bookkeeping of linestrings.
 
->#### Returns
+> #### Returns
 numpy.ndarray
     bookkeeping array of shared arcs
 numpy.ndarray
@@ -86,12 +81,10 @@ on remaining arcs. The merged contigious arc is placed back in the 'linestrings'
 object.
 The arcs that can be popped are placed within the merged_arcs_idx list
 
->#### Parameters
-> + 
-###### `data` : (dict)
+> #### Parameters
+> + ###### `data` : (dict)
     object that contains the 'linestrings'.
-> + 
-###### `sliced_array_bk_ndp` : (numpy.ndarray)
+> + ###### `sliced_array_bk_ndp` : (numpy.ndarray)
     bookkeeping array where shared linestrings are set to np.nan.
 
 ### pop_merged_arcs

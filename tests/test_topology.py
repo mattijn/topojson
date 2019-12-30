@@ -23,10 +23,10 @@ def test_linestrings_parsed_to_gdf():
 def test_winding_order_TopoOptions():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[(data.name == "South Africa")]
-    topo = topojson.Topology(data, winding_order="CW_CCW").to_dict()
+    topo = topojson.Topology(data, winding_order="CW_CCW").to_dict(options=True)
 
     assert len(topo["objects"]) == 1
-    assert isinstance(topo["options"], dict) == True
+    assert len(topo["options"]) == 8
 
 
 # test winding order using kwarg variables
@@ -34,10 +34,10 @@ def test_winding_order_kwarg_vars():
 
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[(data.name == "South Africa")]
-    topo = topojson.Topology(data, winding_order="CW_CCW").to_dict()
+    topo = topojson.Topology(data, winding_order="CW_CCW").to_dict(options=True)
 
     assert len(topo["objects"]) == 1
-    assert isinstance(topo["options"], dict) == True
+    assert len(topo["options"]) == 8
 
 
 def test_computing_topology():

@@ -91,20 +91,28 @@ class Topology(Hashmap):
     def __repr__(self):
         return "Topology(\n{}\n)".format(pprint.pformat(self.output))
 
-    def to_dict(self):
+    def to_dict(self, options=False):
         topo_object = copy.deepcopy(self.output)
         topo_object = self.resolve_coords(topo_object)
-        topo_object["options"] = vars(topo_object["options"])
+        if options is False:
+            del topo_object["options"]
+        elif options is True:
+            topo_object["options"] = vars(topo_object["options"])
         return topo_object
 
     def to_svg(self, separate=False, include_junctions=False):
         serialize_as_svg(self.output, separate, include_junctions)
 
-    def to_json(self, fp=None):
+    def to_json(self, fp=None, options=False, indent=4, maxlinelength=88):
         topo_object = copy.deepcopy(self.output)
         topo_object = self.resolve_coords(topo_object)
-        topo_object["options"] = vars(topo_object["options"])
-        return serialize_as_json(topo_object, fp)
+        if options is False:
+            del topo_object["options"]
+        elif options is True:
+            topo_object["options"] = vars(topo_object["options"])
+        return serialize_as_json(
+            topo_object, fp, indent=indent, maxlinelength=maxlinelength
+        )
 
     def to_gdf(self):
         from ..utils import serialize_as_geodataframe

@@ -31,7 +31,7 @@ __Arguments__
 - __data __: dict
     object created by the method topojson.Join.
 
->#### Returns
+> #### Returns
 dict
     object updated and expanded with
 - __- updated key__: linestrings
@@ -53,12 +53,11 @@ The following sequence is adopted:
 4. dedup
 5. hashmap
 
->#### Parameters
-> + 
-###### `data` : (dict)
+> #### Parameters
+> + ###### `data` : (dict)
     object created by the method topojson.join.
 
->#### Returns
+> #### Returns
 dict
     object updated and expanded with
     - updated key: linestrings
@@ -73,12 +72,11 @@ Cut.flatten_and_index(self, slist)
 Function to create a flattened list of splitted linestrings and create a
 numpy array of the bookkeeping_geoms for tracking purposes.
 
->#### Parameters
-> + 
-###### `slist` : (list of LineString)
+> #### Parameters
+> + ###### `slist` : (list of LineString)
     list of splitted LineStrings
 
->#### Returns
+> #### Returns
 list
     segmntlist flattens the nested LineString in slist
 numpy.array
@@ -94,9 +92,8 @@ Firstly creates couple-combinations of LineStrings. A couple is defined
 as two linestrings where the enveloppe overlaps. Indexes of duplicates are
 appended to the list self.duplicates.
 
->#### Parameters
-> + 
-###### `segments_list` : (list of LineString)
+> #### Parameters
+> + ###### `segments_list` : (list of LineString)
     list of valid LineStrings
 
 

@@ -25,13 +25,12 @@ The following sequence is adopted:
 4. dedup
 5. hashmap
 
->#### Parameters
-> + 
-###### `data` : (_any_ geometric type)
+> #### Parameters
+> + ###### `data` : (_any_ geometric type)
     Different types of a geometry object, originating from shapely, geojson,
     geopandas and dictionary or list of objects that contain a __geo_interface__.
 
->#### Returns
+> #### Returns
 dict
     object created including
     - new key: type
@@ -109,9 +108,8 @@ Extract.extract_line(self, geom)
 ```
 *geom* type is LineString instance.
 
->#### Parameters
-> + 
-###### `geom` : (shapely.geometry.LineString)
+> #### Parameters
+> + ###### `geom` : (shapely.geometry.LineString)
     LineString instance
 
 ### extract_multiline
@@ -120,9 +118,8 @@ Extract.extract_multiline(self, geom)
 ```
 *geom* type is MultiLineString instance.
 
->#### Parameters
-> + 
-###### `geom` : (shapely.geometry.MultiLineString)
+> #### Parameters
+> + ###### `geom` : (shapely.geometry.MultiLineString)
     MultiLineString instance
 
 ### extract_ring
@@ -131,9 +128,8 @@ Extract.extract_ring(self, geom)
 ```
 *geom* type is Polygon instance.
 
->#### Parameters
-> + 
-###### `geom` : (shapely.geometry.Polygon)
+> #### Parameters
+> + ###### `geom` : (shapely.geometry.Polygon)
     Polygon instance
 
 ### extract_multiring
@@ -142,9 +138,8 @@ Extract.extract_multiring(self, geom)
 ```
 *geom* type is MultiPolygon instance.
 
->#### Parameters
-> + 
-###### `geom` : (shapely.geometry.MultiPolygon)
+> #### Parameters
+> + ###### `geom` : (shapely.geometry.MultiPolygon)
     MultiPolygon instance
 
 ### extract_point
@@ -154,9 +149,8 @@ Extract.extract_point(self, geom)
 *geom* type is Point instance.
 coordinates are directly passed to "coordinates"
 
->#### Parameters
-> + 
-###### `geom` : (shapely.geometry.Point)
+> #### Parameters
+> + ###### `geom` : (shapely.geometry.Point)
     Point instance
 
 ### extract_multipoint
@@ -165,9 +159,8 @@ Extract.extract_multipoint(self, geom)
 ```
 *geom* type is MultiPoint instance.
 
->#### Parameters
-> + 
-###### `geom` : (shapely.geometry.MultiPoint)
+> #### Parameters
+> + ###### `geom` : (shapely.geometry.MultiPoint)
     MultiPoint instance
 
 ### extract_geometrycollection
@@ -176,9 +169,8 @@ Extract.extract_geometrycollection(self, geom)
 ```
 *geom* type is GeometryCollection instance.
 
->#### Parameters
-> + 
-###### `geom` : (shapely.geometry.GeometryCollection)
+> #### Parameters
+> + ###### `geom` : (shapely.geometry.GeometryCollection)
     GeometryCollection instance
 
 ### extract_featurecollection
@@ -187,9 +179,8 @@ Extract.extract_featurecollection(self, geom)
 ```
 *geom* type is FeatureCollection instance.
 
->#### Parameters
-> + 
-###### `geom` : (geojson.FeatureCollection)
+> #### Parameters
+> + ###### `geom` : (geojson.FeatureCollection)
     FeatureCollection instance
 
 ### extract_feature
@@ -198,9 +189,8 @@ Extract.extract_feature(self, geom)
 ```
 *geom* type is Feature instance.
 
->#### Parameters
-> + 
-###### `geom` : (geojson.Feature)
+> #### Parameters
+> + ###### `geom` : (geojson.Feature)
     Feature instance
 
 ### extract_geopandas
@@ -209,9 +199,8 @@ Extract.extract_geopandas(self, geom)
 ```
 *geom* type is GeoDataFrame or GeoSeries instance.
 
->#### Parameters
-> + 
-###### `geom` : (geopandas.GeoDataFrame or geopandas.GeoSeries)
+> #### Parameters
+> + ###### `geom` : (geopandas.GeoDataFrame or geopandas.GeoSeries)
     GeoDataFrame or GeoSeries instance
 
 ### extract_list
@@ -220,9 +209,8 @@ Extract.extract_list(self, geom)
 ```
 *geom* type is List instance.
 
->#### Parameters
-> + 
-###### `geom` : (list)
+> #### Parameters
+> + ###### `geom` : (list)
     List instance
 
 ### extract_string
@@ -231,9 +219,8 @@ Extract.extract_string(self, geom)
 ```
 *geom* type is String instance.
 
->#### Parameters
-> + 
-###### `geom` : (str)
+> #### Parameters
+> + ###### `geom` : (str)
     String instance
 
 ### extract_dictionary
@@ -242,9 +229,8 @@ Extract.extract_dictionary(self, geom)
 ```
 *geom* type is Dictionary instance.
 
->#### Parameters
-> + 
-###### `geom` : (dict)
+> #### Parameters
+> + ###### `geom` : (dict)
     Dictionary instance
 
 

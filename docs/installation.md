@@ -15,27 +15,33 @@ python3 -m pip install topojson
 The library is installed succesfully if the following code will not give you any errors.
 
 ```python
-import topojson
+import topojson as tp
 
 data = [
     {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
     {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}
 ]
 
-topojson.Topology(data)
+tp.Topology(data, prequantize=False).to_json()
 ```
 
-```
-
-    {'type': 'Topology',
-     'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[0, -4, 1]]},
-        {'type': 'Polygon', 'arcs': [[2, 3]]}],
-       'type': 'GeometryCollection'}},
-     'arcs': [[[0.0, 0.0], [1.0, 0.0]],
-      [[1.0, 1.0], [0.0, 1.0], [0.0, 0.0]],
-      [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
-      [[1.0, 1.0], [1.0, 0.0]]]}
-
+```python
+{
+    "type": "Topology",
+    "objects": {
+        "data": {
+            "geometries": [
+                {"type": "Polygon", "arcs": [[-2, 0]]}, {"type": "Polygon", "arcs": [[1, 2]]}
+            ],
+            "type": "GeometryCollection"
+        }
+    },
+    "bbox": [0.0, 0.0, 2.0, 1.0],
+    "arcs": [
+        [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]],
+        [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]
+    ]
+}
 ```
 
 ## Dependencies
@@ -45,18 +51,21 @@ Topojson has the following minimal dependencies, all of which are installed auto
 - numpy
 - shapely
 
-If speed is any issue for you than the following optional packages might give you another boost in the topology computation:
+To improve the speed of `pre`/`toposimplify` or if you want to use another simplification algorithm you can install (_optional_):
 
 - simplification
-- numba (not yet included)
 
-To run the full test suite and for buidling the documentation a few additional dependencies are required:
+To visualise the output as a mesh and/or return the output as geodataframe you also will need (_optional_):
 
-- unittest
-- geojson
-- fiona
+- altair
 - geopandas
 
 ## Development Install
 
-How to install?
+To run the full test suite a few additional dependencies are required:
+
+- unittest
+- fiona
+- geopandas
+- geojson
+- pyshp

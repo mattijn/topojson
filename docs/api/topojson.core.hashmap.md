@@ -44,21 +44,17 @@ create a decision list with the following options:
 2 - follow the order of the last arc
 3 - align first two arcs and continue
 
->#### Parameters
-> + 
-###### `arc_ids` : (list)
+> #### Parameters
+> + ###### `arc_ids` : (list)
     list containing the index values of the arcs
-> + 
-###### `shared_bool` : (list)
+> + ###### `shared_bool` : (list)
     boolean list with same length as arc_ids,
     True means the arc is shared, False means it is a non-shared arc
 
->#### Returns
-> + 
-###### `order_of_arc` : (numpy array)
+> #### Returns
+> + ###### `order_of_arc` : (numpy array)
     array containg values if first or last arc should be used to order
-> + 
-###### `split_arc_ids` : (list of numpy arrays)
+> + ###### `split_arc_ids` : (list of numpy arrays)
     array containing splitted arc ids
 
 ### backward_arcs
@@ -69,14 +65,12 @@ Hashmap.backward_arcs(self, arc_ids)
 Function to check if the shared arcs in geom should be backward.
 If so, are written as -(index+1)
 
->#### Parameters
-> + 
-###### `arc_ids` : (list)
+> #### Parameters
+> + ###### `arc_ids` : (list)
     description of input
 
->#### Returns
-> + 
-###### `arc_ids` : (list)
+> #### Returns
+> + ###### `arc_ids` : (list)
     description of output
 
 ### resolve_bookkeeping

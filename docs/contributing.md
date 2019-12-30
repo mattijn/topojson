@@ -4,7 +4,7 @@ title: Contributing
 nav_order: 6
 ---
 
-This is the contributing page
+# Contribute
 
 To build the documentation page locally, run the following command from the root-folder of the `docs`:
 

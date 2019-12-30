@@ -25,17 +25,15 @@ The following sequence is adopted:
 4. dedup
 5. hashmap
 
->#### Parameters
-> + 
-###### `data` : (dict)
+> #### Parameters
+> + ###### `data` : (dict)
     object created by the method topojson.extract.
-> + 
-###### `quant_factor` : (int, optional (default: None))
+> + ###### `quant_factor` : (int, optional (default: None))
     quantization factor, used to constrain float numbers to integer values.
     - Use 1e4 for 5 valued values (00001-99999)
     - Use 1e6 for 7 valued values (0000001-9999999)
 
->#### Returns
+> #### Returns
 dict
     object expanded with
     - new key: junctions
@@ -64,17 +62,15 @@ detect the junctions or start and end-points of shared paths so these paths can
 be 'merged' in the next step. Merge is quoted as in fact only one of the
 shared path is kept and the other path is removed.
 
->#### Parameters
-> + 
-###### `data` : (dict)
+> #### Parameters
+> + ###### `data` : (dict)
     object created by the method topojson.extract.
-> + 
-###### `quant_factor` : (int, optional (default: None))
+> + ###### `quant_factor` : (int, optional (default: None))
     quantization factor, used to constrain float numbers to integer values.
     - Use 1e4 for 5 valued values (00001-99999)
     - Use 1e6 for 7 valued values (0000001-9999999)
 
->#### Returns
+> #### Returns
 dict
     object expanded with
     - new key: junctions
@@ -101,12 +97,10 @@ shared paths with the opposite direction for one the two inputs.
 The returned object extents the `segments` property with detected segments.
 Where each seperate segment is a linestring between two points.
 
->#### Parameters
-> + 
-###### `g1` : (shapely.geometry.LineString)
+> #### Parameters
+> + ###### `g1` : (shapely.geometry.LineString)
     first geometry
-> + 
-###### `g2` : (shapely.geometry.LineString)
+> + ###### `g2` : (shapely.geometry.LineString)
     second geometry
 
 
