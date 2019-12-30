@@ -4,7 +4,9 @@
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![build status](http://img.shields.io/travis/mattijn/topojson/master.svg?style=flat)](https://travis-ci.org/mattijn/topojson)
 
-_[Its not yet version 1.0, but that's merely because of missing documentation. With other words: you should be safe to use it!]_
+_Its not yet version 1.0, but that's merely because of missing documentation. With other words: you should be safe to use it!_
+
+_The docs will slowly move to/emerge at: https://mattijn.github.io/topojson_
 
 #
 
