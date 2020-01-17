@@ -1,10 +1,11 @@
 ---
 layout: default
-title: Example usage
-nav_order: 3
+title: Types of input data
+parent: Example usage
+nav_order: 1
 ---
 
-# Example usage
+# Types of input data
 
 This library can be useful for you if you have if one of the following geographical input data:
 
@@ -24,12 +25,12 @@ The list should contain items that supports the `__geo_interface__`
 ```python
 import topojson as tp
 
-list_geoms = [
+list_in = [
     {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
     {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}
 ]
 
-tp.Topology(list_geoms, prequantize=False).to_json()
+tp.Topology(list_in, prequantize=False).to_json()
 ```
 
 ```python
@@ -59,7 +60,7 @@ The dictionary should be structured like {`key1`: `obj1`, `key2`: `obj2`}.
 ```python
 import topojson as tp
 
-dictionary = {
+dict_in = {
     "abc": {
         "type": "Polygon",
         "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
@@ -70,7 +71,7 @@ dictionary = {
     }
 }
 
-tp.Topology(dictionary, prequantize=False).to_json()
+tp.Topology(dict_in, prequantize=False).to_json()
 ```
 
 ```python
@@ -167,17 +168,17 @@ From the package `geojson` (if installed)
 from geojson import Feature, Polygon, FeatureCollection
 import topojson as tp
 
-feature_1 = Feature(
+feat_1 = Feature(
     geometry=Polygon([[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]),
     properties={"name":"abc"}
 )
-feature_2 = Feature(
+feat_2 = Feature(
     geometry=Polygon([[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]),
     properties={"name":"def"}
 )
-feature_collection = FeatureCollection([feature_1, feature_2])
+fc = FeatureCollection([feat_1, feat_2])
 
-tp.Topology(feature_collection, prequantize=False).to_json()
+tp.Topology(fc, prequantize=False).to_json()
 ```
 
 ```python

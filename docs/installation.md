@@ -12,7 +12,7 @@ Topojson can be installed through PyPI by the following command:
 python3 -m pip install topojson
 ```
 
-The library is installed succesfully if the following code will not give you any errors.
+The library is installed succesfully if the following code.
 
 ```python
 import topojson as tp
@@ -24,6 +24,7 @@ data = [
 
 tp.Topology(data, prequantize=False).to_json()
 ```
+Returns something as such:
 
 ```python
 {
@@ -51,7 +52,7 @@ Topojson has the following minimal dependencies, all of which are installed auto
 - numpy
 - shapely
 
-To improve the speed of `pre`/`toposimplify` or if you want to use another simplification algorithm you can install (_optional_):
+To improve the speed of `pre`-/`toposimplify` or if you want to use another simplification algorithm you can install (_optional_):
 
 - simplification
 

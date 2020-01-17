@@ -8,6 +8,17 @@ nav_order: 7
 
 # topojson.utils
 
+## prettyjson
+```python
+prettyjson(obj, indent=2, maxlinelength=80)
+```
+Renders JSON content with indentation and line splits/concatenations to fit maxlinelength.
+Only dicts, lists and basic types are supported
+## indentitems
+```python
+indentitems(items, indent, level)
+```
+Recursively traverses the list of json lines, adds indentation based on the current depth
 ## singledispatch_class
 ```python
 singledispatch_class(func)

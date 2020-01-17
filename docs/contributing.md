@@ -12,12 +12,7 @@ To build the documentation page locally, run the following command from the root
 bundle exec jekyll serve
 ```
 
-API-reference page is building using the following command:
+The API reference documentation is created using `pydocmd`. The created markdown is subsequently changed to align with the style of this page. 
 
-Change docstring to PydocMd format is probable best solution for now as numpy/google style is not yet supported https://github.com/NiklasRosenstein/pydoc-markdown/issues/1
 
-```bash
-pydocmd simple topojson++ topojson.core.topology++ topojson.core.extract++ topojson.core.join++ topojson.core.cut++ topojson.core.dedup++ topojson.core.hashmap++ topojson.utils++ topojson.ops++ > docs.md
-```
-
-The content of this `docs.md` is copied into `api-reference.md` and the `docs.md` is removed again.
+All of this happens from the Jupyter Notebook available in the generate folder. PydocMd should be installed and available from cmd to run the notebook.
