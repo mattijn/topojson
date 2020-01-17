@@ -2,3 +2,7 @@
 // $body-heading-color: rgb(31, 35, 72);
 //$nav-child-link-color: rgb(33, 188, 165);
 $link-color: #386da5;
+
+.navigation-list-item .navigation-list-child-list {
+  display: block !important;
+}
