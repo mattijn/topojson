@@ -16,3 +16,5 @@ The API reference documentation is created using `pydocmd`. The created markdown
 
 
 All of this happens from the Jupyter Notebook available in the generate folder. PydocMd should be installed and available from cmd to run the notebook.
+
+Still have to fix some issues regarding relative linking: https://stackoverflow.com/a/19173888
