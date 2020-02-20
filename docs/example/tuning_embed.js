@@ -5,7 +5,7 @@ window.addEventListener("DOMContentLoaded", event => {
     actions: false
   };
 
-  var spec_topology = "topojson/example/tuning_topology.vl.json";
+  var spec_topology = "/topojson/example/tuning_topology.vl.json";
   vegaEmbed("#embed_tuning_topology", spec_topology, opt).catch(console.err);
 
   // var spec_topology = "/example/tuning_prequantize.vl.json";
