@@ -4,3 +4,4 @@ aux_links:
     - "//github.com/mattijn/topojson"
 color_scheme: nil
 title: topojson
+baseurl: /topojson
