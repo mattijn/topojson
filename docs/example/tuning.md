@@ -169,7 +169,7 @@ tj = tp.Topology(data, prequantize=False, topology=True)
 tj.toposimplify(1).topoquantize(1e6).to_svg()
 ```
 
-<script type="text/javascript" src="/example/tuning_embed.js"></script>
+<script type="text/javascript" src="topojson/example/tuning_embed.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@4.0.0"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
