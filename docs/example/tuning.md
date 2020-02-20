@@ -24,6 +24,20 @@ Currently its merely copied from the docstring in the code L.
         Specifiy if the topology should be computed for deriving the TopoJSON. 
         Default is True. 
 
+
+<div class="code-example mx-8 bg-grey-lt-000">
+<div class="note-label" markdown="1">
+Note 📝
+{: .label .label-blue }
+</div>
+<div class="note-text" markdown="1">
+
+_(the following figure is for testing only)_
+
+</div>
+</div>
+<div id="embed_tuning_topology"></div>
+
 * * *         
 
 ## prequantize
@@ -47,7 +61,19 @@ Currently its merely copied from the docstring in the code L.
         will be resolved first before the topoquantization is applied. 
         Default is False.
 
-This is also supported by chaining.
+<div class="code-example mx-8 bg-grey-lt-000">
+<div class="note-label" markdown="1">
+Note 📝
+{: .label .label-blue }
+</div>
+<div class="note-text" markdown="1">
+
+1.  _This is also supported by chaining._
+</div>
+</div>
+<div id="embed_tuning_topoquantize"></div>
+
+
 
 * * * 
 
@@ -68,23 +94,36 @@ This is also supported by chaining.
         topological relations. Sensible values are in the range of 0.0001 to 10. 
         Defaults to 0.0001.
 
-This is also supported by chaining.
 
-> Note: I noticed that the default value work best when your data is projected in degrees (eg. epsg:4326). When the projection of your data is in meters you might need to test which value should be adopted. 
 
-<div class="code-example">
-<div class="contribution-label" style="width: 18%" markdown="1">
-Contribution
+<div class="code-example mx-8 bg-grey-lt-000">
+<div class="note-label" markdown="1">
+Note 📝
+{: .label .label-blue }
+</div>
+<div class="note-text" markdown="1">
+
+1.  _I noticed that the default value work best when your data is projected in degrees (eg. epsg:4326). When the projection of your data is in meters you might need to test which value should be adopted._
+
+2.  _This is also supported by chaining._
+
+</div>
+</div>
+
+
+<div class="code-example mx-8 bg-grey-lt-000">
+<div class="contribution-label" markdown="1">
+Contribution 🙏
 {: .label .label-yellow }
 </div>
-<div class="contribution-text" style="width: 82%" markdown="1">
+<div class="contribution-text" markdown="1">
 
 _I don't really know what the current input value means, but I do know that there is currently NO option to use a %-value (like in mapshaper.org)._
 
 _It would be a great contribution if you can make the `toposimplifiy` setting work using percentage as input!_
 </div>
 </div>
-{: .d-flex .mx-6}
+
 
 * * * 
 
@@ -124,6 +163,13 @@ The `toposimplify` and `topoquantize` are supported by chaining as well. Meaning
 
 
 ```python
-tj = topojson.Topology(data, prequantize=False, topology=True)
+import topojson as tp
+
+tj = tp.Topology(data, prequantize=False, topology=True)
 tj.toposimplify(1).topoquantize(1e6).to_svg()
 ```
+
+<script type="text/javascript" src="/example/tuning_embed.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@4.0.0"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>

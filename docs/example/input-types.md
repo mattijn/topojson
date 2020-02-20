@@ -61,11 +61,11 @@ The dictionary should be structured like {`key1`: `obj1`, `key2`: `obj2`}.
 import topojson as tp
 
 dict_in = {
-    "abc": {
+    0: {
         "type": "Polygon",
         "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
     },
-    "def": {
+    1: {
         "type": "Polygon",
         "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
     }
@@ -121,7 +121,7 @@ gdf.head()
 | 1 | def | POLYGON ((1 0, 2 0, 2 1, 1 1, 1 0)) |
 
 
-<img src="images/geodataframe_plot.png" alt="Plot GeoDataFrame">
+<img src="/../images/geodataframe_plot.png" alt="Plot GeoDataFrame">
 
 ```python
 tp.Topology(gdf, prequantize=False).to_json()

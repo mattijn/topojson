@@ -46,27 +46,32 @@ Returns something as such:
 ```
 
 ## Dependencies
+* * *
+#### Hard Dependencies
+Topojson requires `numpy` and `shapely` as dependencies and are installed automatically if not available.
+* * *
+#### Soft Dependencies
 
-Topojson has the following minimal dependencies, all of which are installed automatically with the above installation commands:
-
-- numpy
-- shapely
-
-To improve the speed of `pre`-/`toposimplify` or if you want to use another simplification algorithm you can install (_optional_):
+To improve the speed of the `presimplify`/`toposimplify` parameter settings or if you want to use another simplification algorithm you can install (_optional_):
 
 - simplification
 
-To visualise the output as a mesh and/or return the output as geodataframe you also will need (_optional_):
+To visualise the output as a mesh and/or return the output as geodataframe you will need (_optional_):
 
 - altair
 - geopandas
+
+To interactively analyse the effects of `toposimplify` and `topoquantize` as a widget (_optional_):
+
+- ipywidgets
+- ipywidgets JupyterLab extension
+
 
 ## Development Install
 
 To run the full test suite a few additional dependencies are required:
 
-- unittest
-- fiona
+- pytest
 - geopandas
 - geojson
 - pyshp
