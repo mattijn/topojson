@@ -121,7 +121,7 @@ gdf.head()
 | 1 | def | POLYGON ((1 0, 2 0, 2 1, 1 1, 1 0)) |
 
 
-<img src="/topojson/images/geodataframe_plot.png" alt="Plot GeoDataFrame">
+<img src="{{site.baseurl}}/images/geodataframe_plot.png" alt="Plot GeoDataFrame">
 
 ```python
 tp.Topology(gdf, prequantize=False).to_json()

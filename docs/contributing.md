@@ -9,7 +9,7 @@ nav_order: 6
 To build the documentation page locally, run the following command from the root-folder of the `docs`:
 
 ```bash
-bundle exec jekyll serve
+bundle exec jekyll serve --baseurl ''
 ```
 
 The API reference documentation is created using `pydocmd`. The created markdown is subsequently changed to align with the style of this page. 

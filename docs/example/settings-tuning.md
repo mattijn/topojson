@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Settings and tuning possibilities
+title: Settings and tuning
 parent: Example usage
 nav_order: 2
 ---
 
-# Settings and tuning possibilities
+# Settings and tuning
 
 The TopoJSON format is merely designed to create smaller files than its GeoJSON counterpart. It is capable of doing so through a few options of which the following are currently available: 
 - compute topology 
@@ -68,7 +68,7 @@ Note 📝
 </div>
 <div class="note-text" markdown="1">
 
-1.  _This is also supported by chaining._
+_This is also supported by chaining._
 </div>
 </div>
 <div id="embed_tuning_topoquantize"></div>
@@ -169,7 +169,19 @@ tj = tp.Topology(data, prequantize=False, topology=True)
 tj.toposimplify(1).topoquantize(1e6).to_svg()
 ```
 
-<script type="text/javascript" src="/topojson/example/tuning_embed.js"></script>
+
+<script>
+window.addEventListener("DOMContentLoaded", event => {
+    var opt = {
+        mode: "vega-lite",
+        renderer: "svg",
+        actions: false
+    };
+
+    var spec_topology = "{{site.baseurl}}/json/example_topology.vl.json";
+    vegaEmbed("#embed_tuning_topology", spec_topology, opt).catch(console.err);
+});
+</script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@4.0.0"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
