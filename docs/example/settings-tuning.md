@@ -25,17 +25,8 @@ Currently its merely copied from the docstring in the code L.
         Default is True. 
 
 
-<div class="code-example mx-8 bg-grey-lt-000">
-<div class="note-label" markdown="1">
-Note 📝
-{: .label .label-blue }
-</div>
-<div class="note-text" markdown="1">
+**Note:** The following figure is here to test if interactivity is possible
 
-_(the following figure is for testing only)_
-
-</div>
-</div>
 <div id="embed_tuning_topology"></div>
 
 * * *         
@@ -61,16 +52,8 @@ _(the following figure is for testing only)_
         will be resolved first before the topoquantization is applied. 
         Default is False.
 
-<div class="code-example mx-8 bg-grey-lt-000">
-<div class="note-label" markdown="1">
-Note 📝
-{: .label .label-blue }
-</div>
-<div class="note-text" markdown="1">
+**Note:** This is also supported by chaining.
 
-_This is also supported by chaining._
-</div>
-</div>
 <div id="embed_tuning_topoquantize"></div>
 
 
@@ -95,23 +78,12 @@ _This is also supported by chaining._
         Defaults to 0.0001.
 
 
+**Note 1:** I noticed that the default value work best when your data is projected in degrees (eg. epsg:4326). When the projection of your data is in meters you might need to test which value should be adopted.
 
-<div class="code-example mx-8 bg-grey-lt-000">
-<div class="note-label" markdown="1">
-Note 📝
-{: .label .label-blue }
-</div>
-<div class="note-text" markdown="1">
-
-1.  _I noticed that the default value work best when your data is projected in degrees (eg. epsg:4326). When the projection of your data is in meters you might need to test which value should be adopted._
-
-2.  _This is also supported by chaining._
-
-</div>
-</div>
+**Note 2:** This is also supported by chaining.
 
 
-<div class="code-example mx-8 bg-grey-lt-000">
+<div class="code-example mx-8 bg-contribution">
 <div class="contribution-label" markdown="1">
 Contribution 🙏
 {: .label .label-yellow }
