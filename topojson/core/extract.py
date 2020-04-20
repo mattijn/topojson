@@ -61,6 +61,7 @@ class Extract(object):
         self.linestrings = []
         self.coordinates = []
         self.geomcollection_counter = 0
+        self.is_single = True
         self.invalid_geoms = 0
 
         # FIXME: try except is not necessary once the following issue is fixed:
@@ -196,6 +197,10 @@ class Extract(object):
             LineString instance
         """
 
+        # only process non-single geometries:
+        if self.is_single:
+            return self.extractor([geom])
+
         # only process non-empty geometries
         if not geom.is_empty:
             idx_bk = len(self.bookkeeping_geoms)
@@ -229,6 +234,11 @@ class Extract(object):
             MultiLineString instance
         """
 
+        # only process non-single geometries:
+        if self.is_single:
+            data = [geom]
+            return self.extractor(data)
+
         for line in geom:
             self.extract_line(line)
 
@@ -241,6 +251,10 @@ class Extract(object):
         geom : shapely.geometry.Polygon
             Polygon instance
         """
+
+        # only process non-single geometries:
+        if self.is_single:
+            return self.extractor([geom])
 
         idx_bk = len(self.bookkeeping_geoms)
         idx_ls = len(self.linestrings)
@@ -282,6 +296,10 @@ class Extract(object):
             MultiPolygon instance
         """
 
+        # only process non-single geometries:
+        if self.is_single:
+            return self.extractor([geom])
+
         for ring in geom:
             self.extract_ring(ring)
 
@@ -295,6 +313,10 @@ class Extract(object):
         geom : shapely.geometry.Point
             Point instance
         """
+
+        # only process non-single geometries:
+        if self.is_single:
+            return self.extractor([geom])
 
         # only process non-empty point geometries
         if not geom.is_empty:
@@ -322,6 +344,10 @@ class Extract(object):
             MultiPoint instance
         """
 
+        # only process non-single geometries:
+        if self.is_single:
+            return self.extractor([geom])
+
         for point in geom:
             self.extract_point(point)
 
@@ -335,6 +361,7 @@ class Extract(object):
             GeometryCollection instance
         """
 
+        self.is_single = False
         if not hasattr(self, "key"):
             obj = geom.__geo_interface__
             self.key = "feature_0"
@@ -407,6 +434,7 @@ class Extract(object):
             data["feature_{}".format(str(idx).zfill(zfill_value))] = feature
 
         # new data dictionary is created, throw the geometries back to main()
+        self.is_single = False
         self.extractor(data)
 
     @serialize_geom_type.register(geojson.Feature)
@@ -437,6 +465,7 @@ class Extract(object):
             del self.data[self.key]
             return
 
+        self.is_single = False
         self.serialize_geom_type(geom)
 
     @serialize_geom_type.register(geopandas.GeoDataFrame)
@@ -470,6 +499,7 @@ class Extract(object):
         data = dict(enumerate(geom))
 
         # new data dictionary is created, throw the geometries back to main()
+        self.is_single = False
         self.extractor(data)
 
     @serialize_geom_type.register(str)
@@ -500,6 +530,7 @@ class Extract(object):
             Dictionary instance
         """
 
+        self.is_single = False
         # iterate over the input dictionary or geographical object
         for key in list(self.data):
             # based on the geom type the right function is serialized

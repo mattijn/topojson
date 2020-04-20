@@ -298,3 +298,30 @@ def test_extract_points():
     assert topo["coordinates"][0].wkt == "POINT (0.5 0.5)"
     assert "coordinates" in topo["objects"][1].keys()
 
+
+def test_extract_single_polygon():
+    data = geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]])
+    topo = Extract(data).to_dict()
+
+    assert len(topo["bookkeeping_geoms"]) == 1
+
+
+def test_extract_single_linestring():
+    data = geometry.LineString([[0, 0], [1, 0], [1, 1], [0, 1]])
+    topo = Extract(data).to_dict()
+
+    assert len(topo["bookkeeping_geoms"]) == 1
+
+
+def test_extract_single_multilinestring():
+    data = geometry.MultiLineString([[[0, 0], [1, 1]], [[-1, 0], [1, 0]]])
+    topo = Extract(data).to_dict()
+
+    assert len(topo["bookkeeping_geoms"]) == 2
+
+
+def test_extract_single_multilinestring_list():
+    data = [geometry.MultiLineString([[[0, 0], [1, 1]], [[-1, 0], [1, 0]]])]
+    topo = Extract(data).to_dict()
+
+    assert len(topo["bookkeeping_geoms"]) == 2
