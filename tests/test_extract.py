@@ -325,4 +325,3 @@ def test_extract_single_multilinestring_list():
     topo = Extract(data).to_dict()
 
     assert len(topo["bookkeeping_geoms"]) == 2
-
