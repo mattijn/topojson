@@ -1,8 +1,157 @@
 from functools import singledispatch, update_wrapper
 from types import SimpleNamespace
+import numpy as np
 import pprint
 import json
 import types
+from .ops import dequantize
+from .ops import np_array_from_arcs
+
+
+# ----------- dummy files for geopandas and geojson ----------
+class GeoDataFrame(object):
+    pass
+
+
+class GeoSeries(object):
+    pass
+
+
+geopandas = SimpleNamespace()
+setattr(geopandas, "GeoDataFrame", GeoDataFrame)
+setattr(geopandas, "GeoSeries", GeoSeries)
+
+
+class Feature(object):
+    pass
+
+
+class FeatureCollection(object):
+    pass
+
+
+geojson = SimpleNamespace()
+setattr(geojson, "Feature", Feature)
+setattr(geojson, "FeatureCollection", FeatureCollection)
+
+
+# ----------------- topology options object ------------------
+class TopoOptions(object):
+    def __init__(
+        self,
+        object=None,
+        topology=True,
+        prequantize=False,
+        topoquantize=False,
+        presimplify=False,
+        toposimplify=False,
+        simplify_with="shapely",
+        simplify_algorithm="dp",
+        winding_order=None,
+    ):
+        # get all arguments
+        arguments = locals()
+        if arguments["object"]:
+            arguments = arguments["object"]
+
+        if "topology" in arguments:
+            self.topology = arguments["topology"]
+        else:
+            self.topology = True
+
+        if "prequantize" in arguments:
+            self.prequantize = arguments["prequantize"]
+        else:
+            self.prequantize = False
+
+        if "topoquantize" in arguments:
+            self.topoquantize = arguments["topoquantize"]
+        else:
+            self.topoquantize = False
+
+        if "presimplify" in arguments:
+            self.presimplify = arguments["presimplify"]
+        else:
+            self.presimplify = False
+
+        if "toposimplify" in arguments:
+            self.toposimplify = arguments["toposimplify"]
+        else:
+            self.toposimplify = False
+
+        if "simplify_with" in arguments:
+            self.simplify_with = arguments["simplify_with"]
+        else:
+            self.simplify_with = "shapely"
+
+        if "simplify_algorithm" in arguments:
+            self.simplify_algorithm = arguments["simplify_algorithm"]
+        else:
+            self.simplify_algorithm = "dp"
+
+        if "winding_order" in arguments:
+            self.winding_order = arguments["winding_order"]
+        else:
+            self.winding_order = None
+
+    def __repr__(self):
+        return "TopoOptions(\n  {}\n)".format(pprint.pformat(self.__dict__))
+
+
+def singledispatch_class(func):
+    """
+    The singledispatch function only applies to functions. This function creates a
+    wrapper around the singledispatch so it can be used for class instances.
+
+    Returns
+    -------
+    dispatch
+        dispatcher for methods
+    """
+
+    dispatcher = singledispatch(func)
+
+    def wrapper(*args, **kw):
+        return dispatcher.dispatch(args[1].__class__)(*args, **kw)
+
+    wrapper.register = dispatcher.register
+    update_wrapper(wrapper, dispatcher)
+    return wrapper
+
+
+# --------- supportive functions for serialization -----------
+def coordinates(arcs, tp_arcs):
+    """
+    Return GeoJSON coordinates for the sequence(s) of arcs.
+    
+    The arcs parameter may be a sequence of ints, each the index of a
+    coordinate sequence within tp_arcs within the entire topology
+    -- describing a line string, a sequence of such sequences
+    -- describing a polygon, or a sequence of polygon arcs.
+    """
+    if isinstance(arcs[0], int):
+        coords = np.concatenate(
+            [
+                tp_arcs[arc if arc >= 0 else ~arc][:: arc >= 0 or -1][i > 0 :]
+                for i, arc in enumerate(arcs)
+            ]
+        )
+        coords = coords[~np.isnan(coords).any(axis=1)].tolist()
+        return coords
+    elif isinstance(arcs[0], (list, tuple)):
+        return list(coordinates(arc, tp_arcs) for arc in arcs)
+    else:
+        raise ValueError("Invalid input %s", arcs)
+
+
+def geometry(obj, tp_arcs):
+    """
+    Converts a topology object to a geometry object.
+    
+    The topology object is a dict with 'type' and 'arcs' items, such as
+    -- {'type': "LineString", 'arcs': [0, 1, 2]}
+    """
+    return {"type": obj["type"], "coordinates": coordinates(obj["arcs"], tp_arcs)}
 
 
 def prettyjson(obj, indent=2, maxlinelength=80):
@@ -20,8 +169,8 @@ def prettyjson(obj, indent=2, maxlinelength=80):
 def getsubitems(obj, itemkey, islast, maxlinelength, level):
     items = []
     is_inline = (
-        True
-    )  # at first, assume we can concatenate the inner tokens into one line
+        True  # at first, assume we can concatenate the inner tokens into one line
+    )
 
     isdict = isinstance(obj, dict)
     islist = isinstance(obj, list)
@@ -178,117 +327,6 @@ def indentitems(items, indent, level):
     return res
 
 
-# ----------- dummy files for geopandas and geojson ----------
-class GeoDataFrame(object):
-    pass
-
-
-class GeoSeries(object):
-    pass
-
-
-geopandas = SimpleNamespace()
-setattr(geopandas, "GeoDataFrame", GeoDataFrame)
-setattr(geopandas, "GeoSeries", GeoSeries)
-
-
-class Feature(object):
-    pass
-
-
-class FeatureCollection(object):
-    pass
-
-
-geojson = SimpleNamespace()
-setattr(geojson, "Feature", Feature)
-setattr(geojson, "FeatureCollection", FeatureCollection)
-
-
-# ----------------- topology options object ------------------
-class TopoOptions(object):
-    def __init__(
-        self,
-        object=None,
-        topology=True,
-        prequantize=False,
-        topoquantize=False,
-        presimplify=False,
-        toposimplify=False,
-        simplify_with="shapely",
-        simplify_algorithm="dp",
-        winding_order=None,
-    ):
-        # get all arguments
-        arguments = locals()
-        if arguments["object"]:
-            arguments = arguments["object"]
-
-        if "topology" in arguments:
-            self.topology = arguments["topology"]
-        else:
-            self.topology = True
-
-        if "prequantize" in arguments:
-            self.prequantize = arguments["prequantize"]
-        else:
-            self.prequantize = False
-
-        if "topoquantize" in arguments:
-            self.topoquantize = arguments["topoquantize"]
-        else:
-            self.topoquantize = False
-
-        if "presimplify" in arguments:
-            self.presimplify = arguments["presimplify"]
-        else:
-            self.presimplify = False
-
-        if "toposimplify" in arguments:
-            self.toposimplify = arguments["toposimplify"]
-        else:
-            self.toposimplify = False
-
-        if "simplify_with" in arguments:
-            self.simplify_with = arguments["simplify_with"]
-        else:
-            self.simplify_with = "shapely"
-
-        if "simplify_algorithm" in arguments:
-            self.simplify_algorithm = arguments["simplify_algorithm"]
-        else:
-            self.simplify_algorithm = "dp"
-
-        if "winding_order" in arguments:
-            self.winding_order = arguments["winding_order"]
-        else:
-            self.winding_order = None
-
-    def __repr__(self):
-        return "TopoOptions(\n  {}\n)".format(pprint.pformat(self.__dict__))
-
-
-def singledispatch_class(func):
-    """
-    The singledispatch function only applies to functions. This function creates a
-    wrapper around the singledispatch so it can be used for class instances.
-
-    Returns
-    -------
-    dispatch
-        dispatcher for methods
-    """
-
-    dispatcher = singledispatch(func)
-
-    def wrapper(*args, **kw):
-        return dispatcher.dispatch(args[1].__class__)(*args, **kw)
-
-    wrapper.register = dispatcher.register
-    update_wrapper(wrapper, dispatcher)
-    return wrapper
-
-
 # ----------------- serialization functions ------------------
 def serialize_as_geodataframe(topo_object, url=False):
     """
@@ -337,9 +375,6 @@ def serialize_as_svg(topo_object, separate=False, include_junctions=False):
         arcs = topo_object["arcs"]
         # dequantize if quantization is applied
         if "transform" in keys:
-            from .ops import dequantize
-            from .ops import np_array_from_arcs
-            import numpy as np
 
             np_arcs = np_array_from_arcs(arcs)
 
@@ -383,17 +418,71 @@ def serialize_as_svg(topo_object, separate=False, include_junctions=False):
         display(geometry.MultiLineString(arcs))
 
 
-def serialize_as_json(topo_object, fp, indent=4, maxlinelength=88):
+def serialize_as_json(topo_object, fp, pretty=True, indent=4, maxlinelength=88):
     if fp:
         with open(fp, "w") as f:
-            print(
-                prettyjson(topo_object, indent=indent, maxlinelength=maxlinelength),
-                file=f,
-            )
+            if pretty:
+                print(
+                    prettyjson(topo_object, indent=indent, maxlinelength=maxlinelength),
+                    file=f,
+                )
+            else:
+                print(topo_object, file=f)
     else:
-        return print(
-            prettyjson(topo_object, indent=indent, maxlinelength=maxlinelength)
-        )
+        if pretty:
+            return prettyjson(topo_object, indent=indent, maxlinelength=maxlinelength)
+        else:
+            return json.dumps(topo_object)
+
+
+def serialize_as_geojson(
+    topo_object,
+    fp=None,
+    pretty=True,
+    indent=4,
+    maxlinelength=88,
+    validate=True,
+    lyr_idx=0,
+):
+    from shapely.geometry import asShape
+
+    # prepare arcs from topology object
+    arcs = topo_object["arcs"]
+    if arcs:
+        np_arcs = np_array_from_arcs(arcs)
+
+        # dequantize if quantization is applied
+        if "transform" in topo_object.keys():
+
+            transform = topo_object["transform"]
+            scale = transform["scale"]
+            translate = transform["translate"]
+
+            np_arcs = dequantize(np_arcs, scale, translate)
+
+    # select object member from topology object
+    lyr_name = list(topo_object["objects"].keys())[lyr_idx]
+    features = topo_object["objects"][lyr_name]["geometries"]
+
+    # prepare geojson featurecollection
+    fc = {"type": "FeatureCollection", "features": []}
+
+    # fill the featurecollection with geometry object members
+    for index, feature in enumerate(features):
+        f = {"id": index, "type": "Feature"}
+        if "properties" in feature.keys():
+            f["properties"] = feature["properties"].copy()
+
+        geommap = geometry(feature, np_arcs)
+        if validate:
+            geom = asShape(geommap).buffer(0)
+            assert geom.is_valid
+            f["geometry"] = geom.__geo_interface__
+        else:
+            f["geometry"] = geommap
+
+        fc["features"].append(f)
+    return fc
 
 
 def serialize_as_altair(

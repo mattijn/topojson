@@ -12,6 +12,7 @@ from ..ops import delta_encoding
 from ..utils import TopoOptions
 from ..utils import serialize_as_svg
 from ..utils import serialize_as_json
+from ..utils import serialize_as_geojson
 
 
 class Topology(Hashmap):
@@ -91,6 +92,11 @@ class Topology(Hashmap):
     def __repr__(self):
         return "Topology(\n{}\n)".format(pprint.pformat(self.output))
 
+    @property
+    def __geo_interface__(self):
+        topo_object = copy.deepcopy(self.output)
+        return serialize_as_geojson(topo_object, validate=False, lyr_idx=0)
+
     def to_dict(self, options=False):
         topo_object = copy.deepcopy(self.output)
         topo_object = self.resolve_coords(topo_object)
@@ -103,7 +109,7 @@ class Topology(Hashmap):
     def to_svg(self, separate=False, include_junctions=False):
         serialize_as_svg(self.output, separate, include_junctions)
 
-    def to_json(self, fp=None, options=False, indent=4, maxlinelength=88):
+    def to_json(self, fp=None, options=False, pretty=True, indent=4, maxlinelength=88):
         topo_object = copy.deepcopy(self.output)
         topo_object = self.resolve_coords(topo_object)
         if options is False:
@@ -111,7 +117,16 @@ class Topology(Hashmap):
         elif options is True:
             topo_object["options"] = vars(topo_object["options"])
         return serialize_as_json(
-            topo_object, fp, indent=indent, maxlinelength=maxlinelength
+            topo_object, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
+        )
+
+    def to_geojson(
+        self, fp=None, pretty=True, indent=4, maxlinelength=88, validate=True, lyr_idx=0
+    ):
+        topo_object = copy.deepcopy(self.output)
+        fc = serialize_as_geojson(topo_object, validate=validate, lyr_idx=lyr_idx)
+        return serialize_as_json(
+            fc, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
         )
 
     def to_gdf(self):
