@@ -8,7 +8,7 @@ import pytest
 
 # this test was added since geometries of only linestrings resulted in a topojson
 # file that returns an empty geodataframe when reading
-def test_linestrings_parsed_to_gdf():
+def test_topology_linestrings_parsed_to_gdf():
     data = [
         {"type": "LineString", "coordinates": [[4, 0], [2, 2], [0, 0]]},
         {"type": "LineString", "coordinates": [[0, 2], [1, 1], [2, 2], [3, 1], [4, 2]]},
@@ -20,7 +20,7 @@ def test_linestrings_parsed_to_gdf():
 
 
 # test winding order using TopoOptions object
-def test_winding_order_TopoOptions():
+def test_topology_winding_order_TopoOptions():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[(data.name == "South Africa")]
     topo = topojson.Topology(data, winding_order="CW_CCW").to_dict(options=True)
@@ -30,7 +30,7 @@ def test_winding_order_TopoOptions():
 
 
 # test winding order using kwarg variables
-def test_winding_order_kwarg_vars():
+def test_topology_winding_order_kwarg_vars():
 
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[(data.name == "South Africa")]
@@ -40,7 +40,7 @@ def test_winding_order_kwarg_vars():
     assert len(topo["options"]) == 8
 
 
-def test_computing_topology():
+def test_topology_computing_topology():
     data = [
         {"type": "LineString", "coordinates": [[4, 0], [2, 2], [0, 0]]},
         {"type": "LineString", "coordinates": [[0, 2], [1, 1], [2, 2], [3, 1], [4, 2]]},
@@ -53,7 +53,7 @@ def test_computing_topology():
 
 
 # test prequantization without computing topology
-def test_prequantization():
+def test_topology_prequantization():
 
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[
@@ -69,7 +69,7 @@ def test_prequantization():
 
 
 # test prequantization without computing topology
-def test_prequantization_including_delta_encoding():
+def test_topology_prequantization_including_delta_encoding():
 
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[
@@ -84,7 +84,7 @@ def test_prequantization_including_delta_encoding():
     assert "transform" in topo.keys()
 
 
-def test_toposimplify_set_in_options():
+def test_topology_toposimplify_set_in_options():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[(data.name == "Antarctica")]
     topo = topojson.Topology(
@@ -94,7 +94,7 @@ def test_toposimplify_set_in_options():
     assert "transform" in topo.keys()
 
 
-def test_toposimplify_as_chaining():
+def test_topology_toposimplify_as_chaining():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[(data.name == "Antarctica")]
     topo = topojson.Topology(data, prequantize=True, simplify_with="shapely")
@@ -103,7 +103,7 @@ def test_toposimplify_as_chaining():
     assert "transform" in topos.keys()
 
 
-def test_topoquantize_as_chaining():
+def test_topology_topoquantize_as_chaining():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[(data.name == "Antarctica")]
     topo = topojson.Topology(data, prequantize=False, simplify_with="shapely")
@@ -112,7 +112,7 @@ def test_topoquantize_as_chaining():
     assert "transform" in topos.keys()
 
 
-def test_prequantize_topoquantize_as_chaining():
+def test_topology_prequantize_topoquantize_as_chaining():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[(data.name == "Antarctica")]
     topo = topojson.Topology(data, prequantize=1e6, topology=True)
@@ -229,3 +229,80 @@ def test_topology_point_multipoint():
 
     assert topo["objects"]["data"]["geometries"][0]["coordinates"] == [0, 0]
     assert topo["objects"]["data"]["geometries"][2]["coordinates"] == [999999, 999999]
+
+
+def test_topology_to_geojson_nested_geometrycollection():
+    data = {
+        "collection": {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [[0.1, 0.2], [0.3, 0.4]],
+                    },
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "GeometryCollection",
+                        "geometries": [
+                            {
+                                "type": "Polygon",
+                                "coordinates": [[[0.5, 0.6], [0.7, 0.8], [0.9, 1.0]]],
+                            }
+                        ],
+                    },
+                },
+            ],
+        }
+    }
+    topo = topojson.Topology(data).to_geojson()
+
+    assert len(topo["linestrings"]) == 2
+
+
+def test_topology_to_geojson_polygon_geometrycollection():
+    data = {
+        "bar": {"type": "Polygon", "coordinates": [[[0, 0], [1, 1], [2, 0]]]},
+        "foo": {
+            "type": "GeometryCollection",
+            "geometries": [
+                {"type": "LineString", "coordinates": [[0.1, 0.2], [0.3, 0.4]]}
+            ],
+        },
+    }
+    topo = topojson.Topology(data).to_geojson()
+
+    assert len(topo["linestrings"]) == 2
+
+
+def test_topology_to_geojson_linestring_polygon():
+    data = {
+        "foo": {
+            "type": "Feature",
+            "geometry": {"type": "LineString", "coordinates": [[0.1, 0.2], [0.3, 0.4]]},
+        },
+        "bar": {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[[0.5, 0.6], [0.7, 0.8], [0.9, 1.0]]],
+            },
+        },
+    }
+    topo = topojson.Topology(data).to_geojson()
+
+    assert len(topo["linestrings"]) == 2
+
+
+def test_topology_to_geojson_polygon_point():
+    data = [
+        {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
+        {"type": "Point", "coordinates": [0.5, 0.5]},
+    ]
+    topo = topojson.Topology(data).to_geojson()
+
+    assert len(topo["linestrings"]) == 1
+    assert len(topo["coordinates"]) == 1

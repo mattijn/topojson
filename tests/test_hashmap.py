@@ -54,7 +54,7 @@ def test_hashmap_backward_polygon():
 
 # this test should catch a shared boundary and a hashed multipolgon
 # related to https://github.com/Toblerity/Shapely/issues/535
-def test_albania_greece():
+def test_hashmap_albania_greece():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[(data.name == "Albania") | (data.name == "Greece")]
     topo = Hashmap(data).to_dict()
@@ -63,7 +63,7 @@ def test_albania_greece():
 
 
 # something is wrong with hashmapping in the example of benin
-def test_benin_surrounding_countries():
+def test_hashmap_benin_surrounding_countries():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[
         (data.name == "Togo") | (data.name == "Benin") | (data.name == "Burkina Faso")
@@ -74,7 +74,7 @@ def test_benin_surrounding_countries():
 
 
 # something is wrong with hashmapping once a geometry has only shared arcs
-def test_geom_surrounding_many_geometries():
+def test_hashmap_geom_surrounding_many_geometries():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[
         (data.name == "Botswana")
@@ -90,7 +90,7 @@ def test_geom_surrounding_many_geometries():
 
 # this test was added since the shared_arcs bookkeeping is doing well, but the
 # wrong arc gots deleted. How come?
-def test_shared_arcs_ordering_issues():
+def test_hashmap_shared_arcs_ordering_issues():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[
         (data.name == "Botswana")
@@ -103,7 +103,7 @@ def test_shared_arcs_ordering_issues():
     assert len(topo["linestrings"]) == 17
 
 
-def test_super_function_hashmap():
+def test_hashmap_super_function():
     data = geometry.GeometryCollection(
         [
             geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]),
@@ -128,7 +128,7 @@ def test_super_function_hashmap():
 # this test was added since objects with nested geometreycollections seems not
 # being parsed in the topojson format.
 # Pass for now:
-def test_hashing_of_nested_geometrycollection():
+def test_hashmap_of_nested_geometrycollection():
     data = {
         "foo": {
             "type": "GeometryCollection",
@@ -153,7 +153,7 @@ def test_hashing_of_nested_geometrycollection():
 
 # this test was added because the winding order is still giving issues.
 # see related issue: https://github.com/mattijn/topojson/issues/30
-def test_winding_order_geom_solely_shared_arcs():
+def test_hashmap_winding_order_geom_solely_shared_arcs():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[
         (data.name == "Jordan") | (data.name == "Palestine") | (data.name == "Israel")
@@ -219,3 +219,79 @@ def test_hashmap_point_multipoint():
 
     assert len(topo["coordinates"]) == 4
 
+
+def test_hashmap_nested_geometrycollection():
+    data = {
+        "collection": {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [[0.1, 0.2], [0.3, 0.4]],
+                    },
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "GeometryCollection",
+                        "geometries": [
+                            {
+                                "type": "Polygon",
+                                "coordinates": [[[0.5, 0.6], [0.7, 0.8], [0.9, 1.0]]],
+                            }
+                        ],
+                    },
+                },
+            ],
+        }
+    }
+    topo = Hashmap(data).to_dict()
+
+    assert len(topo["linestrings"]) == 2
+
+
+def test_hashmap_polygon_geometrycollection():
+    data = {
+        "bar": {"type": "Polygon", "coordinates": [[[0, 0], [1, 1], [2, 0]]]},
+        "foo": {
+            "type": "GeometryCollection",
+            "geometries": [
+                {"type": "LineString", "coordinates": [[0.1, 0.2], [0.3, 0.4]]}
+            ],
+        },
+    }
+    topo = Hashmap(data).to_dict()
+
+    assert len(topo["linestrings"]) == 2
+
+
+def test_hashmap_linestring_polygon():
+    data = {
+        "foo": {
+            "type": "Feature",
+            "geometry": {"type": "LineString", "coordinates": [[0.1, 0.2], [0.3, 0.4]]},
+        },
+        "bar": {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[[0.5, 0.6], [0.7, 0.8], [0.9, 1.0]]],
+            },
+        },
+    }
+    topo = Hashmap(data).to_dict()
+
+    assert len(topo["linestrings"]) == 2
+
+
+def test_hashmap_polygon_point():
+    data = [
+        {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
+        {"type": "Point", "coordinates": [0.5, 0.5]},
+    ]
+    topo = Hashmap(data).to_dict()
+
+    assert len(topo["linestrings"]) == 1
+    assert len(topo["coordinates"]) == 1

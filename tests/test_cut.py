@@ -5,7 +5,7 @@ from topojson.core.cut import Cut
 
 
 # cut exact duplicate lines ABC & ABC have no cuts
-def test_exact_duplicate_lines_ABC_ABC_no_cuts():
+def test_cut_exact_duplicate_lines_ABC_ABC_no_cuts():
     data = {
         "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
         "abc2": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
@@ -17,7 +17,7 @@ def test_exact_duplicate_lines_ABC_ABC_no_cuts():
 
 
 # cut reversed duplicate lines ABC & CBA have no cuts
-def test_reversed_duplicate_lines_ABC_CBA_no_cuts():
+def test_cut_reversed_duplicate_lines_ABC_CBA_no_cuts():
     data = {
         "abc": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
         "cba": {"type": "LineString", "coordinates": [[2, 0], [1, 0], [0, 0]]},
@@ -29,7 +29,7 @@ def test_reversed_duplicate_lines_ABC_CBA_no_cuts():
 
 
 # cut exact duplicate rings ABCA & ABCA have no cuts
-def test_exact_duplicate_rings_ABCA_ABCA_no_cuts():
+def test_cut_exact_duplicate_rings_ABCA_ABCA_no_cuts():
     data = {
         "abca": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
         "abca2": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
@@ -41,7 +41,7 @@ def test_exact_duplicate_rings_ABCA_ABCA_no_cuts():
 
 
 # cut reversed rings ABCA & ACBA have no cuts
-def test_reversed_rings_ABCA_ACBA_no_cuts():
+def test_cut_reversed_rings_ABCA_ACBA_no_cuts():
     data = {
         "abca": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
         "acba": {"type": "Polygon", "coordinates": [[[0, 0], [2, 1], [1, 0], [0, 0]]]},
@@ -53,7 +53,7 @@ def test_reversed_rings_ABCA_ACBA_no_cuts():
 
 
 # cut rotated duplicate rings BCAB & ABCA have no cuts
-def test_rotated_duplicates_rings_BCAB_ABCA_no_cuts():
+def test_cut_rotated_duplicates_rings_BCAB_ABCA_no_cuts():
     data = {
         "abca": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
         "bcab": {"type": "Polygon", "coordinates": [[[1, 0], [2, 1], [0, 0], [1, 0]]]},
@@ -65,7 +65,7 @@ def test_rotated_duplicates_rings_BCAB_ABCA_no_cuts():
 
 
 # cut ring ABCA & line ABCA have no cuts
-def test_ring_ABCA_line_ABCA_no_cuts():
+def test_cut_ring_ABCA_line_ABCA_no_cuts():
     data = {
         "abcaLine": {
             "type": "Linestring",
@@ -83,7 +83,7 @@ def test_ring_ABCA_line_ABCA_no_cuts():
 
 
 # cut ring BCAB & line ABCA have no cuts
-def test_ring_BCAB_line_ABCA_no_cuts():
+def test_cut_ring_BCAB_line_ABCA_no_cuts():
     data = {
         "abcaLine": {
             "type": "Linestring",
@@ -101,7 +101,7 @@ def test_ring_BCAB_line_ABCA_no_cuts():
 
 
 # cut ring ABCA & line BCAB have no cuts
-def test_ring_ABCA_line_BCAB_no_cuts():
+def test_cut_ring_ABCA_line_BCAB_no_cuts():
     data = {
         "bcabLine": {
             "type": "Linestring",
@@ -119,7 +119,7 @@ def test_ring_ABCA_line_BCAB_no_cuts():
 
 
 # overlapping rings ABCDA and BEFCB are cut into BC-CDAB and BEFC-CB
-def test_overlapping_rings_are_cut():
+def test_cut_overlapping_rings_are_cut():
     data = {
         "abcda": {
             "type": "Polygon",
@@ -138,7 +138,7 @@ def test_overlapping_rings_are_cut():
 
 # currently the border between Sudan and Eqypt is not recognized as duplicate
 # because of floating-precision. Should be solved by a "snap_to_grid" option.
-def test_to_cut_border_egypt_sudan():
+def test_cut_border_egypt_sudan():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[(data.name == "Egypt") | (data.name == "Sudan")]
     topo = Cut(data).to_dict()
@@ -146,7 +146,7 @@ def test_to_cut_border_egypt_sudan():
     assert len(topo["bookkeeping_duplicates"].tolist()) == 1
 
 
-def test_nybb_fast_split():
+def test_cut_nybb_fast_split():
     nybb_path = geopandas.datasets.get_path("nybb")
     data = geopandas.read_file(nybb_path)
     data.set_index("BoroCode", inplace=True)
@@ -158,7 +158,7 @@ def test_nybb_fast_split():
 # this test was added since the fast_split was really slow on geometries
 # when there are many junctions in the geometry. During debugging this test ran
 # eventually 8x more quick.
-def test_many_junctions():
+def test_cut_many_junctions():
     data = geopandas.read_file("tests/files_geojson/mesh2d.geojson", driver="GeoJSON")
     # previous test ran in 8.798s (best of 3)
     # current test ran in 8.182s (best of 3)
@@ -167,7 +167,7 @@ def test_many_junctions():
     assert topo["bookkeeping_linestrings"].size == 11010
 
 
-def test_super_function_cut():
+def test_cut_super_function_cut():
     data = geometry.GeometryCollection(
         [
             geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]),

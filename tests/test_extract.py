@@ -6,7 +6,7 @@ import geojson
 
 
 # extract copies coordinates sequentially into a buffer
-def test_linestring():
+def test_extract_linestring():
     data = {
         "foo": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
         "bar": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
@@ -17,7 +17,7 @@ def test_linestring():
 
 
 # assess if a multipolygon with hole is processed into the right number of rings
-def test_multipolygon():
+def test_extract_multipolygon():
     # multipolygon with hole
     data = {
         "foo": {
@@ -39,7 +39,7 @@ def test_multipolygon():
 
 
 # a LineString without coordinates is an empty polygon geometry
-def test_empty_linestring():
+def test_extract_empty_linestring():
     data = {"empty_ls": {"type": "LineString", "coordinates": None}}
     topo = Extract(data).to_dict()
 
@@ -47,7 +47,7 @@ def test_empty_linestring():
 
 
 # invalid polygon geometry
-def test_invalid_polygon():
+def test_extract_invalid_polygon():
     data = {
         "wrong": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 0], [0, 0]]]},
         "valid": {"type": "Polygon", "coordinates": [[[0, 0], [2, 0], [1, 1], [0, 0]]]},
@@ -58,7 +58,7 @@ def test_invalid_polygon():
 
 
 # test multiliinestring
-def test_multilinestring():
+def test_extract_multilinestring():
     data = {
         "foo": {
             "type": "MultiLineString",
@@ -75,7 +75,7 @@ def test_multilinestring():
 
 
 # test nested geojosn geometrycollection collection
-def test_nested_geometrycollection():
+def test_extract_nested_geometrycollection():
     data = {
         "foo": {
             "type": "GeometryCollection",
@@ -99,7 +99,7 @@ def test_nested_geometrycollection():
 
 
 # test geometry collection + polygon
-def test_geometrycollection_polygon():
+def test_extract_geometrycollection_polygon():
     data = {
         "bar": {"type": "Polygon", "coordinates": [[[0, 0], [1, 1], [2, 0]]]},
         "foo": {
@@ -115,7 +115,7 @@ def test_geometrycollection_polygon():
 
 
 # test feature type
-def test_features():
+def test_extract_features():
     data = {
         "foo": {
             "type": "Feature",
@@ -135,7 +135,7 @@ def test_features():
 
 
 # test feature collection including geometry collection
-def test_featurecollection():
+def test_extract_featurecollection():
     data = {
         "collection": {
             "type": "FeatureCollection",
@@ -175,7 +175,7 @@ def test_featurecollection():
 
 
 # test to parse feature collection from a geojson file through geojson library
-def test_geojson_feat_col_geom_col():
+def test_extract_geojson_feat_col_geom_col():
     with open("tests/files_geojson/feature_collection.geojson") as f:
         data = geojson.load(f)
     topo = Extract(data).to_dict()
@@ -186,7 +186,7 @@ def test_geojson_feat_col_geom_col():
 
 
 # test to parse a feature from a geojson file through geojson library
-def test_geojson_feature_geom_col():
+def test_extract_geojson_feature_geom_col():
     with open("tests/files_geojson/feature.geojson") as f:
         data = geojson.load(f)
     topo = Extract(data).to_dict()
@@ -197,7 +197,7 @@ def test_geojson_feature_geom_col():
 
 
 # test feature collection including geometry collection
-def test_geopandas_geoseries():
+def test_extract_geopandas_geoseries():
     data = geopandas.GeoSeries(
         [
             geometry.Polygon([(0, 0), (1, 0), (1, 1)]),
@@ -214,7 +214,7 @@ def test_geopandas_geoseries():
 
 
 # test shapely geometry collection.
-def test_shapely_geometrycollection():
+def test_extract_shapely_geometrycollection():
     data = geometry.GeometryCollection(
         [
             geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]),
@@ -228,7 +228,7 @@ def test_shapely_geometrycollection():
     assert len(topo["linestrings"]) == 2
 
 
-def test_geo_interface_from_list():
+def test_extract_geo_interface_from_list():
     data = [
         {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
         {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
@@ -238,7 +238,7 @@ def test_geo_interface_from_list():
     assert len(topo["linestrings"]) == 2
 
 
-def test_shapely_geo_interface_from_list():
+def test_extract_shapely_geo_interface_from_list():
     data = [
         geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]),
         geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]),
