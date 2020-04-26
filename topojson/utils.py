@@ -129,6 +129,7 @@ def coordinates(arcs, tp_arcs):
     -- describing a line string, a sequence of such sequences
     -- describing a polygon, or a sequence of polygon arcs.
     """
+
     if isinstance(arcs[0], int):
         coords = np.concatenate(
             [
@@ -144,14 +145,34 @@ def coordinates(arcs, tp_arcs):
         raise ValueError("Invalid input %s", arcs)
 
 
-def geometry(obj, tp_arcs):
+def geometry(obj, tp_arcs, transform=None):
     """
     Converts a topology object to a geometry object.
     
     The topology object is a dict with 'type' and 'arcs' items, such as
     -- {'type': "LineString", 'arcs': [0, 1, 2]}
     """
-    return {"type": obj["type"], "coordinates": coordinates(obj["arcs"], tp_arcs)}
+    if obj["type"] == "GeometryCollection":
+        geometries = [geometry(feat, tp_arcs) for feat in obj["geometries"]]
+        return {"type": obj["type"], "geometries": geometries}
+
+    if obj["type"] == "MultiPoint":
+        scale = transform["scale"]
+        translate = transform["translate"]
+        coords = obj["coordinates"]
+        point_coords = dequantize(np.array(coords), scale, translate).tolist()
+        return {"type": obj["type"], "coordinates": point_coords}
+
+    if obj["type"] == "Point":
+        scale = transform["scale"]
+        translate = transform["translate"]
+        coords = [obj["coordinates"]]
+
+        point_coord = dequantize(np.array(coords), scale, translate).tolist()
+        return {"type": obj["type"], "coordinates": point_coord[0]}
+
+    else:
+        return {"type": obj["type"], "coordinates": coordinates(obj["arcs"], tp_arcs)}
 
 
 def prettyjson(obj, indent=2, maxlinelength=80):
@@ -418,7 +439,7 @@ def serialize_as_svg(topo_object, separate=False, include_junctions=False):
         display(geometry.MultiLineString(arcs))
 
 
-def serialize_as_json(topo_object, fp, pretty=True, indent=4, maxlinelength=88):
+def serialize_as_json(topo_object, fp, pretty=False, indent=4, maxlinelength=88):
     if fp:
         with open(fp, "w") as f:
             if pretty:
@@ -438,10 +459,10 @@ def serialize_as_json(topo_object, fp, pretty=True, indent=4, maxlinelength=88):
 def serialize_as_geojson(
     topo_object,
     fp=None,
-    pretty=True,
+    pretty=False,
     indent=4,
     maxlinelength=88,
-    validate=True,
+    validate=False,
     lyr_idx=0,
 ):
     from shapely.geometry import asShape
@@ -451,6 +472,7 @@ def serialize_as_geojson(
     if arcs:
         np_arcs = np_array_from_arcs(arcs)
 
+        transform = None
         # dequantize if quantization is applied
         if "transform" in topo_object.keys():
 
@@ -473,7 +495,8 @@ def serialize_as_geojson(
         if "properties" in feature.keys():
             f["properties"] = feature["properties"].copy()
 
-        geommap = geometry(feature, np_arcs)
+        # the transform is only used in cases of points or multipoints
+        geommap = geometry(feature, np_arcs, transform)
         if validate:
             geom = asShape(geommap).buffer(0)
             assert geom.is_valid
