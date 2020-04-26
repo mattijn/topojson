@@ -109,7 +109,7 @@ class Topology(Hashmap):
     def to_svg(self, separate=False, include_junctions=False):
         serialize_as_svg(self.output, separate, include_junctions)
 
-    def to_json(self, fp=None, options=False, pretty=True, indent=4, maxlinelength=88):
+    def to_json(self, fp=None, options=False, pretty=False, indent=4, maxlinelength=88):
         topo_object = copy.deepcopy(self.output)
         topo_object = self.resolve_coords(topo_object)
         if options is False:
@@ -121,9 +121,16 @@ class Topology(Hashmap):
         )
 
     def to_geojson(
-        self, fp=None, pretty=True, indent=4, maxlinelength=88, validate=True, lyr_idx=0
+        self,
+        fp=None,
+        pretty=False,
+        indent=4,
+        maxlinelength=88,
+        validate=False,
+        lyr_idx=0,
     ):
         topo_object = copy.deepcopy(self.output)
+        topo_object = self.resolve_coords(topo_object)
         fc = serialize_as_geojson(topo_object, validate=validate, lyr_idx=lyr_idx)
         return serialize_as_json(
             fc, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength

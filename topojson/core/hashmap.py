@@ -352,8 +352,12 @@ class Hashmap(Dedup):
         Function that resolves the arcs based on the type of the feature
         """
         if feat["type"] == "LineString":
-            f_arc = feat["arcs"][0]
+            if "geometries" in feat:
+                f_arc = feat["geometries"][0]["arcs"][0]
+            else:
+                f_arc = feat["arcs"][0]
             feat["arcs"] = f_arc
+            feat.pop("geometries", None)
 
         elif feat["type"] == "Polygon":
             if "geometries" in feat:

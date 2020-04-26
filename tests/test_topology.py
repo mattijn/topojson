@@ -258,9 +258,9 @@ def test_topology_to_geojson_nested_geometrycollection():
             ],
         }
     }
-    topo = topojson.Topology(data).to_geojson()
+    topo = topojson.Topology(data).to_geojson(pretty=False)
 
-    assert len(topo["linestrings"]) == 2
+    assert "]]]}]}]}}]}" in topo
 
 
 def test_topology_to_geojson_polygon_geometrycollection():
@@ -275,7 +275,7 @@ def test_topology_to_geojson_polygon_geometrycollection():
     }
     topo = topojson.Topology(data).to_geojson()
 
-    assert len(topo["linestrings"]) == 2
+    assert "]]}}]}" in topo
 
 
 def test_topology_to_geojson_linestring_polygon():
@@ -294,7 +294,7 @@ def test_topology_to_geojson_linestring_polygon():
     }
     topo = topojson.Topology(data).to_geojson()
 
-    assert len(topo["linestrings"]) == 2
+    assert "]]}}]}" in topo
 
 
 def test_topology_to_geojson_polygon_point():
@@ -304,5 +304,6 @@ def test_topology_to_geojson_polygon_point():
     ]
     topo = topojson.Topology(data).to_geojson()
 
-    assert len(topo["linestrings"]) == 1
-    assert len(topo["coordinates"]) == 1
+    assert "]]]}}" in topo  # feat 1
+    assert "]}}]}" in topo  # feat 2
+
