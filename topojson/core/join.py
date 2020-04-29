@@ -171,7 +171,7 @@ class Join(Extract):
                 s_coords_list.extend(s_coords)
 
             unique_s_coords = np.unique(np.array(s_coords_list), axis=0)
-            self.junctions = [geometry.asPoint(xy) for xy in unique_s_coords]
+            self.junctions = [geometry.Point(xy) for xy in unique_s_coords]
 
         elif self.options.shared_paths == "shapely":
 

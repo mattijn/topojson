@@ -519,7 +519,7 @@ def select_unique(data):
     return sorted_data[row_mask]
 
 
-def select_unique_combs(linestrings, shared_paths="numpy"):
+def select_unique_combs(linestrings, shared_paths="shapely"):
     """
     Given a set of input linestrings will create unique couple combinations.
     Each combination created contains a couple of two linestrings where the enveloppe
