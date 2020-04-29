@@ -1,12 +1,15 @@
 # pylint: disable=unsubscriptable-object
 import copy
 import pprint
+import numpy as np
 from shapely import geometry
 from shapely.wkb import loads
 from shapely.ops import shared_paths
 from shapely.ops import linemerge
 from shapely import speedups
 from ..ops import select_unique_combs
+from ..ops import fast_shared_paths
+from ..ops import np_array_from_linestrings
 from ..ops import simplify
 from ..ops import quantize
 from ..ops import compare_bounds
@@ -150,45 +153,65 @@ class Join(Extract):
             return data
 
         # create list with unique combinations of lines using a rdtree
-        line_combs = select_unique_combs(data["linestrings"])
+        line_combs = select_unique_combs(
+            data["linestrings"], shared_paths=self.options.shared_paths
+        )
 
-        # iterate over index combinations
-        for i1, i2 in line_combs:
-            g1 = data["linestrings"][i1]
-            g2 = data["linestrings"][i2]
+        if self.options.shared_paths == "numpy":
 
-            # check if geometry are equal
-            # being equal meaning the geometry object coincide with each other.
-            # a rotated polygon or reversed linestring are both considered equal.
-            if not g1.equals(g2):
-                # geoms are unique, let's find junctions
-                self.shared_segs(g1, g2)
+            coord_arr, length_geoms = np_array_from_linestrings(data["linestrings"])
 
-        # self.segments are nested lists of LineStrings, get coordinates of each nest
-        s_coords = []
-        for segment in self.segments:
-            s_coords.extend(
-                [
+            s_coords_list = []
+            for val in line_combs:
+                idx_geom = val[0]
+                shared_geoms = val[1]
+                s_coords = fast_shared_paths(
+                    coord_arr, idx_geom, shared_geoms, length_geoms
+                )
+                s_coords_list.extend(s_coords)
+
+            unique_s_coords = np.unique(np.array(s_coords_list), axis=0)
+            self.junctions = [geometry.asPoint(xy) for xy in unique_s_coords]
+
+        elif self.options.shared_paths == "shapely":
+
+            # iterate over index combinations
+            for i1, i2 in line_combs:
+                g1 = data["linestrings"][i1]
+                g2 = data["linestrings"][i2]
+
+                # check if geometry are equal
+                # being equal meaning the geometry object coincide with each other.
+                # a rotated polygon or reversed linestring are both considered equal.
+                if not g1.equals(g2):
+                    # geoms are unique, let's find junctions
+                    self.shared_segs(g1, g2)
+
+            # self.segments are nested lists of LineStrings, get coordinates of each nest
+            s_coords = []
+            for segment in self.segments:
+                s_coords.extend(
                     [
-                        (x.xy[0][y], x.xy[1][y])
-                        for x in segment
-                        for y in range(len(x.xy[0]))
+                        [
+                            (x.xy[0][y], x.xy[1][y])
+                            for x in segment
+                            for y in range(len(x.xy[0]))
+                        ]
                     ]
-                ]
-            )
-            # s_coords.extend([[y for x in segment for y in list(x.coords)]])
+                )
+                # s_coords.extend([[y for x in segment for y in list(x.coords)]])
 
-        # only keep junctions that appear only once in each segment (nested list)
-        # coordinates that appear multiple times are not junctions
-        for coords in s_coords:
-            self.junctions.extend(
-                [geometry.Point(i) for i in coords if coords.count(i) == 1]
-            )
+            # only keep junctions that appear only once in each segment (nested list)
+            # coordinates that appear multiple times are not junctions
+            for coords in s_coords:
+                self.junctions.extend(
+                    [geometry.Point(i) for i in coords if coords.count(i) == 1]
+                )
 
-        # junctions can appear multiple times in multiple segments, remove duplicates
-        self.junctions = [
-            loads(xy) for xy in list(set([x.wkb for x in self.junctions]))
-        ]
+            # junctions can appear multiple times in multiple segments, remove duplicates
+            self.junctions = [
+                loads(xy) for xy in list(set([x.wkb for x in self.junctions]))
+            ]
 
         # prepare to return object
         data["junctions"] = self.junctions

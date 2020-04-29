@@ -597,3 +597,16 @@ def test_join_linemerge_multilinestring():
 
     assert len(topo["linestrings"]) == 2
     assert len(topo["junctions"]) == 7
+
+
+# test the shared_paths_approach using numpy
+def test_join_shared_paths_numpy():
+    data = {
+        "cba": {"type": "LineString", "coordinates": [[2, 0], [1, 0], [0, 0]]},
+        "ab": {"type": "LineString", "coordinates": [[0, 0], [1, 0]]},
+    }
+    topo = Join(data, options={"shared_paths": "numpy"}).to_dict()
+
+    assert geometry.MultiPoint(topo["junctions"]).equals(
+        geometry.MultiPoint([(0.0, 0.0), (1.0, 0.0)])
+    )

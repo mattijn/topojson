@@ -168,6 +168,130 @@ def fast_split(line, splitter):
     return slines
 
 
+def fast_shared_paths(coord_arr, idx_geom, shared_geoms, length_geoms):
+    """
+    Collect junctions of shared paths. This function only consider a path to be shared 
+    when there are shared vertices and edges. The shapely shared_paths function can also
+    detect shared_paths without any shared edges (albeit slow).
+    
+    Input
+    -----
+    coord_array : numpy.array
+        array containing all linestrings 
+    idx_geom : int
+        slice index of linestring
+    shared_geoms : list
+        index values of linestrings that intersect linestring of idx_geom
+    
+    Returns
+    -------
+    junctions : numpy.array
+        array containing all junctions from all intersecting linestrings
+    """
+
+    # currently fixed to solely 2D-coordinates
+    no_dims = 2
+
+    # get geoms that are rings
+    first_xy_rows = coord_arr[shared_geoms, 0]
+    last_xy_rows = coord_arr[:, length_geoms - 1][shared_geoms]
+    last_xy_rows = last_xy_rows.diagonal(axis1=0, axis2=1).T
+    rows_ring = (
+        np.count_nonzero((first_xy_rows == last_xy_rows), axis=1) == no_dims
+    ).nonzero()[0]
+
+    # # for geoms that are rings, set first coord to np.nan
+    # # since its equal to the last coord of rings
+    # coord_arr[:, 0][rows_ring] = np.nan
+
+    # create boolean of shared coords for each geom
+    slice_array = (
+        np.count_nonzero(np.isin(coord_arr[shared_geoms], coord_arr[idx_geom]), axis=2)
+        == no_dims
+    )
+
+    # for geoms that are rings, set first coord to np.nan
+    # since its equal to the last coord of rings
+    slice_array[rows_ring, 0] = False
+
+    # find edges of shared segments
+    d = np.diff(slice_array)
+    row, col, = d.nonzero()
+
+    # set to float, so we can np.nan it
+    row = row.astype(float)
+    col = col.astype(float)
+
+    # if no idx values return empty array
+    if not len(col):
+        return col
+
+    # else continue
+    # for rings we compare the 2nd coord (ix 1) with the last coord
+    rings_start_shared = slice_array[:, 1]
+    rings_end_shared = slice_array[:, length_geoms - 1]
+    rings_end_shared = rings_end_shared.diagonal(axis1=0, axis2=1).T
+    rings_start_end_shared = (rings_end_shared * rings_start_shared).nonzero()[0]
+
+    col += 1
+
+    # prepend a 0 for slice_array where start is True
+    rows_first_true = np.isin(row, slice_array[:, 0].nonzero()[0])
+    left_side_idx = np.unique(np.searchsorted(row, row, side="left"))
+    insert_idx_left = left_side_idx[rows_first_true[left_side_idx]]
+
+    row = np.insert(row, insert_idx_left, row[insert_idx_left])
+    col = np.insert(col, insert_idx_left, 0)
+
+    # append length of max-1 for end of slice_array is True
+    rows_last_true = np.isin(row, slice_array[:, -1].nonzero()[0])
+    right_side_idx = np.unique(np.searchsorted(row, row, side="right"))
+    insert_idx_right = right_side_idx[rows_last_true[right_side_idx - 1]]
+
+    row = np.insert(row, insert_idx_right, row[insert_idx_right - 1])
+    col = np.insert(col, insert_idx_right, np.max(length_geoms) - 1)
+
+    # from each segment subtract 1 from end idx, so we can slice in once
+    col[1::2] -= 1
+
+    # index of first element of each subsequence
+    first_idx_first_segment_row = np.nonzero(np.r_[1, np.diff(row)[:-1]])[0]
+    second_idx_last_segment_row = np.nonzero(np.r_[1, np.diff(row[::-1])[:-1]])[0]
+    second_idx_last_segment_row = np.sort(
+        ((len(row) - 1) - second_idx_last_segment_row)
+    )
+
+    # if shared path pass 0-index, set first and last junction to nan,
+    # first idx of first segment to nan of shared paths passing 0-index
+    row_bool = np.full(row.shape, False, dtype=bool)
+    row_bool[first_idx_first_segment_row] = True
+    first_idx_to_nan = row_bool * (row == rings_start_end_shared)
+
+    row[first_idx_to_nan] = np.nan
+    col[first_idx_to_nan] = np.nan
+
+    # last idx of last segment to nan of shared paths passing 0-index
+    row_bool = np.full(row.shape, False, dtype=bool)
+    row_bool[second_idx_last_segment_row] = True
+    last_idx_to_nan = row_bool * (row == rings_start_end_shared)
+
+    row[last_idx_to_nan] = np.nan
+    col[last_idx_to_nan] = np.nan
+
+    # calculate exact index of junctions for take function
+    col_idx = np.array((col * 2, col * 2 + 1)).T
+    row_idx = row * (np.max(length_geoms)) * 2
+    take_idx = col_idx + row_idx[None].T
+    take_idx = take_idx[~np.isnan(take_idx).any(axis=1)].astype(int)
+
+    if take_idx.size != 0:
+        junctions = np.unique(coord_arr[shared_geoms].take(take_idx), axis=0)
+    else:
+        junctions = take_idx
+
+    return junctions
+
+
 def signed_area(ring):
     """
     compute the signed area of a ring (polygon)
@@ -314,6 +438,22 @@ def lists_from_np_array(np_array):
     return nested_lists
 
 
+def np_array_from_linestrings(linestrings):
+    # make numpy array from coordinates of extracted linestrings
+    arraylist = [np.array(g) for g in linestrings]
+
+    # lengths of linestrings
+    length_geoms = np.array([len(xy) for xy in arraylist])
+
+    # define empty array with size no. linestrings * max. length linestrings * no. coordinates
+    coord_arr = np.ones((len(arraylist), np.max(length_geoms), 2)) * np.nan
+    # populate columns
+    for i, c in enumerate(arraylist):
+        coord_arr[i, : len(c)] = c
+
+    return coord_arr, length_geoms
+
+
 def np_array_from_arcs(arcs):
     max_len_arc = len(max(arcs, key=len))
     no_arcs = len(arcs)
@@ -379,9 +519,9 @@ def select_unique(data):
     return sorted_data[row_mask]
 
 
-def select_unique_combs(linestrings):
+def select_unique_combs(linestrings, shared_paths="numpy"):
     """
-    Given a set of inpit linestrings will create unique couple combinations.
+    Given a set of input linestrings will create unique couple combinations.
     Each combination created contains a couple of two linestrings where the enveloppe
     overlaps each other.
     Linestrings with non-overlapping enveloppes are not returned as combination.
@@ -406,18 +546,23 @@ def select_unique_combs(linestrings):
     # get index of linestrings intersecting each linestring
     idx_match = get_matches(linestrings, tree_idx)
 
-    # make combinations of unique possibilities
-    combs = []
-    for idx_comb in idx_match:
-        combs.extend(list(itertools.product(*idx_comb)))
+    # for the shared_paths approach using numpy this result is sufficient
+    if shared_paths == "numpy":
+        return idx_match
+    # for the shared_paths approach using shapely dig a bit further
+    elif shared_paths == "shapely":
+        # make combinations of unique possibilities
+        combs = []
+        for idx_comb in idx_match:
+            combs.extend(list(itertools.product(*idx_comb)))
 
-    combs = np.array(combs)
-    combs.sort(axis=1)
-    combs = select_unique(combs)
+        combs = np.array(combs)
+        combs.sort(axis=1)
+        combs = select_unique(combs)
 
-    uniq_line_combs = combs[(np.diff(combs, axis=1) != 0).flatten()]
+        uniq_line_combs = combs[(np.diff(combs, axis=1) != 0).flatten()]
 
-    return uniq_line_combs
+        return uniq_line_combs
 
 
 def quantize(linestrings, bbox, quant_factor=1e6):
