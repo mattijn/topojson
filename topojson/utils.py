@@ -463,7 +463,7 @@ def serialize_as_geojson(
     indent=4,
     maxlinelength=88,
     validate=False,
-    lyr_idx=0,
+    objectname="data",
 ):
     from shapely.geometry import asShape
 
@@ -483,8 +483,7 @@ def serialize_as_geojson(
             np_arcs = dequantize(np_arcs, scale, translate)
 
     # select object member from topology object
-    lyr_name = list(topo_object["objects"].keys())[lyr_idx]
-    features = topo_object["objects"][lyr_name]["geometries"]
+    features = topo_object["objects"][objectname]["geometries"]
 
     # prepare geojson featurecollection
     fc = {"type": "FeatureCollection", "features": []}
@@ -559,7 +558,7 @@ def serialize_as_ipywidgets(topo_object, toposimplify, topoquantize):
     tq = topoquantize
 
     # set to simplification package for speed
-    topo_object.output["options"].simplify_with = "simplification"
+    topo_object.options.simplify_with = "simplification"
 
     alg = widgets.RadioButtons(
         options=[("Douglas-Peucker", "dp"), ("Visvalingam-Whyatt", "vw")],

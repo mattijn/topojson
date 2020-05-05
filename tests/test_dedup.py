@@ -144,20 +144,7 @@ def test_dedup_super_function():
     )
     topo = Dedup(data).to_dict()
 
-    assert list(topo.keys()) == [
-        "type",
-        "linestrings",
-        "coordinates",
-        "bookkeeping_geoms",
-        "bookkeeping_coords",
-        "objects",
-        "options",
-        "bbox",
-        "junctions",
-        "bookkeeping_duplicates",
-        "bookkeeping_arcs",
-        "bookkeeping_shared_arcs",
-    ]
+    assert len(list(topo.keys())) == 12
 
 
 # this test was added since there is an error stating the following during Dedup:

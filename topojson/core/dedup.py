@@ -29,11 +29,26 @@ class Dedup(Cut):
         return "Dedup(\n{}\n)".format(pprint.pformat(self.output))
 
     def to_dict(self):
+        """
+        Convert the Dedup object to a dictionary.
+        """
         topo_object = copy.copy(self.output)
-        topo_object["options"] = vars(topo_object["options"])
+        topo_object["options"] = vars(self.options)
         return topo_object
 
     def to_svg(self, separate=False, include_junctions=False):
+        """
+        Display the linestrings and junctions as SVG.
+
+        Parameters
+        ----------
+        separate : boolean
+            If `True`, each of the linestrings will be displayed separately. 
+            Default is `False`
+        include_junctions : boolean
+            If `True`, the detected junctions will be displayed as well. 
+            Default is `False`
+        """
         serialize_as_svg(self.output, separate, include_junctions)
 
     def deduper(self, data):

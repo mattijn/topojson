@@ -113,14 +113,7 @@ def test_hashmap_super_function():
     topo = Hashmap(data).to_dict()
     geoms = topo["objects"]["data"]["geometries"][0]["geometries"]
 
-    assert list(topo.keys()) == [
-        "type",
-        "linestrings",
-        "coordinates",
-        "objects",
-        "options",
-        "bbox",
-    ]
+    assert len(list(topo.keys())) == 6
     assert geoms[0]["arcs"] == [[-3, 0]]
     assert geoms[1]["arcs"] == [[1, 2]]
 
