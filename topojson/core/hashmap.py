@@ -29,17 +29,35 @@ class Hashmap(Dedup):
         return "Hashmap(\n{}\n)".format(pprint.pformat(self.output))
 
     def to_dict(self):
+        """
+        Convert the Hashmap object to a dictionary.
+        """
         topo_object = copy.copy(self.output)
-        topo_object["options"] = vars(topo_object["options"])
+        topo_object["options"] = vars(self.options)
         return topo_object
 
     def to_svg(self, separate=False, include_junctions=False):
+        """
+        Display the linestrings and junctions as SVG.
+
+        Parameters
+        ----------
+        separate : boolean
+            If `True`, each of the linestrings will be displayed separately. 
+            Default is `False`
+        include_junctions : boolean
+            If `True`, the detected junctions will be displayed as well. 
+            Default is `False`
+        """
         serialize_as_svg(self.output, separate, include_junctions)
 
-    def to_json(self, fp=None):
+    def to_json(self):
+        """
+        Convert the Hashmap object to a JSON object.
+        """
         topo_object = copy.copy(self.output)
-        topo_object["options"] = vars(topo_object["options"])
-        return serialize_as_json(topo_object, fp)
+        topo_object["options"] = vars(self.options)
+        return serialize_as_json(topo_object, fp=None)
 
     def to_alt(
         self,
@@ -49,8 +67,30 @@ class Hashmap(Dedup):
         projection="identity",
         objectname="data",
     ):
+        """
+        Display as Altair visualization.
+
+        Parameters
+        ----------
+        mesh : boolean
+            If `True`, render arcs only (mesh object). If `False` render as geoshape. 
+            Default is `True`
+        color : str
+            Assign an property attribute to be used for color encoding. Remember that
+            most of the time the wanted attribute is nested within properties. Moreover,
+            specific type declaration is required. Eg `color='properties.name:N'`. 
+            Default is `None`
+        tooltip : boolean
+            Option to include or exclude tooltips on geoshape objects
+            Default is `True`.
+        projection : str
+            Defines the projection of the visualization. Defaults to a non-geographic,
+            Cartesian projection (known by Altair as `identity`).
+        objectname : str
+            The name of the object within the Topology to display.
+            Default is `data` 
+        """
         topo_object = copy.copy(self.output)
-        del topo_object["options"]
         return serialize_as_altair(
             topo_object, mesh, color, tooltip, projection, objectname
         )

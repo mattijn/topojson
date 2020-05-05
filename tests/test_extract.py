@@ -325,3 +325,12 @@ def test_extract_single_multilinestring_list():
     topo = Extract(data).to_dict()
 
     assert len(topo["bookkeeping_geoms"]) == 2
+
+
+def test_extract_geopandas_geodataframe():
+    data = geopandas.read_file(
+        "tests/files_geojson/naturalearth_alb_grc.geojson", driver="GeoJSON"
+    )
+    topo = Extract(data).to_dict()
+
+    assert len(topo["bookkeeping_geoms"]) == 3

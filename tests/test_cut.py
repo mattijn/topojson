@@ -176,19 +176,7 @@ def test_cut_super_function_cut():
     )
     topo = Cut(data).to_dict()
 
-    assert list(topo.keys()) == [
-        "type",
-        "linestrings",
-        "coordinates",
-        "bookkeeping_geoms",
-        "bookkeeping_coords",
-        "objects",
-        "options",
-        "bbox",
-        "junctions",
-        "bookkeeping_duplicates",
-        "bookkeeping_linestrings",
-    ]
+    assert len(list(topo.keys())) == 11
 
 
 # this geometry is added on several classes (extract and hashmap). Not yet clear in

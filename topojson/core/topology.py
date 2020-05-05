@@ -98,24 +98,63 @@ class Topology(Hashmap):
         return serialize_as_geojson(topo_object, validate=False, lyr_idx=0)
 
     def to_dict(self, options=False):
+        """
+        Convert the Topology to a dictionary.
+
+        Parameters
+        ----------
+        options : boolean
+            If `True`, the options also will be included. 
+            Default is `False`
+        """
         topo_object = copy.deepcopy(self.output)
         topo_object = self.resolve_coords(topo_object)
-        if options is False:
-            del topo_object["options"]
-        elif options is True:
-            topo_object["options"] = vars(topo_object["options"])
+        if options:
+            topo_object["options"] = vars(self.options)
         return topo_object
 
     def to_svg(self, separate=False, include_junctions=False):
+        """
+        Display the arcs and junctions as SVG.
+
+        Parameters
+        ----------
+        separate : boolean
+            If `True`, each of the arcs will be displayed separately. 
+            Default is `False`
+        include_junctions : boolean
+            If `True`, the detected junctions will be displayed as well. 
+            Default is `False`
+        """
         serialize_as_svg(self.output, separate, include_junctions)
 
     def to_json(self, fp=None, options=False, pretty=False, indent=4, maxlinelength=88):
+        """
+        Convert the Topology to a JSON object.
+
+        Parameters
+        ----------
+        fp : str
+            If set, writes the object to a file on drive.
+            Default is `None`
+        options : boolean
+            If `True`, the options also will be included. 
+            Default is `False`
+        pretty : boolean
+            If `True`, the JSON object will be 'pretty', depending on the `ident` and
+            `maxlinelength` options 
+            Default is `False`
+        indent : int
+            If `pretty=True`, declares the indentation of the objects.
+            Default is `4`.
+        maxlinelinelength : int
+            If `pretty=True`, declares the maximum length of each line.
+            Default is `88`.
+        """
         topo_object = copy.deepcopy(self.output)
         topo_object = self.resolve_coords(topo_object)
-        if options is False:
-            del topo_object["options"]
-        elif options is True:
-            topo_object["options"] = vars(topo_object["options"])
+        if options is True:
+            topo_object["options"] = vars(self.options)
         return serialize_as_json(
             topo_object, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
         )
@@ -127,21 +166,58 @@ class Topology(Hashmap):
         indent=4,
         maxlinelength=88,
         validate=False,
-        lyr_idx=0,
+        objectname="data",
     ):
+        """
+        Convert the Topology to a GeoJSON object. Remember that this will destroy the
+        computed Topology. 
+
+        Parameters
+        ----------
+        fp : str
+            If set, writes the object to a file on drive.
+            Default is `None`
+        options : boolean
+            If `True`, the options also will be included. 
+            Default is `False`
+        pretty : boolean
+            If `True`, the JSON object will be 'pretty', depending on the `ident` and
+            `maxlinelength` options 
+            Default is `False`
+        indent : int
+            If `pretty=True`, declares the indentation of the objects.
+            Default is `4`
+        maxlinelinelength : int
+            If `pretty=True`, declares the maximum length of each line.
+            Default is `88`
+        valide : boolean
+            Set to `True` to only return valid geometries objects.
+            Default is `False`
+        objectname : str
+            The name of the object within the Topology to convert to GeoJSON.
+            Default is `data` 
+        """
         topo_object = copy.deepcopy(self.output)
         topo_object = self.resolve_coords(topo_object)
-        fc = serialize_as_geojson(topo_object, validate=validate, lyr_idx=lyr_idx)
+        fc = serialize_as_geojson(topo_object, validate=validate, objectname=objectname)
         return serialize_as_json(
             fc, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
         )
 
     def to_gdf(self):
+        """
+        Convert the Topology to a GeoDataFrame. Remember that this will destroy the
+        computed Topology. 
+
+        Note: This function use the TopoJSON driver within Fiona to parse the Topology
+        to a GeoDataFrame. If data is missing (eg. Fiona cannot parse nested 
+        geometrycollections) you can trying using the `.to_geojson()` function prior 
+        creating the GeoDataFrame. 
+        """
         from ..utils import serialize_as_geodataframe
 
         topo_object = copy.deepcopy(self.output)
         topo_object = self.resolve_coords(topo_object)
-        del topo_object["options"]
         return serialize_as_geodataframe(topo_object)
 
     def to_alt(
@@ -152,11 +228,33 @@ class Topology(Hashmap):
         projection="identity",
         objectname="data",
     ):
+        """
+        Display as Altair visualization.
+
+        Parameters
+        ----------
+        mesh : boolean
+            If `True`, render arcs only (mesh object). If `False` render as geoshape. 
+            Default is `True`
+        color : str
+            Assign an property attribute to be used for color encoding. Remember that
+            most of the time the wanted attribute is nested within properties. Moreover,
+            specific type declaration is required. Eg `color='properties.name:N'`. 
+            Default is `None`
+        tooltip : boolean
+            Option to include or exclude tooltips on geoshape objects
+            Default is `True`.
+        projection : str
+            Defines the projection of the visualization. Defaults to a non-geographic,
+            Cartesian projection (known by Altair as `identity`).
+        objectname : str
+            The name of the object within the Topology to display.
+            Default is `data` 
+        """
         from ..utils import serialize_as_altair
 
         topo_object = copy.deepcopy(self.output)
         topo_object = self.resolve_coords(topo_object)
-        del topo_object["options"]
         return serialize_as_altair(
             topo_object, mesh, color, tooltip, projection, objectname
         )
@@ -166,6 +264,17 @@ class Topology(Hashmap):
         slider_toposimplify={"min": 0, "max": 10, "step": 0.01, "value": 0.01},
         slider_topoquantize={"min": 1, "max": 6, "step": 1, "value": 1e5, "base": 10},
     ):
+        """
+        Create an interactive widget based on Altair. The widget includes sliders to 
+        interactively change the `toposimplify` and `topoquantize` settings.
+
+        Parameters
+        ----------
+        slider_toposimplify : dict
+            The dict should contain the following keys: `min`, `max`, `step`, `value`
+        slider_topoquantize : dict
+            The dict should contain the following keys: `min`, `max`, `value`, `base`
+        """
 
         from ..utils import serialize_as_ipywidgets
 
