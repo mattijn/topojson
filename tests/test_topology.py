@@ -26,7 +26,7 @@ def test_topology_winding_order_TopoOptions():
     topo = topojson.Topology(data, winding_order="CW_CCW").to_dict(options=True)
 
     assert len(topo["objects"]) == 1
-    assert len(topo["options"]) == 8
+    assert len(topo["options"]) == 9
 
 
 # test winding order using kwarg variables
@@ -37,7 +37,7 @@ def test_topology_winding_order_kwarg_vars():
     topo = topojson.Topology(data, winding_order="CW_CCW").to_dict(options=True)
 
     assert len(topo["objects"]) == 1
-    assert len(topo["options"]) == 8
+    assert len(topo["options"]) == 9
 
 
 def test_topology_computing_topology():
@@ -306,4 +306,3 @@ def test_topology_to_geojson_polygon_point():
 
     assert "]]]}}" in topo  # feat 1
     assert "]}}]}" in topo  # feat 2
-
