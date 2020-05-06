@@ -164,46 +164,66 @@ class Join(Extract):
             data["junctions"] = self.junctions
             return data
 
-        # create list with unique combinations of lines using a rdtree
-        line_combs = select_unique_combs(data["linestrings"])
+        if self.options.shared_paths == "coords":
+            def _get_verts(geom):
+                # get coords of each LineString
+                return [x for x in geom.coords]
 
-        # iterate over index combinations
-        for i1, i2 in line_combs:
-            g1 = data["linestrings"][i1]
-            g2 = data["linestrings"][i2]
+            geoms = {}
+            junctions = []
 
-            # check if geometry are equal
-            # being equal meaning the geometry object coincide with each other.
-            # a rotated polygon or reversed linestring are both considered equal.
-            if not g1.equals(g2):
-                # geoms are unique, let's find junctions
-                self.shared_segs(g1, g2)
+            for ls in data["linestrings"]:
+                verts = _get_verts(ls)
+                for i, vert in enumerate(verts):
+                    ran = geoms.pop(vert, None)
+                    neighs = sorted([verts[i - 1], verts[i + 1 if i < len(verts) - 1 else 0]])
+                    if ran and ran != neighs:
+                        junctions.append(vert)
+                    geoms[vert] = neighs
 
-        # self.segments are nested lists of LineStrings, get coordinates of each nest
-        s_coords = []
-        for segment in self.segments:
-            s_coords.extend(
-                [
+            self.junctions = [geometry.Point(xy) for xy in set(junctions)]
+        else:
+
+            # create list with unique combinations of lines using a rdtree
+            line_combs = select_unique_combs(data["linestrings"])
+
+            # iterate over index combinations
+            for i1, i2 in line_combs:
+                g1 = data["linestrings"][i1]
+                g2 = data["linestrings"][i2]
+
+                # check if geometry are equal
+                # being equal meaning the geometry object coincide with each other.
+                # a rotated polygon or reversed linestring are both considered equal.
+                if not g1.equals(g2):
+                    # geoms are unique, let's find junctions
+                    self.shared_segs(g1, g2)
+
+            # self.segments are nested lists of LineStrings, get coordinates of each nest
+            s_coords = []
+            for segment in self.segments:
+                s_coords.extend(
                     [
-                        (x.xy[0][y], x.xy[1][y])
-                        for x in segment
-                        for y in range(len(x.xy[0]))
+                        [
+                            (x.xy[0][y], x.xy[1][y])
+                            for x in segment
+                            for y in range(len(x.xy[0]))
+                        ]
                     ]
-                ]
-            )
-            # s_coords.extend([[y for x in segment for y in list(x.coords)]])
+                )
+                # s_coords.extend([[y for x in segment for y in list(x.coords)]])
 
-        # only keep junctions that appear only once in each segment (nested list)
-        # coordinates that appear multiple times are not junctions
-        for coords in s_coords:
-            self.junctions.extend(
-                [geometry.Point(i) for i in coords if coords.count(i) == 1]
-            )
+            # only keep junctions that appear only once in each segment (nested list)
+            # coordinates that appear multiple times are not junctions
+            for coords in s_coords:
+                self.junctions.extend(
+                    [geometry.Point(i) for i in coords if coords.count(i) == 1]
+                )
 
-        # junctions can appear multiple times in multiple segments, remove duplicates
-        self.junctions = [
-            loads(xy) for xy in list(set([x.wkb for x in self.junctions]))
-        ]
+            # junctions can appear multiple times in multiple segments, remove duplicates
+            self.junctions = [
+                loads(xy) for xy in list(set([x.wkb for x in self.junctions]))
+            ]
 
         # prepare to return object
         data["junctions"] = self.junctions

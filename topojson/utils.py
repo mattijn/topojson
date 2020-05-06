@@ -48,6 +48,7 @@ class TopoOptions(object):
         simplify_with="shapely",
         simplify_algorithm="dp",
         winding_order=None,
+        shared_paths="shapely",
     ):
         # get all arguments
         arguments = locals()
@@ -93,6 +94,11 @@ class TopoOptions(object):
             self.winding_order = arguments["winding_order"]
         else:
             self.winding_order = None
+
+        if "shared_paths" in arguments:
+            self.shared_paths = arguments["shared_paths"]
+        else:
+            self.shared_paths = "shapely"
 
     def __repr__(self):
         return "TopoOptions(\n  {}\n)".format(pprint.pformat(self.__dict__))

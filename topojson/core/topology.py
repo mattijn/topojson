@@ -67,6 +67,9 @@ class Topology(Hashmap):
         between `CW_CCW` for clockwise orientation for outer rings and counter-clockwise
         for interior rings. Or `CCW_CW` for counter-clockwise for outer rings and 
         clockwise for interior rings. Default is `CW_CCW`.
+    shared_paths : str
+         Sets the shared paths strategy. Choose `coords` for speed or `shapely` for
+         correctness in case of topologically unprecise geometry.
     """
 
     def __init__(
@@ -80,6 +83,7 @@ class Topology(Hashmap):
         simplify_with="shapely",
         simplify_algorithm="dp",
         winding_order="CW_CCW",
+        shared_paths="shapely",
     ):
 
         options = TopoOptions(locals())
