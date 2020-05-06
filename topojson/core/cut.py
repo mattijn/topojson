@@ -6,6 +6,7 @@ from shapely import geometry
 from shapely.strtree import STRtree
 from .join import Join
 from ..ops import insert_coords_in_line
+from ..ops import np_array_bbox_points_line
 from ..ops import fast_split
 from ..ops import np_array_from_lists
 from ..ops import select_unique_combs
@@ -112,17 +113,29 @@ class Cut(Join):
 
             # create spatial index on junctions
             tree_splitter = STRtree(mp)
-            # splitter = np.squeeze(np.array([pt.xy for pt in mp]), axis=(2,))
             slist = []
-            for ls in data["linestrings"]:
-                # slines = split(ls, mp)
-                line, splitter = insert_coords_in_line(ls, tree_splitter)
-                # prev function returns None for splitter if there is nothing to split
-                if splitter is not None:
-                    slines = fast_split(line, splitter)
-                    slist.append(list(geometry.MultiLineString(slines)))
-                else:
-                    slist.append([ls])
+            # junctions are only existing in coordinates of linestring
+            if self.options.shared_paths == "coords":
+                for ls in data["linestrings"]:
+                    line, splitter = np_array_bbox_points_line(ls, tree_splitter)
+                    # prev function returns None for splitter if there is nothing to split
+                    if splitter is not None:
+                        slines = fast_split(line, splitter)
+                        slist.append(list(geometry.asMultiLineString(slines)))
+                    else:
+                        slist.append([ls])
+
+            # junctions can exist between existing coords of linestring
+            else:
+                for ls in data["linestrings"]:
+                    # slines = split(ls, mp)
+                    line, splitter = insert_coords_in_line(ls, tree_splitter)
+                    # prev function returns None for splitter if there is nothing to split
+                    if splitter is not None:
+                        slines = fast_split(line, splitter)
+                        slist.append(list(geometry.MultiLineString(slines)))
+                    else:
+                        slist.append([ls])
 
             # flatten the splitted linestrings, create bookkeeping_geoms array
             # and find duplicates
