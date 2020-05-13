@@ -144,6 +144,10 @@ class Join(Extract):
         ptbs = geometry.asMultiPoint(data["coordinates"]).bounds
         data["bbox"] = compare_bounds(lsbs, ptbs)
 
+        if not data["linestrings"] and not data["coordinates"]:
+            data["junctions"] = self.junctions
+            return data
+
         # prequantize linestrings if required
         if self.options.prequantize > 0:
             # set default if not specifically given in the options
@@ -165,6 +169,7 @@ class Join(Extract):
             return data
 
         if self.options.shared_paths == "coords":
+
             def _get_verts(geom):
                 # get coords of each LineString
                 return [x for x in geom.coords]
@@ -176,7 +181,9 @@ class Join(Extract):
                 verts = _get_verts(ls)
                 for i, vert in enumerate(verts):
                     ran = geoms.pop(vert, None)
-                    neighs = sorted([verts[i - 1], verts[i + 1 if i < len(verts) - 1 else 0]])
+                    neighs = sorted(
+                        [verts[i - 1], verts[i + 1 if i < len(verts) - 1 else 0]]
+                    )
                     if ran and ran != neighs:
                         junctions.append(vert)
                     geoms[vert] = neighs

@@ -334,3 +334,14 @@ def test_extract_geopandas_geodataframe():
     topo = Extract(data).to_dict()
 
     assert len(topo["bookkeeping_geoms"]) == 3
+
+
+# dict shoud have a valued key:geom_object. Otherwise key:value is removed
+def test_extract_invalid_dict_item():
+    data = {
+        "type": "MultiPolygon",
+        "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
+    }
+    topo = Extract(data).to_dict()
+
+    assert len(topo["bookkeeping_geoms"]) == 0

@@ -191,9 +191,11 @@ def test_topology_polygon_point():
 
 def test_topology_point():
     data = [{"type": "Point", "coordinates": [0.5, 0.5]}]
+    # topo = topojson.Topology(data, topoquantize=True).to_dict()
     with pytest.raises(SystemExit) as topo:
         topojson.Topology(data, topoquantize=True).to_dict()
 
+    # assert len(topo["arcs"]) == 0
     assert topo.type == SystemExit
     assert topo.value.code == "Cannot quantize when xmax-xmin OR ymax-ymin equals 0"
 
@@ -306,3 +308,15 @@ def test_topology_to_geojson_polygon_point():
 
     assert "]]]}}" in topo  # feat 1
     assert "]}}]}" in topo  # feat 2
+
+
+def test_topology_to_geojson_quantized_points_only():
+    data = [{"type": "MultiPoint", "coordinates": [[0.5, 0.5], [1.0, 1.0]]}]
+    topo = topojson.Topology(data, prequantize=True).to_dict()
+
+    assert len(topo["arcs"]) == 0
+    assert topo["objects"]["data"]["geometries"][0]["coordinates"] == [
+        [0, 0],
+        [999999, 999999],
+    ]
+    assert topo["transform"]["translate"] == [0.5, 0.5]

@@ -298,6 +298,8 @@ class Topology(Hashmap):
         result = copy.deepcopy(self)
         arcs = result.output["arcs"]
 
+        if not arcs:
+            return result
         # dequantize if quantization is applied
         if "transform" in result.output.keys():
             np_arcs = np_array_from_arcs(arcs)
