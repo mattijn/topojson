@@ -35,6 +35,39 @@ def asvoid(arr):
     return arr.view(np.dtype((np.void, arr.dtype.itemsize * arr.shape[-1])))
 
 
+def np_array_bbox_points_line(line, tree_splitter):
+    """
+    Get junctions within bbox of line and return both as numpy array
+
+    Parameters
+    ----------
+    line : numpy.array
+        numpy array with coordinates representing a line segment
+    tree_splitter: STRtree
+        a STRtree splitter object
+
+    Returns
+    -------
+    ls_xy : numpy.array
+        numpy array from coordinates, if any, representing a line segment
+    pts_xy_bbox : numpy.array
+        numpy array with coordinates that near or on the line
+    """
+
+    # get junctions that contain within bbox line
+    pts_within_bbox = tree_splitter.query(line)
+
+    if len(pts_within_bbox) == 0:
+        # no point near bbox, nothing to insert, nothing to split
+        return None, None
+
+    # convert shapely linestring and multipoint to np.array if there are points on line
+    ls_xy = np.array(line.coords)
+    pts_xy_bbox = np.array([x for pt in pts_within_bbox for x in pt.coords])
+
+    return ls_xy, pts_xy_bbox
+
+
 def insert_coords_in_line(line, tree_splitter):
     """
     Insert coordinates that are on the line, but where no vertices exists
@@ -51,7 +84,7 @@ def insert_coords_in_line(line, tree_splitter):
     new_ls_xy : numpy.array
         numpy array with inserted coordinates, if any, representing a line segment
     pts_xy_on_line : numpy.array
-        numpy array with with coordinates that are on the lin
+        numpy array with coordinates that are on the line
     """
 
     # get junctions that contain within bbox line
@@ -70,9 +103,8 @@ def insert_coords_in_line(line, tree_splitter):
         return None, None
 
     # convert shapely linestring and multipoint to np.array if there are points on line
-    ls_xy = np.array(line.xy).T
-
-    pts_xy_on_line = np.squeeze(np.array([pt.xy for pt in pts_on_line]), axis=(2,))
+    ls_xy = np.array(line.coords)
+    pts_xy_on_line = np.array([x for pt in pts_on_line for x in pt.coords])
 
     # select junctions having non existing vertices in linestring
     tol_float_prc = 1e8
@@ -128,14 +160,14 @@ def fast_split(line, splitter):
     Returns
     -------
     list of numpy.array
-        If more than 1 item, the line was split. Each item in the list is a
+        If more than 1 item, the line was split. Each item in the list is an
         array of coordinates.
     """
 
     # previously did convert geometries of coordinates from LineString and (Multi)Point
     # to numpy arrays. This function now expect this as input to save time.
-    # line = np.array(line.xy).T
-    # splitter = np.squeeze(np.array([pt.xy for pt in splitter]), axis=(2,))
+    # line = np.array(line.coords)
+    # splitter = np.array([x for pt in splitter for x in pt.coords])
 
     # locate index of splitter coordinates in linestring
     tol = 1e8
@@ -170,9 +202,9 @@ def fast_split(line, splitter):
 
 def signed_area(ring):
     """
-    compute the signed area of a ring (polygon)
+    Compute the signed area of a ring (polygon)
 
-    note: implementation is numpy variant of shapely's version:
+    Note: implementation is numpy variant of shapely's version:
     https://github.com/Toblerity/Shapely/blob/master/shapely/algorithms/cga.py
 
     Parameters
@@ -185,13 +217,14 @@ def signed_area(ring):
     float
         the signed area
     """
-    xs, ys = np.array(ring.coords.xy)
+    xs, ys = np.array(ring.coords).T
     signed_area = (xs * (np.roll(ys, -1) - np.roll(ys, +1))).sum() / 2
     return signed_area
 
 
 def is_ccw(ring):
-    """provide information if a given ring is clockwise or counterclockwise.
+    """
+    Provide information if a given ring is clockwise or counterclockwise.
 
     Parameters
     ----------
@@ -450,8 +483,8 @@ def quantize(linestrings, bbox, quant_factor=1e6):
         raise SystemExit("Cannot quantize when xmax-xmin OR ymax-ymin equals 0")
 
     for idx, ls in enumerate(linestrings):
-        if hasattr(ls, "xy"):
-            ls_xy = np.array(ls.xy)
+        if hasattr(ls, "coords"):
+            ls_xy = np.array(ls.coords).T
         else:
             ls_xy = np.array(ls).T
         ls_xy = (

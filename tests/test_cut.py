@@ -231,3 +231,10 @@ def test_cut_linemerge_multilinestring():
 
     assert len(topo["linestrings"]) == 12
     assert len(topo["junctions"]) == 7
+
+
+def test_cut_junctions_coords():
+    data = geopandas.read_file("tests/files_geojson/naturalearth_alb_grc.geojson")
+    topo = Cut(data, options={"shared_paths": "coords"}).to_dict()
+
+    assert len(topo["linestrings"]) == 3
