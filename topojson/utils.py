@@ -400,22 +400,23 @@ def serialize_as_svg(topo_object, separate=False, include_junctions=False):
     keys = topo_object.keys()
     if "arcs" in keys:
         arcs = topo_object["arcs"]
-        # dequantize if quantization is applied
-        if "transform" in keys:
+        if arcs:
+            # dequantize if quantization is applied
+            if "transform" in keys:
 
-            np_arcs = np_array_from_arcs(arcs)
+                np_arcs = np_array_from_arcs(arcs)
 
-            transform = topo_object["transform"]
-            scale = transform["scale"]
-            translate = transform["translate"]
+                transform = topo_object["transform"]
+                scale = transform["scale"]
+                translate = transform["translate"]
 
-            np_arcs = dequantize(np_arcs, scale, translate)
-            l_arcs = []
-            for ls in np_arcs:
-                l_arcs.append(ls[~np.isnan(ls)[:, 0]].tolist())
-            arcs = l_arcs
+                np_arcs = dequantize(np_arcs, scale, translate)
+                l_arcs = []
+                for ls in np_arcs:
+                    l_arcs.append(ls[~np.isnan(ls)[:, 0]].tolist())
+                arcs = l_arcs
 
-        arcs = [geometry.LineString(arc) for arc in arcs]
+            arcs = [geometry.LineString(arc) for arc in arcs]
 
     else:
         arcs = topo_object["linestrings"]
@@ -475,18 +476,18 @@ def serialize_as_geojson(
 
     # prepare arcs from topology object
     arcs = topo_object["arcs"]
+    transform = None
+    if "transform" in topo_object.keys():
+        transform = topo_object["transform"]
+        scale = transform["scale"]
+        translate = transform["translate"]
+
     if arcs:
         np_arcs = np_array_from_arcs(arcs)
-
-        transform = None
         # dequantize if quantization is applied
-        if "transform" in topo_object.keys():
-
-            transform = topo_object["transform"]
-            scale = transform["scale"]
-            translate = transform["translate"]
-
-            np_arcs = dequantize(np_arcs, scale, translate)
+        np_arcs = dequantize(np_arcs, scale, translate)
+    else:
+        np_arcs = None
 
     # select object member from topology object
     features = topo_object["objects"][objectname]["geometries"]
