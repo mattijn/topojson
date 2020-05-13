@@ -599,3 +599,19 @@ def test_join_linemerge_multilinestring():
         assert geometry.MultiPoint(topo["junctions"]).equals(
             geometry.MultiPoint([(0.0, 0.0), (1.0, 0.0)])
         )
+
+    # test a list of two invalid geometric objects with prequantize True
+    def test_join_invalid_prequantize():
+        data = [
+            {
+                "type": "MultiPolygon",
+                "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
+            },
+            {
+                "type": "MultiPolygon",
+                "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
+            },
+        ]
+        topo = Join(data, options={"prequantize": True}).to_dict()
+
+        assert len(topo["junctions"]) == 0

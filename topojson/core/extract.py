@@ -570,50 +570,56 @@ class Extract(object):
             self._key = key
             self._obj = self._data[self._key]
 
-            # detect if object is a shapely geometry
-            if hasattr(self._obj, "geom_type"):
-                geom = self._obj
-                self._obj = {"type": geom.geom_type}
-                self._data[self._key] = self._obj
-
-            # detect if object contains shapely supported geometries:
-            elif "geometry" in self._obj.keys() and hasattr(
-                self._obj["geometry"], "geom_type"
-            ):
-                # extract geometry and collect type and properties
-                geom = self._obj["geometry"]
-                self._obj.pop("geometry", None)
-                self._obj = {"properties": self._obj, "type": geom.geom_type}
-                self._data[self._key] = self._obj
-
-            # no direct shapely geometries avaiable. Try forcing
-            else:
-                # detect if the obect contains a __geo_interface__.
-                if hasattr(self._obj, "__geo_interface__"):
-                    self._obj = self._obj.__geo_interface__
+            try:
+                # detect if object is a shapely geometry
+                if hasattr(self._obj, "geom_type"):
+                    geom = self._obj
+                    self._obj = {"type": geom.geom_type}
                     self._data[self._key] = self._obj
 
-                # try parsing the object into a shapely geometry. If this not succeeds
-                # then the object might be a GeoJSON Feature or FeatureCollection. If
-                # this fails as well then the object is not recognized and removed.
-                try:
-                    geom = geometry.shape(self._obj)
-                    # object can be mapped, but may not be valid. remove invalid objects
-                    # and continue
-                    if not geom.is_valid:
+                # detect if object contains shapely supported geometries:
+                elif "geometry" in self._obj.keys() and hasattr(
+                    self._obj["geometry"], "geom_type"
+                ):
+                    # extract geometry and collect type and properties
+                    geom = self._obj["geometry"]
+                    self._obj.pop("geometry", None)
+                    self._obj = {"properties": self._obj, "type": geom.geom_type}
+                    self._data[self._key] = self._obj
+
+                # no direct shapely geometries avaiable. Try forcing
+                else:
+                    # detect if the obect contains a __geo_interface__.
+                    if hasattr(self._obj, "__geo_interface__"):
+                        self._obj = self._obj.__geo_interface__
+                        self._data[self._key] = self._obj
+
+                    # try parsing the object into a shapely geometry. If this not succeeds
+                    # then the object might be a GeoJSON Feature or FeatureCollection. If
+                    # this fails as well then the object is not recognized and removed.
+                    try:
+                        geom = geometry.shape(self._obj)
+                        # object can be mapped, but may not be valid. remove invalid objects
+                        # and continue
+                        if not geom.is_valid:
+                            self._invalid_geoms += 1
+                            del self._data[self._key]
+                            continue
+                    except ValueError:
+                        # object might be a GeoJSON Feature or FeatureCollection
+                        geom = geojson.loads(geojson.dumps(self._obj))
+                    except AttributeError:
+                        geom = geojson.loads(self._obj)
+                    except (IndexError, TypeError):
+                        # object is not valid
                         self._invalid_geoms += 1
                         del self._data[self._key]
                         continue
-                except ValueError:
-                    # object might be a GeoJSON Feature or FeatureCollection
-                    geom = geojson.loads(geojson.dumps(self._obj))
-                except AttributeError:
-                    geom = geojson.loads(self._obj)
-                except (IndexError, TypeError):
-                    # object is not valid
-                    self._invalid_geoms += 1
-                    del self._data[self._key]
-                    continue
+            except AttributeError:
+                # object is not valid
+                self._invalid_geoms += 1
+                del self._data[self._key]
+                continue
 
             # the geom object is recognized, lets serialize the geometric type.
             # this function redirects the geometric object based on its type to
