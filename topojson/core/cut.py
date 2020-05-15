@@ -9,7 +9,6 @@ from ..ops import insert_coords_in_line
 from ..ops import np_array_bbox_points_line
 from ..ops import fast_split
 from ..ops import np_array_from_lists
-from ..ops import select_unique_combs
 from ..utils import serialize_as_svg
 
 
@@ -157,7 +156,7 @@ class Cut(Join):
 
         # prepare to return object
         data["linestrings"] = self.segments_list
-        data["bookkeeping_duplicates"] = np.array(self.duplicates)
+        data["bookkeeping_duplicates"] = self.duplicates
         data["bookkeeping_linestrings"] = self.bookkeeping_linestrings
 
         return data
@@ -208,18 +207,26 @@ class Cut(Join):
 
         """
 
-        # create list with unique combinations of lines using a rdtree
-        line_combs = select_unique_combs(segments_list)
+        # get hash of sorted linestring
+        hash_segments = []
+        for ls in segments_list:
+            hash_segments.append(hash(tuple(sorted(ls.coords))))
+        hash_segments = np.array(hash_segments, dtype=np.int64)
 
-        # iterate over index combinations
-        for i1, i2 in line_combs:
-            g1 = segments_list[i1]
-            g2 = segments_list[i2]
+        # get split locations of dups
+        idx_sort = np.argsort(hash_segments)
+        sorted_hashes = hash_segments[idx_sort]
+        vals, idx_start, count = np.unique(
+            sorted_hashes, return_counts=True, return_index=True
+        )
+        if count.max() > 1:
+            # split on indices that occures > 1
+            idx_dups = np.split(idx_sort, idx_start[1:])
+            idx_dups = np.array([dup for dup in idx_dups if dup.size > 1])
 
-            # check if geometry are equal
-            # being equal meaning the geometry object coincide with each other.
-            # a rotated polygon or reversed linestring are both considered equal.
-            if g1.equals(g2):
-                idx_pop = i1 if len(g1.coords) <= len(g2.coords) else i2
-                idx_keep = i1 if i2 == idx_pop else i2
-                self.duplicates.append([idx_keep, idx_pop])
+            # apply sorting on duplicate-pairs
+            idx_dups = -np.sort(-idx_dups, axis=1)
+            idx_dups = idx_dups[np.argsort(idx_dups[:, 0])]
+            self.duplicates = idx_dups
+        else:
+            self.duplicates = []
