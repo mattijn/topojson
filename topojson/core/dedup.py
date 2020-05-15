@@ -68,7 +68,7 @@ class Dedup(Cut):
         # create numpy array from bookkeeping_geoms variable for numerical computation
         array_bk = np_array_from_lists(data["bookkeeping_linestrings"])
         array_bk_sarcs = None
-        if data["bookkeeping_duplicates"].size != 0:
+        if len(data["bookkeeping_duplicates"]):
             array_bk_sarcs, dup_pair_list = self.deduplicate(
                 data["bookkeeping_duplicates"], data["linestrings"], array_bk
             )
@@ -97,7 +97,7 @@ class Dedup(Cut):
         # prepare to return object
         del data["bookkeeping_linestrings"]
         data["bookkeeping_arcs"] = lists_from_np_array(array_bk)
-        if data["bookkeeping_duplicates"].size != 0:
+        if len(data["bookkeeping_duplicates"]):
             data["bookkeeping_shared_arcs"] = array_bk_sarcs.astype(np.int64).tolist()
             data["bookkeeping_duplicates"] = lists_from_np_array(
                 data["bookkeeping_duplicates"][dup_pair_list != -99]
