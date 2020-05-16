@@ -53,12 +53,12 @@ class Join(Extract):
         super().__init__(data, options)
 
         # initation topology items
-        self.junctions = []
-        self.segments = []
-        self.valerr = False
+        self._junctions = []
+        self._segments = []
+        self._valerr = False
 
         # execute main function
-        self.output = self.joiner(self.output)
+        self.output = self._joiner(self.output)
 
     def __repr__(self):
         return "Join(\n{}\n)".format(pprint.pformat(self.output))
@@ -86,7 +86,7 @@ class Join(Extract):
         """
         serialize_as_svg(self.output, separate, include_junctions)
 
-    def joiner(self, data):
+    def _joiner(self, data):
         """
         Entry point for the class Join. This function identiefs junctions
         (intersection points) of shared paths.
@@ -145,7 +145,7 @@ class Join(Extract):
         data["bbox"] = compare_bounds(lsbs, ptbs)
 
         if not data["linestrings"] and not data["coordinates"]:
-            data["junctions"] = self.junctions
+            data["junctions"] = self._junctions
             return data
 
         # prequantize linestrings if required
@@ -165,7 +165,7 @@ class Join(Extract):
             )
 
         if not self.options.topology or not data["linestrings"]:
-            data["junctions"] = self.junctions
+            data["junctions"] = self._junctions
             return data
 
         if self.options.shared_paths == "coords":
@@ -188,7 +188,7 @@ class Join(Extract):
                         junctions.append(vert)
                     geoms[vert] = neighs
 
-            self.junctions = [geometry.Point(xy) for xy in set(junctions)]
+            self._junctions = [geometry.Point(xy) for xy in set(junctions)]
         else:
 
             # create list with unique combinations of lines using a rdtree
@@ -204,11 +204,11 @@ class Join(Extract):
                 # a rotated polygon or reversed linestring are both considered equal.
                 if not g1.equals(g2):
                     # geoms are unique, let's find junctions
-                    self.shared_segs(g1, g2)
+                    self._shared_segs(g1, g2)
 
-            # self.segments are nested lists of LineStrings, get coordinates of each nest
+            # self._segments are nested lists of LineStrings, get coordinates of each nest
             s_coords = []
-            for segment in self.segments:
+            for segment in self._segments:
                 s_coords.extend(
                     [
                         [
@@ -223,21 +223,21 @@ class Join(Extract):
             # only keep junctions that appear only once in each segment (nested list)
             # coordinates that appear multiple times are not junctions
             for coords in s_coords:
-                self.junctions.extend(
+                self._junctions.extend(
                     [geometry.Point(i) for i in coords if coords.count(i) == 1]
                 )
 
             # junctions can appear multiple times in multiple segments, remove duplicates
-            self.junctions = [
-                loads(xy) for xy in list(set([x.wkb for x in self.junctions]))
+            self._junctions = [
+                loads(xy) for xy in list(set([x.wkb for x in self._junctions]))
             ]
 
         # prepare to return object
-        data["junctions"] = self.junctions
+        data["junctions"] = self._junctions
 
         return data
 
-    def validate_linemerge(self, merged_line):
+    def _validate_linemerge(self, merged_line):
         """
         Return list of linestrings. If the linemerge was a MultiLineString 
         then returns a list of multiple single linestrings
@@ -249,7 +249,7 @@ class Join(Extract):
             merged_line = [merged_line]
         return merged_line
 
-    def shared_segs(self, g1, g2):
+    def _shared_segs(self, g1, g2):
         """
         This function returns the segments that are shared with two input geometries.
         The shapely function `shapely.ops.shared_paths()` is adopted and can catch
@@ -271,7 +271,7 @@ class Join(Extract):
         try:
             fw_bw = shared_paths(g1, g2)
         except ValueError:
-            self.valerr = True
+            self._valerr = True
             fw_bw = False
             # fw_bw = shared_paths(snap(g1, g2, tolerance=6), g2)
 
@@ -289,16 +289,16 @@ class Join(Extract):
                 shared_segments = backward
             else:
                 # both backward and forward contains objects, so combine
-                forward = self.validate_linemerge(linemerge(forward))
-                backward = self.validate_linemerge(linemerge(backward))
+                forward = self._validate_linemerge(linemerge(forward))
+                backward = self._validate_linemerge(linemerge(backward))
 
                 shared_segments = geometry.MultiLineString(forward + backward)
 
             # add shared paths to segments
-            self.segments.extend([list(shared_segments)])
+            self._segments.extend([list(shared_segments)])
 
             # also add the first coordinates of both geoms as a vertice to segments
             p1_g1 = geometry.Point([g1.xy[0][0], g1.xy[1][0]])
             p1_g2 = geometry.Point([g2.xy[0][0], g2.xy[1][0]])
             ls_p1_g1g2 = geometry.LineString([p1_g1, p1_g2])
-            self.segments.extend([[ls_p1_g1g2]])
+            self._segments.extend([[ls_p1_g1g2]])
