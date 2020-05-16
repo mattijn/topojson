@@ -521,11 +521,21 @@ def serialize_as_altair(
     tooltip=True,
     projection="identity",
     objectname="data",
+    geo_interface=False,
 ):
     import altair as alt
 
     # create a mesh visualization
-    if mesh and color is None:
+    if geo_interface and mesh:
+        # chart object
+        chart = (
+            alt.Chart(topo_object, width=300)
+            .mark_geoshape(filled=False)
+            .project(type=projection, reflectY=True)
+        )
+
+    # create a mesh visualization
+    elif mesh and color is None:
         data = alt.InlineData(
             values=topo_object, format=alt.DataFormat(mesh=objectname, type="topojson")
         )

@@ -3,7 +3,6 @@ import copy
 import numpy as np
 import itertools
 from .hashmap import Hashmap
-from ..ops import properties_foreign
 from ..ops import np_array_from_arcs
 from ..ops import dequantize
 from ..ops import quantize
@@ -91,7 +90,7 @@ class Topology(Hashmap):
         super().__init__(data, options)
 
         # execute main function of Topology
-        self.output = self.worker(self.output)
+        self.output = self._topo(self.output)
 
     def __repr__(self):
         return "Topology(\n{}\n)".format(pprint.pformat(self.output))
@@ -112,7 +111,7 @@ class Topology(Hashmap):
             Default is `False`
         """
         topo_object = copy.deepcopy(self.output)
-        topo_object = self.resolve_coords(topo_object)
+        topo_object = self._resolve_coords(topo_object)
         if options:
             topo_object["options"] = vars(self.options)
         return topo_object
@@ -156,7 +155,7 @@ class Topology(Hashmap):
             Default is `88`.
         """
         topo_object = copy.deepcopy(self.output)
-        topo_object = self.resolve_coords(topo_object)
+        topo_object = self._resolve_coords(topo_object)
         if options is True:
             topo_object["options"] = vars(self.options)
         return serialize_as_json(
@@ -202,7 +201,7 @@ class Topology(Hashmap):
             Default is `data` 
         """
         topo_object = copy.deepcopy(self.output)
-        topo_object = self.resolve_coords(topo_object)
+        topo_object = self._resolve_coords(topo_object)
         fc = serialize_as_geojson(topo_object, validate=validate, objectname=objectname)
         return serialize_as_json(
             fc, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
@@ -221,7 +220,7 @@ class Topology(Hashmap):
         from ..utils import serialize_as_geodataframe
 
         topo_object = copy.deepcopy(self.output)
-        topo_object = self.resolve_coords(topo_object)
+        topo_object = self._resolve_coords(topo_object)
         return serialize_as_geodataframe(topo_object)
 
     def to_alt(
@@ -258,7 +257,7 @@ class Topology(Hashmap):
         from ..utils import serialize_as_altair
 
         topo_object = copy.deepcopy(self.output)
-        topo_object = self.resolve_coords(topo_object)
+        topo_object = self._resolve_coords(topo_object)
         return serialize_as_altair(
             topo_object, mesh, color, tooltip, projection, objectname
         )
@@ -287,12 +286,6 @@ class Topology(Hashmap):
             toposimplify=slider_toposimplify,
             topoquantize=slider_topoquantize,
         )
-
-    def flatten_properties(self):
-        objects = self.output["objects"]["data"]["geometries"]
-        if objects:
-            objects = properties_foreign(objects)
-            self.output["objects"]["data"]["geometries"] = objects
 
     def topoquantize(self, quant_factor, inplace=False):
         result = copy.deepcopy(self)
@@ -385,7 +378,7 @@ class Topology(Hashmap):
         else:
             return result
 
-    def resolve_coords(self, data):
+    def _resolve_coords(self, data):
         geoms = data["objects"]["data"]["geometries"]
         for idx, feat in enumerate(geoms):
             if feat["type"] in ["Point", "MultiPoint"]:
@@ -405,7 +398,7 @@ class Topology(Hashmap):
         data.pop("coordinates", None)
         return data
 
-    def worker(self, data):
+    def _topo(self, data):
         self.output["arcs"] = data["linestrings"]
         del data["linestrings"]
 

@@ -8,6 +8,7 @@ from .join import Join
 from ..ops import insert_coords_in_line
 from ..ops import np_array_bbox_points_line
 from ..ops import fast_split
+from ..ops import find_duplicates
 from ..ops import np_array_from_lists
 from ..utils import serialize_as_svg
 
@@ -45,11 +46,11 @@ class Cut(Join):
         super().__init__(data, options)
 
         # initation topology items
-        self.duplicates = []
-        self.bookkeeping_linestrings = []
+        self._duplicates = []
+        self._bookkeeping_linestrings = []
 
         # execute main function
-        self.output = self.cutter(self.output)
+        self.output = self._cutter(self.output)
 
     def __repr__(self):
         return "Cut(\n{}\n)".format(pprint.pformat(self.output))
@@ -77,7 +78,7 @@ class Cut(Join):
         """
         serialize_as_svg(self.output, separate, include_junctions)
 
-    def cutter(self, data):
+    def _cutter(self, data):
         """
         Entry point for the class Cut.
 
@@ -138,30 +139,30 @@ class Cut(Join):
 
             # flatten the splitted linestrings, create bookkeeping_geoms array
             # and find duplicates
-            self.segments_list, bk_array = self.flatten_and_index(slist)
-            self.find_duplicates(self.segments_list)
-            self.bookkeeping_linestrings = bk_array.astype(float)
+            self._segments_list, bk_array = self._flatten_and_index(slist)
+            self._duplicates = find_duplicates(self._segments_list)
+            self._bookkeeping_linestrings = bk_array.astype(float)
 
         elif data["bookkeeping_geoms"]:
             bk_array = np_array_from_lists(data["bookkeeping_geoms"]).ravel()
             bk_array = np.expand_dims(
                 bk_array[~np.isnan(bk_array)].astype(np.int64), axis=1
             )
-            self.segments_list = data["linestrings"]
-            self.find_duplicates(data["linestrings"])
-            self.bookkeeping_linestrings = bk_array
+            self._segments_list = data["linestrings"]
+            self._duplicates = find_duplicates(data["linestrings"])
+            self._bookkeeping_linestrings = bk_array
 
         else:
-            self.segments_list = data["linestrings"]
+            self._segments_list = data["linestrings"]
 
         # prepare to return object
-        data["linestrings"] = self.segments_list
-        data["bookkeeping_duplicates"] = self.duplicates
-        data["bookkeeping_linestrings"] = self.bookkeeping_linestrings
+        data["linestrings"] = self._segments_list
+        data["bookkeeping_duplicates"] = self._duplicates
+        data["bookkeeping_linestrings"] = self._bookkeeping_linestrings
 
         return data
 
-    def flatten_and_index(self, slist):
+    def _flatten_and_index(self, slist):
         """
         Function to create a flattened list of splitted linestrings and create a
         numpy array of the bookkeeping_geoms for tracking purposes.
@@ -192,41 +193,3 @@ class Cut(Join):
         array_bk = np_array_from_lists(list_bk)
 
         return segmntlist, array_bk
-
-    def find_duplicates(self, segments_list):
-        """
-        Function for solely detecting and recording duplicate LineStrings.
-        Firstly creates couple-combinations of LineStrings. A couple is defined
-        as two linestrings where the enveloppe overlaps. Indexes of duplicates are
-        appended to the list self.duplicates.
-
-        Parameters
-        ----------
-        segments_list : list of LineString
-            list of valid LineStrings
-
-        """
-
-        # get hash of sorted linestring
-        hash_segments = []
-        for ls in segments_list:
-            hash_segments.append(hash(tuple(sorted(ls.coords))))
-        hash_segments = np.array(hash_segments, dtype=np.int64)
-
-        # get split locations of dups
-        idx_sort = np.argsort(hash_segments)
-        sorted_hashes = hash_segments[idx_sort]
-        vals, idx_start, count = np.unique(
-            sorted_hashes, return_counts=True, return_index=True
-        )
-        if count.max() > 1:
-            # split on indices that occures > 1
-            idx_dups = np.split(idx_sort, idx_start[1:])
-            idx_dups = np.array([dup for dup in idx_dups if dup.size > 1])
-
-            # apply sorting on duplicate-pairs
-            idx_dups = -np.sort(-idx_dups, axis=1)
-            idx_dups = idx_dups[np.argsort(idx_dups[:, 0])]
-            self.duplicates = idx_dups
-        else:
-            self.duplicates = []

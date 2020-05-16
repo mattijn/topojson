@@ -7,7 +7,6 @@ from .dedup import Dedup
 from ..ops import is_ccw
 from ..utils import serialize_as_svg
 from ..utils import serialize_as_json
-from ..utils import serialize_as_altair
 
 
 class Hashmap(Dedup):
@@ -19,11 +18,8 @@ class Hashmap(Dedup):
         # execute previous step
         super().__init__(data, options)
 
-        # initation topology items
-        self.simplified = False
-
         # execute main function of Hashmap
-        self.output = self.hashmapper(self.output)
+        self.output = self._hashmapper(self.output)
 
     def __repr__(self):
         return "Hashmap(\n{}\n)".format(pprint.pformat(self.output))
@@ -36,7 +32,7 @@ class Hashmap(Dedup):
         topo_object["options"] = vars(self.options)
         return topo_object
 
-    def to_svg(self, separate=False, include_junctions=False):
+    def to_svg(self, separate=False):
         """
         Display the linestrings and junctions as SVG.
 
@@ -45,11 +41,8 @@ class Hashmap(Dedup):
         separate : boolean
             If `True`, each of the linestrings will be displayed separately. 
             Default is `False`
-        include_junctions : boolean
-            If `True`, the detected junctions will be displayed as well. 
-            Default is `False`
         """
-        serialize_as_svg(self.output, separate, include_junctions)
+        serialize_as_svg(self.output, separate, include_junctions=False)
 
     def to_json(self):
         """
@@ -59,43 +52,24 @@ class Hashmap(Dedup):
         topo_object["options"] = vars(self.options)
         return serialize_as_json(topo_object, fp=None)
 
-    def to_alt(
-        self,
-        mesh=True,
-        color=None,
-        tooltip=True,
-        projection="identity",
-        objectname="data",
-    ):
+    def to_alt(self, projection="identity"):
         """
         Display as Altair visualization.
 
         Parameters
         ----------
-        mesh : boolean
-            If `True`, render arcs only (mesh object). If `False` render as geoshape. 
-            Default is `True`
-        color : str
-            Assign an property attribute to be used for color encoding. Remember that
-            most of the time the wanted attribute is nested within properties. Moreover,
-            specific type declaration is required. Eg `color='properties.name:N'`. 
-            Default is `None`
-        tooltip : boolean
-            Option to include or exclude tooltips on geoshape objects
-            Default is `True`.
         projection : str
             Defines the projection of the visualization. Defaults to a non-geographic,
             Cartesian projection (known by Altair as `identity`).
-        objectname : str
-            The name of the object within the Topology to display.
-            Default is `data` 
         """
-        topo_object = copy.copy(self.output)
-        return serialize_as_altair(
-            topo_object, mesh, color, tooltip, projection, objectname
-        )
+        from ..utils import serialize_as_altair
 
-    def hashmapper(self, data):
+        topo_object = copy.copy(self.output)
+        topo_object = geometry.MultiLineString(topo_object["linestrings"])
+
+        return serialize_as_altair(topo_object, mesh=True, geo_interface=True)
+
+    def _hashmapper(self, data):
         """
         Hashmap function resolves bookkeeping results to object arcs.
 
@@ -112,11 +86,11 @@ class Hashmap(Dedup):
         """
 
         # make data available within class
-        self.data = data
+        self._data = data
 
         # resolve bookkeeping to arcs in objects, including backward check of arcs
         # resolve bookkeeping of coordinates in objects, including delta-encodig
-        list(self.resolve_objects(["arcs", "coordinates"], self.data["objects"]))
+        list(self._resolve_objects(["arcs", "coordinates"], self._data["objects"]))
 
         objects = {}
         objects["geometries"] = []
@@ -127,7 +101,7 @@ class Hashmap(Dedup):
             if "geometries" in feat and len(feat["geometries"]) == 1:
                 feat["type"] = feat["geometries"][0]["type"]
 
-            self.resolve_arcs(feat)
+            self._resolve_arcs(feat)
 
             objects["geometries"].append(feat)
 
@@ -135,7 +109,7 @@ class Hashmap(Dedup):
         data["objects"]["data"] = objects
 
         # prepare to return object
-        data = self.data
+        data = self._data
         del data["junctions"]
         del data["bookkeeping_geoms"]
         del data["bookkeeping_coords"]
@@ -145,7 +119,7 @@ class Hashmap(Dedup):
 
         return data
 
-    def hash_order(self, arc_ids, shared_bool):
+    def _hash_order(self, arc_ids, shared_bool):
         """
         create a decision list with the following options:
         0 - skip the array
@@ -206,7 +180,7 @@ class Hashmap(Dedup):
 
         return order_of_arc, split_arc_ids
 
-    def backward_arcs(self, arc_ids):
+    def _backward_arcs(self, arc_ids):
         """
         Function to check if the shared arcs in geom should be backward.
         If so, are written as -(index+1)
@@ -222,8 +196,8 @@ class Hashmap(Dedup):
             description of output
         """
 
-        shared_bool = np.isin(arc_ids, self.data["bookkeeping_shared_arcs"])
-        order_of_arc, split_arc_ids = self.hash_order(arc_ids, shared_bool)
+        shared_bool = np.isin(arc_ids, self._data["bookkeeping_shared_arcs"])
+        order_of_arc, split_arc_ids = self._hash_order(arc_ids, shared_bool)
 
         for idx_outer, split_arc in enumerate(split_arc_ids):
             order = order_of_arc[idx_outer]
@@ -248,8 +222,8 @@ class Hashmap(Dedup):
                 if arc_idx_prev < 0:
                     arc_idx_prev = abs(arc_idx_prev) - 1
 
-                current_arc = self.data["linestrings"][arc_idx]
-                previous_arc = self.data["linestrings"][arc_idx_prev]
+                current_arc = self._data["linestrings"][arc_idx]
+                previous_arc = self._data["linestrings"][arc_idx_prev]
 
                 # get first and last coordinate of current and previous arc
                 coord_f = [current_arc.xy[0][0], current_arc.xy[1][0]]
@@ -313,9 +287,9 @@ class Hashmap(Dedup):
         if order == 3:
             # since alignment is done based on the first two arcs, need a double-check
             # if it follows the required order of the ring
-            if self.inner and self.options.winding_order == "CCW_CW":
+            if self._inner and self.options.winding_order == "CCW_CW":
                 need_ccw = False
-            elif not self.inner and (
+            elif not self._inner and (
                 self.options.winding_order == "CW_CCW"
                 or self.options.winding_order is None
             ):
@@ -323,19 +297,19 @@ class Hashmap(Dedup):
             else:
                 need_ccw = True
 
-            arc_ids = self.resolve_orient(arc_ids, need_ccw)
+            arc_ids = self._resolve_orient(arc_ids, need_ccw)
 
         return arc_ids
 
-    def resolve_orient(self, arcs_idx_geom, need_ccw):
+    def _resolve_orient(self, arcs_idx_geom, need_ccw):
         arcs_geom = []
         for arc_idx in arcs_idx_geom:
             if arc_idx < 0:
-                arc = copy.copy(self.data["linestrings"][~arc_idx])
+                arc = copy.copy(self._data["linestrings"][~arc_idx])
                 arc.coords = list(arc.coords)[::-1]
                 arcs_geom.append(arc)
             else:
-                arc = self.data["linestrings"][arc_idx]
+                arc = self._data["linestrings"][arc_idx]
                 arcs_geom.append(arc)
         lring = geometry.LinearRing(linemerge(arcs_geom))
 
@@ -344,7 +318,7 @@ class Hashmap(Dedup):
 
         return arcs_idx_geom
 
-    def resolve_bookkeeping(self, geoms, key):
+    def _resolve_bookkeeping(self, geoms, key):
         """
         Function that is activated once the key of interest in the find_arcs function
         is detected. It replaces the geom ids with the corresponding arc ids.
@@ -358,17 +332,17 @@ class Hashmap(Dedup):
 
         arcs = []
         for geom in geoms:
-            arcs_in_geom = self.data[bk_objects][geom]
+            arcs_in_geom = self._data[bk_objects][geom]
             for idx_arc, arc_ref in enumerate(arcs_in_geom):
-                arc_ids = self.data[bk_element][arc_ref]
+                arc_ids = self._data[bk_element][arc_ref]
                 if len(arc_ids) > 1 and key is not "coordinates":
-                    self.inner = True if idx_arc > 0 else False
-                    arc_ids = self.backward_arcs(arc_ids)
+                    self._inner = True if idx_arc > 0 else False
+                    arc_ids = self._backward_arcs(arc_ids)
 
                 arcs.append(arc_ids)
         return arcs
 
-    def resolve_objects(self, keys, dictionary):
+    def _resolve_objects(self, keys, dictionary):
         """
         Function that resolves the bookkeeping back to the arcs in the objects.
         Support also nested dicts such as GeometryCollections
@@ -377,17 +351,17 @@ class Hashmap(Dedup):
         for k, v in dictionary.items():
             # resolve when key equals 'arcs' and v contains arc indici
             if str(k) in keys and v is not None:
-                dictionary[k] = self.resolve_bookkeeping(v, k)
+                dictionary[k] = self._resolve_bookkeeping(v, k)
                 yield v
             elif isinstance(v, dict):
-                for result in self.resolve_objects(keys, v):
+                for result in self._resolve_objects(keys, v):
                     yield result
             elif isinstance(v, list):
                 for d in v:
-                    for result in self.resolve_objects(keys, d):
+                    for result in self._resolve_objects(keys, d):
                         yield result
 
-    def resolve_arcs(self, feat):
+    def _resolve_arcs(self, feat):
         """
         Function that resolves the arcs based on the type of the feature
         """
@@ -418,7 +392,7 @@ class Hashmap(Dedup):
 
         elif feat["type"] == "GeometryCollection":
             feat["geometries"] = [
-                self.resolve_arcs(feat) for feat in feat["geometries"]
+                self._resolve_arcs(feat) for feat in feat["geometries"]
             ]
 
         elif feat["type"] == "Point":

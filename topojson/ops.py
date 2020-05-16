@@ -738,3 +738,41 @@ def delta_encoding(linestrings):
         linestrings[idx] = ls.tolist()
 
     return linestrings
+
+
+def find_duplicates(segments_list):
+    """
+    Function for solely detecting and recording duplicate LineStrings. The function 
+    converts sorts the coordinates of each linestring and gets the hash. Using the 
+    hashes it can quickly detect duplicates and return the indices.
+
+    Parameters
+    ----------
+    segments_list : list of LineString
+        list of valid LineStrings
+
+    """
+
+    # get hash of sorted linestring
+    hash_segments = []
+    for ls in segments_list:
+        hash_segments.append(hash(tuple(sorted(ls.coords))))
+    hash_segments = np.array(hash_segments, dtype=np.int64)
+
+    # get split locations of dups
+    idx_sort = np.argsort(hash_segments)
+    sorted_hashes = hash_segments[idx_sort]
+    vals, idx_start, count = np.unique(
+        sorted_hashes, return_counts=True, return_index=True
+    )
+    if count.max() > 1:
+        # split on indices that occures > 1
+        idx_dups = np.split(idx_sort, idx_start[1:])
+        idx_dups = np.array([dup for dup in idx_dups if dup.size > 1])
+
+        # apply sorting on duplicate-pairs
+        idx_dups = -np.sort(-idx_dups, axis=1)
+        idx_dups = idx_dups[np.argsort(idx_dups[:, 0])]
+        return idx_dups
+    else:
+        return []
