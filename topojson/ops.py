@@ -560,17 +560,22 @@ def simplify(
     * https://bost.ocks.org/mike/simplify/
     """
     if package == "shapely":
+        #Dp algorithm when preserve st to False
+            preserve = False
+        if algorithm == "shapely":
+        #Otherwise, default shapely algorithm
+            preserve = True
 
         if input_as == "array":
             list_arcs = []
             for ls in linestrings:
                 coords_to_simp = ls[~np.isnan(ls)[:, 0]]
                 simple_ls = geometry.LineString(coords_to_simp)
-                simple_ls = simple_ls.simplify(epsilon, preserve_topology=False)
+                simple_ls = simple_ls.simplify(epsilon, preserve_topology=preserve)
                 list_arcs.append(np.array(simple_ls).tolist())
         elif input_as == "linestring":
             for idx, ls in enumerate(linestrings):
-                linestrings[idx] = ls.simplify(epsilon, preserve_topology=False)
+                linestrings[idx] = ls.simplify(epsilon, preserve_topology=preserve)
             list_arcs = linestrings
 
     elif package == "simplification":
