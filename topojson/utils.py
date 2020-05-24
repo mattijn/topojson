@@ -45,10 +45,11 @@ class TopoOptions(object):
         topoquantize=False,
         presimplify=False,
         toposimplify=False,
+        shared_coords=False,
+        prevent_oversimplify=True,
         simplify_with="shapely",
         simplify_algorithm="dp",
         winding_order=None,
-        shared_paths="shapely",
     ):
         # get all arguments
         arguments = locals()
@@ -80,6 +81,16 @@ class TopoOptions(object):
         else:
             self.toposimplify = False
 
+        if "shared_coords" in arguments:
+            self.shared_coords = arguments["shared_coords"]
+        else:
+            self.shared_coords = False
+
+        if "prevent_oversimplify" in arguments:
+            self.prevent_oversimplify = arguments["prevent_oversimplify"]
+        else:
+            self.prevent_oversimplify = True
+
         if "simplify_with" in arguments:
             self.simplify_with = arguments["simplify_with"]
         else:
@@ -94,11 +105,6 @@ class TopoOptions(object):
             self.winding_order = arguments["winding_order"]
         else:
             self.winding_order = None
-
-        if "shared_paths" in arguments:
-            self.shared_paths = arguments["shared_paths"]
-        else:
-            self.shared_paths = "shapely"
 
     def __repr__(self):
         return "TopoOptions(\n  {}\n)".format(pprint.pformat(self.__dict__))

@@ -29,27 +29,40 @@ class Topology(Hashmap):
         Specifiy if the topology should be computed for deriving the TopoJSON. 
         Default is True.
     prequantize : boolean, int
-        If the prequantization parameter is specified, the input geometry is quantized
-        prior to computing the topology, the returned topology is quantized, and its 
-        arcs are delta-encoded. Quantization is recommended to improve the quality of 
-        the topology if the input geometry is messy (i.e., small floating point error 
-        means that adjacent boundaries do not have identical values); typical values 
-        are powers of ten, such as 1e4, 1e5 or 1e6. Default is True (which correspond 
-        to a quantize factor of 1e6).
+        If the prequantization parameter is specified, the input geometry is 
+        quantized prior to computing the topology, the returned topology is 
+        quantized, and its arcs are delta-encoded. Quantization is recommended to 
+        improve the quality of the topology if the input geometry is messy (i.e., 
+        small floating point error means that adjacent boundaries do not have 
+        identical values); typical values are powers of ten, such as `1e4`, `1e5` or 
+        `1e6`. Default is `True` (which correspond to a quantize factor of `1e6`).
     topoquantize : boolean or int
         If the topoquantization parameter is specified, the input geometry is quantized 
         after the topology is constructed. If the topology is already quantized this 
-        will be resolved first before the topoquantization is applied. 
-        Default is False.
+        will be resolved first before the topoquantization is applied. See for more 
+        details the `prequantize` parameter. Default is `False`.
     presimplify : boolean, float
         Apply presimplify to remove unnecessary points from linestrings before the 
         topology is constructed. This will simplify the input geometries. 
-        Default is False.
-    toposimplify : boolean,float 
-        Apply toposimplify to remove unnecessary points from arcs after the topology is 
-        constructed. This will simplify the constructed arcs without altering the 
-        topological relations. Sensible values are in the range of 0.0001 to 10. 
-        Defaults to 0.0001.
+        Default is `False`.
+    toposimplify : boolean, float 
+        Apply toposimplify to remove unnecessary points from arcs after the topology 
+        is constructed. This will simplify the constructed arcs without altering the 
+        topological relations. Sensible values for coordinates stored in degrees are 
+        in the range of `0.0001` to `10`. Defaults to False.
+    shared_coords : boolean
+        Sets the strategy to detect junctions. When set to `True` a path is 
+        considered shared when all coordinates appear in both paths 
+        (`coords-connected`). When set to `False` a path is considered shared when 
+        coordinates are the same path (`path-connected`). The path-connected strategy 
+        is more 'correct', but slower. Default is `False`.
+    prevent_oversimplify: boolean
+        If this setting is set to `True`, the simplification is slower, but the 
+        likelihood of producing valid geometries is higher as it prevents 
+        oversimplification. Simplification happens on paths separately, so this 
+        setting is especially relevant for rings with no partial shared paths. This 
+        is also known as a topology-preserving variant of simplification. 
+        Default is `True`.        
     simplify_with : str
         Sets the package to use for simplifying (both pre- and toposimplify). Choose 
         between `shapely` or `simplification`. Shapely adopts solely Douglas-Peucker 
@@ -57,18 +70,15 @@ class Topology(Hashmap):
         simplification is known to be quicker than shapely. 
         Default is `shapely`.
     simplify_algorithm : str
-        Choose between 'dp' and 'vw', for Douglas-Peucker or Visvalingam-Whyatt 
-        respectively. 'vw' will only be selected if `simplify_with` is set to 
+        Choose between `dp` and `vw`, for Douglas-Peucker or Visvalingam-Whyatt 
+        respectively. `vw` will only be selected if `simplify_with` is set to 
         `simplification`. Default is `dp`, since it still "produces the most accurate 
         generalization" (Chi & Cheung, 2006).
     winding_order : str
         Determines the winding order of the features in the output geometry. Choose 
-        between `CW_CCW` for clockwise orientation for outer rings and counter-clockwise
-        for interior rings. Or `CCW_CW` for counter-clockwise for outer rings and 
-        clockwise for interior rings. Default is `CW_CCW`.
-    shared_paths : str
-         Sets the shared paths strategy. Choose `coords` for speed or `shapely` for
-         correctness in case of topologically unprecise geometry.
+        between `CW_CCW` for clockwise orientation for outer rings and counter-
+        clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer 
+        rings and clockwise for interior rings. Default is `CW_CCW`.
     """
 
     def __init__(
@@ -78,11 +88,12 @@ class Topology(Hashmap):
         prequantize=True,
         topoquantize=False,
         presimplify=False,
-        toposimplify=0.0001,
+        toposimplify=False,
+        shared_coords=False,
+        prevent_oversimplify=True,
         simplify_with="shapely",
         simplify_algorithm="dp",
         winding_order="CW_CCW",
-        shared_paths="shapely",
     ):
 
         options = TopoOptions(locals())
@@ -288,6 +299,25 @@ class Topology(Hashmap):
         )
 
     def topoquantize(self, quant_factor, inplace=False):
+        """
+        Quantization is recommended to improve the quality of the topology if the 
+        input geometry is messy (i.e., small floating point error means that 
+        adjacent boundaries do not have identical values); typical values are powers 
+        of ten, such as `1e4`, `1e5` or  `1e6`.
+
+        Parameters
+        ----------
+        quant_factor : float
+            tolerance parameter
+        inplace : bool, optional
+            If `True`, do operation inplace and return `None`. Default is `False`.
+
+        Returns
+        -------
+        object or None
+            Quantized coordinates and delta-encoded arcs or `None` if `inplace` 
+            is `True`. 
+        """
         result = copy.deepcopy(self)
         arcs = result.output["arcs"]
 
@@ -319,7 +349,29 @@ class Topology(Hashmap):
         else:
             return result
 
-    def toposimplify(self, epsilon, _input_as="array", inplace=False):
+    def toposimplify(self, epsilon, inplace=False, _input_as="array"):
+        """
+        Apply toposimplify to remove unnecessary points from arcs after the topology 
+        is constructed. This will simplify the constructed arcs without altering the 
+        topological relations. Sensible values for coordinates stored in degrees are 
+        in the range of `0.0001` to `10`.
+
+        Parameters
+        ----------
+        epsilon : float
+            tolerance parameter.
+        inplace : bool, optional
+            If `True`, do operation inplace and return `None`. Default is `False`.
+        _input_as : str, optional
+            Do not use. Internal used parameter. It can be `linestring` or `array`.
+            Default is `array`.
+
+        Returns
+        -------
+        object or None
+            Returns the Topology object with the simplified linestrings or `None` if
+            `inplace` is `True`. 
+        """
         result = copy.deepcopy(self)
 
         arcs = result.output["arcs"]
@@ -341,6 +393,7 @@ class Topology(Hashmap):
                 algorithm=result.options.simplify_algorithm,
                 package=result.options.simplify_with,
                 input_as=_input_as,
+                prevent_oversimplify=result.options.prevent_oversimplify,
             )
 
         # quantize aqain if quantization was applied

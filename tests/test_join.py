@@ -594,7 +594,7 @@ def test_join_linemerge_multilinestring():
             "cba": {"type": "LineString", "coordinates": [[2, 0], [1, 0], [0, 0]]},
             "ab": {"type": "LineString", "coordinates": [[0, 0], [1, 0]]},
         }
-        topo = Join(data, options={"shared_paths": "dict"}).to_dict()
+        topo = Join(data, options={"shared_coords": True}).to_dict()
 
         assert geometry.MultiPoint(topo["junctions"]).equals(
             geometry.MultiPoint([(0.0, 0.0), (1.0, 0.0)])
