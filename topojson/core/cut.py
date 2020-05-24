@@ -76,7 +76,9 @@ class Cut(Join):
             If `True`, the detected junctions will be displayed as well. 
             Default is `False`
         """
-        serialize_as_svg(self.output, separate, include_junctions)
+        serialize_as_svg(
+            self.output, separate=separate, include_junctions=include_junctions
+        )
 
     def _cutter(self, data):
         """
@@ -115,7 +117,7 @@ class Cut(Join):
             tree_splitter = STRtree(mp)
             slist = []
             # junctions are only existing in coordinates of linestring
-            if self.options.shared_paths == "coords":
+            if self.options.shared_coords:
                 for ls in data["linestrings"]:
                     line, splitter = np_array_bbox_points_line(ls, tree_splitter)
                     # prev function returns None for splitter if there is nothing to split

@@ -1,4 +1,5 @@
 import itertools
+import logging
 import numpy as np
 from shapely import geometry
 from shapely import wkt
@@ -516,6 +517,7 @@ def simplify(
     algorithm="dp",
     package="simplification",
     input_as="linestring",
+    prevent_oversimplify=True,
 ):
     """
     Function that simplifies linestrings. The goal of line simplification is to reduce
@@ -566,19 +568,35 @@ def simplify(
             for ls in linestrings:
                 coords_to_simp = ls[~np.isnan(ls)[:, 0]]
                 simple_ls = geometry.LineString(coords_to_simp)
-                simple_ls = simple_ls.simplify(epsilon, preserve_topology=False)
+                simple_ls = simple_ls.simplify(
+                    epsilon, preserve_topology=prevent_oversimplify
+                )
                 list_arcs.append(np.array(simple_ls).tolist())
         elif input_as == "linestring":
             for idx, ls in enumerate(linestrings):
-                linestrings[idx] = ls.simplify(epsilon, preserve_topology=False)
+                linestrings[idx] = ls.simplify(
+                    epsilon, preserve_topology=prevent_oversimplify
+                )
             list_arcs = linestrings
 
     elif package == "simplification":
         from simplification import cutil
 
-        if algorithm == "vw":
+        if algorithm == "vw" and prevent_oversimplify:
+            alg = cutil.simplify_coords_vwp
+        elif algorithm == "vw" and not prevent_oversimplify:
             alg = cutil.simplify_coords_vw
-
+        elif algorithm == "dp" and prevent_oversimplify:
+            logging.warning(
+                (
+                    "The Douglas–Peucker algorithm within the `simplification` package",
+                    "has no options to prevent oversimplification. Use Visvalingam–",
+                    "Whyatt (`vw`) algorithm when using the simplification package or",
+                    "use Douglas-Peucker algorithm from `shapely` package to prevent",
+                    "oversimplification",
+                )
+            )
+            alg = cutil.simplify_coords
         else:
             alg = cutil.simplify_coords
 

@@ -137,6 +137,7 @@ class Join(Extract):
                 algorithm=self.options.simplify_algorithm,
                 package=self.options.simplify_with,
                 input_as="linestring",
+                prevent_oversimplify=self.options.prevent_oversimplify,
             )
 
         # compute the bounding box of input geometry
@@ -168,7 +169,7 @@ class Join(Extract):
             data["junctions"] = self._junctions
             return data
 
-        if self.options.shared_paths == "coords":
+        if self.options.shared_coords:
 
             def _get_verts(geom):
                 # get coords of each LineString
