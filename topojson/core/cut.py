@@ -123,9 +123,9 @@ class Cut(Join):
                     # prev function returns None for splitter if there is nothing to split
                     if splitter is not None:
                         slines = fast_split(line, splitter)
-                        slist.append(list(geometry.asMultiLineString(slines)))
+                        slist.append(slines)
                     else:
-                        slist.append([ls])
+                        slist.append(np.array([ls.coords]))
 
             # junctions can exist between existing coords of linestring
             else:
@@ -135,9 +135,9 @@ class Cut(Join):
                     # prev function returns None for splitter if there is nothing to split
                     if splitter is not None:
                         slines = fast_split(line, splitter)
-                        slist.append(list(geometry.MultiLineString(slines)))
+                        slist.append(slines)
                     else:
-                        slist.append([ls])
+                        slist.append(np.array([ls.coords]))
 
             # flatten the splitted linestrings, create bookkeeping_geoms array
             # and find duplicates
@@ -151,7 +151,7 @@ class Cut(Join):
                 bk_array[~np.isnan(bk_array)].astype(np.int64), axis=1
             )
             self._segments_list = data["linestrings"]
-            self._duplicates = find_duplicates(data["linestrings"])
+            self._duplicates = find_duplicates(data["linestrings"], type="linestring")
             self._bookkeeping_linestrings = bk_array
 
         else:
