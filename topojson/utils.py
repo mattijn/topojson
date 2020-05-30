@@ -3,7 +3,6 @@ from types import SimpleNamespace
 import numpy as np
 import pprint
 import json
-import types
 from .ops import dequantize
 from .ops import np_array_from_arcs
 
@@ -461,7 +460,7 @@ def serialize_as_json(topo_object, fp, pretty=False, indent=4, maxlinelength=88)
                     file=f,
                 )
             else:
-                print(topo_object, file=f)
+                json.dump(topo_object, fp=f)
     else:
         if pretty:
             return prettyjson(topo_object, indent=indent, maxlinelength=maxlinelength)
