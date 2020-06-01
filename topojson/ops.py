@@ -210,15 +210,15 @@ def signed_area(ring):
 
     Parameters
     ----------
-    ring : shapely.geometry.LinearRing
-        an exterior or inner ring of a shapely.geometry.Polygon
+    ring : numpy.array
+        coordinates representing an exterior or inner ring
 
     Returns
     -------
     float
         the signed area
     """
-    xs, ys = np.array(ring.coords).T
+    xs, ys = ring.T
     signed_area = (xs * (np.roll(ys, -1) - np.roll(ys, +1))).sum() / 2
     return signed_area
 
@@ -229,8 +229,8 @@ def is_ccw(ring):
 
     Parameters
     ----------
-    ring : shapely.geometry.LinearRing
-        an exterior or inner ring of a shapely.geometry.Polygon
+    ring : numpy.array
+        coordinates representing an exterior or inner ring
 
     Returns
     -------

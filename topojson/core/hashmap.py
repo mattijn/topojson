@@ -305,7 +305,7 @@ class Hashmap(Dedup):
             else:
                 arc = self._data["linestrings"][arc_idx]
                 arcs_geom.append(arc)
-        lring = geometry.LinearRing(linemerge(arcs_geom))
+        lring = np.vstack(arcs_geom)
 
         if is_ccw(lring) != need_ccw:
             arcs_idx_geom = (np.array(arcs_idx_geom) * -1 - 1).tolist()
