@@ -778,7 +778,7 @@ def find_duplicates(segments_list, type="array"):
 
     if type == "array":
         for path in segments_list:
-            hash_segments.append(hash(bytes(path[path[:, 0].argsort()])))
+            hash_segments.append(hash(bytes(np.sort(path, axis=0))))
 
     else:
         for path in segments_list:

@@ -2,7 +2,6 @@ import copy
 import pprint
 import numpy as np
 from shapely import geometry
-from shapely.ops import linemerge
 from .dedup import Dedup
 from ..ops import is_ccw
 from ..utils import serialize_as_svg

@@ -213,7 +213,7 @@ class Dedup(Cut):
             no_ndp_arcs_bk = len(ndp_arcs_bk)
 
             # apply linemerge
-            ndp_arcs = linemerge([data["linestrings"][i] for i in ndp_arcs_bk])
+            ndp_arcs = linemerge([data["linestrings"][i].tolist() for i in ndp_arcs_bk])
             if isinstance(ndp_arcs, geometry.LineString):
                 ndp_arcs = [ndp_arcs]
             no_ndp_arcs = len(ndp_arcs)

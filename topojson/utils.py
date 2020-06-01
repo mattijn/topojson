@@ -429,12 +429,14 @@ def serialize_as_svg(topo_object, separate=False, include_junctions=False):
 
     if separate and not include_junctions:
         for ix, line in enumerate(arcs):
+            line = geometry.LineString(line)
             svg = line._repr_svg_()
             print(ix, line.wkt)
             display(SVG(svg))
     elif separate and include_junctions:
         pts = topo_object["junctions"]
         for ix, line in enumerate(arcs):
+            line = geometry.LineString(line)
             svg = geometry.GeometryCollection(
                 [line, geometry.MultiPoint(pts)]
             )._repr_svg_()
