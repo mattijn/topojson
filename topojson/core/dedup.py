@@ -4,6 +4,7 @@ import numpy as np
 from shapely import geometry
 from shapely.ops import linemerge
 from .cut import Cut
+from ..ops import asvoid
 from ..ops import np_array_from_lists
 from ..ops import lists_from_np_array
 from ..utils import serialize_as_svg
@@ -128,8 +129,12 @@ class Dedup(Cut):
         """
 
         for segment_idx in range(no_ndp_arcs):
+            # create void of array interface
+            ai = ndp_arcs[segment_idx].__array_interface__
+            ai_merged = asvoid(np.asarray(ai["data"]).reshape(ai["shape"]))
+            # use in1d function as .contains proxy
             merged_arcs_bool = [
-                ndp_arcs[segment_idx].contains(data["linestrings"][i])
+                np.in1d(asvoid(data["linestrings"][i]), ai_merged).any()
                 for i in ndp_arcs_bk
             ].count(True)
             if merged_arcs_bool == 2:
