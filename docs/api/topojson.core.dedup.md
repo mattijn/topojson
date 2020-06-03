@@ -87,9 +87,9 @@ The arcs that can be popped are placed within the merged_arcs_idx list
 > + ###### `sliced_array_bk_ndp` : (numpy.ndarray)
     bookkeeping array where shared linestrings are set to np.nan.
 
-### pop_merged_arcs
+### _pop_merged_arcs
 ```python
-Dedup.pop_merged_arcs(self, data, array_bk, array_bk_sarcs)
+Dedup._pop_merged_arcs(self, data, array_bk, array_bk_sarcs)
 ```
 
 The collected indici that can be popped, since they have been merged

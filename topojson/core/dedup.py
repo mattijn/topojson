@@ -67,7 +67,10 @@ class Dedup(Cut):
         # deduplicate equal geometries
         # create numpy array from bookkeeping_geoms variable for numerical computation
         # np_array_from_lists(data["bookkeeping_linestrings"])
-        array_bk = np.vstack(data["bookkeeping_linestrings"])
+        if len(data["bookkeeping_linestrings"]):
+            array_bk = np.vstack(data["bookkeeping_linestrings"])
+        else:
+            array_bk = np.array([])
         array_bk_sarcs = None
         if len(data["bookkeeping_duplicates"]):
             array_bk_sarcs, dup_pair_list = self._deduplicate(
@@ -129,12 +132,11 @@ class Dedup(Cut):
         """
 
         for segment_idx in range(no_ndp_arcs):
-            # create void of array interface
-            ai = ndp_arcs[segment_idx].__array_interface__
-            ai_merged = asvoid(np.asarray(ai["data"]).reshape(ai["shape"]))
-            # use in1d function as .contains proxy
+            # use in1d function as proxy for contains
             merged_arcs_bool = [
-                np.in1d(asvoid(data["linestrings"][i]), ai_merged).any()
+                np.in1d(
+                    asvoid(data["linestrings"][i]), asvoid(ndp_arcs[segment_idx])
+                ).any()
                 for i in ndp_arcs_bk
             ].count(True)
             if merged_arcs_bool == 2:
@@ -235,7 +237,7 @@ class Dedup(Cut):
                 # keep last arc of non-duplicate arcs and pop the remaining arcs
                 idx_keep = ndp_arcs_bk[-1]
                 # replace linestring of idx_keep with merged linestring
-                data["linestrings"][idx_keep] = ndp_arcs[idx_merg_arc]
+                data["linestrings"][idx_keep] = np.asarray(ndp_arcs[idx_merg_arc])
                 if consec_behavior == "first_last":
                     idx_pop = ndp_arcs_bk[0]
                     self._merged_arcs_idx.append(idx_pop)
