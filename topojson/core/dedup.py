@@ -5,6 +5,7 @@ from shapely import geometry
 from shapely.ops import linemerge
 from .cut import Cut
 from ..ops import asvoid
+from ..ops import map_values
 from ..ops import np_array_from_lists
 from ..ops import lists_from_np_array
 from ..utils import serialize_as_svg
@@ -73,7 +74,7 @@ class Dedup(Cut):
             array_bk = np.array([])
         array_bk_sarcs = None
         if len(data["bookkeeping_duplicates"]):
-            array_bk_sarcs, dup_pair_list = self._deduplicate(
+            array_bk, array_bk_sarcs = self._deduplicate(
                 data["bookkeeping_duplicates"], data["linestrings"], array_bk
             )
 
@@ -103,9 +104,7 @@ class Dedup(Cut):
         data["bookkeeping_arcs"] = lists_from_np_array(array_bk)
         if len(data["bookkeeping_duplicates"]):
             data["bookkeeping_shared_arcs"] = array_bk_sarcs.astype(np.int64).tolist()
-            data["bookkeeping_duplicates"] = lists_from_np_array(
-                data["bookkeeping_duplicates"][dup_pair_list != -99]
-            )
+            data["bookkeeping_duplicates"] = []
         else:
             data["bookkeeping_shared_arcs"] = []
 
@@ -144,7 +143,7 @@ class Dedup(Cut):
             elif merged_arcs_bool == len(ndp_arcs_bk):
                 return segment_idx, "all"
 
-    def _deduplicate(self, dup_pair_list, linestring_list, array_bk):
+    def _deduplicate(self, bk_dups, linestring_list, array_bk):
         """
         Function to deduplicate items
 
@@ -160,44 +159,45 @@ class Dedup(Cut):
         Returns
         -------
         numpy.ndarray
-            bookkeeping array of shared arcs
+            new array of bookkeeping linestrings
         numpy.ndarray
-            array where each processed pair is set to -99
+            bookkeeping array of shared arcs
         """
+        # guarantee that first column contain higher values than second column
+        bk_dups.sort(axis=1)
+        bk_dups = bk_dups[:, ::-1]
 
-        # sort the dup_pair_list by the 1st column (idx_keep) in descending order
-        dup_pair_list = dup_pair_list[dup_pair_list[:, 0].argsort()[::-1]]
-        # initiate an array with np.nans, where sizes equals number of duplicates
-        array_bk_sarcs = np.empty(len(dup_pair_list))
-        array_bk_sarcs.fill(np.nan)
+        # define arrays from wich the indices can be kept and popped
+        vals2keep = bk_dups[:, 0]
+        vals2pop = bk_dups[:, 1]
 
-        # start deduping
-        for idx, dup_pair in enumerate(dup_pair_list):
-            idx_keep = dup_pair[0]
-            idx_pop = dup_pair[1]
+        # remove duplicate linestrings (loop over indices backwards to avoid popping subsequent indices)
+        for idx in sorted(vals2pop, reverse=True):
+            del linestring_list[idx]
 
-            # remove duplicate linestring
-            del linestring_list[idx_pop]
+        # prepare bookkeeping array, add +1 so NaN can be 0 and array only contains positive integers
+        arr = array_bk + 1
+        arr[np.isnan(arr)] = 0
+        arr = arr.astype(np.int64)
 
-            # change reference duplicate to idx_keep
-            no_dups = array_bk[array_bk == idx_pop].size
-            array_bk[array_bk == idx_pop] = idx_keep
+        # replace duplicates by single values, add +1 since NaNs are on 0
+        arr_map = map_values(arr, vals2pop + 1, vals2keep + 1)
 
-            # next run may affect previous runs, maintain bookkeeping and change
-            # all elements greater than the index which was removed.
-            with np.errstate(invalid="ignore"):
-                array_bk[array_bk > idx_pop] -= no_dups
-                dup_pair_list[dup_pair_list > idx_pop] -= no_dups
-                array_bk_sarcs[array_bk_sarcs > idx_pop] -= no_dups
+        # popped indices changes the bookkeeping, align decremented indices
+        # add +1 since NaNs are on 0
+        arr_bin = np.digitize(arr_map, sorted(vals2pop + 1), right=False)
+        arr_new = arr_map - arr_bin
 
-            # store shared arc index
-            idx2keep = idx_keep if idx_pop > idx_keep else idx_keep - 1
-            array_bk_sarcs[idx] = idx2keep
+        # set 0 to nan and subtract -1
+        arr_new = arr_new.astype(float)
+        arr_new[arr_new == 0] = np.nan
+        arr_new -= 1
 
-            # set duplicate entry to -99
-            dup_pair_list[idx, :] = -99
+        # collect new indices of shared ars
+        u, c = np.unique(arr_new, return_counts=True)
+        arr_bk_sarcs = u[c > 1]
 
-        return array_bk_sarcs, dup_pair_list
+        return arr_new, arr_bk_sarcs
 
     def _merge_contigious_arcs(self, data, sliced_array_bk_ndp):
         """

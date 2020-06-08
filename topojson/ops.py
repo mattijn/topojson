@@ -803,3 +803,33 @@ def find_duplicates(segments_list, type="array"):
         return idx_dups
     else:
         return []
+
+
+def map_values(arr, search_vals, replace_vals):
+    """
+    This function replace values element-wise in a numpy array.
+    Its quick and avoids a np.where-loop (which is slow).
+    The result is a new array, not inplace.
+    
+    Parameters
+    ----------
+    arr : np.array
+        input array
+    search_vals : list or 1D np.array
+        array with 'bad' values
+    replace_vals : list or 1D np.array
+        array with 'good' values
+    
+    Returns
+    -------
+    arr_upd : np.array
+        new array with replaced values
+    """
+    N = max(arr.max(), max(search_vals)) + 1
+    mapar = np.empty(N, dtype=np.int64)
+
+    mapar[arr] = arr
+    mapar[search_vals] = replace_vals
+
+    arr_upd = mapar[arr]
+    return arr_upd
