@@ -168,18 +168,23 @@ def geometry(obj, tp_arcs, transform=None):
         return {"type": obj["type"], "geometries": geometries}
 
     if obj["type"] == "MultiPoint":
-        scale = transform["scale"]
-        translate = transform["translate"]
-        coords = obj["coordinates"]
-        point_coords = dequantize(np.array(coords), scale, translate).tolist()
+        if transform is not None:
+            scale = transform["scale"]
+            translate = transform["translate"]
+            coords = obj["coordinates"]
+            point_coords = dequantize(np.array(coords), scale, translate).tolist()
+        else:
+            point_coords = obj["coordinates"]
         return {"type": obj["type"], "coordinates": point_coords}
 
     if obj["type"] == "Point":
-        scale = transform["scale"]
-        translate = transform["translate"]
-        coords = [obj["coordinates"]]
-
-        point_coord = dequantize(np.array(coords), scale, translate).tolist()
+        if transform is not None:
+            scale = transform["scale"]
+            translate = transform["translate"]
+            coords = [obj["coordinates"]]
+            point_coord = dequantize(np.array(coords), scale, translate).tolist()
+        else:
+            point_coord = [obj["coordinates"]]
         return {"type": obj["type"], "coordinates": point_coord[0]}
 
     else:
@@ -479,7 +484,7 @@ def serialize_as_geojson(
     validate=False,
     objectname="data",
 ):
-    from shapely.geometry import asShape
+    from shapely.geometry import shape
 
     # prepare arcs from topology object
     arcs = topo_object["arcs"]
@@ -511,7 +516,7 @@ def serialize_as_geojson(
         # the transform is only used in cases of points or multipoints
         geommap = geometry(feature, np_arcs, transform)
         if validate:
-            geom = asShape(geommap).buffer(0)
+            geom = shape(geommap).buffer(0)
             assert geom.is_valid
             f["geometry"] = geom.__geo_interface__
         else:

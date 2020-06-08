@@ -444,7 +444,7 @@ class Topology(Hashmap):
 
                 for idx, val in enumerate(lofl):
                     coord = data["coordinates"][val]
-                    lofl[idx] = [int(coord.xy[0][0]), int(coord.xy[1][0])]
+                    lofl[idx] = np.asarray(coord).tolist()
 
                 feat["coordinates"] = lofl[0] if len(lofl) == 1 else lofl
                 feat.pop("reset_coords", None)

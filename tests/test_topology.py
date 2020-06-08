@@ -312,11 +312,8 @@ def test_topology_to_geojson_polygon_point():
 
 def test_topology_to_geojson_quantized_points_only():
     data = [{"type": "MultiPoint", "coordinates": [[0.5, 0.5], [1.0, 1.0]]}]
-    topo = topojson.Topology(data, prequantize=True).to_dict()
+    topo = topojson.Topology(data, prequantize=False).to_geojson()
 
-    assert len(topo["arcs"]) == 0
-    assert topo["objects"]["data"]["geometries"][0]["coordinates"] == [
-        [0, 0],
-        [999999, 999999],
-    ]
-    assert topo["transform"]["translate"] == [0.5, 0.5]
+    jtp = json.loads(topo)
+    assert jtp["type"] == "FeatureCollection"
+    assert jtp["features"][0]["geometry"]["coordinates"] == [[0.5, 0.5], [1.0, 1.0]]
