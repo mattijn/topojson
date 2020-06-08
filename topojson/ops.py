@@ -210,15 +210,15 @@ def signed_area(ring):
 
     Parameters
     ----------
-    ring : shapely.geometry.LinearRing
-        an exterior or inner ring of a shapely.geometry.Polygon
+    ring : numpy.array
+        coordinates representing an exterior or inner ring
 
     Returns
     -------
     float
         the signed area
     """
-    xs, ys = np.array(ring.coords).T
+    xs, ys = ring.T
     signed_area = (xs * (np.roll(ys, -1) - np.roll(ys, +1))).sum() / 2
     return signed_area
 
@@ -229,8 +229,8 @@ def is_ccw(ring):
 
     Parameters
     ----------
-    ring : shapely.geometry.LinearRing
-        an exterior or inner ring of a shapely.geometry.Polygon
+    ring : numpy.array
+        coordinates representing an exterior or inner ring
 
     Returns
     -------
@@ -758,7 +758,7 @@ def delta_encoding(linestrings):
     return linestrings
 
 
-def find_duplicates(segments_list):
+def find_duplicates(segments_list, type="array"):
     """
     Function for solely detecting and recording duplicate LineStrings. The function 
     converts sorts the coordinates of each linestring and gets the hash. Using the 
@@ -766,15 +766,24 @@ def find_duplicates(segments_list):
 
     Parameters
     ----------
-    segments_list : list of LineString
-        list of valid LineStrings
+    segments_list : list of paths
+        list of valid paths
+    type : str
+        set if paths is `array` or `linestring`
 
     """
 
-    # get hash of sorted linestring
+    # get hash of sorted paths
     hash_segments = []
-    for ls in segments_list:
-        hash_segments.append(hash(tuple(sorted(ls.coords))))
+
+    if type == "array":
+        for path in segments_list:
+            hash_segments.append(hash(bytes(np.sort(path, axis=0))))
+
+    else:
+        for path in segments_list:
+            hash_segments.append(hash(tuple(sorted(path.coords))))
+
     hash_segments = np.array(hash_segments, dtype=np.int64)
 
     # get split locations of dups

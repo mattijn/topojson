@@ -182,3 +182,10 @@ def test_dedup_linemerge_multilinestring():
 
     assert len(topo["linestrings"]) == 9
     assert len(topo["junctions"]) == 7
+
+
+# def test_dedup_junctions_coords():
+#     data = geopandas.read_file("tests/files_geojson/sample.geojson")
+#     topo = Dedup(data, options={"shared_coords": True}).to_dict()
+
+#     assert len(topo["linestrings"]) == 3

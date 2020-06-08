@@ -4,6 +4,7 @@ import numpy as np
 from shapely import geometry
 from shapely.ops import linemerge
 from .cut import Cut
+from ..ops import asvoid
 from ..ops import np_array_from_lists
 from ..ops import lists_from_np_array
 from ..utils import serialize_as_svg
@@ -65,7 +66,11 @@ class Dedup(Cut):
 
         # deduplicate equal geometries
         # create numpy array from bookkeeping_geoms variable for numerical computation
-        array_bk = np_array_from_lists(data["bookkeeping_linestrings"])
+        # np_array_from_lists(data["bookkeeping_linestrings"])
+        if len(data["bookkeeping_linestrings"]):
+            array_bk = np.vstack(data["bookkeeping_linestrings"])
+        else:
+            array_bk = np.array([])
         array_bk_sarcs = None
         if len(data["bookkeeping_duplicates"]):
             array_bk_sarcs, dup_pair_list = self._deduplicate(
@@ -127,8 +132,11 @@ class Dedup(Cut):
         """
 
         for segment_idx in range(no_ndp_arcs):
+            # use in1d function as proxy for contains
             merged_arcs_bool = [
-                ndp_arcs[segment_idx].contains(data["linestrings"][i])
+                np.in1d(
+                    asvoid(data["linestrings"][i]), asvoid(ndp_arcs[segment_idx])
+                ).any()
                 for i in ndp_arcs_bk
             ].count(True)
             if merged_arcs_bool == 2:
@@ -212,7 +220,7 @@ class Dedup(Cut):
             no_ndp_arcs_bk = len(ndp_arcs_bk)
 
             # apply linemerge
-            ndp_arcs = linemerge([data["linestrings"][i] for i in ndp_arcs_bk])
+            ndp_arcs = linemerge([data["linestrings"][i].tolist() for i in ndp_arcs_bk])
             if isinstance(ndp_arcs, geometry.LineString):
                 ndp_arcs = [ndp_arcs]
             no_ndp_arcs = len(ndp_arcs)
@@ -229,7 +237,7 @@ class Dedup(Cut):
                 # keep last arc of non-duplicate arcs and pop the remaining arcs
                 idx_keep = ndp_arcs_bk[-1]
                 # replace linestring of idx_keep with merged linestring
-                data["linestrings"][idx_keep] = ndp_arcs[idx_merg_arc]
+                data["linestrings"][idx_keep] = np.asarray(ndp_arcs[idx_merg_arc])
                 if consec_behavior == "first_last":
                     idx_pop = ndp_arcs_bk[0]
                     self._merged_arcs_idx.append(idx_pop)

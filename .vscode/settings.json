@@ -9,7 +9,9 @@
   },
   "python.pythonPath": "/usr/local/bin/python3",
   "python.formatting.provider": "black",
-  "python.testing.pytestArgs": ["tests"],
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
   "python.testing.unittestEnabled": false,
   "python.testing.nosetestsEnabled": false,
   "python.testing.pytestEnabled": true

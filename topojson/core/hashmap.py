@@ -2,7 +2,6 @@ import copy
 import pprint
 import numpy as np
 from shapely import geometry
-from shapely.ops import linemerge
 from .dedup import Dedup
 from ..ops import is_ccw
 from ..utils import serialize_as_svg
@@ -226,19 +225,13 @@ class Hashmap(Dedup):
                 previous_arc = self._data["linestrings"][arc_idx_prev]
 
                 # get first and last coordinate of current and previous arc
-                coord_f = [current_arc.xy[0][0], current_arc.xy[1][0]]
-                coord_l = [current_arc.xy[0][-1], current_arc.xy[1][-1]]
+                coord_f = current_arc[0]
+                coord_l = current_arc[-1]
 
                 if not previous_arc_backwards:
-                    coords_prev = [
-                        [previous_arc.xy[0][0], previous_arc.xy[1][0]],
-                        [previous_arc.xy[0][-1], previous_arc.xy[1][-1]],
-                    ]
+                    coords_prev = previous_arc[[0, -1]]
                 else:
-                    coords_prev = [
-                        [previous_arc.xy[0][-1], previous_arc.xy[1][-1]],
-                        [previous_arc.xy[0][0], previous_arc.xy[1][0]],
-                    ]
+                    coords_prev = previous_arc[[-1, 0]]
                 coord_f_prev = coords_prev[0]
                 coord_l_prev = coords_prev[1]
 
@@ -306,12 +299,12 @@ class Hashmap(Dedup):
         for arc_idx in arcs_idx_geom:
             if arc_idx < 0:
                 arc = copy.copy(self._data["linestrings"][~arc_idx])
-                arc.coords = list(arc.coords)[::-1]
+                arc = arc[::-1]
                 arcs_geom.append(arc)
             else:
                 arc = self._data["linestrings"][arc_idx]
                 arcs_geom.append(arc)
-        lring = geometry.LinearRing(linemerge(arcs_geom))
+        lring = np.vstack(arcs_geom)
 
         if is_ccw(lring) != need_ccw:
             arcs_idx_geom = (np.array(arcs_idx_geom) * -1 - 1).tolist()
