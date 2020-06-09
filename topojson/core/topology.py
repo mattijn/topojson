@@ -191,12 +191,9 @@ class Topology(Hashmap):
         fp : str
             If set, writes the object to a file on drive.
             Default is `None`
-        options : boolean
-            If `True`, the options also will be included. 
-            Default is `False`
         pretty : boolean
             If `True`, the JSON object will be 'pretty', depending on the `ident` and
-            `maxlinelength` options 
+            `maxlinelength` options.
             Default is `False`
         indent : int
             If `pretty=True`, declares the indentation of the objects.
@@ -204,8 +201,9 @@ class Topology(Hashmap):
         maxlinelinelength : int
             If `pretty=True`, declares the maximum length of each line.
             Default is `88`
-        valide : boolean
-            Set to `True` to only return valid geometries objects.
+        validate : boolean
+            Set to `True` to validate each feature before inclusion in the GeoJSON. Only 
+            features that are valid geometries objects will be included.
             Default is `False`
         objectname : str
             The name of the object within the Topology to convert to GeoJSON.
@@ -373,20 +371,24 @@ class Topology(Hashmap):
             `inplace` is `True`. 
         """
         result = copy.deepcopy(self)
+        transform = None
 
+        # get transform settings to dequantize if necessary
+        if "transform" in result.output.keys():
+            transform = result.output["transform"]
+            scale = transform["scale"]
+            translate = transform["translate"]
+
+        # first do the arcs
         arcs = result.output["arcs"]
         if arcs:
             np_arcs = np_array_from_arcs(arcs)
 
-            # dequantize if quantization is applied
-            if "transform" in result.output.keys():
-
-                transform = result.output["transform"]
-                scale = transform["scale"]
-                translate = transform["translate"]
-
+            # dequantize if transform exist
+            if transform is not None:
                 np_arcs = dequantize(np_arcs, scale, translate)
 
+            # apply simplify
             result.output["arcs"] = simplify(
                 np_arcs,
                 epsilon,
@@ -396,31 +398,27 @@ class Topology(Hashmap):
                 prevent_oversimplify=result.options.prevent_oversimplify,
             )
 
-        # quantize aqain if quantization was applied
-        if "transform" in result.output.keys():
-            if result.options.topoquantize > 0:
-                # set default if not specifically given in the options
-                if type(result.options.topoquantize) == bool:
-                    quant_factor = 1e6
-                else:
-                    quant_factor = result.options.topoquantize
-            elif result.options.prequantize > 0:
-                # set default if not specifically given in the options
-                if type(result.options.prequantize) == bool:
-                    quant_factor = 1e6
-                else:
-                    quant_factor = result.options.prequantize
+            # quantize aqain if quantization was applied
+            if transform is not None:
+                if result.options.topoquantize > 0:
+                    # set default if not specifically given in the options
+                    if type(result.options.topoquantize) == bool:
+                        quant_factor = 1e6
+                    else:
+                        quant_factor = result.options.topoquantize
+                elif result.options.prequantize > 0:
+                    # set default if not specifically given in the options
+                    if type(result.options.prequantize) == bool:
+                        quant_factor = 1e6
+                    else:
+                        quant_factor = result.options.prequantize
 
-            result.output["arcs"], transform = quantize(
-                result.output["arcs"], result.output["bbox"], quant_factor
-            )
+                result.output["arcs"], transform = quantize(
+                    result.output["arcs"], result.output["bbox"], quant_factor
+                )
 
-            result.output["coordinates"], transform = quantize(
-                result.output["coordinates"], result.output["bbox"], quant_factor
-            )
-
-            result.output["arcs"] = delta_encoding(result.output["arcs"])
-            result.output["transform"] = transform
+                result.output["arcs"] = delta_encoding(result.output["arcs"])
+                result.output["transform"] = transform
         if inplace:
             # update into self
             self.output["arcs"] = result.output["arcs"]
@@ -443,7 +441,7 @@ class Topology(Hashmap):
                     lofl = list(itertools.chain(*lofl))
 
                 for idx, val in enumerate(lofl):
-                    coord = data["coordinates"][val]
+                    coord = data["coordinates"][val][0]
                     lofl[idx] = np.asarray(coord).tolist()
 
                 feat["coordinates"] = lofl[0] if len(lofl) == 1 else lofl
