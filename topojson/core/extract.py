@@ -2,6 +2,7 @@ import json
 import copy
 import logging
 import pprint
+import numpy as np
 from shapely import geometry
 from ..utils import singledispatch_class
 from ..utils import serialize_as_svg
@@ -340,7 +341,7 @@ class Extract(object):
             idx_pt = len(self._coordinates)
             # record index and store linestring geom
             self._bookkeeping_coords.append([idx_pt])
-            self._coordinates.append(geom)
+            self._coordinates.append(np.expand_dims(np.asarray(geom), axis=0))
 
             # track record in object as well
             obj = self._obj
