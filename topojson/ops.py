@@ -283,6 +283,26 @@ def properties_foreign(objects):
     return objects
 
 
+def bounds(arr):
+    """
+    Returns a (minx, miny, maxx, maxy) tuple (float values) that bounds the object.
+
+    Parameters
+    ----------
+    arr : np.array
+        array to get bounds from
+
+    Returns
+    -------
+    tuple
+        (minx, miny, maxx, maxy)
+    """
+    if arr:
+        arr = np.vstack(arr).T
+    xmin, ymin, xmax, ymax = arr[0].min(), arr[1].min(), arr[0].max(), arr[1].max()
+    return xmin, ymin, xmax, ymax
+
+
 def compare_bounds(b0, b1):
     """
     Function that compares two bounds with each other. Returns the max bound.
@@ -359,7 +379,7 @@ def np_array_from_arcs(arcs):
 
 
 def dequantize(np_arcs, scale, translate):
-    dequantized_arcs = np_arcs.cumsum(axis=1) * scale + translate
+    dequantized_arcs = np_arcs.cumsum(axis=0) * scale + translate
     return dequantized_arcs
 
 
@@ -485,9 +505,9 @@ def quantize(linestrings, bbox, quant_factor=1e6):
 
     for idx, ls in enumerate(linestrings):
         if hasattr(ls, "coords"):
-            ls_xy = np.array(ls.coords).T
+            ls_xy = np.asarray(ls.coords).T
         else:
-            ls_xy = np.array(ls).T
+            ls_xy = np.asarray(ls).T
         ls_xy = (
             np.array([(ls_xy[0] - x0) / kx, (ls_xy[1] - y0) / ky])
             .round()
@@ -498,13 +518,13 @@ def quantize(linestrings, bbox, quant_factor=1e6):
         bool_slice = (
             np.insert(np.absolute(np.diff(ls_xy, 1, axis=0)).sum(axis=1), 0, 1) != 0
         )
-        if not bool_slice.sum() == 1 or isinstance(ls, geometry.Point):
-            if isinstance(ls, geometry.Point):
-                ls.coords = ls_xy[bool_slice][0]
-            elif hasattr(ls, "coords"):
-                ls.coords = ls_xy[bool_slice]
-            else:
-                linestrings[idx] = ls_xy[bool_slice].tolist()
+
+        # if not bool_slice.sum() == 1 or isinstance(ls, geometry.Point):
+
+        if hasattr(ls, "coords"):
+            ls.coords = ls_xy[bool_slice]
+        else:
+            linestrings[idx] = ls_xy[bool_slice].tolist()
 
     transform_ = {"scale": [kx, ky], "translate": [x0, y0]}
 
