@@ -9,6 +9,7 @@ from shapely import speedups
 from ..ops import select_unique_combs
 from ..ops import simplify
 from ..ops import quantize
+from ..ops import bounds
 from ..ops import compare_bounds
 from ..utils import serialize_as_svg
 from .extract import Extract
@@ -141,8 +142,11 @@ class Join(Extract):
             )
 
         # compute the bounding box of input geometry
+        # TODO remove asMultiLineString method to get bounds. Use bounds() instead
         lsbs = geometry.asMultiLineString(data["linestrings"]).bounds
-        ptbs = geometry.asMultiPoint(data["coordinates"]).bounds
+        # TODO do only when coordinates exist
+        ptbs = bounds(data["coordinates"])
+        # ptbs = geometry.asMultiPoint(data["coordinates"]).bounds
         data["bbox"] = compare_bounds(lsbs, ptbs)
 
         if not data["linestrings"] and not data["coordinates"]:
