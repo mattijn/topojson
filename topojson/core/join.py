@@ -144,7 +144,6 @@ class Join(Extract):
         # compute the bounding box of input geometry
         # TODO remove asMultiLineString method to get bounds. Use bounds() instead
         lsbs = geometry.asMultiLineString(data["linestrings"]).bounds
-        # TODO do only when coordinates exist
         ptbs = bounds(data["coordinates"])
         # ptbs = geometry.asMultiPoint(data["coordinates"]).bounds
         data["bbox"] = compare_bounds(lsbs, ptbs)

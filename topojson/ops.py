@@ -299,8 +299,11 @@ def bounds(arr):
     """
     if arr:
         arr = np.vstack(arr).T
-    xmin, ymin, xmax, ymax = arr[0].min(), arr[1].min(), arr[0].max(), arr[1].max()
-    return xmin, ymin, xmax, ymax
+    if len(arr):
+        bounds = arr[0].min(), arr[1].min(), arr[0].max(), arr[1].max()
+    else:
+        bounds = []
+    return bounds
 
 
 def compare_bounds(b0, b1):
