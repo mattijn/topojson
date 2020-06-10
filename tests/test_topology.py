@@ -1,3 +1,4 @@
+import os
 import json
 from shapely import geometry
 import geopandas
@@ -192,12 +193,15 @@ def test_topology_polygon_point():
 def test_topology_point():
     data = [{"type": "Point", "coordinates": [0.5, 0.5]}]
     # topo = topojson.Topology(data, topoquantize=True).to_dict()
-    with pytest.raises(SystemExit) as topo:
+    with pytest.warns(RuntimeWarning) as topo:
         topojson.Topology(data, topoquantize=True).to_dict()
 
     # assert len(topo["arcs"]) == 0
-    assert topo.type == SystemExit
-    assert topo.value.code == "Cannot quantize when xmax-xmin OR ymax-ymin equals 0"
+    assert topo._record is True
+    assert (
+        topo._list[0].message.args[0] == "divide by zero encountered in double_scalars"
+    )
+    # assert topo.value.code == "Cannot quantize when xmax-xmin OR ymax-ymin equals 0"
 
 
 def test_topology_multipoint():
@@ -312,11 +316,33 @@ def test_topology_to_geojson_polygon_point():
 
 def test_topology_to_geojson_quantized_points_only():
     data = [{"type": "MultiPoint", "coordinates": [[0.5, 0.5], [1.0, 1.0]]}]
-    topo = topojson.Topology(data, prequantize=True).to_dict()
+    geo = topojson.Topology(data, prequantize=False).to_geojson()
 
-    assert len(topo["arcs"]) == 0
-    assert topo["objects"]["data"]["geometries"][0]["coordinates"] == [
-        [0, 0],
-        [999999, 999999],
+    gj = json.loads(geo)
+    assert gj["type"] == "FeatureCollection"
+    assert gj["features"][0]["geometry"]["coordinates"] == [[0.5, 0.5], [1.0, 1.0]]
+
+
+def test_topology_double_toposimplify_points_only():
+    data = [{"type": "MultiPoint", "coordinates": [[0.5, 0.5], [1.0, 1.0]]}]
+    topo = topojson.Topology(data, prequantize=True)
+    topo = topo.toposimplify(True, inplace=False)
+    geo = topo.to_geojson()
+
+    gj = json.loads(geo)
+    assert gj["type"] == "FeatureCollection"
+    assert gj["features"][0]["geometry"]["coordinates"][0] == [0.5, 0.5]
+    assert gj["features"][0]["geometry"]["coordinates"][1] == [1.0, 1.0]
+
+
+def test_topology_to_json(tmp_path):
+    topo_file = os.path.join(tmp_path, "topo.json")
+    data = [
+        {"type": "LineString", "coordinates": [[4, 0], [2, 2], [0, 0]]},
+        {"type": "LineString", "coordinates": [[0, 2], [1, 1], [2, 2], [3, 1], [4, 2]]},
     ]
-    assert topo["transform"]["translate"] == [0.5, 0.5]
+    topo = topojson.Topology(data)
+    topo.to_json(topo_file)
+
+    with open(topo_file) as f:
+        topo_reloaded = json.load(f)
