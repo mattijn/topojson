@@ -295,7 +295,7 @@ def test_extract_points():
 
     assert len(topo["bookkeeping_coords"]) == 1
     assert len(topo["bookkeeping_geoms"]) == 1
-    assert topo["coordinates"][0].wkt == "POINT (0.5 0.5)"
+    assert topo["coordinates"][0].tolist() == [[0.5, 0.5]]
     assert "coordinates" in topo["objects"][1].keys()
 
 
