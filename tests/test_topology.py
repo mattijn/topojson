@@ -22,7 +22,7 @@ def test_topology_linestrings_parsed_to_gdf():
 
 def test_topology_naturalearth_lowres_defaults():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    topo = topojson.Topology(data)
+    topo = topojson.Topology(data).to_dict()
 
     assert len(topo["objects"]) == 1
 
