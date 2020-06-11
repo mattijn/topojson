@@ -20,6 +20,13 @@ def test_topology_linestrings_parsed_to_gdf():
     assert topo["geometry"][0].type == "LineString"
 
 
+def test_topology_naturalearth_lowres_defaults():
+    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    topo = topojson.Topology(data).to_dict()
+
+    assert len(topo["objects"]) == 1
+
+
 # test winding order using TopoOptions object
 def test_topology_winding_order_TopoOptions():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))

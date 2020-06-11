@@ -522,12 +522,11 @@ def quantize(linestrings, bbox, quant_factor=1e6):
             np.insert(np.absolute(np.diff(ls_xy, 1, axis=0)).sum(axis=1), 0, 1) != 0
         )
 
-        # if not bool_slice.sum() == 1 or isinstance(ls, geometry.Point):
-
-        if hasattr(ls, "coords"):
-            ls.coords = ls_xy[bool_slice]
-        else:
-            linestrings[idx] = ls_xy[bool_slice].tolist()
+        if not bool_slice.sum() == 1 or len(ls_xy) == bool_slice.sum():
+            if hasattr(ls, "coords"):
+                ls.coords = ls_xy[bool_slice]
+            else:
+                linestrings[idx] = ls_xy[bool_slice].tolist()
 
     transform_ = {"scale": [kx, ky], "translate": [x0, y0]}
 
