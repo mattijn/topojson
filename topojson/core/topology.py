@@ -347,7 +347,7 @@ class Topology(Hashmap):
         else:
             return result
 
-    def toposimplify(self, epsilon, inplace=False, _input_as="array"):
+    def toposimplify(self, epsilon, inplace=False):
         """
         Apply toposimplify to remove unnecessary points from arcs after the topology 
         is constructed. This will simplify the constructed arcs without altering the 
@@ -360,9 +360,6 @@ class Topology(Hashmap):
             tolerance parameter.
         inplace : bool, optional
             If `True`, do operation inplace and return `None`. Default is `False`.
-        _input_as : str, optional
-            Do not use. Internal used parameter. It can be `linestring` or `array`.
-            Default is `array`.
 
         Returns
         -------
@@ -394,7 +391,7 @@ class Topology(Hashmap):
                 epsilon,
                 algorithm=result.options.simplify_algorithm,
                 package=result.options.simplify_with,
-                input_as=_input_as,
+                input_as="array",
                 prevent_oversimplify=result.options.prevent_oversimplify,
             )
 
@@ -468,6 +465,6 @@ class Topology(Hashmap):
             else:
                 simplify_factor = self.options.toposimplify
 
-            self.toposimplify(epsilon=simplify_factor, _input_as="array", inplace=True)
+            self.toposimplify(epsilon=simplify_factor, inplace=True)
 
         return self.output
