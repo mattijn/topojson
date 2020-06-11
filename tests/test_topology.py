@@ -49,7 +49,7 @@ def test_topology_computing_topology():
     no_topo = topojson.Topology(data, topology=False, prequantize=False).to_dict()
     topo = topojson.Topology(data, topology=True, prequantize=False).to_dict()
 
-    assert len(topo["arcs"]) == 5
+    assert len(topo["arcs"]) == 4
     assert len(no_topo["arcs"]) == 2
 
 

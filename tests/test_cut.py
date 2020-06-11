@@ -28,102 +28,6 @@ def test_cut_reversed_duplicate_lines_ABC_CBA_no_cuts():
     assert topo["bookkeeping_duplicates"].tolist() == [[1, 0]]
 
 
-# cut exact duplicate rings ABCA & ABCA have no cuts
-def test_cut_exact_duplicate_rings_ABCA_ABCA_no_cuts():
-    data = {
-        "abca": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
-        "abca2": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
-    }
-    topo = Cut(data).to_dict()
-
-    assert len(topo["junctions"]) == 0
-    assert topo["bookkeeping_duplicates"].tolist() == [[1, 0]]
-
-
-# cut reversed rings ABCA & ACBA have no cuts
-def test_cut_reversed_rings_ABCA_ACBA_no_cuts():
-    data = {
-        "abca": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
-        "acba": {"type": "Polygon", "coordinates": [[[0, 0], [2, 1], [1, 0], [0, 0]]]},
-    }
-    topo = Cut(data).to_dict()
-
-    assert len(topo["junctions"]) == 0
-    assert topo["bookkeeping_duplicates"].tolist() == [[1, 0]]
-
-
-# cut rotated duplicate rings BCAB & ABCA have no cuts
-# changed the assertion of bookkeeping_duplicates, since the method rotated polyons are
-# not detected anymore in find_duplicate function when shapely is used for shared_paths.
-def test_cut_rotated_duplicates_rings_BCAB_ABCA_no_cuts():
-    data = {
-        "abca": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
-        "bcab": {"type": "Polygon", "coordinates": [[[1, 0], [2, 1], [0, 0], [1, 0]]]},
-    }
-    topo = Cut(data).to_dict()
-
-    assert len(topo["junctions"]) == 0
-    assert len(topo["bookkeeping_duplicates"]) == 0
-
-
-# cut ring ABCA & line ABCA have no cuts
-def test_cut_ring_ABCA_line_ABCA_no_cuts():
-    data = {
-        "abcaLine": {
-            "type": "Linestring",
-            "coordinates": [[0, 0], [1, 0], [2, 1], [0, 0]],
-        },
-        "abcaPolygon": {
-            "type": "Polygon",
-            "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]],
-        },
-    }
-    topo = Cut(data).to_dict()
-
-    assert len(topo["junctions"]) == 0
-    assert topo["bookkeeping_duplicates"].tolist() == [[1, 0]]
-
-
-# cut ring BCAB & line ABCA have no cuts
-# changed the assertion of bookkeeping_duplicates, since the method rotated polyons are
-# not detected anymore in find_duplicate function when shapely is used for shared_paths.
-def test_cut_ring_BCAB_line_ABCA_no_cuts():
-    data = {
-        "abcaLine": {
-            "type": "Linestring",
-            "coordinates": [[0, 0], [1, 0], [2, 1], [0, 0]],
-        },
-        "bcabPolygon": {
-            "type": "Polygon",
-            "coordinates": [[[1, 0], [2, 1], [0, 0], [1, 0]]],
-        },
-    }
-    topo = Cut(data).to_dict()
-
-    assert len(topo["junctions"]) == 0
-    assert len(topo["bookkeeping_duplicates"]) == 0
-
-
-# cut ring ABCA & line BCAB have no cuts
-# changed the assertion of bookkeeping_duplicates, since the method rotated polyons are
-# not detected anymore in find_duplicate function when shapely is used for shared_paths.
-def test_cut_ring_ABCA_line_BCAB_no_cuts():
-    data = {
-        "bcabLine": {
-            "type": "Linestring",
-            "coordinates": [[1, 0], [2, 1], [0, 0], [1, 0]],
-        },
-        "abcaPolygon": {
-            "type": "Polygon",
-            "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]],
-        },
-    }
-    topo = Cut(data).to_dict()
-
-    assert len(topo["junctions"]) == 0
-    assert len(topo["bookkeeping_duplicates"]) == 0
-
-
 # overlapping rings ABCDA and BEFCB are cut into BC-CDAB and BEFC-CB
 def test_cut_overlapping_rings_are_cut():
     data = {
@@ -214,6 +118,13 @@ def test_cut_geomcol_multipolygon_polygon():
     assert topo["bookkeeping_linestrings"].size == 8
 
 
+def test_cut_junctions_coords():
+    data = geopandas.read_file("tests/files_geojson/naturalearth_alb_grc.geojson")
+    topo = Cut(data, options={"shared_coords": True}).to_dict()
+
+    assert len(topo["linestrings"]) == 3
+
+
 # this test is added since its seems no extra junctions are placed at lines where other
 # linestrings have shared paths but no shared junctions.
 def test_cut_linemerge_multilinestring():
@@ -235,12 +146,222 @@ def test_cut_linemerge_multilinestring():
     ]
     topo = Cut(data).to_dict()
 
+    assert len(topo["linestrings"]) == 2
+    assert len(topo["junctions"]) == 0
+
+
+# cut exact duplicate rings ABCA & ABCA have no cuts
+def test_cut_exact_duplicate_rings_ABCA_ABCA_no_cuts():
+    data = {
+        "abca": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
+        "abca2": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
+    }
+    topo = Cut(data).to_dict()
+
+    assert len(topo["junctions"]) == 1
+    assert topo["bookkeeping_duplicates"].tolist() == [[1, 0]]
+
+
+# cut reversed rings ABCA & ACBA have no cuts
+def test_cut_reversed_rings_ABCA_ACBA_no_cuts():
+    data = {
+        "abca": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
+        "acba": {"type": "Polygon", "coordinates": [[[0, 0], [2, 1], [1, 0], [0, 0]]]},
+    }
+    topo = Cut(data).to_dict()
+
+    assert len(topo["junctions"]) == 1
+    assert topo["bookkeeping_duplicates"].tolist() == [[1, 0]]
+
+
+# cut rotated duplicate rings BCAB & ABCA have no cuts
+# changed the assertion of bookkeeping_duplicates, since the method rotated polyons are
+# not detected anymore in find_duplicate function when shapely is used for shared_paths.
+def test_cut_rotated_duplicates_rings_BCAB_ABCA_no_cuts():
+    data = {
+        "abca": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
+        "bcab": {"type": "Polygon", "coordinates": [[[1, 0], [2, 1], [0, 0], [1, 0]]]},
+    }
+    topo = Cut(data).to_dict()
+
+    assert len(topo["junctions"]) == 2
+    assert len(topo["bookkeeping_duplicates"]) == 2
+
+
+# cut ring ABCA & line ABCA have no cuts
+def test_cut_ring_ABCA_line_ABCA_no_cuts():
+    data = {
+        "abcaLine": {
+            "type": "Linestring",
+            "coordinates": [[0, 0], [1, 0], [2, 1], [0, 0]],
+        },
+        "abcaPolygon": {
+            "type": "Polygon",
+            "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]],
+        },
+    }
+    topo = Cut(data).to_dict()
+
+    assert len(topo["junctions"]) == 1
+    assert topo["bookkeeping_duplicates"].tolist() == [[1, 0]]
+
+
+# cut ring BCAB & line ABCA have no cuts
+# changed the assertion of bookkeeping_duplicates, since the method rotated polyons are
+# not detected anymore in find_duplicate function when shapely is used for shared_paths.
+def test_cut_ring_BCAB_line_ABCA_no_cuts():
+    data = {
+        "abcaLine": {
+            "type": "Linestring",
+            "coordinates": [[0, 0], [1, 0], [2, 1], [0, 0]],
+        },
+        "bcabPolygon": {
+            "type": "Polygon",
+            "coordinates": [[[1, 0], [2, 1], [0, 0], [1, 0]]],
+        },
+    }
+    topo = Cut(data).to_dict()
+
+    assert len(topo["junctions"]) == 2
+    assert len(topo["bookkeeping_duplicates"]) == 2
+
+
+# cut ring ABCA & line BCAB have no cuts
+# changed the assertion of bookkeeping_duplicates, since the method rotated polyons are
+# not detected anymore in find_duplicate function when shapely is used for shared_paths.
+def test_cut_ring_ABCA_line_BCAB_no_cuts():
+    data = {
+        "bcabLine": {
+            "type": "Linestring",
+            "coordinates": [[1, 0], [2, 1], [0, 0], [1, 0]],
+        },
+        "abcaPolygon": {
+            "type": "Polygon",
+            "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]],
+        },
+    }
+    topo = Cut(data).to_dict()
+
+    assert len(topo["junctions"]) == 2
+    assert len(topo["bookkeeping_duplicates"]) == 2
+
+
+# this test is added since its seems no extra junctions are placed at lines where other
+# linestrings have shared paths but no shared junctions.
+def test_cut_shared_paths_linemerge_multilinestring():
+    data = [
+        {"type": "LineString", "coordinates": [(0, 0), (10, 0), (10, 5), (20, 5)]},
+        {
+            "type": "LineString",
+            "coordinates": [
+                (5, 0),
+                (25, 0),
+                (25, 5),
+                (16, 5),
+                (16, 10),
+                (14, 10),
+                (14, 5),
+                (0, 5),
+            ],
+        },
+    ]
+    topo = Cut(data, options={"shared_coords": False}).to_dict()
+
     assert len(topo["linestrings"]) == 12
     assert len(topo["junctions"]) == 7
 
 
-def test_cut_junctions_coords():
-    data = geopandas.read_file("tests/files_geojson/naturalearth_alb_grc.geojson")
-    topo = Cut(data, options={"shared_coords": True}).to_dict()
+# cut exact duplicate rings ABCA & ABCA have no cuts
+def test_cut_shared_paths_exact_duplicate_rings_ABCA_ABCA_no_cuts():
+    data = {
+        "abca": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
+        "abca2": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
+    }
+    topo = Cut(data, options={"shared_coords": False}).to_dict()
 
-    assert len(topo["linestrings"]) == 3
+    assert len(topo["junctions"]) == 0
+    assert topo["bookkeeping_duplicates"].tolist() == [[1, 0]]
+
+
+# cut reversed rings ABCA & ACBA have no cuts
+def test_cut_shared_paths_reversed_rings_ABCA_ACBA_no_cuts():
+    data = {
+        "abca": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
+        "acba": {"type": "Polygon", "coordinates": [[[0, 0], [2, 1], [1, 0], [0, 0]]]},
+    }
+    topo = Cut(data, options={"shared_coords": False}).to_dict()
+
+    assert len(topo["junctions"]) == 0
+    assert topo["bookkeeping_duplicates"].tolist() == [[1, 0]]
+
+
+# cut rotated duplicate rings BCAB & ABCA have no cuts
+# changed the assertion of bookkeeping_duplicates, since the method rotated polyons are
+# not detected anymore in find_duplicate function when shapely is used for shared_paths.
+def test_cut_shared_paths_rotated_duplicates_rings_BCAB_ABCA_no_cuts():
+    data = {
+        "abca": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
+        "bcab": {"type": "Polygon", "coordinates": [[[1, 0], [2, 1], [0, 0], [1, 0]]]},
+    }
+    topo = Cut(data, options={"shared_coords": False}).to_dict()
+
+    assert len(topo["junctions"]) == 0
+    assert len(topo["bookkeeping_duplicates"]) == 0
+
+
+# cut ring ABCA & line ABCA have no cuts
+def test_cut_shared_paths_ring_ABCA_line_ABCA_no_cuts():
+    data = {
+        "abcaLine": {
+            "type": "Linestring",
+            "coordinates": [[0, 0], [1, 0], [2, 1], [0, 0]],
+        },
+        "abcaPolygon": {
+            "type": "Polygon",
+            "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]],
+        },
+    }
+    topo = Cut(data, options={"shared_coords": False}).to_dict()
+
+    assert len(topo["junctions"]) == 0
+    assert topo["bookkeeping_duplicates"].tolist() == [[1, 0]]
+
+
+# cut ring BCAB & line ABCA have no cuts
+# changed the assertion of bookkeeping_duplicates, since the method rotated polyons are
+# not detected anymore in find_duplicate function when shapely is used for shared_paths.
+def test_cut_shared_paths_ring_BCAB_line_ABCA_no_cuts():
+    data = {
+        "abcaLine": {
+            "type": "Linestring",
+            "coordinates": [[0, 0], [1, 0], [2, 1], [0, 0]],
+        },
+        "bcabPolygon": {
+            "type": "Polygon",
+            "coordinates": [[[1, 0], [2, 1], [0, 0], [1, 0]]],
+        },
+    }
+    topo = Cut(data, options={"shared_coords": False}).to_dict()
+
+    assert len(topo["junctions"]) == 0
+    assert len(topo["bookkeeping_duplicates"]) == 0
+
+
+# cut ring ABCA & line BCAB have no cuts
+# changed the assertion of bookkeeping_duplicates, since the method rotated polyons are
+# not detected anymore in find_duplicate function when shapely is used for shared_paths.
+def test_cut_shared_paths_ring_ABCA_line_BCAB_no_cuts():
+    data = {
+        "bcabLine": {
+            "type": "Linestring",
+            "coordinates": [[1, 0], [2, 1], [0, 0], [1, 0]],
+        },
+        "abcaPolygon": {
+            "type": "Polygon",
+            "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]],
+        },
+    }
+    topo = Cut(data, options={"shared_coords": False}).to_dict()
+
+    assert len(topo["junctions"]) == 0
+    assert len(topo["bookkeeping_duplicates"]) == 0
