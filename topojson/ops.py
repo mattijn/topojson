@@ -522,12 +522,9 @@ def quantize(linestrings, bbox, quant_factor=1e6):
             np.insert(np.absolute(np.diff(ls_xy, 1, axis=0)).sum(axis=1), 0, 1) != 0
         )
 
-        if not bool_slice.sum() == 1 and not isinstance(ls, geometry.LineString):
+        if not bool_slice.sum() == 1 or len(ls_xy) == bool_slice.sum():
             if hasattr(ls, "coords"):
-                try:
-                    ls.coords = ls_xy[bool_slice]
-                except:
-                    print(bool_slice)
+                ls.coords = ls_xy[bool_slice]
             else:
                 linestrings[idx] = ls_xy[bool_slice].tolist()
 
