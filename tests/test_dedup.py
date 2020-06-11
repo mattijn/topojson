@@ -118,6 +118,18 @@ def test_dedup_no_shared_paths_in_geoms():
     assert len(topo["bookkeeping_duplicates"]) == 0
 
 
+def test_dedup_super_function():
+    data = geometry.GeometryCollection(
+        [
+            geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]),
+            geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]),
+        ]
+    )
+    topo = Dedup(data).to_dict()
+
+    assert len(list(topo.keys())) == 12
+
+
 # this test was added since the local variable "array_bk_sarcs" was
 # referenced before assignment. As was raised in:
 # https://github.com/mattijn/topojson/issues/3
@@ -131,20 +143,8 @@ def test_dedup_array_bk_sarcs_reference():
     }
     topo = Dedup(data).to_dict()
 
-    assert len(topo["bookkeeping_shared_arcs"]) == 1
-    assert len(topo["junctions"]) == 4
-
-
-def test_dedup_super_function():
-    data = geometry.GeometryCollection(
-        [
-            geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]),
-            geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]),
-        ]
-    )
-    topo = Dedup(data).to_dict()
-
-    assert len(list(topo.keys())) == 12
+    assert len(topo["bookkeeping_shared_arcs"]) == 0
+    assert len(topo["junctions"]) == 1
 
 
 # this test was added since there is an error stating the following during Dedup:
@@ -157,7 +157,7 @@ def test_dedup_s2_geometries():
     ]
     topo = Dedup(data).to_dict()
 
-    assert len(topo["junctions"]) == 6
+    assert len(topo["junctions"]) == 8
     assert len(topo["bookkeeping_duplicates"]) == 0
 
 
@@ -180,12 +180,59 @@ def test_dedup_linemerge_multilinestring():
     ]
     topo = Dedup(data).to_dict()
 
+    assert len(topo["linestrings"]) == 2
+    assert len(topo["junctions"]) == 0
+
+
+# this test was added since the local variable "array_bk_sarcs" was
+# referenced before assignment. As was raised in:
+# https://github.com/mattijn/topojson/issues/3
+def test_dedup_shared_paths_array_bk_sarcs_reference():
+    data = {
+        "foo": {"type": "LineString", "coordinates": [[4, 0], [2, 2], [0, 0]]},
+        "bar": {
+            "type": "LineString",
+            "coordinates": [[0, 2], [1, 1], [2, 2], [3, 1], [4, 2]],
+        },
+    }
+    topo = Dedup(data, options={"shared_coords": False}).to_dict()
+
+    assert len(topo["bookkeeping_shared_arcs"]) == 1
+    assert len(topo["junctions"]) == 4
+
+
+# this test was added since there is an error stating the following during Dedup:
+# TypeError: list indices must be integers or slices, not NoneType, see #50
+def test_dedup_shared_paths_s2_geometries():
+    data = [
+        wkt.loads(
+            "MULTILINESTRING ((-51.17176115208171 -30.05269620283153, -51.18859500873385 -29.99305326146263, -51.1541142383379 -29.95234110496228, -51.13731737261026 -30.01193511071039, -51.17176115208171 -30.05269620283153), (-51.13731737261026 -30.01193511071039, -51.1541142383379 -29.95234110496228, -51.11963364027719 -29.91170657721793, -51.10287369862932 -29.97125162042611, -51.13731737261026 -30.01193511071039), (-51.13799328025614 -30.17188406207867, -51.17176115208171 -30.05269620283153, -51.10287369862932 -29.97125162042611, -51.06925390117097 -30.09024489967364, -51.13799328025614 -30.17188406207867), (-51.06925390117097 -30.09024489967364, -51.0860804353923 -30.03076444145886, -51.05167386668366 -29.99010960397871, -51.03488427131447 -30.04954147652281, -51.06925390117097 -30.09024489967364), (-51.0860804353923 -30.03076444145886, -51.10287369862932 -29.97125162042611, -51.0684302317277 -29.9306455702365, -51.05167386668366 -29.99010960397871, -51.0860804353923 -30.03076444145886))"
+        )
+    ]
+    topo = Dedup(data, options={"shared_coords": False}).to_dict()
+
+    assert len(topo["junctions"]) == 6
+    assert len(topo["bookkeeping_duplicates"]) == 0
+
+
+def test_dedup_shared_paths_linemerge_multilinestring():
+    data = [
+        {"type": "LineString", "coordinates": [(0, 0), (10, 0), (10, 5), (20, 5)]},
+        {
+            "type": "LineString",
+            "coordinates": [
+                (5, 0),
+                (25, 0),
+                (25, 5),
+                (16, 5),
+                (16, 10),
+                (14, 10),
+                (14, 5),
+                (0, 5),
+            ],
+        },
+    ]
+    topo = Dedup(data, options={"shared_coords": False}).to_dict()
+
     assert len(topo["linestrings"]) == 9
     assert len(topo["junctions"]) == 7
-
-
-# def test_dedup_junctions_coords():
-#     data = geopandas.read_file("tests/files_geojson/sample.geojson")
-#     topo = Dedup(data, options={"shared_coords": True}).to_dict()
-
-#     assert len(topo["linestrings"]) == 3
