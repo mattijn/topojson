@@ -353,3 +353,16 @@ def test_topology_to_json(tmp_path):
 
     with open(topo_file) as f:
         topo_reloaded = json.load(f)
+
+
+def test_topology_topoquantize():
+    data = [
+        {"type": "LineString", "coordinates": [[4, 0], [2, 2], [0, 0]]},
+        {"type": "LineString", "coordinates": [[0, 2], [1, 1], [2, 2], [3, 1], [4, 2]]},
+    ]
+    tp = topojson.Topology(data, prequantize=1e4)
+    topo = tp.topoquantize(1e4).to_dict()
+
+    assert topo["transform"]["translate"] == [0.0, 0.0]
+    assert topo["arcs"][0] == [[9999, 0], [-4999, 9999]]
+

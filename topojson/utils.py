@@ -172,7 +172,7 @@ def geometry(obj, tp_arcs, transform=None):
             scale = transform["scale"]
             translate = transform["translate"]
             coords = obj["coordinates"]
-            point_coords = dequantize(np.array(coords), scale, translate).tolist()
+            point_coords = dequantize(np.array(coords).T, scale, translate).T.tolist()
         else:
             point_coords = obj["coordinates"]
         return {"type": obj["type"], "coordinates": point_coords}

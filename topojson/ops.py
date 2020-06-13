@@ -382,7 +382,7 @@ def np_array_from_arcs(arcs):
 
 
 def dequantize(np_arcs, scale, translate):
-    dequantized_arcs = np_arcs.cumsum(axis=0) * scale + translate
+    dequantized_arcs = np_arcs.cumsum(axis=1) * scale + translate
     return dequantized_arcs
 
 
