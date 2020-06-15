@@ -40,8 +40,8 @@ python3 -m pip install topojson
 
 This package `topojson` has the following hard dependencies:
 
-- numpy
-- shapely
+- `numpy`
+- `shapely`
 
 Further, optional soft dependencies are:
 
