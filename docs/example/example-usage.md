@@ -8,7 +8,7 @@ permalink: /example-usage
 
 # Example usage
 
-The most common usage op topojson is to first compute the topology (which can be cost-intensive).
+The most common usage op topojson is to first compute the topology.
 
 Using the computed topology apply the `toposimplify` and `topoquantize` settings and visualize till pleased.
 
@@ -17,7 +17,7 @@ The following code-snippet is an example of such:
 ```python
 import topojson as tp
 
-tj = tp.Topology(data)
+tj = tp.Topology(your_geo_data)
 tj.toposimplify(1).topoquantize(1e6).to_svg()
 ```
 
