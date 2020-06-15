@@ -236,3 +236,11 @@ def test_dedup_shared_paths_linemerge_multilinestring():
 
     assert len(topo["linestrings"]) == 9
     assert len(topo["junctions"]) == 7
+
+
+def test_dedup_topology_false():
+    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    topo = Dedup(data, options={"topology": False}).to_dict()
+
+    assert len(topo["linestrings"]) == 288
+    assert len(topo["junctions"]) == 0

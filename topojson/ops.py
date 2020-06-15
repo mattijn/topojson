@@ -44,15 +44,15 @@ def np_array_bbox_points_line(line, tree_splitter):
     ----------
     line : numpy.array
         numpy array with coordinates representing a line segment
-    tree_splitter: STRtree
+    tree_splitter : STRtree
         a STRtree splitter object
 
     Returns
     -------
-    ls_xy : numpy.array
-        numpy array from coordinates, if any, representing a line segment
-    pts_xy_bbox : numpy.array
-        numpy array with coordinates that near or on the line
+    numpy.array
+        `ls_xy`, numpy array from coordinates, if any, representing a line segment
+    numpy.array
+        `pts_xy_bbox`, numpy array with coordinates that near or on the line
     """
 
     # get junctions that contain within bbox line
@@ -77,15 +77,16 @@ def insert_coords_in_line(line, tree_splitter):
     ----------
     line : numpy.array
         numpy array with coordinates representing a line segment
-    tree_splitter: STRtree
+    tree_splitter : STRtree
         a STRtree splitter object
 
     Returns
     -------
-    new_ls_xy : numpy.array
-        numpy array with inserted coordinates, if any, representing a line segment
-    pts_xy_on_line : numpy.array
-        numpy array with coordinates that are on the line
+    (numpy.array)
+        `new_ls_xy` is an array with inserted coordinates, if any, representing a line 
+        segment
+    (numpy.array)
+        `pts_xy_on_line` is an array with coordinates that are on the line
     """
 
     # get junctions that contain within bbox line
@@ -243,7 +244,7 @@ def is_ccw(ring):
 def properties_foreign(objects):
     """
     Try to parse the object properties as foreign members. Reserved keys are:
-    ["type", "bbox", "coordinates", "geometries", "geometry", "properties", "features"]
+    [`type`, `bbox`, `coordinates`, `geometries`, `geometry`, `properties`, `features`]
 
     If these keys are detected they will not be set as a foreign member and will remain
     nested within properties.
@@ -394,7 +395,7 @@ def get_matches(geoms, tree_idx):
     ----------
     geoms : list
         list of geometries to compare against the STRtree
-    tree_idx: STRtree
+    tree_idx : STRtree
         a STRtree indexing object
 
     Returns
@@ -484,7 +485,7 @@ def quantize(linestrings, bbox, quant_factor=1e6):
 
     Parameters
     ----------
-    linestrings: list of shapely.geometry.LineStrings
+    linestrings : list of shapely.geometry.LineStrings
         LineStrings that will be quantized
     quant_factor : int
         Quantization factor. Normally this varies between 1e4, 1e5, 1e6. Where a
@@ -492,10 +493,10 @@ def quantize(linestrings, bbox, quant_factor=1e6):
 
     Returns
     -------
-    transform : dict
-        scale (kx, ky) and translation (x0, y0) values
-    bbox : array
-        bbox of all linestrings
+    dict
+        `transform`, scale (`kx`, `ky`) and translation (`x0`, `y0`) values
+    array
+        `bbox`, bounding box of all linestrings
     """
 
     x0, y0, x1, y1 = bbox
@@ -550,11 +551,17 @@ def simplify(
     a line based upon vertical interval) and Visvalingam–Whyatt ["vw"] (which
     progressively removes points with the least-perceptible change).
 
-    https://pdfs.semanticscholar.org/9877/cdf50a15367bcb86649b67df8724425c5451.pdf
+
+    Docs
+    * https://observablehq.com/@lemonnish/minify-topojson-in-the-browser
+    * https://github.com/topojson/topojson-simplify#planarTriangleArea
+    * https://www.jasondavies.com/simplify/
+    * https://bost.ocks.org/mike/simplify/    
+    * https://pdfs.semanticscholar.org/9877/cdf50a15367bcb86649b67df8724425c5451.pdf
 
     Parameters
     ----------
-    linestrings: list of shapely.geometry.LineStrings
+    linestrings : list of shapely.geometry.LineStrings
         LineStrings that will be simplified
     epsilon : int
         Simplification factor. Normally this varies 1.0, 0.1 or 0.001 for "rdp" and
@@ -574,14 +581,8 @@ def simplify(
 
     Returns
     -------
-    simp_linestrings: list of shapely.geometry.LineStrings
+    list of shapely.geometry.LineStrings
         LineStrings that are simplified
-
-    Docs
-    * https://observablehq.com/@lemonnish/minify-topojson-in-the-browser
-    * https://github.com/topojson/topojson-simplify#planarTriangleArea
-    * https://www.jasondavies.com/simplify/
-    * https://bost.ocks.org/mike/simplify/
     """
     if package == "shapely":
 
@@ -647,18 +648,18 @@ def simplify(
 def winding_order(geom, order="CW_CCW"):
     """
     Function that force a certain winding order on the resulting output geometries. One
-    can choose between "CCW_CW" and "CW_CCW".
+    can choose between `CCW_CW` and `CW_CCW`.
 
-    "CW_CCW" implies clockwise for exterior polygons and counterclockwise for interior
+    `CW_CCW` implies clockwise for exterior polygons and counterclockwise for interior
     polygons (aka the geographical right-hand-rule where the right hand is in the area
     of interest as you walk the line).
 
-    "CCW_CW" implies counterclockwise for exterior polygons and clockwise for interior
+    `CCW_CW` implies counterclockwise for exterior polygons and clockwise for interior
     polygons (aka the mathematical right-hand-rule where the right hand curls around
     the polygon's exterior with your thumb pointing "up" (toward space), signing a
     positive area for the polygon in the signed area sense).
 
-    TopoJSON, and so this package, defaults to "CW_CCW"*, but depending on the
+    TopoJSON, and so this package, defaults to `CW_CCW`, but depending on the
     application you might decide differently.
 
     * https://bl.ocks.org/mbostock/a7bdfeb041e850799a8d3dce4d8c50c8
@@ -670,13 +671,13 @@ def winding_order(geom, order="CW_CCW"):
     geom : geometry or shapely.geometry.GeometryCollection
         Geometry objects where the winding order will be forced upon.
     order : str, optional
-        Choose "CW_CCW" for clockwise for exterior- and counterclockwise for
-        interior polygons or "CCW_CW" for counterclockwise for exterior- and clockwise
-        for interior polygons, by default "CW_CCW".
+        Choose `CW_CCW` for clockwise for exterior- and counterclockwise for
+        interior polygons or `CCW_CW` for counterclockwise for exterior- and clockwise
+        for interior polygons, by default `CW_CCW`.
 
     Returns
     -------
-    geom : geometry or shapely.geometry.GeometryCollection
+    geometry or shapely.geometry.GeometryCollection
         Geometry objects where the chosen winding order is forced upon.
     """
 
@@ -694,20 +695,20 @@ def winding_order(geom, order="CW_CCW"):
 
 def round_coordinates(linestrings, rounding_precision):
     """
-    Round all coordinates to a specified precision, e.g. rounding_precision=3 will round
+    Round all coordinates to a specified precision, e.g. `rounding_precision=3` will round
     to 3 decimals on the resulting output geometries (after the topology is computed).
 
     Parameters
     ----------
-    linestrings: list of shapely.geometry.LineStrings
+    linestrings : list of shapely.geometry.LineStrings
         LineStrings of which the coordinates will be rounded
     rounding_precision : int
         Precision value. Up till how many decimales the coordinates should be rounded.
 
     Returns
     -------
-    linestrings: list of shapely.geometry.LineStrings
-        LineStrings of which the coordinates will be rounded
+    list of shapely.geometry.LineStrings
+        LineStrings of which the coordinates are rounded
     """
     for idx, geom in enumerate(linestrings):
         linestrings[idx] = wkt.loads(
@@ -723,11 +724,11 @@ def prettify(topojson_object):
     Parameters
     ----------
     topojson_object : topojson.Topojson
-        [description]
+        object to be pretty printed
 
     Returns
     -------
-    topojson_object : topojson.Topojson
+    topojson.Topojson
         pretty printed JSON variant of the topoloy object
     """
     return pprint.pprint(topojson_object)
@@ -736,9 +737,9 @@ def prettify(topojson_object):
 def properties_level(topojson_object, position="nested"):
     """
     Define where the attributes of the geometry object should be placed. Choose between
-    "nested" or "foreign. Default is "nested" where the attribute information is placed
+    `nested` or `foreign`. Default is `nested` where the attribute information is placed
     within the "properties" ditctionary, part of the geometry.
-    "foreign", tries to place the attributes on the same level as the geometry.
+    `foreign`, tries to place the attributes on the same level as the geometry.
 
     Parameters
     ----------
@@ -755,9 +756,7 @@ def properties_level(topojson_object, position="nested"):
 
 def delta_encoding(linestrings):
     """
-    Function to apply delta-encoding to linestrings. Delta-encoding is a technique ..
-
-    Replace in Hashmapper class.
+    Function to apply delta-encoding to linestrings.
 
     Parameters
     ----------
@@ -766,7 +765,7 @@ def delta_encoding(linestrings):
 
     Returns
     -------
-    linestrings : list of shapely.geometry.LineStrings
+    list of shapely.geometry.LineStrings
         LineStrings that are delta-encoded
     """
 
@@ -844,7 +843,7 @@ def map_values(arr, search_vals, replace_vals):
     
     Returns
     -------
-    arr_upd : np.array
+    np.array
         new array with replaced values
     """
     N = max(arr.max(), max(search_vals)) + 1

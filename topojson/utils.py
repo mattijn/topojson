@@ -135,10 +135,9 @@ def coordinates(arcs, tp_arcs):
     """
     Return GeoJSON coordinates for the sequence(s) of arcs.
     
-    The arcs parameter may be a sequence of ints, each the index of a
-    coordinate sequence within tp_arcs within the entire topology
-    -- describing a line string, a sequence of such sequences
-    -- describing a polygon, or a sequence of polygon arcs.
+    The arcs parameter may be a sequence of ints, each the index of a coordinate 
+    sequence within tp_arcs within the entire topology describing a line string, a 
+    sequence of such sequences, describing a polygon, or a sequence of polygon arcs.
     """
 
     if isinstance(arcs[0], int):
@@ -160,8 +159,7 @@ def geometry(obj, tp_arcs, transform=None):
     """
     Converts a topology object to a geometry object.
     
-    The topology object is a dict with 'type' and 'arcs' items, such as
-    -- {'type': "LineString", 'arcs': [0, 1, 2]}
+    The topology object is a dict with 'type' and 'arcs' items.
     """
     if obj["type"] == "GeometryCollection":
         geometries = [geometry(feat, tp_arcs) for feat in obj["geometries"]]
@@ -377,8 +375,8 @@ def serialize_as_geodataframe(topo_object, url=False):
 
     Returns
     -------
-    gdf : geopandas.GeoDataFrame
-        topojson object parsed GeoDataFrame
+    geopandas.GeoDataFrame
+        topojson object parsed as GeoDataFrame
     """
     import fiona
     import geopandas

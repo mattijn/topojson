@@ -35,20 +35,24 @@ class Extract(object):
     4. dedup
     5. hashmap
 
+    For each line or polygon geometry in the input hash, including nested
+    geometries as in geometry collections, the `coordinates` array is replaced
+    with an equivalent `"coordinates"` array that points to one of the
+    linestrings as indexed in `bookkeeping_geoms` and stored in `linestrings`.
+
+    For Points geometries count the same, but are stored in `coordinates` and 
+    referenced in `bookkeeping_coords`.    
+
     Parameters
     ----------
-    data : `_any_` geometric type
+    data : _any_ geometric type
         Different types of a geometry object, originating from shapely, geojson,
-        geopandas and dictionary or list of objects that contain a __geo_interface__.
+        geopandas and dictionary or list of objects that contain a `__geo_interface__`.
 
     Returns
     -------
     dict
-        object created including
-        - new key: type
-        - new key: linestrings
-        - new key: bookkeeping_geoms
-        - new key: objects
+        object created including the keys `type`, `linestrings`, `coordinates` `bookkeeping_geoms`, `bookkeeping_coords`, `objects`
     """
 
     def __init__(self, data, options={}):
@@ -121,10 +125,10 @@ class Extract(object):
         For each line or polygon geometry in the input hash, including nested
         geometries as in geometry collections, the `coordinates` array is replaced
         with an equivalent `"coordinates"` array that points to one of the
-        linestrings as indexed in `bookkeeping_geoms`.
+        linestrings as indexed in `bookkeeping_geoms` and stored in `linestrings`.
 
-        Points geometries are not collected within the new properties, but are placed
-        directly into the `"coordinates"` array within each object.
+        For Points geometries count the same, but are stored in `coordinates` and 
+        referenced in `bookkeeping_coords`.
         """
 
         self._data = data

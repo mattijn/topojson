@@ -27,7 +27,7 @@ class Topology(Hashmap):
         Geometric data that should be converted into TopoJSON 
     topology : boolean
         Specifiy if the topology should be computed for deriving the TopoJSON. 
-        Default is True.
+        Default is `True`.
     prequantize : boolean, int
         If the prequantization parameter is specified, the input geometry is 
         quantized prior to computing the topology, the returned topology is 
@@ -43,13 +43,13 @@ class Topology(Hashmap):
         details the `prequantize` parameter. Default is `False`.
     presimplify : boolean, float
         Apply presimplify to remove unnecessary points from linestrings before the 
-        topology is constructed. This will simplify the input geometries. 
+        topology is constructed. This will simplify the input geometries. Use with care.
         Default is `False`.
     toposimplify : boolean, float 
         Apply toposimplify to remove unnecessary points from arcs after the topology 
         is constructed. This will simplify the constructed arcs without altering the 
         topological relations. Sensible values for coordinates stored in degrees are 
-        in the range of `0.0001` to `10`. Defaults to False.
+        in the range of `0.0001` to `10`. Defaults to `False`.
     shared_coords : boolean
         Sets the strategy to detect junctions. When set to `True` a path is 
         considered shared when all coordinates appear in both paths 
@@ -313,8 +313,7 @@ class Topology(Hashmap):
         Returns
         -------
         object or None
-            Quantized coordinates and delta-encoded arcs or `None` if `inplace` 
-            is `True`. 
+            Quantized coordinates and delta-encoded arcs if `inplace` is `False`. 
         """
         result = copy.deepcopy(self)
         arcs = result.output["arcs"]
@@ -364,8 +363,7 @@ class Topology(Hashmap):
         Returns
         -------
         object or None
-            Returns the Topology object with the simplified linestrings or `None` if
-            `inplace` is `True`. 
+            Topology object with simplfified linestrings if `inplace` is `False`. 
         """
         result = copy.deepcopy(self)
         transform = None
