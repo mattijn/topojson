@@ -25,76 +25,32 @@ The following sequence is adopted:
 4. dedup
 5. hashmap
 
-__Arguments__
-
-----------
-- __data __: dict
-    object created by the method topojson.Join.
-
 > #### Returns
-dict
-    object updated and expanded with
-- __- updated key__: linestrings
-- __- new key__: bookkeeping_duplicates
-- __- new key__: bookkeeping_linestrings
+> + ###### dict
+object updated and expanded with
+> + ###### - updated key: linestrings
+- new key: bookkeeping_duplicates
 
-### cutter
+### to_dict
 ```python
-Cut.cutter(self, data)
+Cut.to_dict(self)
 ```
 
-Entry point for the class Cut.
+Convert the Cut object to a dictionary.
 
-The cut function is the third step in the topology computation.
-The following sequence is adopted:
-1. extract
-2. join
-3. cut
-4. dedup
-5. hashmap
-
-> #### Parameters
-> + ###### `data` : (dict)
-    object created by the method topojson.join.
-
-> #### Returns
-dict
-    object updated and expanded with
-    - updated key: linestrings
-    - new key: bookkeeping_duplicates
-    - new key: bookkeeping_linestrings
-
-### flatten_and_index
+### to_svg
 ```python
-Cut.flatten_and_index(self, slist)
+Cut.to_svg(self, separate=False, include_junctions=False)
 ```
 
-Function to create a flattened list of splitted linestrings and create a
-numpy array of the bookkeeping_geoms for tracking purposes.
+Display the linestrings and junctions as SVG.
 
 > #### Parameters
-> + ###### `slist` : (list of LineString)
-    list of splitted LineStrings
-
-> #### Returns
-list
-    segmntlist flattens the nested LineString in slist
-numpy.array
-    array_bk is a bookkeeping array with index values to each LineString
-
-### find_duplicates
-```python
-Cut.find_duplicates(self, segments_list)
-```
-
-Function for solely detecting and recording duplicate LineStrings.
-Firstly creates couple-combinations of LineStrings. A couple is defined
-as two linestrings where the enveloppe overlaps. Indexes of duplicates are
-appended to the list self.duplicates.
-
-> #### Parameters
-> + ###### `segments_list` : (list of LineString)
-    list of valid LineStrings
-
+> + ###### `separate` : boolean
+    If `True`, each of the linestrings will be displayed separately.
+    Default is `False`
+> + ###### `include_junctions` : boolean
+    If `True`, the detected junctions will be displayed as well.
+    Default is `False`
 
 
