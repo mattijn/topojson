@@ -25,8 +25,10 @@ With topojson it is possible to reduce the size of your geographical data. Mostl
 
 The package can be used in multiple different ways, with the main purpose to create a TopoJSON topology. See the documentation for all info: https://mattijn.github.io/topojson
 
-<img src="docs/images/africa_simplify.jpeg" alt="simplifying with and without topology">
-
+_The following picture shows the result of linestring simplification on a computed Topology (right) and on the geographical object directly (left)._ 
+<p align="center">
+<img src="docs/images/africa_simplify.jpeg" alt="simplifying with and without topology" width="600px">
+</p>
 
 ## Installation
 
