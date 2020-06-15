@@ -25,7 +25,7 @@ With topojson it is possible to reduce the size of your geographical data. Mostl
 
 The package can be used in multiple different ways, with the main purpose to create a TopoJSON topology. 
 
-See the Python [Topojson Documentation Site](https://mattijn.github.io/topojson) forr all info 
+See the Python [Topojson Documentation Site](https://mattijn.github.io/topojson) for all info 
 
 _The following picture shows the result of linestring simplification on a computed Topology (right) and on the geographical object directly (left)._ 
 <p align="center">
