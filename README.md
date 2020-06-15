@@ -25,7 +25,7 @@ With topojson it is possible to reduce the size of your geographical data. Mostl
 
 The package can be used in multiple different ways, with the main purpose to create a TopoJSON topology. See the documentation for all info: https://mattijn.github.io/topojson
 
-<img src="docs/images/africa.jpeg" alt="simplifying with and without topology">
+<img src="docs/images/africa_simplify.jpeg" alt="simplifying with and without topology">
 
 
 ## Installation
