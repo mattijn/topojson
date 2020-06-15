@@ -67,6 +67,7 @@ Version `1.0rc10`:
 - add `prevent_oversimplify` as parameter #86
 - fix `serialize_as_json()` to dump correct json to file #87 (thanks @olenhb!)
 - store linestrings internally as numpy arrays instead of shapely geometries #90 - #97
+- generate a speedup of ~20X for larger geographical objects
 
 Version `1.0rc9`:
 - include `to_geojson()` function to return the Topology as an GeoJSON object #71
