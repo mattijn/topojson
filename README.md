@@ -27,7 +27,7 @@ The package can be used in multiple different ways, with the main purpose to cre
 
 See the Python [Topojson Documentation Site](https://mattijn.github.io/topojson) for all info or [this Notebook](https://nbviewer.jupyter.org/github/mattijn/topojson/blob/master/notebooks/topojson.ipynb) with some examples, such as the following:
 
-_The following picture shows the result of linestring simplification on a computed Topology (right) and on the geographical object directly (left)._ 
+_The following picture shows on the top row the result of linestring simplification on a computed Topology (right) and on the geographical object directly (left). On the bottom row it shows the impact on file size reduction between Raw GeoJSON and Topological optimized TopoJSON_ 
 <p align="center">
 <img src="docs/images/africa_simplify.jpeg" alt="simplifying with and without topology" width="600px">
 </p>
