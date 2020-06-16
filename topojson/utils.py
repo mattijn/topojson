@@ -589,7 +589,7 @@ def serialize_as_ipywidgets(topo_object, toposimplify, topoquantize):
 
     alg = widgets.RadioButtons(
         options=[("Douglas-Peucker", "dp"), ("Visvalingam-Whyatt", "vw")],
-        value="dp",
+        value="vw",
         description="Simplify algortihm",
         disabled=False,
         style=style,
@@ -618,5 +618,5 @@ def serialize_as_ipywidgets(topo_object, toposimplify, topoquantize):
 
 
 def toposimpquant(epsilon, quant, algo, topo):
-    topo.output["options"].simplify_algorithm = algo
+    topo.options.simplify_algorithm = algo
     return topo.toposimplify(epsilon).topoquantize(quant).to_alt()
