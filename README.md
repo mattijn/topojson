@@ -31,7 +31,7 @@ See the Python [Topojson Documentation Site](https://mattijn.github.io/topojson)
 <img src="docs/images/africa_simplify.jpeg" alt="simplifying with and without topology" width="600px">
 </p>
 
-_The picture shows on the top row the result of linestring simplification on a computed Topology (right) and on the geographical object directly (left). On the bottom row it shows the impact on file size reduction between Raw GeoJSON and Topological optimized TopoJSON_ 
+_On the top row is shown the result of linestring simplification on a computed Topology (right) and on the geographical object directly (left). On the bottom row it shows the impact on file size reduction between Raw GeoJSON and Topological optimized TopoJSON_ 
 
 ## Installation
 
