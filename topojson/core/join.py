@@ -220,7 +220,6 @@ class Join(Extract):
                         ]
                     ]
                 )
-                # s_coords.extend([[y for x in segment for y in list(x.coords)]])
 
             # only keep junctions that appear only once in each segment (nested list)
             # coordinates that appear multiple times are not junctions
@@ -275,7 +274,6 @@ class Join(Extract):
         except ValueError:
             self._valerr = True
             fw_bw = False
-            # fw_bw = shared_paths(snap(g1, g2, tolerance=6), g2)
 
         # continue if any shared path was detected
         if fw_bw and not fw_bw.is_empty:

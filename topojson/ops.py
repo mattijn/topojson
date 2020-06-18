@@ -810,7 +810,7 @@ def find_duplicates(segments_list, type="array"):
     # get split locations of dups
     idx_sort = np.argsort(hash_segments)
     sorted_hashes = hash_segments[idx_sort]
-    vals, idx_start, count = np.unique(
+    _, idx_start, count = np.unique(
         sorted_hashes, return_counts=True, return_index=True
     )
     if count.max() > 1:
