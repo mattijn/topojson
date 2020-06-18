@@ -109,7 +109,7 @@ class Topology(Hashmap):
     @property
     def __geo_interface__(self):
         topo_object = copy.deepcopy(self.output)
-        return serialize_as_geojson(topo_object, validate=False, lyr_idx=0)
+        return serialize_as_geojson(topo_object, validate=False, objectname="data")
 
     def to_dict(self, options=False):
         """
@@ -346,7 +346,14 @@ class Topology(Hashmap):
         else:
             return result
 
-    def toposimplify(self, epsilon, inplace=False):
+    def toposimplify(
+        self,
+        epsilon,
+        simplify_algorithm=None,
+        simplify_with=None,
+        prevent_oversimplify=None,
+        inplace=False,
+    ):
         """
         Apply toposimplify to remove unnecessary points from arcs after the topology 
         is constructed. This will simplify the constructed arcs without altering the 
@@ -357,6 +364,24 @@ class Topology(Hashmap):
         ----------
         epsilon : float
             tolerance parameter.
+        simplify_algorithm : str, optional
+            Choose between `dp` and `vw`, for Douglas-Peucker or Visvalingam-Whyatt 
+            respectively. `vw` will only be selected if `simplify_with` is set to 
+            `simplification`. 
+            Default is `None`, meaning that the default (`dp`) is not overwritten.  
+        simplify_with : str, optional
+            Sets the package to use for simplifying. Choose between `shapely` or 
+            `simplification`. Shapely adopts solely Douglas-Peucker and simplification 
+            both Douglas-Peucker and Visvalingam-Whyatt. The pacakge simplification is 
+            known to be quicker than shapely. 
+            Default is `None`, meaning that the default (`shapely`) is not overwritten.                         
+        prevent_oversimplify: boolean, optional
+            If this setting is set to `True`, the simplification is slower, but the 
+            likelihood of producing valid geometries is higher as it prevents 
+            oversimplification. Simplification happens on paths separately, so this 
+            setting is especially relevant for rings with no partial shared paths. This 
+            is also known as a topology-preserving variant of simplification. 
+            Default is `None`, meaning that the default (`True`) is not overwritten.
         inplace : bool, optional
             If `True`, do operation inplace and return `None`. Default is `False`.
 
@@ -366,8 +391,16 @@ class Topology(Hashmap):
             Topology object with simplfified linestrings if `inplace` is `False`. 
         """
         result = copy.deepcopy(self)
-        transform = None
 
+        # set settings in options to override
+        if type(prevent_oversimplify) == bool:
+            result.options.prevent_oversimplify = prevent_oversimplify
+        if simplify_with in ["shapely", "simplification"]:
+            result.options.simplify_with = simplify_with
+        if simplify_algorithm in ["dp", "vw"]:
+            result.options.simplify_algorithm = simplify_algorithm
+
+        transform = None
         # get transform settings to dequantize if necessary
         if "transform" in result.output.keys():
             transform = result.output["transform"]
