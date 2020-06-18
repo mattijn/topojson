@@ -452,8 +452,6 @@ class Topology(Hashmap):
             self.output["arcs"] = result.output["arcs"]
             if "transform" in result.output.keys():
                 self.output["transform"] = result.output["transform"]
-            # self.output["arcs"] = result.output["arcs"]
-            # self.output["transform"] = result.output["transform"]
         else:
             return result
 
