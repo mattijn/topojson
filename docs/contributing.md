@@ -38,4 +38,4 @@ The server address is shown in the cmd. Now any changes made in the documentatio
 
 The _API reference_ documentation is created using `pydocmd`. The created markdown is subsequently changed to align with the style of this page. 
 
-All of this happens from the Jupyter Notebook available in the `generate` folder. PydocMd should be installed and available from cmd to run all cells in the notebook successfully.
+All of this happens from the Jupyter Notebook available in the `generate` folder. PydocMd should be [installed](https://github.com/NiklasRosenstein/pydoc-markdown) (using version `2.X`) and available from cmd to run all cells in the notebook successfully.
