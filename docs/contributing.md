@@ -18,7 +18,7 @@ nav_order: 6
 
 ## Documentation
 
-The documentation page is build upon Github Pages and this is done through Jekyll. To build the documentation page locally, make sure you have installed:
+The documentation page is build upon Github Pages. To build the documentation page locally, make sure you have installed:
 1. Ruby 
 - On MacOS this can be done using `brew install ruby`.
 - On Windows you should follow instructions on [https://rubyinstaller.org/downloads/](https://rubyinstaller.org/downloads/). 
@@ -34,7 +34,7 @@ bundle exec jekyll serve --baseurl ''
 
 **Note:** On Windows, a Windows Defender Firewall dialog can popup. Click allow access to give permission.
 
-The server address is shown in the cmd. Now any changes made in the documentation is directly reflected on this website.
+The server address is shown in the cmd. Now any changes made in the Markdown documentation is directly reflected on this website.
 
 The _API reference_ documentation is created using `pydocmd`. The created markdown is subsequently changed to align with the style of this page. 
 
