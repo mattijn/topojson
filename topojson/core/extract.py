@@ -13,12 +13,20 @@ from ..ops import winding_order
 try:
     import geopandas
 except ImportError:
+    __geopandas_available = False
     from ..utils import geopandas
 
 try:
     import geojson
 except ImportError:
+    __geojson_available = False
     from ..utils import geojson
+
+try:
+    import fiona
+except ImportError:
+    __fiona_available = False
+    from ..utils import fiona
 
 
 class Extract(object):
@@ -492,6 +500,29 @@ class Extract(object):
 
         self._is_single = False
         self._serialize_geom_type(geom)
+
+    @_serialize_geom_type.register(fiona.Collection)
+    def _extract_fiona_collection(self, geom):
+        # convert Fiona Collection into a dict of features
+        if not hasattr(self, "_obj"):
+            obj = geom
+            self._obj = geom
+        else:
+            obj = self._obj
+        data = {}
+        zfill_value = len(str(len(geom)))
+
+        # each Feature becomes a new GeometryCollection
+        for idx, feature in enumerate(obj):
+            # A GeoJSON-alike Feature is mapped to a GeometryCollection
+            feature["type"] = "GeometryCollection"
+            feature["geometries"] = [feature["geometry"]]
+            feature.pop("geometry", None)
+            data["feature_{}".format(str(idx).zfill(zfill_value))] = feature
+
+        # new data dictionary is created, throw the geometries back to main()
+        self._is_single = False
+        self._extractor(data)
 
     @_serialize_geom_type.register(geopandas.GeoDataFrame)
     def _extract_geopandas_geodataframe(self, geom):
