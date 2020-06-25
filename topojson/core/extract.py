@@ -13,17 +13,20 @@ from ..ops import winding_order
 try:
     import geopandas
 except ImportError:
-    __geopandas_available = False
     from ..utils import geopandas
 
 try:
     import geojson
+
+    __geojson_available = True
 except ImportError:
     __geojson_available = False
     from ..utils import geojson
 
 try:
     import fiona
+
+    __fiona_available = True
 except ImportError:
     __fiona_available = False
     from ..utils import fiona
@@ -510,15 +513,19 @@ class Extract(object):
         else:
             obj = self._obj
         data = {}
-        zfill_value = len(str(len(geom)))
+        # zfill_value = len(str(len(geom)))
 
         # each Feature becomes a new GeometryCollection
         for idx, feature in enumerate(obj):
             # A GeoJSON-alike Feature is mapped to a GeometryCollection
             feature["type"] = "GeometryCollection"
             feature["geometries"] = [feature["geometry"]]
-            feature.pop("geometry", None)
-            data["feature_{}".format(str(idx).zfill(zfill_value))] = feature
+            # feature.pop("geometry", None)
+            feature = geometry.shape(feature)
+            data[idx] = feature
+            # self._key = idx
+            # self._data[idx] = feature
+            # self._extract_geometrycollection(feature)
 
         # new data dictionary is created, throw the geometries back to main()
         self._is_single = False
@@ -610,7 +617,7 @@ class Extract(object):
                 # detect if object is a shapely geometry
                 if hasattr(self._obj, "geom_type"):
                     geom = self._obj
-                    self._obj = {"type": geom.geom_type}
+                    self._obj = geom.__geo_interface__
                     self._data[self._key] = self._obj
 
                 # detect if object contains shapely supported geometries:
@@ -623,7 +630,7 @@ class Extract(object):
                     self._obj = {"properties": self._obj, "type": geom.geom_type}
                     self._data[self._key] = self._obj
 
-                # no direct shapely geometries avaiable. Try forcing
+                # no direct shapely geometries available. Try forcing
                 else:
                     # detect if the obect contains a __geo_interface__.
                     if hasattr(self._obj, "__geo_interface__"):
@@ -643,9 +650,23 @@ class Extract(object):
                             continue
                     except ValueError:
                         # object might be a GeoJSON Feature or FeatureCollection
-                        geom = geojson.loads(geojson.dumps(self._obj))
+                        # check if geojson is installed
+                        if not hasattr(geojson, "is_dummy"):
+                            geom = geojson.loads(geojson.dumps(self._obj))
+                        else:
+                            # no geojson installed. remove object
+                            self._invalid_geoms += 1
+                            del self._data[self._key]
+                            continue
                     except AttributeError:
-                        geom = geojson.loads(self._obj)
+                        # check if geojson is installed
+                        if not hasattr(geojson, "is_dummy"):
+                            geom = geojson.loads(self._obj)
+                        else:
+                            # no geojson installed. remove object
+                            self._invalid_geoms += 1
+                            del self._data[self._key]
+                            continue
                     except (IndexError, TypeError):
                         # object is not valid
                         self._invalid_geoms += 1

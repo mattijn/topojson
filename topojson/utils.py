@@ -19,6 +19,7 @@ class GeoSeries(object):
 geopandas = SimpleNamespace()
 setattr(geopandas, "GeoDataFrame", GeoDataFrame)
 setattr(geopandas, "GeoSeries", GeoSeries)
+setattr(geopandas, "is_dummy", True)
 
 
 class Feature(object):
@@ -32,6 +33,7 @@ class FeatureCollection(object):
 geojson = SimpleNamespace()
 setattr(geojson, "Feature", Feature)
 setattr(geojson, "FeatureCollection", FeatureCollection)
+setattr(geojson, "is_dummy", True)
 
 
 # ----------------- topology options object ------------------
