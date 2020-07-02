@@ -366,6 +366,14 @@ class Hashmap(Dedup):
             feat["arcs"] = f_arc
             feat.pop("geometries", None)
 
+        elif feat["type"] == "MultiLineString":
+            if "geometries" in feat:
+                f_arcs = feat["geometries"][0]["arcs"]
+            else:
+                f_arcs = feat["arcs"]
+            feat["arcs"] = f_arcs
+            feat.pop("geometries", None)
+
         elif feat["type"] == "Polygon":
             if "geometries" in feat:
                 f_arc = feat["geometries"][0]["arcs"]

@@ -80,15 +80,18 @@ class Extract(object):
         self._is_single = True
         self._invalid_geoms = 0
 
-        # FIXME: try except is not necessary once the following issue is fixed:
-        # https://github.com/geopandas/geopandas/issues/1070
-        try:
-            copydata = copy.deepcopy(data)
-        except TypeError:
-            if hasattr(data, "copy"):
-                copydata = data.copy()
-            else:
-                copydata = data
+        if isinstance(data, fiona.Collection):
+            copydata = data
+        else:
+            # FIXME: try except is not necessary once the following issue is fixed:
+            # https://github.com/geopandas/geopandas/issues/1070
+            try:
+                copydata = copy.deepcopy(data)
+            except TypeError:
+                if hasattr(data, "copy"):
+                    copydata = data.copy()
+                else:
+                    copydata = data
         self.output = self._extractor(copydata)
 
     def __repr__(self):
@@ -506,30 +509,29 @@ class Extract(object):
 
     @_serialize_geom_type.register(fiona.Collection)
     def _extract_fiona_collection(self, geom):
-        # convert Fiona Collection into a dict of features
-        if not hasattr(self, "_obj"):
-            obj = geom
-            self._obj = geom
-        else:
-            obj = self._obj
-        data = {}
-        # zfill_value = len(str(len(geom)))
+        # convert Fiona Collection into a GeoJSON Feature Collection
+        geom = geojson.FeatureCollection(list(geom))
 
-        # each Feature becomes a new GeometryCollection
-        for idx, feature in enumerate(obj):
-            # A GeoJSON-alike Feature is mapped to a GeometryCollection
-            feature["type"] = "GeometryCollection"
-            feature["geometries"] = [feature["geometry"]]
-            # feature.pop("geometry", None)
-            feature = geometry.shape(feature)
-            data[idx] = feature
-            # self._key = idx
-            # self._data[idx] = feature
-            # self._extract_geometrycollection(feature)
-
-        # new data dictionary is created, throw the geometries back to main()
+        # reparse feat_col in _extractor()
         self._is_single = False
-        self._extractor(data)
+        self._extractor(geom)
+
+        # # each Feature becomes a new GeometryCollection
+        # for feature in obj:
+        #     # A GeoJSON-alike Feature is mapped to a GeometryCollection
+        #     idx = int(feature["id"])
+        #     feature["type"] = "GeometryCollection"
+        #     feature["geometries"] = [feature["geometry"]]
+        #     feature.pop("geometry", None)
+        #     geom_col = geometry.shape(feature)
+        #     # Note that these indices are controlled by GDAL, and do not always follow
+        #     # Python conventions
+        #     # https://fiona.readthedocs.io/en/latest/manual.html#collection-indexing
+        #     data[idx] = geom_col
+
+        # # new data dictionary is created, throw the geometries back to main()
+        # self._is_single = False
+        # self._extractor(data)
 
     @_serialize_geom_type.register(geopandas.GeoDataFrame)
     def _extract_geopandas_geodataframe(self, geom):
