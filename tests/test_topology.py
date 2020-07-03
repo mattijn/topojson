@@ -3,6 +3,7 @@ import json
 from shapely import geometry
 import geopandas
 import geojson
+import fiona
 import topojson
 import pytest
 
@@ -271,7 +272,7 @@ def test_topology_to_geojson_nested_geometrycollection():
             ],
         }
     }
-    topo = topojson.Topology(data).to_geojson(pretty=False)
+    topo = topojson.Topology(data).to_geojson()
 
     assert "]]]}]}]}}]}" in topo
 
@@ -366,3 +367,20 @@ def test_topology_topoquantize():
     assert topo["transform"]["translate"] == [0.0, 0.0]
     assert topo["arcs"][0] == [[9999, 0], [-4999, 9999]]
 
+
+def test_topology_fiona_gpkg_to_geojson():
+    with fiona.open("tests/files_shapefile/rivers.gpkg", driver="Geopackage") as f:
+        data = [f[24], f[25]]
+    topo = topojson.Topology(data)
+    gj = geojson.loads(topo.to_geojson())
+
+    assert gj["type"] == "FeatureCollection"
+
+
+def test_topology_fiona_shapefile_to_geojson():
+    with fiona.open("tests/files_shapefile/southamerica.shp") as f:
+        data = [f[0], f[1]]
+    topo = topojson.Topology(data)
+    gj = geojson.loads(topo.to_geojson())
+
+    assert gj["type"] == "FeatureCollection"

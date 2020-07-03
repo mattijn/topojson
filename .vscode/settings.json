@@ -7,7 +7,6 @@
   "[python]": {
     "editor.rulers": [88, 120]
   },
-  "python.pythonPath": "/usr/local/bin/python3",
   "python.formatting.provider": "black",
   "python.testing.pytestArgs": [
     "tests"

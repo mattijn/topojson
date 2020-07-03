@@ -20,6 +20,11 @@ try:
 except ImportError:
     from ..utils import geojson
 
+try:
+    import fiona
+except ImportError:
+    from ..utils import fiona
+
 
 class Extract(object):
     """
@@ -68,16 +73,20 @@ class Extract(object):
         self._geomcollection_counter = 0
         self._is_single = True
         self._invalid_geoms = 0
+        self._tried_geojson = False
 
-        # FIXME: try except is not necessary once the following issue is fixed:
-        # https://github.com/geopandas/geopandas/issues/1070
-        try:
-            copydata = copy.deepcopy(data)
-        except TypeError:
-            if hasattr(data, "copy"):
-                copydata = data.copy()
-            else:
-                copydata = data
+        if isinstance(data, fiona.Collection):
+            copydata = data
+        else:
+            # FIXME: try except is not necessary once the following issue is fixed:
+            # https://github.com/geopandas/geopandas/issues/1070
+            try:
+                copydata = copy.deepcopy(data)
+            except TypeError:
+                if hasattr(data, "copy"):
+                    copydata = data.copy()
+                else:
+                    copydata = data
         self.output = self._extractor(copydata)
 
     def __repr__(self):
@@ -153,6 +162,10 @@ class Extract(object):
             )
             self._invalid_geoms = 0
 
+        if self._tried_geojson:
+            logging.warning(
+                "Objects might be reconignized if python package `geojson` is installed."
+            )
         return data
 
     @singledispatch_class
@@ -493,6 +506,26 @@ class Extract(object):
         self._is_single = False
         self._serialize_geom_type(geom)
 
+    @_serialize_geom_type.register(fiona.Collection)
+    def _extract_fiona_collection(self, geom):
+        """
+        This function extracts a Fiona Collection.
+
+        Parameters
+        ----------
+        geom : fiona.Collection
+            Collection instance
+        """
+
+        if not hasattr(geojson, "is_dummy"):
+            # convert Fiona Collection into a GeoJSON Feature Collection
+            geom = geojson.FeatureCollection(list(geom))
+            # reparse feat_col in _extractor()
+            self._is_single = False
+            self._extractor(geom)
+        else:
+            raise ImportError("This function requires python package `geojson`")
+
     @_serialize_geom_type.register(geopandas.GeoDataFrame)
     def _extract_geopandas_geodataframe(self, geom):
         """*geom* type is GeoDataFrame instance.
@@ -579,7 +612,7 @@ class Extract(object):
                 # detect if object is a shapely geometry
                 if hasattr(self._obj, "geom_type"):
                     geom = self._obj
-                    self._obj = {"type": geom.geom_type}
+                    self._obj = geom.__geo_interface__
                     self._data[self._key] = self._obj
 
                 # detect if object contains shapely supported geometries:
@@ -592,7 +625,7 @@ class Extract(object):
                     self._obj = {"properties": self._obj, "type": geom.geom_type}
                     self._data[self._key] = self._obj
 
-                # no direct shapely geometries avaiable. Try forcing
+                # no direct shapely geometries available. Try forcing
                 else:
                     # detect if the obect contains a __geo_interface__.
                     if hasattr(self._obj, "__geo_interface__"):
@@ -612,9 +645,25 @@ class Extract(object):
                             continue
                     except ValueError:
                         # object might be a GeoJSON Feature or FeatureCollection
-                        geom = geojson.loads(geojson.dumps(self._obj))
+                        # check if geojson is installed
+                        if not hasattr(geojson, "is_dummy"):
+                            geom = geojson.GeoJSON.to_instance(self._obj)
+                        else:
+                            # no geojson installed. remove object
+                            self._tried_geojson = True
+                            self._invalid_geoms += 1
+                            del self._data[self._key]
+                            continue
                     except AttributeError:
-                        geom = geojson.loads(self._obj)
+                        # check if geojson is installed
+                        if not hasattr(geojson, "is_dummy"):
+                            geom = geojson.loads(self._obj)
+                        else:
+                            # no geojson installed. remove object
+                            self._tried_geojson = True
+                            self._invalid_geoms += 1
+                            del self._data[self._key]
+                            continue
                     except (IndexError, TypeError):
                         # object is not valid
                         self._invalid_geoms += 1
