@@ -17,18 +17,12 @@ except ImportError:
 
 try:
     import geojson
-
-    __geojson_available = True
 except ImportError:
-    __geojson_available = False
     from ..utils import geojson
 
 try:
     import fiona
-
-    __fiona_available = True
 except ImportError:
-    __fiona_available = False
     from ..utils import fiona
 
 
