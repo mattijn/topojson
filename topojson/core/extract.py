@@ -79,6 +79,7 @@ class Extract(object):
         self._geomcollection_counter = 0
         self._is_single = True
         self._invalid_geoms = 0
+        self._tried_geojson = False
 
         if isinstance(data, fiona.Collection):
             copydata = data
@@ -167,6 +168,10 @@ class Extract(object):
             )
             self._invalid_geoms = 0
 
+        if self._tried_geojson:
+            logging.warning(
+                "Objects might be reconignized if python package `geojson` is installed."
+            )
         return data
 
     @singledispatch_class
@@ -509,29 +514,23 @@ class Extract(object):
 
     @_serialize_geom_type.register(fiona.Collection)
     def _extract_fiona_collection(self, geom):
-        # convert Fiona Collection into a GeoJSON Feature Collection
-        geom = geojson.FeatureCollection(list(geom))
+        """
+        This function extracts a Fiona Collection.
 
-        # reparse feat_col in _extractor()
-        self._is_single = False
-        self._extractor(geom)
+        Parameters
+        ----------
+        geom : fiona.Collection
+            Collection instance
+        """
 
-        # # each Feature becomes a new GeometryCollection
-        # for feature in obj:
-        #     # A GeoJSON-alike Feature is mapped to a GeometryCollection
-        #     idx = int(feature["id"])
-        #     feature["type"] = "GeometryCollection"
-        #     feature["geometries"] = [feature["geometry"]]
-        #     feature.pop("geometry", None)
-        #     geom_col = geometry.shape(feature)
-        #     # Note that these indices are controlled by GDAL, and do not always follow
-        #     # Python conventions
-        #     # https://fiona.readthedocs.io/en/latest/manual.html#collection-indexing
-        #     data[idx] = geom_col
-
-        # # new data dictionary is created, throw the geometries back to main()
-        # self._is_single = False
-        # self._extractor(data)
+        if not hasattr(geojson, "is_dummy"):
+            # convert Fiona Collection into a GeoJSON Feature Collection
+            geom = geojson.FeatureCollection(list(geom))
+            # reparse feat_col in _extractor()
+            self._is_single = False
+            self._extractor(geom)
+        else:
+            raise ImportError("This function requires python package `geojson`")
 
     @_serialize_geom_type.register(geopandas.GeoDataFrame)
     def _extract_geopandas_geodataframe(self, geom):
@@ -654,9 +653,10 @@ class Extract(object):
                         # object might be a GeoJSON Feature or FeatureCollection
                         # check if geojson is installed
                         if not hasattr(geojson, "is_dummy"):
-                            geom = geojson.loads(geojson.dumps(self._obj))
+                            geom = geojson.GeoJSON.to_instance(self._obj)
                         else:
                             # no geojson installed. remove object
+                            self._tried_geojson = True
                             self._invalid_geoms += 1
                             del self._data[self._key]
                             continue
@@ -666,6 +666,7 @@ class Extract(object):
                             geom = geojson.loads(self._obj)
                         else:
                             # no geojson installed. remove object
+                            self._tried_geojson = True
                             self._invalid_geoms += 1
                             del self._data[self._key]
                             continue
