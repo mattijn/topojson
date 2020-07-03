@@ -35,12 +35,14 @@ class Topology(Hashmap):
         improve the quality of the topology if the input geometry is messy (i.e., 
         small floating point error means that adjacent boundaries do not have 
         identical values); typical values are powers of ten, such as `1e4`, `1e5` or 
-        `1e6`. Default is `True` (which correspond to a quantize factor of `1e6`).
+        `1e6`. 
+        Default is `True` (which correspond to a quantize factor of `1e6`).
     topoquantize : boolean or int
         If the topoquantization parameter is specified, the input geometry is quantized 
         after the topology is constructed. If the topology is already quantized this 
         will be resolved first before the topoquantization is applied. See for more 
-        details the `prequantize` parameter. Default is `False`.
+        details the `prequantize` parameter. 
+        Default is `False`.
     presimplify : boolean, float
         Apply presimplify to remove unnecessary points from linestrings before the 
         topology is constructed. This will simplify the input geometries. Use with care.
@@ -49,13 +51,15 @@ class Topology(Hashmap):
         Apply toposimplify to remove unnecessary points from arcs after the topology 
         is constructed. This will simplify the constructed arcs without altering the 
         topological relations. Sensible values for coordinates stored in degrees are 
-        in the range of `0.0001` to `10`. Defaults to `False`.
+        in the range of `0.0001` to `10`. 
+        Defaults to `False`.
     shared_coords : boolean
         Sets the strategy to detect junctions. When set to `True` a path is 
         considered shared when all coordinates appear in both paths 
         (`coords-connected`). When set to `False` a path is considered shared when 
         coordinates are the same path (`path-connected`). The path-connected strategy 
-        is more 'correct', but slower. Default is `True`.
+        is more 'correct', but slower. 
+        Default is `True`.
     prevent_oversimplify: boolean
         If this setting is set to `True`, the simplification is slower, but the 
         likelihood of producing valid geometries is higher as it prevents 
@@ -72,13 +76,14 @@ class Topology(Hashmap):
     simplify_algorithm : str
         Choose between `dp` and `vw`, for Douglas-Peucker or Visvalingam-Whyatt 
         respectively. `vw` will only be selected if `simplify_with` is set to 
-        `simplification`. Default is `dp`, since it still "produces the most accurate 
-        generalization" (Chi & Cheung, 2006).
+        `simplification`. 
+        Default is `dp`.
     winding_order : str
         Determines the winding order of the features in the output geometry. Choose 
         between `CW_CCW` for clockwise orientation for outer rings and counter-
         clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer 
-        rings and clockwise for interior rings. Default is `CW_CCW`.
+        rings and clockwise for interior rings. 
+        Default is `CW_CCW` for TopoJSON.
     """
 
     def __init__(
@@ -142,7 +147,9 @@ class Topology(Hashmap):
         """
         serialize_as_svg(self.output, separate, include_junctions)
 
-    def to_json(self, fp=None, options=False, pretty=False, indent=4, maxlinelength=88):
+    def to_json(
+        self, fp=None, options=False, style="compact", indent=4, maxlinelength=88
+    ):
         """
         Convert the Topology to a JSON object.
 
@@ -150,19 +157,19 @@ class Topology(Hashmap):
         ----------
         fp : str
             If set, writes the object to a file on drive.
-            Default is `None`
+            Default is `None`.
         options : boolean
             If `True`, the options also will be included. 
-            Default is `False`
-        pretty : boolean
-            If `True`, the JSON object will be 'pretty', depending on the `ident` and
-            `maxlinelength` options 
-            Default is `False`
+            Default is `False`.
+        style : str
+            If `pretty`, the JSON object will be 'pretty', depending on the `ident` and
+            `maxlinelength` options. If `compact`, it eliminates whitespace.
+            Default is `compact`.
         indent : int
-            If `pretty=True`, declares the indentation of the objects.
+            If `style='pretty'`, declares the indentation of the objects.
             Default is `4`.
         maxlinelinelength : int
-            If `pretty=True`, declares the maximum length of each line.
+            If `style='pretty'`, declares the maximum length of each line.
             Default is `88`.
         """
         topo_object = copy.deepcopy(self.output)
@@ -170,16 +177,17 @@ class Topology(Hashmap):
         if options is True:
             topo_object["options"] = vars(self.options)
         return serialize_as_json(
-            topo_object, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
+            topo_object, fp, style=style, indent=indent, maxlinelength=maxlinelength
         )
 
     def to_geojson(
         self,
         fp=None,
-        pretty=False,
+        style="compact",
         indent=4,
         maxlinelength=88,
         validate=False,
+        winding_order="CCW_CW",
         objectname="data",
     ):
         """
@@ -191,29 +199,37 @@ class Topology(Hashmap):
         fp : str
             If set, writes the object to a file on drive.
             Default is `None`
-        pretty : boolean
-            If `True`, the JSON object will be 'pretty', depending on the `ident` and
-            `maxlinelength` options.
-            Default is `False`
+        style : str
+            If `pretty`, the JSON object will be 'pretty', depending on the `ident` and
+            `maxlinelength` options. If `compact`, it eliminates whitespace.
+            Default is `compact`.
         indent : int
             If `pretty=True`, declares the indentation of the objects.
-            Default is `4`
+            Default is `4`.
         maxlinelinelength : int
             If `pretty=True`, declares the maximum length of each line.
-            Default is `88`
+            Default is `88`.
         validate : boolean
             Set to `True` to validate each feature before inclusion in the GeoJSON. Only 
             features that are valid geometries objects will be included.
-            Default is `False`
+            Default is `False`.
+        winding_order : str
+            Determines the winding order of the features in the output geometry. Choose 
+            between `CW_CCW` for clockwise orientation for outer rings and counter-
+            clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer 
+            rings and clockwise for interior rings. 
+            Default is `CCW_CW` for GeoJSON.            
         objectname : str
             The name of the object within the Topology to convert to GeoJSON.
-            Default is `data` 
+            Default is `data`.
         """
         topo_object = copy.deepcopy(self.output)
         topo_object = self._resolve_coords(topo_object)
-        fc = serialize_as_geojson(topo_object, validate=validate, objectname=objectname)
+        fc = serialize_as_geojson(
+            topo_object, validate=validate, objectname=objectname, order=winding_order
+        )
         return serialize_as_json(
-            fc, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
+            fc, fp, style=style, indent=indent, maxlinelength=maxlinelength
         )
 
     def to_gdf(self):
@@ -247,12 +263,12 @@ class Topology(Hashmap):
         ----------
         mesh : boolean
             If `True`, render arcs only (mesh object). If `False` render as geoshape. 
-            Default is `True`
+            Default is `True`.
         color : str
             Assign an property attribute to be used for color encoding. Remember that
             most of the time the wanted attribute is nested within properties. Moreover,
             specific type declaration is required. Eg `color='properties.name:N'`. 
-            Default is `None`
+            Default is `None`.
         tooltip : boolean
             Option to include or exclude tooltips on geoshape objects
             Default is `True`.
@@ -261,7 +277,7 @@ class Topology(Hashmap):
             Cartesian projection (known by Altair as `identity`).
         objectname : str
             The name of the object within the Topology to display.
-            Default is `data` 
+            Default is `data`.
         """
         from ..utils import serialize_as_altair
 
@@ -283,9 +299,11 @@ class Topology(Hashmap):
         Parameters
         ----------
         slider_toposimplify : dict
-            The dict should contain the following keys: `min`, `max`, `step`, `value`
+            The dict should contain the following keys: `min`, `max`, `step`, `value`.
+            Default is `{"min": 0, "max": 10, "step": 0.01, "value": 0.01}`.
         slider_topoquantize : dict
-            The dict should contain the following keys: `min`, `max`, `value`, `base`
+            The dict should contain the following keys: `min`, `max`, `value`, `base`.
+            Default is `{"min": 1, "max": 6, "step": 1, "value": 1e5, "base": 10}`.
         """
 
         from ..utils import serialize_as_ipywidgets
@@ -308,7 +326,8 @@ class Topology(Hashmap):
         quant_factor : float
             tolerance parameter
         inplace : bool, optional
-            If `True`, do operation inplace and return `None`. Default is `False`.
+            If `True`, do operation inplace and return `None`. 
+            Default is `False`.
 
         Returns
         -------
@@ -383,7 +402,8 @@ class Topology(Hashmap):
             is also known as a topology-preserving variant of simplification. 
             Default is `None`, meaning that the default (`True`) is not overwritten.
         inplace : bool, optional
-            If `True`, do operation inplace and return `None`. Default is `False`.
+            If `True`, do operation inplace and return `None`. 
+            Default is `False`.
 
         Returns
         -------

@@ -9,6 +9,22 @@ import copy
 import logging
 
 
+try:
+    from shapely.ops import orient
+except ImportError:
+    from shapely.geometry.base import BaseMultipartGeometry
+    from shapely.geometry.polygon import orient as orient_
+    from shapely.geometry import Polygon
+
+    def orient(geom, sign=1.0):
+        if isinstance(geom, BaseMultipartGeometry):
+            return geom.__class__(
+                list(map(lambda geom: orient(geom, sign), geom.geoms))
+            )
+        if isinstance(geom, (Polygon,)):
+            return orient_(geom, sign)
+        return geom
+
 def asvoid(arr):
     """
     Utility function to create a 1-dimensional numpy void object (bytes)
@@ -683,10 +699,12 @@ def winding_order(geom, order="CW_CCW"):
 
     # CW_CWW will orient the outer polygon clockwise and the inner polygon counter-
     # clockwise to conform TopoJSON standard
+
+
     if order == "CW_CCW":
-        geom = geometry.polygon.orient(geom, sign=-1.0)
+        geom = orient(geom, sign=-1.0)
     elif order == "CCW_CW":
-        geom = geometry.polygon.orient(geom, sign=1.0)
+        geom = orient(geom, sign=1.0)
     else:
         raise NameError("parameter {} was not recognized".format(order))
 

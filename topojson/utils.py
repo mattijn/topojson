@@ -5,6 +5,7 @@ import pprint
 import json
 from .ops import dequantize
 from .ops import np_array_from_arcs
+from .ops import winding_order
 
 
 # ----------- dummy files for geopandas and geojson ----------
@@ -19,6 +20,7 @@ class GeoSeries(object):
 geopandas = SimpleNamespace()
 setattr(geopandas, "GeoDataFrame", GeoDataFrame)
 setattr(geopandas, "GeoSeries", GeoSeries)
+setattr(geopandas, "is_dummy", True)
 
 
 class Feature(object):
@@ -32,6 +34,7 @@ class FeatureCollection(object):
 geojson = SimpleNamespace()
 setattr(geojson, "Feature", Feature)
 setattr(geojson, "FeatureCollection", FeatureCollection)
+setattr(geojson, "is_dummy", True)
 
 
 # ----------------- topology options object ------------------
@@ -454,31 +457,29 @@ def serialize_as_svg(topo_object, separate=False, include_junctions=False):
         display(geometry.MultiLineString(arcs))
 
 
-def serialize_as_json(topo_object, fp, pretty=False, indent=4, maxlinelength=88):
+def serialize_as_json(topo_object, fp, style="compact", indent=4, maxlinelength=88):
     if fp:
         with open(fp, "w") as f:
-            if pretty:
+            if style == "pretty":
                 print(
                     prettyjson(topo_object, indent=indent, maxlinelength=maxlinelength),
                     file=f,
                 )
+            elif style == "compact":
+                json.dump(topo_object, separators=(",", ":"), fp=f)
             else:
                 json.dump(topo_object, fp=f)
     else:
-        if pretty:
+        if style == "pretty":
             return prettyjson(topo_object, indent=indent, maxlinelength=maxlinelength)
+        elif style == "compact":
+            return json.dumps(topo_object, separators=(",", ":"))
         else:
             return json.dumps(topo_object)
 
 
 def serialize_as_geojson(
-    topo_object,
-    fp=None,
-    pretty=False,
-    indent=4,
-    maxlinelength=88,
-    validate=False,
-    objectname="data",
+    topo_object, fp=None, validate=False, objectname="data", order="CCW_CW"
 ):
     from shapely.geometry import shape
 
@@ -511,12 +512,17 @@ def serialize_as_geojson(
 
         # the transform is only used in cases of points or multipoints
         geommap = geometry(feature, np_arcs, transform)
+
+        # enforce right-hand rule on geometry for GeoJSON
+        geommap = winding_order(geom=shape(geommap), order=order)
+
         if validate:
             geom = shape(geommap).buffer(0)
+
             assert geom.is_valid
-            f["geometry"] = geom.__geo_interface__
+            f["geometry"] = geommap.__geo_interface__
         else:
-            f["geometry"] = geommap
+            f["geometry"] = geommap.__geo_interface__
 
         fc["features"].append(f)
     return fc

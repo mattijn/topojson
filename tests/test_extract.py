@@ -3,6 +3,7 @@ from topojson.core.extract import Extract
 from shapely import geometry
 import geopandas
 import geojson
+import fiona
 
 
 # extract copies coordinates sequentially into a buffer
@@ -345,3 +346,18 @@ def test_extract_invalid_dict_item():
     topo = Extract(data).to_dict()
 
     assert len(topo["bookkeeping_geoms"]) == 0
+
+
+def test_extract_fiona_file():
+    with fiona.open("tests/files_shapefile/southamerica.shp") as data:
+        topo = Extract(data).to_dict()
+
+    assert len(topo["bookkeeping_geoms"]) == 15
+
+
+def test_extract_fiona_file_gpkg():
+    with fiona.open("tests/files_shapefile/rivers.gpkg") as data:
+        feats = data[24:26]
+    topo = Extract(feats).to_dict()
+
+    assert len(topo["bookkeeping_geoms"]) == 4

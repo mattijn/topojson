@@ -1,5 +1,6 @@
 import topojson
 import geopandas
+import fiona
 from shapely import geometry
 from topojson.core.hashmap import Hashmap
 
@@ -175,17 +176,6 @@ def test_hashmap_polygon_point():
     assert len(topo["linestrings"]) == 1
 
 
-def test_hashmap_polygon_point():
-    data = [
-        {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
-        {"type": "Point", "coordinates": [0.5, 0.5]},
-    ]
-    topo = Hashmap(data).to_dict()
-
-    assert len(topo["coordinates"]) == 1
-    assert len(topo["linestrings"]) == 1
-
-
 def test_hashmap_multipoint():
     data = [{"type": "MultiPoint", "coordinates": [[0.5, 0.5], [1.0, 1.0]]}]
     topo = Hashmap(data).to_dict()
@@ -279,12 +269,10 @@ def test_hashmap_linestring_polygon():
     assert len(topo["linestrings"]) == 2
 
 
-def test_hashmap_polygon_point():
-    data = [
-        {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
-        {"type": "Point", "coordinates": [0.5, 0.5]},
-    ]
-    topo = Hashmap(data).to_dict()
+def test_hashmap_fiona_gpkg_to_dict():
+    with fiona.open("tests/files_shapefile/rivers.gpkg", driver="Geopackage") as f:
+        data = [f[24], f[25]]
+    topo = Hashmap(data)
+    topo = topo.to_dict()
 
-    assert len(topo["linestrings"]) == 1
-    assert len(topo["coordinates"]) == 1
+    assert len(topo["linestrings"]) == 4
