@@ -8,9 +8,9 @@ permalink: /example-usage
 
 # Example usage
 
-The most common usage op topojson is to first compute the topology.
+The most common usage of Python Topojson is to first compute the Topology.
 
-Using the computed topology apply the `toposimplify` and `topoquantize` settings and visualize till pleased.
+Using the computed Topology apply the `toposimplify` and `topoquantize` settings and visualize till pleased.
 
 The following code-snippet is an example of such:
 

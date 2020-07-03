@@ -12,6 +12,7 @@ This library can be useful for you if you have if one of the following geographi
 - `geojson.Feature` or a `geojson.FeatureCollection`
 - `geopandas.GeoDataFrame` or a `geopandas.GeoSeries`
 - any `shapely.geometry` object (eg. `Multi-``LineString` / `Multi-``Polygon` / `Multi-``Point` / `GeometryCollection`)
+- a `fiona.Collection`
 - any object that support the `__geo_interface__`
 - any object that can be parsed into a `__geo_interface__`
 - `dict` of objects that provide a valid `__geo_interface__` or can be parsed into one
