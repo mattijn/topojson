@@ -188,6 +188,7 @@ class Extract(object):
         - shapely.geometry.Point
         - shapely.geometry.MultiPoint
         - shapely.geometry.GeometryCollection
+        - fiona.Collection
         - geojson.Feature
         - geojson.FeatureCollection
         - geopandas.GeoDataFrame

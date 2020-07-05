@@ -9,10 +9,11 @@ nav_order: 1
 
 This library can be useful for you if you have if one of the following geographical input data:
 
-- `geojson.Feature` or a `geojson.FeatureCollection`
-- `geopandas.GeoDataFrame` or a `geopandas.GeoSeries`
+- `geopandas.GeoDataFrame` or `geopandas.GeoSeries`. Scroll to [example](input-types.html#type-geodataframe)
+- `fiona.Collection`. Scroll to [example](input-types.html#type-fiona)
+- `geojson.FeatureCollection` or `geojson.Feature`. Scroll to [example](input-types.html#type-featurecollection)
 - any `shapely.geometry` object (eg. `Multi-``LineString` / `Multi-``Polygon` / `Multi-``Point` / `GeometryCollection`)
-- a `fiona.Collection`
+
 - any object that support the `__geo_interface__`
 - any object that can be parsed into a `__geo_interface__`
 - `dict` of objects that provide a valid `__geo_interface__` or can be parsed into one

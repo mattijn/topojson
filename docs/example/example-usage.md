@@ -17,9 +17,16 @@ The following code-snippet is an example of such:
 ```python
 import topojson as tp
 
-tj = tp.Topology(your_geo_data)
-tj.toposimplify(1).topoquantize(1e6).to_svg()
+# load example data representing continental Africa
+data = tp.utils.example_data_africa()  
+
+# compute the topology
+topo = tp.Topology(data)  
+
+# apply simplification on the topology and render as SVG
+topo.toposimplify(10).to_svg()
 ```
+<img src="./images/africa_toposimp.svg">
 
 This page is further subdivided in the following three sections for more detailed description and usages: 
 

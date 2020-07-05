@@ -22,7 +22,8 @@ data = [
     {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}
 ]
 
-tp.Topology(data, prequantize=False).to_json()
+topo = tp.Topology(data, prequantize=False)
+print(topo.to_json(style='pretty'))
 ```
 Returns something as such:
 
