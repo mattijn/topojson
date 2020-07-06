@@ -8,7 +8,7 @@ from .ops import np_array_from_arcs
 from .ops import winding_order
 
 
-# ----------- dummy files for geopandas and geojson ----------
+# ----------- dummy files for geopandas, geojson and shapefile ----------
 class GeoDataFrame(object):
     pass
 
@@ -20,7 +20,7 @@ class GeoSeries(object):
 geopandas = SimpleNamespace()
 setattr(geopandas, "GeoDataFrame", GeoDataFrame)
 setattr(geopandas, "GeoSeries", GeoSeries)
-setattr(geopandas, "is_dummy", True)
+setattr(geopandas, "is_placeholder", True)
 
 
 class Feature(object):
@@ -34,8 +34,16 @@ class FeatureCollection(object):
 geojson = SimpleNamespace()
 setattr(geojson, "Feature", Feature)
 setattr(geojson, "FeatureCollection", FeatureCollection)
-setattr(geojson, "is_dummy", True)
+setattr(geojson, "is_placeholder", True)
 
+
+class Collection(object):
+    pass
+
+
+fiona = SimpleNamespace()
+setattr(fiona, "Collection", Collection)
+setattr(fiona, "is_placeholder", True)
 
 # ----------------- topology options object ------------------
 class TopoOptions(object):

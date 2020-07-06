@@ -2,6 +2,7 @@
 layout: default
 title: Example usage
 nav_order: 3
+nav_active_show: 2
 has_children: true
 permalink: /example-usage
 --- 

@@ -20,9 +20,10 @@ try:
 except ImportError:
     from ..utils import geojson
 
+
 try:
     import fiona
-except ImportError:
+except:
     from ..utils import fiona
 
 
@@ -517,8 +518,9 @@ class Extract(object):
         geom : fiona.Collection
             Collection instance
         """
+        import fiona
 
-        if not hasattr(geojson, "is_dummy"):
+        if not hasattr(geojson, "is_placeholder"):
             # convert Fiona Collection into a GeoJSON Feature Collection
             geom = geojson.FeatureCollection(list(geom))
             # reparse feat_col in _extractor()
@@ -647,7 +649,7 @@ class Extract(object):
                     except ValueError:
                         # object might be a GeoJSON Feature or FeatureCollection
                         # check if geojson is installed
-                        if not hasattr(geojson, "is_dummy"):
+                        if not hasattr(geojson, "is_placeholder"):
                             geom = geojson.GeoJSON.to_instance(self._obj)
                         else:
                             # no geojson installed. remove object
@@ -657,7 +659,7 @@ class Extract(object):
                             continue
                     except AttributeError:
                         # check if geojson is installed
-                        if not hasattr(geojson, "is_dummy"):
+                        if not hasattr(geojson, "is_placeholder"):
                             geom = geojson.loads(self._obj)
                         else:
                             # no geojson installed. remove object
