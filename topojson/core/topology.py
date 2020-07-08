@@ -502,6 +502,8 @@ class Topology(Hashmap):
         # apply delta-encoding if prequantization is applied
         if self.options.prequantize > 0:
             self.output["arcs"] = delta_encoding(self.output["arcs"])
+            # no delta-encoding
+            # self.output["arcs"] = [arc.tolist() for arc in self.output["arcs"]]
         else:
             for idx, ls in enumerate(self.output["arcs"]):
                 self.output["arcs"][idx] = np.array(ls).tolist()

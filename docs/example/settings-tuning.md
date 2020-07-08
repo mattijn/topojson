@@ -8,7 +8,7 @@ nav_order: 2
 # Settings and tuning
 {: .no_toc}
 
-The TopoJSON format is merely designed to create smaller files than its GeoJSON counterpart. It is capable of doing so through a few options during generation of the `Topology()` object:
+By adopting the TopoJSON format is possible to store geographical data as topology. Adopting this approach can make it possible to create smaller files than its GeoJSON counterpart. In this process are a few options, which are described below by the following options:
 
 1. TOC
 {:toc}
@@ -94,12 +94,72 @@ Topology(
 {: .no_toc}
 
 If the prequantization parameter is specified, the input geometry is 
-quantized prior to computing the topology, the returned topology is 
-quantized, and its arcs are delta-encoded. Quantization is recommended to 
+quantized prior to computing the topology. The returned topology is 
+quantized, and its arcs are delta-encoded. 
+
+Quantization is recommended to 
 improve the quality of the topology if the input geometry is messy (i.e., 
 small floating point error means that adjacent boundaries do not have 
 identical values); typical values are powers of ten, such as `1e4`, `1e5` or 
 `1e6`. Default is `True` (which correspond to a quantize factor of `1e6`).
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+
+Given the following two polygon with no sides shared, as the left-polygon has the x-max coordinate at `0.97` and the right-polygon has the x-min coordinate at `1.03`:
+```python
+import topojson as tp
+from shapely import geometry
+
+data = geometry.MultiLineString([
+    [[0, 0], [0.97, 0], [0.97, 1], [0, 1], [0, 0]], 
+    [[1.03, 0], [2, 0], [2, 1], [1.03, 1], [1.01, 0]]
+])
+data
+```
+<img src="../images/two_no_touching_polygon.svg">
+
+The `prequantize` is an integer number that is used option it is possible to define a grid value numberBy setting `topology=False` a TopoJSON structured file format is created without considering shared segments (the setting `prequantize=False` avoids computing the delta-encoding):
+```python
+tp.Topology(data, topology=False, prequantize=False)
+```
+```bash
+Topology(
+{'arcs': [[[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.0, 0.0]],
+          [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0], [1.0, 0.0]]],
+ 'bbox': (0.0, 0.0, 2.0, 1.0),
+ 'coordinates': [],
+ 'objects': {'data': {'geometries': [{'arcs': [[0], [1]],
+                                      'type': 'MultiLineString'}],
+                      'type': 'GeometryCollection'}},
+ 'type': 'Topology'}
+)
+```
+As can be seen, the geometries are referenced by two segments (`'arcs': [[0], [1]]`), where each segment is a single Polygon (see: `arcs`).
+
+When doing the same with `topology=True`, there are three `arcs`. Where one arc is referenced two times, namely arc `2` (arc `-3` is arc `2` reversed).
+```python
+tp.Topology(data, topology=False, prequantize=False)
+```
+```bash
+Topology(
+{'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
+          [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
+          [[1.0, 1.0], [1.0, 0.0]]],
+ 'bbox': (0.0, 0.0, 2.0, 1.0),
+ 'coordinates': [],
+ 'objects': {'data': {'geometries': [{'arcs': [[-3, 0], [1, 2]],
+                                      'type': 'MultiLineString'}],
+                      'type': 'GeometryCollection'}},
+ 'type': 'Topology'}
+)
+```
+</div>
+</div>
 
 * * * 
 

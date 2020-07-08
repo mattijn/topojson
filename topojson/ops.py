@@ -25,6 +25,7 @@ except ImportError:
             return orient_(geom, sign)
         return geom
 
+
 def asvoid(arr):
     """
     Utility function to create a 1-dimensional numpy void object (bytes)
@@ -520,8 +521,9 @@ def quantize(linestrings, bbox, quant_factor=1e6):
         kx = 1 / ((quant_factor - 1) / (x1 - x0))
         ky = 1 / ((quant_factor - 1) / (y1 - y0))
     except ZeroDivisionError:
+        kx, ky = 1, 1
         # ZeroDivisionError: float division by zero
-        raise SystemExit("Cannot quantize when xmax-xmin OR ymax-ymin equals 0")
+        # raise SystemExit("Cannot quantize when xmax-xmin OR ymax-ymin equals 0")
 
     for idx, ls in enumerate(linestrings):
         if hasattr(ls, "coords"):
@@ -699,7 +701,6 @@ def winding_order(geom, order="CW_CCW"):
 
     # CW_CWW will orient the outer polygon clockwise and the inner polygon counter-
     # clockwise to conform TopoJSON standard
-
 
     if order == "CW_CCW":
         geom = orient(geom, sign=-1.0)
