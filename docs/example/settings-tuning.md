@@ -195,7 +195,7 @@ details the `prequantize` parameter. Default is `False`.
 
 See [prequantize](settings-tuning.html#prequantize) for an explained example.
 
-**Note:** This is also supported by chaining.
+**Note:** This is also supported by chaining. Meaning you could first compute the Topology (which can be cost-intensive) and afterwards apply the `topoquantize` on the computed Topology.
 
 <div id="embed_tuning_topoquantize"></div>
 
@@ -295,18 +295,7 @@ between `CW_CCW` for clockwise orientation for outer rings and counter-
 clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer 
 rings and clockwise for interior rings. Default is `CW_CCW`.
 
-* * * 
 
-## Chaining
-The `toposimplify` and `topoquantize` are supported by chaining as well. Meaning you could first compute the Topology (which can be cost-intensive) and afterwards apply the simplify and quantize settings on the computed Topology and visualize till pleased.
-
-
-```python
-import topojson as tp
-
-tj = tp.Topology(data, prequantize=False, topology=True)
-tj.toposimplify(1).topoquantize(1e6).to_svg()
-```
 
 
 <script>
