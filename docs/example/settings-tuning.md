@@ -110,54 +110,74 @@ Example 🔧
 </div>
 <div class="example-text" markdown="1">
 
-Given the following two polygon with no sides shared, as the left-polygon has the x-max coordinate at `0.97` and the right-polygon has the x-min coordinate at `1.03`:
+Quantization is a two-step process, namely normalization and delta-encoding. Given the following two polygon with no sides shared, as the left-polygon has the x-max coordinate at `0.97` and the right-polygon has the x-min coordinate at `1.03`:
 ```python
 import topojson as tp
 from shapely import geometry
 
 data = geometry.MultiLineString([
     [[0, 0], [0.97, 0], [0.97, 1], [0, 1], [0, 0]], 
-    [[1.03, 0], [2, 0], [2, 1], [1.03, 1], [1.01, 0]]
+    [[1.03, 0], [2, 0], [2, 1], [1.03, 1], [1.03, 0]]
 ])
 data
 ```
 <img src="../images/two_no_touching_polygon.svg">
 
-The `prequantize` is an integer number that is used option it is possible to define a grid value numberBy setting `topology=False` a TopoJSON structured file format is created without considering shared segments (the setting `prequantize=False` avoids computing the delta-encoding):
+The `prequantize` option is defined as an integer number. It can be best understand as a value that defines the size of a rectangular grid, with the bottom left coordinate at `(0,0)`. Next, the `x`-numbers and `y`-numbers of all coordinates are indepentenly scaled and shifted on this rectangular grid (normalization on range):
 ```python
-tp.Topology(data, topology=False, prequantize=False)
-```
-```bash
-Topology(
-{'arcs': [[[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.0, 0.0]],
-          [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0], [1.0, 0.0]]],
- 'bbox': (0.0, 0.0, 2.0, 1.0),
- 'coordinates': [],
- 'objects': {'data': {'geometries': [{'arcs': [[0], [1]],
-                                      'type': 'MultiLineString'}],
-                      'type': 'GeometryCollection'}},
- 'type': 'Topology'}
-)
-```
-As can be seen, the geometries are referenced by two segments (`'arcs': [[0], [1]]`), where each segment is a single Polygon (see: `arcs`).
+# get the x-numbers of all coordinates
+x = np.array([ls.xy[0] for ls in data])
+print(f'x:\n{x}')
 
-When doing the same with `topology=True`, there are three `arcs`. Where one arc is referenced two times, namely arc `2` (arc `-3` is arc `2` reversed).
-```python
-tp.Topology(data, topology=False, prequantize=False)
+# compute the scaling factor (kx) given the quantize factor (qf)
+qf = 33
+kx = (x.max() - x.min()) / (qf - 1)
+print(f'kx: {kx}')
+
+# shift and apply the scaling factor to map the x-numbers on the integer range
+xnorm = np.round((x - x.min()) / kx).astype(int)
+print(f'x-normalized:\n{xnorm}')
+
+# denormalize happens as follow
+print(f'x-denormalized:\n{xnorm * kx + x.min()}')
 ```
 ```bash
-Topology(
-{'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
-          [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
-          [[1.0, 1.0], [1.0, 0.0]]],
- 'bbox': (0.0, 0.0, 2.0, 1.0),
- 'coordinates': [],
- 'objects': {'data': {'geometries': [{'arcs': [[-3, 0], [1, 2]],
-                                      'type': 'MultiLineString'}],
-                      'type': 'GeometryCollection'}},
- 'type': 'Topology'}
-)
+x:
+[[0.   0.97 0.97 0.   0.  ]
+ [1.03 2.   2.   1.03 1.03]]
+kx: 0.0625
+x-normalized:
+[[ 0 16 16  0  0]
+ [16 32 32 16 16]]
+x-denormalized:
+[[0. 1. 1. 0. 0.]
+ [1. 2. 2. 1. 1.]]
 ```
+The delta-encoding is applied on the normalized coordinates and starting from the first coordinate, only the delta towards the following coordinate is stored. It is a character-reducing process, since the delta between two points is normally smaller than storing both coordinates. Here an example is shown for the `x`-numbers only (1D), where in real it is a 2D process:
+```python
+# delta encoding of normalized x-numbers
+x_quant = np.insert(np.diff(xnorm), 0, xnorm[:,0], axis=1)
+print(f'x-quantized (normalized-delta-encoded):\n{x_quant}')
+
+# dequantization of quantized x-numbers
+x_dequant = x_quant.cumsum(axis=1) * kx + x.min()
+print(f'x-dequantized:\n{x_dequant}')
+```
+```bash
+x-quantized (normalized-delta-encoded):
+[[  0  16   0 -16   0]
+ [ 16  16   0 -16   0]]
+x-dequantized:
+[[0. 1. 1. 0. 0.]
+ [1. 2. 2. 1. 1.]]
+ ```
+
+So, to apply this `prequantize` value on the two no touching polygons, the polygons are touching as a result of it:
+```python
+topo = tp.Topology(data, prequantize=33)
+topo.to_svg()
+```
+<img src="../images/two_polygon.svg">
 </div>
 </div>
 
@@ -172,6 +192,8 @@ If the topoquantization parameter is specified, the input geometry is quantized
 after the topology is constructed. If the topology is already quantized this 
 will be resolved first before the topoquantization is applied. See for more 
 details the `prequantize` parameter. Default is `False`.
+
+See [prequantize](settings-tuning.html#prequantize) for an explained example.
 
 **Note:** This is also supported by chaining.
 

@@ -518,12 +518,10 @@ def quantize(linestrings, bbox, quant_factor=1e6):
 
     x0, y0, x1, y1 = bbox
     try:
-        kx = 1 / ((quant_factor - 1) / (x1 - x0))
-        ky = 1 / ((quant_factor - 1) / (y1 - y0))
+        kx = 1 if (x1 - x0) == 0 else (x1 - x0) / (quant_factor - 1)
+        ky = 1 if (y1 - y0) == 0 else (y1 - y0) / (quant_factor - 1)
     except ZeroDivisionError:
         kx, ky = 1, 1
-        # ZeroDivisionError: float division by zero
-        # raise SystemExit("Cannot quantize when xmax-xmin OR ymax-ymin equals 0")
 
     for idx, ls in enumerate(linestrings):
         if hasattr(ls, "coords"):
