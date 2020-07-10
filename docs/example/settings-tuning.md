@@ -8,7 +8,7 @@ nav_order: 2
 # Settings and tuning
 {: .no_toc}
 
-By adopting the TopoJSON format is possible to store geographical data as topology. Adopting this approach can make it possible to create smaller files than its GeoJSON counterpart. In this process are a few options, which are described below by the following options:
+By adopting the TopoJSON format is possible to store geographical data as topology. Adopting this approach makes smaller files than its GeoJSON counterpart. In this process are a few options, which are described below:
 
 1. TOC
 {:toc}
@@ -17,8 +17,8 @@ By adopting the TopoJSON format is possible to store geographical data as topolo
 
 ## topology
 
-###### boolean
-{: .no_toc}
+boolean
+{: .text-delta}
 Specifiy if the topology should be computed for deriving the TopoJSON.
 Default is `True`.
 
@@ -52,7 +52,7 @@ Topology(
           [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0], [1.0, 0.0]]],
  'bbox': (0.0, 0.0, 2.0, 1.0),
  'coordinates': [],
- 'objects': {'data': {'geometries': [{'arcs': [[0], [1]],
+ 'objects': {'data': {'geometries': [{<strong>'arcs': [[0], [1]]</strong>,
                                       'type': 'MultiLineString'}],
                       'type': 'GeometryCollection'}},
  'type': 'Topology'}
@@ -71,7 +71,7 @@ Topology(
           [[1.0, 1.0], [1.0, 0.0]]],
  'bbox': (0.0, 0.0, 2.0, 1.0),
  'coordinates': [],
- 'objects': {'data': {'geometries': [{'arcs': [[-3, 0], [1, 2]],
+ 'objects': {'data': {'geometries': [{<strong>'arcs': [[-3, 0], [1, 2]]</strong>,
                                       'type': 'MultiLineString'}],
                       'type': 'GeometryCollection'}},
  'type': 'Topology'}
@@ -90,8 +90,8 @@ Topology(
 
 ## prequantize
 
-###### boolean, int
-{: .no_toc}
+boolean, int
+{: .text-delta}
 
 If the prequantization parameter is specified, the input geometry is 
 quantized prior to computing the topology. The returned topology is 
@@ -198,8 +198,8 @@ topo.to_svg()
 
 ## topoquantize
 
-###### boolean or int
-{: .no_toc}
+boolean or int
+{: .text-delta}
 
 If the topoquantization parameter is specified, the input geometry is quantized 
 after the topology is constructed. If the topology is already quantized this 
@@ -241,8 +241,8 @@ length without topoquantization: 32549
 
 ## presimplify
 
-###### boolean, float
-{: .no_toc}
+boolean, float
+{: .text-delta}
 
 Apply presimplify to remove unnecessary points from linestrings before the 
 topology is constructed. This will simplify the input geometries. Use with care. 
@@ -253,8 +253,8 @@ See [toposimplify](settings-tuning.html#toposimplify) for an explained example.
 
 ## toposimplify
 
-###### boolean, float 
-{: .no_toc}
+boolean, float 
+{: .text-delta}
 
 Apply toposimplify to remove unnecessary points from arcs after the topology 
 is constructed. This will simplify the constructed arcs without altering the 
@@ -274,6 +274,7 @@ Example 🔧
 <div class="example-text" markdown="1">
 Here we load continental Afria as data file and apply the `toposimplify` on the arcs.
 The left-plot shows the borders including linestring simplification, derived after the `Topology` is computed, where the right-plot shows the borders without linestring simplification.
+
 ```python
 import topojson as tp
 data = tp.utils.example_data_africa()
@@ -294,8 +295,8 @@ toposimp | topo.to_alt()
 
 ## shared_coords
 
-###### boolean
-{: .no_toc}
+boolean
+{: .text-delta}
 Sets the strategy to detect junctions. When set to `True` a path is 
 considered shared when all coordinates appear in both paths 
 (`coords-connected`). When set to `False` a path is considered shared when 
@@ -305,10 +306,10 @@ is more 'correct', but slower. Default is `True`.
 
 * * * 
 
-## simplify_with
+## prevent_oversimplify
 
-###### boolean
-{: .no_toc}
+boolean
+{: .text-delta}
 
 If this setting is set to `True`, the simplification is slower, but the 
 likelihood of producing valid geometries is higher as it prevents 
@@ -321,8 +322,8 @@ Default is `True`.
 
 ## simplify_with
 
-###### str
-{: .no_toc}
+str
+{: .text-delta}
 Sets the package to use for simplifying (both pre- and toposimplify). Choose 
 between `shapely` or `simplification`. Shapely adopts solely Douglas-Peucker 
 and simplification both Douglas-Peucker and Visvalingam-Whyatt. The pacakge 
@@ -333,8 +334,8 @@ Default is `shapely`.
 
 ## simplify_algorithm
 
-###### str
-{: .no_toc}
+str
+{: .text-delta}
 
 Choose between `dp` and `vw`, for Douglas-Peucker or Visvalingam-Whyatt 
 respectively. `vw` will only be selected if `simplify_with` is set to 
@@ -345,8 +346,8 @@ generalization" (Chi & Cheung, 2006).
 
 ## winding_order
 
-###### str
-{: .no_toc}
+str
+{: .text-delta}
 
 Determines the winding order of the features in the output geometry. Choose 
 between `CW_CCW` for clockwise orientation for outer rings and counter-
