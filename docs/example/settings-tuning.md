@@ -210,7 +210,7 @@ See [prequantize](settings-tuning.html#prequantize) for an explained example.
 
 **Note:** This is also supported by chaining. Meaning you could first compute the Topology (which can be cost-intensive) and afterwards apply the `topoquantize` on the computed Topology.
 
-<!-- <div id="embed_tuning_topoquantize"></div> -->
+
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
@@ -266,7 +266,28 @@ in the range of `0.0001` to `10`. Defaults to `False`.
 
 **Note 2:** This is also supported by chaining. Meaning you could first compute the Topology (which can be cost-intensive) and afterwards apply the `toposimplify` on the computed Topology.
 
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+Here we load continental Afria as data file and apply the `toposimplify` on the arcs.
+The left-plot shows the borders including linestring simplification, derived after the `Topology` is computed, where the right-plot shows the borders without linestring simplification.
+```python
+import topojson as tp
+data = tp.utils.example_data_africa()
 
+topo = tp.Topology(data)
+
+# we visualize with the (optional!) package Altair,
+# since SVG rendering is too small
+toposimp = topo.toposimplify(1).to_alt().properties(title='WITH Toposimplify')
+toposimp | topo.to_alt()
+```
+<div id="embed_tuning_toposimplify"></div>
+</div>
+</div>
 
 
 * * * 
@@ -343,8 +364,8 @@ window.addEventListener("DOMContentLoaded", event => {
         actions: false
     };
 
-    var spec_topology = "{{site.baseurl}}/json/example_topology.vl.json";
-    vegaEmbed("#embed_tuning_topology", spec_topology, opt).catch(console.err);
+    var spec_topology = "{{site.baseurl}}/json/example_toposimplify.vl.json";
+    vegaEmbed("#embed_tuning_toposimplify", spec_topology, opt).catch(console.err);
 });
 </script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>

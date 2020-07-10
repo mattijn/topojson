@@ -831,9 +831,26 @@ def find_duplicates(segments_list, type="array"):
         sorted_hashes, return_counts=True, return_index=True
     )
     if count.max() > 1:
+
+        def _cart(arr):
+            """
+            Function that returns the all combinations as a 2D array
+            [3, 152,  62, 52] is returned as [[152,  62], [152,  52], [152,   3]]
+            """
+            arr = -np.sort(-arr)
+            arr = np.array(np.meshgrid(arr[0], arr[1:])).T.reshape(-1, 2)
+            return arr
+
         # split on indices that occures > 1
         idx_dups = np.split(idx_sort, idx_start[1:])
-        idx_dups = np.array([dup for dup in idx_dups if dup.size > 1])
+        list_dups = []
+        for dup in idx_dups:
+            if dup.size > 2:
+                list_dups.append(_cart(dup))
+            elif dup.size > 1:
+                list_dups.append(dup)
+        idx_dups = np.vstack(list_dups)
+        # idx_dups = np.array([dup for dup in idx_dups if dup.size > 1])
 
         # apply sorting on duplicate-pairs
         idx_dups = -np.sort(-idx_dups, axis=1)
