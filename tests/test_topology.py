@@ -198,18 +198,19 @@ def test_topology_polygon_point():
     assert topo["objects"]["data"]["geometries"][1]["coordinates"] == [0, 999999]
 
 
+# changed test since, quantization process catch zero-division
 def test_topology_point():
     data = [{"type": "Point", "coordinates": [0.5, 0.5]}]
-    # topo = topojson.Topology(data, topoquantize=True).to_dict()
-    with pytest.warns(RuntimeWarning) as topo:
-        topojson.Topology(data, topoquantize=True).to_dict()
+    topo = topojson.Topology(data, topoquantize=True).to_dict()
+    # with pytest.warns(RuntimeWarning) as topo:
+    #     topojson.Topology(data, topoquantize=True).to_dict()
 
-    # assert len(topo["arcs"]) == 0
-    assert topo._record is True
-    assert (
-        topo._list[0].message.args[0] == "divide by zero encountered in double_scalars"
-    )
-    # assert topo.value.code == "Cannot quantize when xmax-xmin OR ymax-ymin equals 0"
+    assert len(topo["arcs"]) == 0
+    # assert topo._record is True
+    # assert (
+    #     topo._list[0].message.args[0] == "divide by zero encountered in double_scalars"
+    # )
+    # # assert topo.value.code == "Cannot quantize when xmax-xmin OR ymax-ymin equals 0"
 
 
 def test_topology_multipoint():
