@@ -46,7 +46,7 @@ By setting `topology=False` a TopoJSON structured file format is created without
 ```python
 tp.Topology(data, topology=False, prequantize=False)
 ```
-```bash
+<pre class="code_no_highlight">
 Topology(
 {'arcs': [[[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.0, 0.0]],
           [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0], [1.0, 0.0]]],
@@ -57,14 +57,14 @@ Topology(
                       'type': 'GeometryCollection'}},
  'type': 'Topology'}
 )
-```
+</pre>
 As can be seen, the geometries are referenced by two segments (`'arcs': [[0], [1]]`), where each segment is a single Polygon (see: `arcs`).
 
 When doing the same with `topology=True`, there are three `arcs`. Where one arc is referenced two times, namely arc `2` (arc `-3` is arc `2` reversed).
 ```python
 tp.Topology(data, topology=False, prequantize=False)
 ```
-```bash
+<pre class="code_no_highlight">
 Topology(
 {'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
           [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
@@ -76,7 +76,7 @@ Topology(
                       'type': 'GeometryCollection'}},
  'type': 'Topology'}
 )
-```
+</pre>
 </div>
 </div>
 
@@ -110,7 +110,7 @@ Example 🔧
 </div>
 <div class="example-text" markdown="1">
 
-Quantization is a two-step process, namely normalization and delta-encoding. Given the following two polygon with no sides shared, as the left-polygon has the x-max coordinate at `0.97` and the right-polygon has the x-min coordinate at `1.03`:
+Quantization is a two-step process, namely normalization and delta-encoding. Given the following two polygon with no sides shared, since the left-polygon has a x-max coordinate at `0.97` and the right-polygon has a x-min coordinate at `1.03`:
 ```python
 import topojson as tp
 from shapely import geometry
@@ -123,54 +123,67 @@ data
 ```
 <img src="../images/two_no_touching_polygon.svg">
 
-The `prequantize` option is defined as an integer number. It can be best understand as a value that defines the size of a rectangular grid, with the bottom left coordinate at `(0,0)`. Next, the `x`-numbers and `y`-numbers of all coordinates are indepentenly scaled and shifted on this rectangular grid (normalization on range):
+The `prequantize` option is defined as an integer number. It can be best understand as a value that defines the size of a rectangular grid, with the bottom left coordinate at `(0,0)`. Next, the `x`-numbers and `y`-numbers of all coordinates are indepentenly scaled and shifted on this rectangular grid (normalization on range). Here it is shown for the `x`-numbers only:
 ```python
 # get the x-numbers of all coordinates
 x = np.array([ls.xy[0] for ls in data])
 print(f'x:\n{x}')
-
+```
+<pre class="code_no_highlight">
+x:
+[[0.   0.97 0.97 0.   0.  ]
+ [1.03 2.   2.   1.03 1.03]]
+</pre>
+```python
 # compute the scaling factor (kx) given the quantize factor (qf)
 qf = 33
 kx = (x.max() - x.min()) / (qf - 1)
 print(f'kx: {kx}')
-
+```
+<pre class="code_no_highlight">
+kx: 0.0625
+</pre>
+```python
 # shift and apply the scaling factor to map the x-numbers on the integer range
 xnorm = np.round((x - x.min()) / kx).astype(int)
 print(f'x-normalized:\n{xnorm}')
-
-# denormalize happens as follow
-print(f'x-denormalized:\n{xnorm * kx + x.min()}')
 ```
-```bash
-x:
-[[0.   0.97 0.97 0.   0.  ]
- [1.03 2.   2.   1.03 1.03]]
-kx: 0.0625
+<pre class="code_no_highlight">
 x-normalized:
 [[ 0 16 16  0  0]
  [16 32 32 16 16]]
+</pre>
+```python
+# denormalize happens as follow
+print(f'x-denormalized:\n{xnorm * kx + x.min()}')
+```
+<pre class="code_no_highlight">
 x-denormalized:
 [[0. 1. 1. 0. 0.]
  [1. 2. 2. 1. 1.]]
-```
+</pre>
+
 The delta-encoding is applied on the normalized coordinates and starting from the first coordinate, only the delta towards the following coordinate is stored. It is a character-reducing process, since the delta between two points is normally smaller than storing both coordinates. Here an example is shown for the `x`-numbers only (1D), where in real it is a 2D process:
 ```python
 # delta encoding of normalized x-numbers
 x_quant = np.insert(np.diff(xnorm), 0, xnorm[:,0], axis=1)
 print(f'x-quantized (normalized-delta-encoded):\n{x_quant}')
-
+```
+<pre class="code_no_highlight">
+x-quantized (normalized-delta-encoded):
+[[  0  16   0 -16   0]
+ [ 16  16   0 -16   0]]
+</pre>
+```python
 # dequantization of quantized x-numbers
 x_dequant = x_quant.cumsum(axis=1) * kx + x.min()
 print(f'x-dequantized:\n{x_dequant}')
 ```
-```bash
-x-quantized (normalized-delta-encoded):
-[[  0  16   0 -16   0]
- [ 16  16   0 -16   0]]
+<pre class="code_no_highlight">
 x-dequantized:
 [[0. 1. 1. 0. 0.]
  [1. 2. 2. 1. 1.]]
- ```
+</pre>
 
 So, to apply this `prequantize` value on the two no touching polygons, the polygons are touching as a result of it:
 ```python
@@ -197,8 +210,31 @@ See [prequantize](settings-tuning.html#prequantize) for an explained example.
 
 **Note:** This is also supported by chaining. Meaning you could first compute the Topology (which can be cost-intensive) and afterwards apply the `topoquantize` on the computed Topology.
 
-<div id="embed_tuning_topoquantize"></div>
+<!-- <div id="embed_tuning_topoquantize"></div> -->
 
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+
+```python
+import topojson as tp
+data = tp.utils.example_data_africa()
+
+topo = tp.Topology(data)
+topo_tq = topo.topoquantize(75)
+
+print(f'length with topoquantization:    {len(topo_tq.to_json())}')
+print(f'length without topoquantization: {len(topo.to_json())}')
+```
+<pre class="code_no_highlight">
+length with topoquantization:    20391
+length without topoquantization: 32549
+</pre>
+</div>
+</div>
 
 
 * * * 
@@ -212,6 +248,7 @@ Apply presimplify to remove unnecessary points from linestrings before the
 topology is constructed. This will simplify the input geometries. Use with care. 
 Default is `False`.
 
+See [toposimplify](settings-tuning.html#toposimplify) for an explained example.
 * * * 
 
 ## toposimplify
@@ -225,9 +262,9 @@ topological relations. Sensible values for coordinates stored in degrees are
 in the range of `0.0001` to `10`. Defaults to `False`.
 
 
-**Note 1:** The units of `toposimplify` are corresoponding to the input space. The provided _sensible_ values are for dgrees (eg. epsg:4326). When the projection of your data is in meters you might need to test which value should be adopted.
+**Note 1:** The units of `toposimplify` are corresoponding to the input space. The provided _sensible_ values are for degrees (eg. `epsg:4326`). When the projection of your data is in `meters` you might need to test which value should be adopted.
 
-**Note 2:** This is also supported by chaining.
+**Note 2:** This is also supported by chaining. Meaning you could first compute the Topology (which can be cost-intensive) and afterwards apply the `toposimplify` on the computed Topology.
 
 
 
