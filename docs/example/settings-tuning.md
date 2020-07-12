@@ -248,7 +248,28 @@ Apply presimplify to remove unnecessary points from linestrings before the
 topology is constructed. This will simplify the input geometries. Use with care. 
 Default is `False`.
 
-See [toposimplify](settings-tuning.html#toposimplify) for an explained example.
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+Here we load continental Afria as data file and apply the `presimplify` on the input-space.
+The plot shows the borders including linestring simplification, derived _before_ the `Topology` is computed.
+
+```python
+import topojson as tp
+data = tp.utils.example_data_africa()
+
+topo = tp.Topology(data, presimplify=4)
+
+# since SVG rendering is too small for this example,
+# we use the (optional!) package Altair for visualization.
+topo.to_alt().properties(title='presimplify')
+```
+<div id="embed_tuning_presimplify"></div>
+</div>
+</div>
 * * * 
 
 ## toposimplify
@@ -273,18 +294,17 @@ Example 🔧
 </div>
 <div class="example-text" markdown="1">
 Here we load continental Afria as data file and apply the `toposimplify` on the arcs.
-The left-plot shows the borders including linestring simplification, derived after the `Topology` is computed, where the right-plot shows the borders without linestring simplification.
+The plot shows the borders including linestring simplification, derived _after_ the `Topology` is computed.
 
 ```python
 import topojson as tp
 data = tp.utils.example_data_africa()
 
-topo = tp.Topology(data)
+topo = tp.Topology(data, toposimplify=4)
 
-# we visualize with the (optional!) package Altair,
-# since SVG rendering is too small
-toposimp = topo.toposimplify(1).to_alt().properties(title='WITH Toposimplify')
-toposimp | topo.to_alt()
+# since SVG rendering is too small for this example,
+# we use the (optional!) package Altair for visualization.
+topo.to_alt().properties(title='toposimplify')
 ```
 <div id="embed_tuning_toposimplify"></div>
 </div>
@@ -303,6 +323,73 @@ considered shared when all coordinates appear in both paths
 coordinates are the same path (`path-connected`). The path-connected strategy 
 is more 'correct', but slower. Default is `True`.
 
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+The example shows two LineStrings, the are partially overlapping with one shared coordinate.
+
+```python
+import topojson as tp
+from shapely import geometry
+
+data = geometry.MultiLineString([
+    [(0, 0), (10, 0), (10, 5), (20, 5)], 
+    [(5, 0), (20, 0), (20, 5), (10, 5), (0, 5)]
+])
+data
+```
+<img src="../images/two_linestring.svg">
+
+The setting `shared_coords=True` adopts a strategy of `coords-connected`, meaning it will split only when coordinates are detected in both linestrings. Here we show it as SVG, with each derived segment/arc plotted separately.
+
+```python
+tp.Topology(
+    data, 
+    shared_coords=True, 
+    prequantize=False
+).to_svg(separate=True)
+```
+<pre class="code_no_highlight">
+0 LINESTRING (0 0, 10 0, 10 5)
+<img src="../images/cc_ls_0.svg">
+1 LINESTRING (5 0, 20 0, 20 5)
+<img src="../images/cc_ls_1.svg">
+2 LINESTRING (20 5, 10 5)
+<img src="../images/cc_ls_2.svg">
+3 LINESTRING (10 5, 0 5)
+<img src="../images/cc_ls_3.svg">
+</pre>
+`LineString 2 (20 5, 10 5)` is the shared segment. 
+
+When using the setting `shared_coords=False` a `path-connected` strategy is adopted, meaning it will split also when paths are overlapping without having common coordinates.
+
+```python
+tp.Topology(
+    data, 
+    shared_coords=False, 
+    prequantize=False
+).to_svg(separate=True)
+```
+<pre class="code_no_highlight">
+0 LINESTRING (0 0, 5 0)
+<img src="../images/pc_ls_0.svg">
+1 LINESTRING (10 0, 10 5)
+<img src="../images/pc_ls_1.svg">
+2 LINESTRING (5 0, 10 0)
+<img src="../images/pc_ls_2.svg">
+3 LINESTRING (10 0, 20 0, 20 5)
+<img src="../images/pc_ls_3.svg">
+4 LINESTRING (20 5, 10 5)
+<img src="../images/pc_ls_4.svg">
+5 LINESTRING (10 5, 0 5)
+<img src="../images/pc_ls_5.svg">
+</pre>
+`LineString 2 (5 0, 10 0)` and `LineString 4 (20 5, 10 5)` are shared segments. 
+</div>
+</div>
 
 * * * 
 
@@ -317,6 +404,46 @@ oversimplification. Simplification happens on paths separately, so this
 setting is especially relevant for rings with no partial shared paths. This 
 is also known as a topology-preserving variant of simplification. 
 Default is `True`. 
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+The example shows a circle that is two times simplified. The first time with `prevent_oversimplify=False` and the second time with `prevent_oversimplify=True`.
+
+```python
+import topojson as tp
+from shapely import geometry
+
+circle = geometry.Point(0, 0).buffer(1)
+circle
+```
+<img src="../images/circle.svg">
+
+```python
+# force simplification
+tp.Topology(
+    circle, 
+    toposimplify=2,
+    prevent_oversimplify=False
+).to_svg()
+```
+<img src="../images/prevent_oversimplify_False.svg">
+
+```python
+# avoid oversimplification
+tp.Topology(
+    circle, 
+    toposimplify=2,
+    prevent_oversimplify=True
+).to_svg()
+```
+<img src="../images/prevent_oversimplify_True.svg">
+</div>
+</div>
+
 
 * * * 
 
@@ -365,8 +492,11 @@ window.addEventListener("DOMContentLoaded", event => {
         actions: false
     };
 
-    var spec_topology = "{{site.baseurl}}/json/example_toposimplify.vl.json";
-    vegaEmbed("#embed_tuning_toposimplify", spec_topology, opt).catch(console.err);
+    var spec_presimplify = "{{site.baseurl}}/json/example_presimplify.vl.json";
+    vegaEmbed("#embed_tuning_presimplify", spec_presimplify, opt).catch(console.err);
+
+    var spec_toposimplify = "{{site.baseurl}}/json/example_toposimplify.vl.json";
+    vegaEmbed("#embed_tuning_toposimplify", spec_toposimplify, opt).catch(console.err);
 });
 </script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>

@@ -132,7 +132,7 @@ class Topology(Hashmap):
             topo_object["options"] = vars(self.options)
         return topo_object
 
-    def to_svg(self, separate=False, include_junctions=False):
+    def to_svg(self, separate=False):
         """
         Display the arcs and junctions as SVG.
 
@@ -141,11 +141,8 @@ class Topology(Hashmap):
         separate : boolean
             If `True`, each of the arcs will be displayed separately. 
             Default is `False`
-        include_junctions : boolean
-            If `True`, the detected junctions will be displayed as well. 
-            Default is `False`
         """
-        serialize_as_svg(self.output, separate, include_junctions)
+        serialize_as_svg(self.output, separate, include_junctions=False)
 
     def to_json(
         self, fp=None, options=False, style="compact", indent=4, maxlinelength=88

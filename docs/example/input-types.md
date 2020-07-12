@@ -147,7 +147,7 @@ topo.to_svg()
 From the package `shapely`
 
 ```python
-import topjson as tp
+import topojson as tp
 from shapely import geometry
 
 data = geometry.MultiLineString([
@@ -165,7 +165,7 @@ tp.Topology(data).to_svg()
 This example use the package `pyshp` (not a hard dependency)
 
 ```python
-import topjson as tp
+import topojson as tp
 import shapefile
 
 data = shapefile.Reader("tests/files_shapefile/southamerica.shp")
