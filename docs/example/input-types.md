@@ -21,6 +21,13 @@ This library can be useful for you if you have if one of the following geographi
 ### `geopandas.GeoDataFrame`
 From the package `geopandas` (not a hard dependency)
 
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+
 ```python
 import topojson as tp
 import geopandas
@@ -81,11 +88,20 @@ tp.Topology(gdf, prequantize=False).to_json()
     ]
 }
 ```
+</div>
+</div>
 
 * * * 
 
 ### `geojson.FeatureCollection`
 From the package `geojson` (not a hard dependency)
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
 
 ```python
 import topojson as tp
@@ -124,11 +140,20 @@ tp.Topology(fc, prequantize=False).to_json()
     ]
 }
 ```
+</div>
+</div>
 
 * * * 
 
 ### `fiona.Collection`
 From the package `fiona` (not a hard dependency)
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
 
 ```python
 import topojson as tp
@@ -140,11 +165,20 @@ with fiona.open('tests/files_shapefile/mesh2d.geojson') as fio_col:
 topo.to_svg()
 ```
 <img src="../images/mesh2d.svg">
+</div>
+</div>
 
 * * *
 
 ### `shapely.geometry` object
 From the package `shapely`
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
 
 ```python
 import topojson as tp
@@ -158,11 +192,20 @@ data = geometry.MultiLineString([
 tp.Topology(data).to_svg()
 ```
 <img src="../images/shared_paths.svg">
+</div>
+</div>
 
 * * * 
 
 ### object that support the `__geo_interface__` 
 This example use the package `pyshp` (not a hard dependency)
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
 
 ```python
 import topojson as tp
@@ -173,11 +216,20 @@ topo = tp.Topology(data)
 topo.toposimplify(4).to_svg()
 ```
 <img src="../images/southamerica_toposimp.svg">
+</div>
+</div>
 
 * * *
 
 ### `list` of objects that provide a valid `__geo_interface__` or can be parsed into one
 The list should contain items that supports the `__geo_interface__`
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
 
 ```python
 import topojson as tp
@@ -208,11 +260,20 @@ tp.Topology(list_in, prequantize=False).to_json()
     ]
 }
 ```
+</div>
+</div>
 
 * * * 
 
 ### `dict` of objects that provide a valid `__geo_interface__` or can be parsed into one
 The dictionary should be structured like {`key1`: `obj1`, `key2`: `obj2`}.
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
 
 ```python
 import topojson as tp
@@ -249,3 +310,5 @@ tp.Topology(dict_in, prequantize=False).to_json()
     ]
 }
 ```
+</div>
+</div>

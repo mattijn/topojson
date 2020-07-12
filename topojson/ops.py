@@ -601,6 +601,14 @@ def simplify(
         LineStrings that are simplified
     """
     if package == "shapely":
+        if algorithm == "vw":
+            msg = (
+                "You need to set `simplify_with='simplification'` to use the ",
+                "Visvalingam–Whyatt (`vw`) algorithm. This package is optional and ",
+                "if not installed, install with `pip install simplification`. ",
+                "Continue with Douglas-Peucker (`dp`) algorithm instead.",
+            )
+            logging.warning("".join(msg))
 
         if input_as == "array":
             list_arcs = []
@@ -626,15 +634,15 @@ def simplify(
         elif algorithm == "vw" and not prevent_oversimplify:
             alg = cutil.simplify_coords_vw
         elif algorithm == "dp" and prevent_oversimplify:
-            logging.warning(
-                (
-                    "The Douglas–Peucker algorithm within the `simplification` package",
-                    "has no options to prevent oversimplification. Use Visvalingam–",
-                    "Whyatt (`vw`) algorithm when using the simplification package or",
-                    "use Douglas-Peucker algorithm from `shapely` package to prevent",
-                    "oversimplification",
-                )
+            msg = (
+                "The Douglas–Peucker algorithm from the `simplification` package ",
+                "has no options to prevent oversimplification. Use Visvalingam–",
+                "Whyatt (`vw`) algorithm when using the simplification package if ",
+                "oversimplification should be prevented or use the Douglas-Peucker ",
+                "algorithm from `shapely` package to prevent oversimplification. ",
+                "Continue without prevention of oversimplification.",
             )
+            logging.warning("".join(msg))
             alg = cutil.simplify_coords
         else:
             alg = cutil.simplify_coords

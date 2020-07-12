@@ -457,6 +457,32 @@ and simplification both Douglas-Peucker and Visvalingam-Whyatt. The pacakge
 simplification is known to be quicker than shapely. 
 Default is `shapely`.
 
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+
+```python
+import topojson as tp
+data = tp.utils.example_data_africa()
+
+topo = tp.Topology(data, prequantize=200)
+
+# we visualize with the (optional!) package Altair,
+# since SVG rendering is too small for this example
+topo.toposimplify(
+    epsilon=1,
+    simplify_algorithm='dp', 
+    simplify_with='simplification', 
+    prevent_oversimplify=False
+).to_alt().properties(title='Douglas-Peucker (package simplification)')
+```
+<div id="embed_tuning_simplify_with"></div>
+</div>
+</div>
+
 * * * 
 
 ## simplify_algorithm
@@ -468,6 +494,34 @@ Choose between `dp` and `vw`, for Douglas-Peucker or Visvalingam-Whyatt
 respectively. `vw` will only be selected if `simplify_with` is set to 
 `simplification`. Default is `dp`, since it still "produces the most accurate 
 generalization" (Chi & Cheung, 2006).
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+Here we use the `vw` algorithm from Visvalingam-Whyatt included in the package 
+`simplification`.
+
+```python
+import topojson as tp
+data = tp.utils.example_data_africa()
+
+topo = tp.Topology(data, prequantize=200)
+
+# we visualize with the (optional!) package Altair,
+# since SVG rendering is too small for this example
+topo.toposimplify(
+    epsilon=1,
+    simplify_algorithm='vw', 
+    simplify_with='simplification', 
+    prevent_oversimplify=True
+).to_alt().properties(title='Visvalingam-Whyatt (package simplification)')
+```
+<div id="embed_tuning_simplify_alg"></div>
+</div>
+</div>
 
 * * * 
 
@@ -497,6 +551,12 @@ window.addEventListener("DOMContentLoaded", event => {
 
     var spec_toposimplify = "{{site.baseurl}}/json/example_toposimplify.vl.json";
     vegaEmbed("#embed_tuning_toposimplify", spec_toposimplify, opt).catch(console.err);
+
+    var spec_simplify_with = "{{site.baseurl}}/json/example_simplify_with.vl.json";
+    vegaEmbed("#embed_tuning_simplify_with", spec_simplify_with, opt).catch(console.err);   
+
+    var spec_simplify_alg = "{{site.baseurl}}/json/example_simplify_alg.vl.json";
+    vegaEmbed("#embed_tuning_simplify_alg", spec_simplify_alg, opt).catch(console.err);   
 });
 </script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
