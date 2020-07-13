@@ -465,22 +465,22 @@ def serialize_as_svg(topo_object, separate=False, include_junctions=False):
         display(geometry.MultiLineString(arcs))
 
 
-def serialize_as_json(topo_object, fp, style="compact", indent=4, maxlinelength=88):
+def serialize_as_json(topo_object, fp, pretty=False, indent=4, maxlinelength=88):
     if fp:
         with open(fp, "w") as f:
-            if style == "pretty":
+            if pretty is True:
                 print(
                     prettyjson(topo_object, indent=indent, maxlinelength=maxlinelength),
                     file=f,
                 )
-            elif style == "compact":
+            elif pretty is False:
                 json.dump(topo_object, separators=(",", ":"), fp=f)
             else:
                 json.dump(topo_object, fp=f)
     else:
-        if style == "pretty":
+        if pretty is True:
             return prettyjson(topo_object, indent=indent, maxlinelength=maxlinelength)
-        elif style == "compact":
+        elif pretty is False:
             return json.dumps(topo_object, separators=(",", ":"))
         else:
             return json.dumps(topo_object)
@@ -502,7 +502,8 @@ def serialize_as_geojson(
     if arcs:
         np_arcs = np_array_from_arcs(arcs)
         # dequantize if quantization is applied
-        np_arcs = dequantize(np_arcs, scale, translate)
+        if transform:
+            np_arcs = dequantize(np_arcs, scale, translate)
     else:
         np_arcs = None
 

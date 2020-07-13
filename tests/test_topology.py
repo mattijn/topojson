@@ -355,6 +355,7 @@ def test_topology_to_json(tmp_path):
 
     with open(topo_file) as f:
         topo_reloaded = json.load(f)
+    assert topo_reloaded
 
 
 def test_topology_topoquantize():
@@ -383,5 +384,18 @@ def test_topology_fiona_shapefile_to_geojson():
         data = [f[0], f[1]]
     topo = topojson.Topology(data)
     gj = geojson.loads(topo.to_geojson())
+
+    assert gj["type"] == "FeatureCollection"
+
+
+def test_winding_order_geojson():
+    data = geometry.MultiLineString(
+        [
+            [[0, 0], [0.97, 0], [0.97, 1], [0, 1], [0, 0]],
+            [[1.03, 0], [2, 0], [2, 1], [1.03, 1], [1.03, 0]],
+        ]
+    )
+    tp = topojson.Topology(data, prequantize=False, winding_order="CW_CCW")
+    gj = geojson.loads(tp.to_geojson())
 
     assert gj["type"] == "FeatureCollection"

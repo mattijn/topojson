@@ -535,7 +535,73 @@ between `CW_CCW` for clockwise orientation for outer rings and counter-
 clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer 
 rings and clockwise for interior rings. Default is `CW_CCW`.
 
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+Start with creating a `Polygon` geometry
 
+```python
+import topojson as tp
+from shapely import geometry
+
+data = geometry.shape({
+    "type": "Polygon",
+    "coordinates": [[[0,0],[10,0],[10,10],[0,10],[0,0]]]
+})
+data
+```
+<img src="../images/one_polygon.svg">
+
+Continue with defining two Topology objects, one with the outer rings clock wise and the inner rings counter clockwise (`CW_CCW`) and one with the outer rings counter clock wise and the inner rings clock wise (`CCW_CW`).
+
+```python
+CW_CCW = tp.Topology(data, winding_order='CW_CCW', prequantize=False).to_dict()
+CCW_CW = tp.Topology(data, winding_order='CCW_CW', prequantize=False).to_dict()
+
+CW_CCW, CCW_CW
+```
+<pre class="code_no_highlight">
+({'type': 'Topology',
+  'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[0]]}],
+    'type': 'GeometryCollection'}},
+  'bbox': (0.0, 0.0, 10.0, 10.0),
+  'arcs': [[[0.0, 0.0], [0.0, 10.0], [10.0, 10.0], [10.0, 0.0], [0.0, 0.0]]]},
+ {'type': 'Topology',
+  'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[0]]}],
+    'type': 'GeometryCollection'}},
+  'bbox': (0.0, 0.0, 10.0, 10.0),
+  'arcs': [[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0], [0.0, 10.0], [0.0, 0.0]]]})
+</pre>
+As you can see the `arcs` for type `Polygon` are reversed. The effect seems to be negligible, but the effect should be taken into account when using geographic projections, as it defines which part is 'inside' and 'outside' the `Polgygon`:
+
+```python
+alt_left = tp.Topology(
+    data, 
+    winding_order='CW_CCW'
+).to_alt(
+    projection='equalEarth', color='type:N'
+).properties(
+    title='CW_CCW'
+)
+
+alt_right = tp.Topology(
+    data, 
+    winding_order='CCW_CW'
+).to_alt(
+    projection='equalEarth', 
+    color='type:N'
+).properties(
+    title='CCW_CW'
+)
+
+alt_left & alt_right
+```
+<div id="embed_tuning_winding_order"></div>
+</div>
+</div>
 
 
 <script>
@@ -557,6 +623,9 @@ window.addEventListener("DOMContentLoaded", event => {
 
     var spec_simplify_alg = "{{site.baseurl}}/json/example_simplify_alg.vl.json";
     vegaEmbed("#embed_tuning_simplify_alg", spec_simplify_alg, opt).catch(console.err);   
+
+    var spec_winding_order = "{{site.baseurl}}/json/example_winding_order.vl.json";
+    vegaEmbed("#embed_tuning_winding_order", spec_winding_order, opt).catch(console.err);     
 });
 </script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>

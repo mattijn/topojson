@@ -144,9 +144,7 @@ class Topology(Hashmap):
         """
         serialize_as_svg(self.output, separate, include_junctions=False)
 
-    def to_json(
-        self, fp=None, options=False, style="compact", indent=4, maxlinelength=88
-    ):
+    def to_json(self, fp=None, options=False, pretty=False, indent=4, maxlinelength=88):
         """
         Convert the Topology to a JSON object.
 
@@ -158,10 +156,11 @@ class Topology(Hashmap):
         options : boolean
             If `True`, the options also will be included. 
             Default is `False`.
-        style : str
-            If `pretty`, the JSON object will be 'pretty', depending on the `ident` and
-            `maxlinelength` options. If `compact`, it eliminates whitespace.
-            Default is `compact`.
+        pretty : boolean
+            If `pretty=True`, the JSON object will be 'pretty', depending on the 
+            `ident` and `maxlinelength` options. If `pretty=False`, it will `compact`, 
+            eliminating whitespace.
+            Default is `False`.
         indent : int
             If `style='pretty'`, declares the indentation of the objects.
             Default is `4`.
@@ -171,16 +170,17 @@ class Topology(Hashmap):
         """
         topo_object = copy.deepcopy(self.output)
         topo_object = self._resolve_coords(topo_object)
+
         if options is True:
             topo_object["options"] = vars(self.options)
         return serialize_as_json(
-            topo_object, fp, style=style, indent=indent, maxlinelength=maxlinelength
+            topo_object, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
         )
 
     def to_geojson(
         self,
         fp=None,
-        style="compact",
+        pretty=False,
         indent=4,
         maxlinelength=88,
         validate=False,
@@ -196,10 +196,11 @@ class Topology(Hashmap):
         fp : str
             If set, writes the object to a file on drive.
             Default is `None`
-        style : str
-            If `pretty`, the JSON object will be 'pretty', depending on the `ident` and
-            `maxlinelength` options. If `compact`, it eliminates whitespace.
-            Default is `compact`.
+        pretty : boolean
+            If `pretty=True`, the JSON object will be 'pretty', depending on the 
+            `ident` and `maxlinelength` options. If `pretty=False`, it will `compact`, 
+            eliminating whitespace.
+            Default is `False`.
         indent : int
             If `pretty=True`, declares the indentation of the objects.
             Default is `4`.
@@ -226,7 +227,7 @@ class Topology(Hashmap):
             topo_object, validate=validate, objectname=objectname, order=winding_order
         )
         return serialize_as_json(
-            fc, fp, style=style, indent=indent, maxlinelength=maxlinelength
+            fc, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
         )
 
     def to_gdf(self):
