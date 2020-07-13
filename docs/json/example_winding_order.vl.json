@@ -1,0 +1,178 @@
+{
+    "background": "transparent",
+    "config": {
+        "view": {
+            "continuousWidth": 400,
+            "continuousHeight": 300
+        }
+    },
+    "hconcat": [
+        {
+            "view": {
+                "fill": "transparent"
+            },
+            "data": {
+                "name": "data-12100b0748d754a274d574356955fb14",
+                "format": {
+                    "feature": "data",
+                    "type": "topojson"
+                }
+            },
+            "mark": "geoshape",
+            "encoding": {
+                "color": {
+                    "type": "nominal",
+                    "field": "type",
+                    "legend": {
+                        "columns": 2
+                    }
+                },
+                "tooltip": [
+                    {
+                        "type": "nominal",
+                        "field": "type"
+                    }
+                ]
+            },
+            "projection": {
+                "reflectY": true,
+                "type": "equalEarth"
+            },
+            "title": "CW_CCW",
+            "width": 300
+        },
+        {
+            "view": {
+                "fill": "transparent"
+            },
+            "data": {
+                "name": "data-74eacaa9a0072346730b17ce447ab1c0",
+                "format": {
+                    "feature": "data",
+                    "type": "topojson"
+                }
+            },
+            "mark": "geoshape",
+            "encoding": {
+                "color": {
+                    "type": "nominal",
+                    "field": "type",
+                    "legend": {
+                        "columns": 2
+                    }
+                },
+                "tooltip": [
+                    {
+                        "type": "nominal",
+                        "field": "type"
+                    }
+                ]
+            },
+            "projection": {
+                "reflectY": true,
+                "type": "equalEarth"
+            },
+            "title": "CCW_CW",
+            "width": 300
+        }
+    ],
+    "$schema": "https://vega.github.io/schema/vega-lite/v4.8.1.json",
+    "datasets": {
+        "data-12100b0748d754a274d574356955fb14": {
+            "type": "Topology",
+            "objects": {
+                "data": {
+                    "geometries": [
+                        {
+                            "type": "Polygon",
+                            "arcs": [
+                                [
+                                    0
+                                ]
+                            ]
+                        }
+                    ],
+                    "type": "GeometryCollection"
+                }
+            },
+            "bbox": [
+                0,
+                0,
+                10,
+                10
+            ],
+            "arcs": [
+                [
+                    [
+                        0,
+                        0
+                    ],
+                    [
+                        0,
+                        10
+                    ],
+                    [
+                        10,
+                        10
+                    ],
+                    [
+                        10,
+                        0
+                    ],
+                    [
+                        0,
+                        0
+                    ]
+                ]
+            ]
+        },
+        "data-74eacaa9a0072346730b17ce447ab1c0": {
+            "type": "Topology",
+            "objects": {
+                "data": {
+                    "geometries": [
+                        {
+                            "type": "Polygon",
+                            "arcs": [
+                                [
+                                    0
+                                ]
+                            ]
+                        }
+                    ],
+                    "type": "GeometryCollection"
+                }
+            },
+            "bbox": [
+                0,
+                0,
+                10,
+                10
+            ],
+            "arcs": [
+                [
+                    [
+                        0,
+                        0
+                    ],
+                    [
+                        10,
+                        0
+                    ],
+                    [
+                        10,
+                        10
+                    ],
+                    [
+                        0,
+                        10
+                    ],
+                    [
+                        0,
+                        0
+                    ]
+                ]
+            ]
+        }
+    }
+}

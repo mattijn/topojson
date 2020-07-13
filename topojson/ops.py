@@ -25,6 +25,7 @@ except ImportError:
             return orient_(geom, sign)
         return geom
 
+
 def asvoid(arr):
     """
     Utility function to create a 1-dimensional numpy void object (bytes)
@@ -517,11 +518,10 @@ def quantize(linestrings, bbox, quant_factor=1e6):
 
     x0, y0, x1, y1 = bbox
     try:
-        kx = 1 / ((quant_factor - 1) / (x1 - x0))
-        ky = 1 / ((quant_factor - 1) / (y1 - y0))
+        kx = 1 if (x1 - x0) == 0 else (x1 - x0) / (quant_factor - 1)
+        ky = 1 if (y1 - y0) == 0 else (y1 - y0) / (quant_factor - 1)
     except ZeroDivisionError:
-        # ZeroDivisionError: float division by zero
-        raise SystemExit("Cannot quantize when xmax-xmin OR ymax-ymin equals 0")
+        kx, ky = 1, 1
 
     for idx, ls in enumerate(linestrings):
         if hasattr(ls, "coords"):
@@ -601,6 +601,14 @@ def simplify(
         LineStrings that are simplified
     """
     if package == "shapely":
+        if algorithm == "vw":
+            msg = (
+                "You need to set `simplify_with='simplification'` to use the ",
+                "Visvalingam–Whyatt (`vw`) algorithm. This package is optional and ",
+                "if not installed, install with `pip install simplification`. ",
+                "Continue with Douglas-Peucker (`dp`) algorithm instead.",
+            )
+            logging.warning("".join(msg))
 
         if input_as == "array":
             list_arcs = []
@@ -626,15 +634,15 @@ def simplify(
         elif algorithm == "vw" and not prevent_oversimplify:
             alg = cutil.simplify_coords_vw
         elif algorithm == "dp" and prevent_oversimplify:
-            logging.warning(
-                (
-                    "The Douglas–Peucker algorithm within the `simplification` package",
-                    "has no options to prevent oversimplification. Use Visvalingam–",
-                    "Whyatt (`vw`) algorithm when using the simplification package or",
-                    "use Douglas-Peucker algorithm from `shapely` package to prevent",
-                    "oversimplification",
-                )
+            msg = (
+                "The Douglas–Peucker algorithm from the `simplification` package ",
+                "has no options to prevent oversimplification. Use Visvalingam–",
+                "Whyatt (`vw`) algorithm when using the simplification package if ",
+                "oversimplification should be prevented or use the Douglas-Peucker ",
+                "algorithm from `shapely` package to prevent oversimplification. ",
+                "Continue without prevention of oversimplification.",
             )
+            logging.warning("".join(msg))
             alg = cutil.simplify_coords
         else:
             alg = cutil.simplify_coords
@@ -699,7 +707,6 @@ def winding_order(geom, order="CW_CCW"):
 
     # CW_CWW will orient the outer polygon clockwise and the inner polygon counter-
     # clockwise to conform TopoJSON standard
-
 
     if order == "CW_CCW":
         geom = orient(geom, sign=-1.0)
@@ -832,9 +839,26 @@ def find_duplicates(segments_list, type="array"):
         sorted_hashes, return_counts=True, return_index=True
     )
     if count.max() > 1:
+
+        def _cart(arr):
+            """
+            Function that returns the all combinations as a 2D array
+            [3, 152,  62, 52] is returned as [[152,  62], [152,  52], [152,   3]]
+            """
+            arr = -np.sort(-arr)
+            arr = np.array(np.meshgrid(arr[0], arr[1:])).T.reshape(-1, 2)
+            return arr
+
         # split on indices that occures > 1
         idx_dups = np.split(idx_sort, idx_start[1:])
-        idx_dups = np.array([dup for dup in idx_dups if dup.size > 1])
+        list_dups = []
+        for dup in idx_dups:
+            if dup.size > 2:
+                list_dups.append(_cart(dup))
+            elif dup.size > 1:
+                list_dups.append(dup)
+        idx_dups = np.vstack(list_dups)
+        # idx_dups = np.array([dup for dup in idx_dups if dup.size > 1])
 
         # apply sorting on duplicate-pairs
         idx_dups = -np.sort(-idx_dups, axis=1)

@@ -1,0 +1,3648 @@
+{
+    "background": "transparent",
+    "view": {
+        "fill": "transparent"
+    },
+    "config": {
+        "view": {
+            "continuousWidth": 400,
+            "continuousHeight": 300
+        }
+    },
+    "data": {
+        "name": "data-208d7839ebba7cab448c3c57b2688dec",
+        "format": {
+            "mesh": "data",
+            "type": "topojson"
+        }
+    },
+    "mark": {
+        "type": "geoshape",
+        "filled": false
+    },
+    "projection": {
+        "reflectY": true,
+        "type": "identity"
+    },
+    "title": "Visvalingam-Whyatt (package simplification)",
+    "width": 300,
+    "$schema": "https://vega.github.io/schema/vega-lite/v4.8.1.json",
+    "datasets": {
+        "data-208d7839ebba7cab448c3c57b2688dec": {
+            "type": "Topology",
+            "objects": {
+                "data": {
+                    "geometries": [
+                        {
+                            "id": "1",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 150600,
+                                "iso_a3": "TZA",
+                                "name": "Tanzania",
+                                "pop_est": 53950935
+                            },
+                            "bbox": [
+                                29.339997592900346,
+                                -11.720938002166735,
+                                40.31659000000002,
+                                -0.9500000000000001
+                            ],
+                            "arcs": [
+                                [
+                                    -5,
+                                    0,
+                                    -85,
+                                    -83,
+                                    -78,
+                                    -2,
+                                    -102,
+                                    -142,
+                                    -139
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "2",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 906.5,
+                                "iso_a3": "ESH",
+                                "name": "W. Sahara",
+                                "pop_est": 603253
+                            },
+                            "bbox": [
+                                -17.06342322434257,
+                                20.999752102130827,
+                                -8.665124477564191,
+                                27.656425889592356
+                            ],
+                            "arcs": [
+                                [
+                                    -23,
+                                    -22,
+                                    -21,
+                                    20,
+                                    -117,
+                                    -116
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "11",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 66010,
+                                "iso_a3": "COD",
+                                "name": "Dem. Rep. Congo",
+                                "pop_est": 83301151
+                            },
+                            "bbox": [
+                                12.182336866920252,
+                                -13.257226657771831,
+                                31.174149204235817,
+                                5.256087754737123
+                            ],
+                            "arcs": [
+                                [
+                                    1,
+                                    -82,
+                                    -81,
+                                    -97,
+                                    2,
+                                    -94,
+                                    -68,
+                                    -64,
+                                    -146,
+                                    -140,
+                                    -144,
+                                    -103
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "12",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 4719,
+                                "iso_a3": "SOM",
+                                "name": "Somalia",
+                                "pop_est": 7531386
+                            },
+                            "bbox": [
+                                40.98105,
+                                -1.6832500000000001,
+                                51.13387,
+                                12.024640000000002
+                            ],
+                            "arcs": [
+                                [
+                                    -6,
+                                    -128,
+                                    -135,
+                                    3
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "13",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 152700,
+                                "iso_a3": "KEN",
+                                "name": "Kenya",
+                                "pop_est": 47615739
+                            },
+                            "bbox": [
+                                33.893568969666944,
+                                -4.67677,
+                                41.85508309264397,
+                                5.506
+                            ],
+                            "arcs": [
+                                [
+                                    4,
+                                    -141,
+                                    -152,
+                                    -129,
+                                    5,
+                                    6
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "14",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 176300,
+                                "iso_a3": "SDN",
+                                "name": "Sudan",
+                                "pop_est": 37345935
+                            },
+                            "bbox": [
+                                21.93680999999998,
+                                8.229187933785468,
+                                38.410089959473225,
+                                22
+                            ],
+                            "arcs": [
+                                [
+                                    147,
+                                    -67,
+                                    -9,
+                                    -121,
+                                    -119,
+                                    7,
+                                    -113,
+                                    -130,
+                                    149,
+                                    -150,
+                                    -149,
+                                    -148
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "15",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 30590,
+                                "iso_a3": "TCD",
+                                "name": "Chad",
+                                "pop_est": 12075985
+                            },
+                            "bbox": [
+                                13.540393507550789,
+                                7.421924546737969,
+                                23.886890000000108,
+                                23.409719999999993
+                            ],
+                            "arcs": [
+                                [
+                                    8,
+                                    -66,
+                                    -34,
+                                    -28,
+                                    -122
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "25",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 739100,
+                                "iso_a3": "ZAF",
+                                "name": "South Africa",
+                                "pop_est": 54841552
+                            },
+                            "bbox": [
+                                16.344976840895242,
+                                -34.81916635512371,
+                                32.830120477028885,
+                                -22.091312758067588
+                            ],
+                            "arcs": [
+                                [
+                                    -15,
+                                    -13,
+                                    -12,
+                                    -88,
+                                    -92,
+                                    -87,
+                                    9
+                                ],
+                                [
+                                    10
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "26",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 6019,
+                                "iso_a3": "LSO",
+                                "name": "Lesotho",
+                                "pop_est": 1958042
+                            },
+                            "bbox": [
+                                26.999261915807637,
+                                -30.645105889612225,
+                                29.32516645683259,
+                                -28.64750172293757
+                            ],
+                            "arcs": [
+                                [
+                                    10
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "48",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 28330,
+                                "iso_a3": "ZWE",
+                                "name": "Zimbabwe",
+                                "pop_est": 13805084
+                            },
+                            "bbox": [
+                                25.264225701608012,
+                                -22.271611830333935,
+                                32.84986087416439,
+                                -15.507786960515213
+                            ],
+                            "arcs": [
+                                [
+                                    11,
+                                    -14,
+                                    -79,
+                                    -89
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "49",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 35900,
+                                "iso_a3": "BWA",
+                                "name": "Botswana",
+                                "pop_est": 2214858
+                            },
+                            "bbox": [
+                                19.89545779794068,
+                                -26.828542982695915,
+                                29.43218834810904,
+                                -17.661815687737374
+                            ],
+                            "arcs": [
+                                [
+                                    12,
+                                    -17,
+                                    13
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "50",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 25990,
+                                "iso_a3": "NAM",
+                                "name": "Namibia",
+                                "pop_est": 2484780
+                            },
+                            "bbox": [
+                                11.734198846085121,
+                                -29.04546192801728,
+                                25.08444339366457,
+                                -16.94134286872407
+                            ],
+                            "arcs": [
+                                [
+                                    14,
+                                    15,
+                                    -100,
+                                    -80,
+                                    16
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "51",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 39720,
+                                "iso_a3": "SEN",
+                                "name": "Senegal",
+                                "pop_est": 14668522
+                            },
+                            "bbox": [
+                                -17.62504269049066,
+                                12.332089952031057,
+                                -11.467899135778524,
+                                16.59826365810281
+                            ],
+                            "arcs": [
+                                [
+                                    17,
+                                    -25,
+                                    -20,
+                                    -45,
+                                    -49,
+                                    18,
+                                    -105
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "52",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 38090,
+                                "iso_a3": "MLI",
+                                "name": "Mali",
+                                "pop_est": 17885245
+                            },
+                            "bbox": [
+                                -12.170750291380301,
+                                10.096360785355444,
+                                4.2702099951438015,
+                                24.974574082941
+                            ],
+                            "arcs": [
+                                [
+                                    19,
+                                    -24,
+                                    -111,
+                                    -30,
+                                    -58,
+                                    -42,
+                                    -46
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "53",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 16710,
+                                "iso_a3": "MRT",
+                                "name": "Mauritania",
+                                "pop_est": 3758571
+                            },
+                            "bbox": [
+                                -17.06342322434257,
+                                14.616834214735505,
+                                -4.923337368174231,
+                                27.395744126896005
+                            ],
+                            "arcs": [
+                                [
+                                    20,
+                                    21,
+                                    22,
+                                    -112,
+                                    23,
+                                    24,
+                                    25
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "54",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 24310,
+                                "iso_a3": "BEN",
+                                "name": "Benin",
+                                "pop_est": 11038805
+                            },
+                            "bbox": [
+                                0.7723356461714843,
+                                6.142157701029731,
+                                3.7971122575117136,
+                                12.23563589115821
+                            ],
+                            "arcs": [
+                                [
+                                    26,
+                                    -38,
+                                    -60,
+                                    -29,
+                                    -31
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "55",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 20150,
+                                "iso_a3": "NER",
+                                "name": "Niger",
+                                "pop_est": 19245344
+                            },
+                            "bbox": [
+                                0.29564639649510127,
+                                11.660167141155968,
+                                15.903246697664315,
+                                23.47166840259645
+                            ],
+                            "arcs": [
+                                [
+                                    27,
+                                    -37,
+                                    -32,
+                                    28,
+                                    -59,
+                                    29,
+                                    -110,
+                                    -123
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "56",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 1089000,
+                                "iso_a3": "NGA",
+                                "name": "Nigeria",
+                                "pop_est": 190632261
+                            },
+                            "bbox": [
+                                2.6917016943562544,
+                                4.240594183769517,
+                                14.577177768622533,
+                                13.865923977102227
+                            ],
+                            "arcs": [
+                                [
+                                    30,
+                                    31,
+                                    -36,
+                                    32
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "57",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 77240,
+                                "iso_a3": "CMR",
+                                "name": "Cameroon",
+                                "pop_est": 24994885
+                            },
+                            "bbox": [
+                                8.48881554529089,
+                                1.7276726342802957,
+                                16.012852410555354,
+                                12.85939626713733
+                            ],
+                            "arcs": [
+                                [
+                                    33,
+                                    -65,
+                                    -70,
+                                    -72,
+                                    -75,
+                                    34,
+                                    35,
+                                    36
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "58",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 11610,
+                                "iso_a3": "TGO",
+                                "name": "Togo",
+                                "pop_est": 7965055
+                            },
+                            "bbox": [
+                                -0.04978471515994442,
+                                5.928837388528876,
+                                1.8652405127123188,
+                                11.018681748900804
+                            ],
+                            "arcs": [
+                                [
+                                    37,
+                                    38,
+                                    -40,
+                                    -61
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "59",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 120800,
+                                "iso_a3": "GHA",
+                                "name": "Ghana",
+                                "pop_est": 27499924
+                            },
+                            "bbox": [
+                                -3.244370083011262,
+                                4.710462144383371,
+                                1.0601216976049272,
+                                11.098340969278722
+                            ],
+                            "arcs": [
+                                [
+                                    39,
+                                    40,
+                                    -43,
+                                    -62
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "60",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 87120,
+                                "iso_a3": "CIV",
+                                "name": "Côte d'Ivoire",
+                                "pop_est": 24184810
+                            },
+                            "bbox": [
+                                -8.60288021486862,
+                                4.338288479017308,
+                                -2.562189500326241,
+                                10.524060777219134
+                            ],
+                            "arcs": [
+                                [
+                                    41,
+                                    -63,
+                                    42,
+                                    43,
+                                    -52,
+                                    -47
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "61",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 16080,
+                                "iso_a3": "GIN",
+                                "name": "Guinea",
+                                "pop_est": 12413867
+                            },
+                            "bbox": [
+                                -15.130311245168173,
+                                7.309037380396376,
+                                -7.832100389019188,
+                                12.586182969610194
+                            ],
+                            "arcs": [
+                                [
+                                    44,
+                                    45,
+                                    46,
+                                    -54,
+                                    -55,
+                                    47,
+                                    -50
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "62",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 2851,
+                                "iso_a3": "GNB",
+                                "name": "Guinea-Bissau",
+                                "pop_est": 1792338
+                            },
+                            "bbox": [
+                                -16.677451951554573,
+                                11.040411688679526,
+                                -13.700476040084325,
+                                12.628170070847347
+                            ],
+                            "arcs": [
+                                [
+                                    48,
+                                    49,
+                                    50
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "63",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 3881,
+                                "iso_a3": "LBR",
+                                "name": "Liberia",
+                                "pop_est": 4689021
+                            },
+                            "bbox": [
+                                -11.438779466182055,
+                                4.355755113131963,
+                                -7.539715135111763,
+                                8.541055202666925
+                            ],
+                            "arcs": [
+                                [
+                                    51,
+                                    52,
+                                    -56,
+                                    53
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "64",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 10640,
+                                "iso_a3": "SLE",
+                                "name": "Sierra Leone",
+                                "pop_est": 6163195
+                            },
+                            "bbox": [
+                                -13.246550258832515,
+                                6.7859168563057475,
+                                -10.23009355309128,
+                                10.046983954300558
+                            ],
+                            "arcs": [
+                                [
+                                    54,
+                                    55,
+                                    56
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "65",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 32990,
+                                "iso_a3": "BFA",
+                                "name": "Burkina Faso",
+                                "pop_est": 20107509
+                            },
+                            "bbox": [
+                                -5.470564947929006,
+                                9.610834865757141,
+                                2.177107781593776,
+                                15.116157741755728
+                            ],
+                            "arcs": [
+                                [
+                                    57,
+                                    58,
+                                    59,
+                                    60,
+                                    61,
+                                    62
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "66",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 3206,
+                                "iso_a3": "CAF",
+                                "name": "Central African Rep.",
+                                "pop_est": 5625118
+                            },
+                            "bbox": [
+                                14.459407179429348,
+                                2.267639675298085,
+                                27.37422610851749,
+                                11.142395127807546
+                            ],
+                            "arcs": [
+                                [
+                                    63,
+                                    -71,
+                                    64,
+                                    65,
+                                    66,
+                                    -148,
+                                    -147
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "67",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 30270,
+                                "iso_a3": "COG",
+                                "name": "Congo",
+                                "pop_est": 4954674
+                            },
+                            "bbox": [
+                                11.093772820691925,
+                                -5.037986748884791,
+                                18.45306521980993,
+                                3.728196519379452
+                            ],
+                            "arcs": [
+                                [
+                                    67,
+                                    -96,
+                                    68,
+                                    -73,
+                                    69,
+                                    70
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "68",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 35980,
+                                "iso_a3": "GAB",
+                                "name": "Gabon",
+                                "pop_est": 1772255
+                            },
+                            "bbox": [
+                                8.79799563969317,
+                                -3.978826592630547,
+                                14.425455763413595,
+                                2.3267575138399934
+                            ],
+                            "arcs": [
+                                [
+                                    71,
+                                    72,
+                                    73,
+                                    -76
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "69",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 31770,
+                                "iso_a3": "GNQ",
+                                "name": "Eq. Guinea",
+                                "pop_est": 778358
+                            },
+                            "bbox": [
+                                9.305613234096256,
+                                1.010119533691494,
+                                11.285078973036462,
+                                2.2838660750377358
+                            ],
+                            "arcs": [
+                                [
+                                    74,
+                                    75,
+                                    76
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "70",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 65170,
+                                "iso_a3": "ZMB",
+                                "name": "Zambia",
+                                "pop_est": 15972000
+                            },
+                            "bbox": [
+                                21.887842644953874,
+                                -17.961228936436484,
+                                33.48568769708359,
+                                -8.238256524288218
+                            ],
+                            "arcs": [
+                                [
+                                    77,
+                                    -84,
+                                    -90,
+                                    78,
+                                    79,
+                                    -99,
+                                    -98,
+                                    80,
+                                    81
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "71",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 21200,
+                                "iso_a3": "MWI",
+                                "name": "Malawi",
+                                "pop_est": 19196246
+                            },
+                            "bbox": [
+                                32.68816531752313,
+                                -16.801299737213093,
+                                35.77190473810836,
+                                -9.23059905358906
+                            ],
+                            "arcs": [
+                                [
+                                    82,
+                                    -91,
+                                    83
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "72",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 35010,
+                                "iso_a3": "MOZ",
+                                "name": "Mozambique",
+                                "pop_est": 26573706
+                            },
+                            "bbox": [
+                                30.17948123548183,
+                                -26.742191664336197,
+                                40.775475294768995,
+                                -10.317096042525698
+                            ],
+                            "arcs": [
+                                [
+                                    84,
+                                    85,
+                                    86,
+                                    -93,
+                                    87,
+                                    88,
+                                    89,
+                                    90
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "73",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 11060,
+                                "iso_a3": "SWZ",
+                                "name": "eSwatini",
+                                "pop_est": 1467152
+                            },
+                            "bbox": [
+                                30.67660851412964,
+                                -27.285879408478998,
+                                32.07166548028107,
+                                -25.66019052500895
+                            ],
+                            "arcs": [
+                                [
+                                    91,
+                                    92
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "74",
+                            "type": "MultiPolygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 189000,
+                                "iso_a3": "AGO",
+                                "name": "Angola",
+                                "pop_est": 29310273
+                            },
+                            "bbox": [
+                                11.64009606288161,
+                                -17.930636488519696,
+                                24.079905226342845,
+                                -4.438023369976136
+                            ],
+                            "arcs": [
+                                [
+                                    [
+                                        93,
+                                        94,
+                                        95
+                                    ]
+                                ],
+                                [
+                                    [
+                                        96,
+                                        97,
+                                        98,
+                                        99,
+                                        100
+                                    ]
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "75",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 7892,
+                                "iso_a3": "BDI",
+                                "name": "Burundi",
+                                "pop_est": 11466756
+                            },
+                            "bbox": [
+                                29.024926385216787,
+                                -4.4999834122940925,
+                                30.752240000000086,
+                                -2.348486830254238
+                            ],
+                            "arcs": [
+                                [
+                                    101,
+                                    102,
+                                    -143
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "78",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 36860,
+                                "iso_a3": "MDG",
+                                "name": "Madagascar",
+                                "pop_est": 25054161
+                            },
+                            "bbox": [
+                                43.254187046081,
+                                -25.60143442149309,
+                                50.47653689962553,
+                                -12.04055673589197
+                            ],
+                            "arcs": [
+                                [
+                                    103
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "80",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 3387,
+                                "iso_a3": "GMB",
+                                "name": "Gambia",
+                                "pop_est": 2051363
+                            },
+                            "bbox": [
+                                -16.841524624081273,
+                                13.130284125211332,
+                                -13.844963344772408,
+                                13.876491807505985
+                            ],
+                            "arcs": [
+                                [
+                                    104,
+                                    105
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "81",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 130800,
+                                "iso_a3": "TUN",
+                                "name": "Tunisia",
+                                "pop_est": 11403800
+                            },
+                            "bbox": [
+                                7.524481642292244,
+                                30.307556057246188,
+                                11.488787469131012,
+                                37.349994411766545
+                            ],
+                            "arcs": [
+                                [
+                                    -109,
+                                    106,
+                                    -125
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "82",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 609400,
+                                "iso_a3": "DZA",
+                                "name": "Algeria",
+                                "pop_est": 40969443
+                            },
+                            "bbox": [
+                                -8.684399786809053,
+                                19.057364203360038,
+                                11.999505649471613,
+                                37.11838064223437
+                            ],
+                            "arcs": [
+                                [
+                                    -115,
+                                    107,
+                                    108,
+                                    -124,
+                                    109,
+                                    110,
+                                    111
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "154",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 9169,
+                                "iso_a3": "ERI",
+                                "name": "Eritrea",
+                                "pop_est": 5918919
+                            },
+                            "bbox": [
+                                36.32321999999999,
+                                12.455415757695675,
+                                43.08122602720016,
+                                17.998307399970315
+                            ],
+                            "arcs": [
+                                [
+                                    112,
+                                    113,
+                                    -132,
+                                    -131
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "162",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 282800,
+                                "iso_a3": "MAR",
+                                "name": "Morocco",
+                                "pop_est": 33986655
+                            },
+                            "bbox": [
+                                -17.02042843267577,
+                                21.420734157796577,
+                                -1.1245511539663084,
+                                35.75998810479399
+                            ],
+                            "arcs": [
+                                [
+                                    114,
+                                    115,
+                                    116,
+                                    117
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "163",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 1105000,
+                                "iso_a3": "EGY",
+                                "name": "Egypt",
+                                "pop_est": 97041072
+                            },
+                            "bbox": [
+                                24.70007,
+                                22,
+                                36.86622999999997,
+                                31.58568
+                            ],
+                            "arcs": [
+                                [
+                                    118,
+                                    -127,
+                                    119
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "164",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 90890,
+                                "iso_a3": "LBY",
+                                "name": "Libya",
+                                "pop_est": 6653210
+                            },
+                            "bbox": [
+                                9.319410841518163,
+                                19.580470000000105,
+                                25.16482,
+                                33.13699575452324
+                            ],
+                            "arcs": [
+                                [
+                                    120,
+                                    121,
+                                    122,
+                                    123,
+                                    124,
+                                    125,
+                                    126
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "165",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 174700,
+                                "iso_a3": "ETH",
+                                "name": "Ethiopia",
+                                "pop_est": 105350020
+                            },
+                            "bbox": [
+                                32.954180000000065,
+                                3.42206,
+                                47.78942,
+                                14.959430000000168
+                            ],
+                            "arcs": [
+                                [
+                                    127,
+                                    128,
+                                    -151,
+                                    -150,
+                                    129,
+                                    130,
+                                    -134,
+                                    -136
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "166",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 3345,
+                                "iso_a3": "DJI",
+                                "name": "Djibouti",
+                                "pop_est": 865267
+                            },
+                            "bbox": [
+                                41.66176000000013,
+                                10.92687856693442,
+                                43.31785241066467,
+                                12.699638576707116
+                            ],
+                            "arcs": [
+                                [
+                                    131,
+                                    132,
+                                    -137,
+                                    133
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "167",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 12250,
+                                "iso_a3": "-99",
+                                "name": "Somaliland",
+                                "pop_est": 3500000
+                            },
+                            "bbox": [
+                                42.55875999999995,
+                                7.99688000000009,
+                                48.94820641459347,
+                                11.462039699748857
+                            ],
+                            "arcs": [
+                                [
+                                    134,
+                                    135,
+                                    136,
+                                    137
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "168",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 84930,
+                                "iso_a3": "UGA",
+                                "name": "Uganda",
+                                "pop_est": 39570125
+                            },
+                            "bbox": [
+                                29.579466180140884,
+                                -1.4433224422297855,
+                                35.03599,
+                                4.249884947362048
+                            ],
+                            "arcs": [
+                                [
+                                    138,
+                                    -145,
+                                    139,
+                                    -153,
+                                    140
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "169",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 21970,
+                                "iso_a3": "RWA",
+                                "name": "Rwanda",
+                                "pop_est": 11901484
+                            },
+                            "bbox": [
+                                29.024926385216787,
+                                -2.917857761246097,
+                                30.816134881317712,
+                                -1.1346591121504161
+                            ],
+                            "arcs": [
+                                [
+                                    141,
+                                    142,
+                                    143,
+                                    144
+                                ]
+                            ]
+                        },
+                        {
+                            "id": "176",
+                            "type": "Polygon",
+                            "properties": {
+                                "continent": "Africa",
+                                "gdp_md_est": 20880,
+                                "iso_a3": "SSD",
+                                "name": "S. Sudan",
+                                "pop_est": 13026129
+                            },
+                            "bbox": [
+                                23.886979580860668,
+                                3.5091716042224625,
+                                35.29800711823298,
+                                12.248007757149992
+                            ],
+                            "arcs": [
+                                [
+                                    145,
+                                    146,
+                                    147,
+                                    148,
+                                    149,
+                                    150,
+                                    151,
+                                    152
+                                ]
+                            ]
+                        }
+                    ],
+                    "type": "GeometryCollection"
+                }
+            },
+            "bbox": [
+                -17.62504269049066,
+                -34.81916635512371,
+                51.13387,
+                37.349994411766545
+            ],
+            "transform": {
+                "scale": [
+                    0.34552217432407367,
+                    0.36265909933110685
+                ],
+                "translate": [
+                    -17.62504269049066,
+                    -34.81916635512371
+                ]
+            },
+            "arcs": [
+                [
+                    [
+                        164,
+                        83
+                    ],
+                    [
+                        0,
+                        -10
+                    ],
+                    [
+                        4,
+                        -5
+                    ]
+                ],
+                [
+                    [
+                        136,
+                        84
+                    ],
+                    [
+                        0,
+                        -4
+                    ],
+                    [
+                        4,
+                        -7
+                    ]
+                ],
+                [
+                    [
+                        87,
+                        79
+                    ],
+                    [
+                        -1,
+                        1
+                    ]
+                ],
+                [
+                    [
+                        193,
+                        127
+                    ],
+                    [
+                        6,
+                        2
+                    ],
+                    [
+                        -3,
+                        -11
+                    ],
+                    [
+                        -10,
+                        -14
+                    ],
+                    [
+                        -10,
+                        -7
+                    ],
+                    [
+                        -5,
+                        -6
+                    ]
+                ],
+                [
+                    [
+                        164,
+                        83
+                    ],
+                    [
+                        -4,
+                        4
+                    ],
+                    [
+                        -11,
+                        6
+                    ]
+                ],
+                [
+                    [
+                        172,
+                        107
+                    ],
+                    [
+                        -2,
+                        -3
+                    ],
+                    [
+                        1,
+                        -13
+                    ]
+                ],
+                [
+                    [
+                        171,
+                        91
+                    ],
+                    [
+                        -7,
+                        -8
+                    ]
+                ],
+                [
+                    [
+                        158,
+                        157
+                    ],
+                    [
+                        1,
+                        -10
+                    ],
+                    [
+                        3,
+                        -1
+                    ]
+                ],
+                [
+                    [
+                        120,
+                        150
+                    ],
+                    [
+                        0,
+                        -11
+                    ],
+                    [
+                        -4,
+                        -2
+                    ],
+                    [
+                        1,
+                        -10
+                    ]
+                ],
+                [
+                    [
+                        146,
+                        22
+                    ],
+                    [
+                        -1,
+                        -4
+                    ],
+                    [
+                        -10,
+                        -11
+                    ],
+                    [
+                        -9,
+                        -5
+                    ],
+                    [
+                        -10,
+                        1
+                    ],
+                    [
+                        -7,
+                        -3
+                    ],
+                    [
+                        -5,
+                        2
+                    ],
+                    [
+                        0,
+                        7
+                    ],
+                    [
+                        -6,
+                        8
+                    ]
+                ],
+                [
+                    [
+                        135,
+                        16
+                    ],
+                    [
+                        0,
+                        -3
+                    ],
+                    [
+                        -6,
+                        1
+                    ],
+                    [
+                        6,
+                        2
+                    ]
+                ],
+                [
+                    [
+                        141,
+                        35
+                    ],
+                    [
+                        -5,
+                        0
+                    ]
+                ],
+                [
+                    [
+                        136,
+                        35
+                    ],
+                    [
+                        -7,
+                        -4
+                    ],
+                    [
+                        -6,
+                        -6
+                    ],
+                    [
+                        -6,
+                        1
+                    ],
+                    [
+                        -6,
+                        -4
+                    ],
+                    [
+                        -2,
+                        6
+                    ]
+                ],
+                [
+                    [
+                        124,
+                        47
+                    ],
+                    [
+                        12,
+                        -12
+                    ]
+                ],
+                [
+                    [
+                        109,
+                        28
+                    ],
+                    [
+                        0,
+                        -10
+                    ],
+                    [
+                        -3,
+                        -2
+                    ],
+                    [
+                        -8,
+                        1
+                    ]
+                ],
+                [
+                    [
+                        98,
+                        17
+                    ],
+                    [
+                        -4,
+                        7
+                    ],
+                    [
+                        -1,
+                        10
+                    ],
+                    [
+                        -8,
+                        14
+                    ]
+                ],
+                [
+                    [
+                        124,
+                        47
+                    ],
+                    [
+                        -12,
+                        -1
+                    ],
+                    [
+                        -1,
+                        -10
+                    ],
+                    [
+                        -2,
+                        0
+                    ],
+                    [
+                        0,
+                        -8
+                    ]
+                ],
+                [
+                    [
+                        3,
+                        133
+                    ],
+                    [
+                        -3,
+                        4
+                    ],
+                    [
+                        3,
+                        4
+                    ]
+                ],
+                [
+                    [
+                        3,
+                        130
+                    ],
+                    [
+                        -1,
+                        2
+                    ]
+                ],
+                [
+                    [
+                        18,
+                        130
+                    ],
+                    [
+                        -2,
+                        6
+                    ]
+                ],
+                [
+                    [
+                        2,
+                        154
+                    ],
+                    [
+                        0,
+                        1
+                    ]
+                ],
+                [
+                    [
+                        2,
+                        155
+                    ],
+                    [
+                        12,
+                        0
+                    ],
+                    [
+                        2,
+                        5
+                    ],
+                    [
+                        0,
+                        8
+                    ]
+                ],
+                [
+                    [
+                        16,
+                        168
+                    ],
+                    [
+                        10,
+                        -1
+                    ],
+                    [
+                        0,
+                        5
+                    ]
+                ],
+                [
+                    [
+                        37,
+                        165
+                    ],
+                    [
+                        -5,
+                        0
+                    ],
+                    [
+                        2,
+                        -12
+                    ],
+                    [
+                        1,
+                        -14
+                    ],
+                    [
+                        -17,
+                        0
+                    ],
+                    [
+                        -2,
+                        -3
+                    ]
+                ],
+                [
+                    [
+                        16,
+                        136
+                    ],
+                    [
+                        -7,
+                        6
+                    ],
+                    [
+                        -6,
+                        -1
+                    ]
+                ],
+                [
+                    [
+                        3,
+                        141
+                    ],
+                    [
+                        1,
+                        10
+                    ],
+                    [
+                        -2,
+                        3
+                    ]
+                ],
+                [
+                    [
+                        59,
+                        113
+                    ],
+                    [
+                        -3,
+                        0
+                    ]
+                ],
+                [
+                    [
+                        94,
+                        159
+                    ],
+                    [
+                        2,
+                        -8
+                    ],
+                    [
+                        -1,
+                        -9
+                    ],
+                    [
+                        -5,
+                        -6
+                    ],
+                    [
+                        3,
+                        -5
+                    ]
+                ],
+                [
+                    [
+                        61,
+                        128
+                    ],
+                    [
+                        -4,
+                        1
+                    ]
+                ],
+                [
+                    [
+                        52,
+                        137
+                    ],
+                    [
+                        10,
+                        2
+                    ],
+                    [
+                        1,
+                        10
+                    ]
+                ],
+                [
+                    [
+                        59,
+                        113
+                    ],
+                    [
+                        0,
+                        8
+                    ],
+                    [
+                        2,
+                        7
+                    ]
+                ],
+                [
+                    [
+                        61,
+                        128
+                    ],
+                    [
+                        1,
+                        4
+                    ],
+                    [
+                        5,
+                        2
+                    ],
+                    [
+                        10,
+                        -3
+                    ],
+                    [
+                        3,
+                        2
+                    ],
+                    [
+                        12,
+                        -3
+                    ]
+                ],
+                [
+                    [
+                        76,
+                        109
+                    ],
+                    [
+                        -8,
+                        -1
+                    ],
+                    [
+                        -4,
+                        5
+                    ],
+                    [
+                        -5,
+                        0
+                    ]
+                ],
+                [
+                    [
+                        93,
+                        131
+                    ],
+                    [
+                        3,
+                        -7
+                    ],
+                    [
+                        -5,
+                        -2
+                    ],
+                    [
+                        4,
+                        -6
+                    ]
+                ],
+                [
+                    [
+                        79,
+                        102
+                    ],
+                    [
+                        -3,
+                        7
+                    ]
+                ],
+                [
+                    [
+                        76,
+                        109
+                    ],
+                    [
+                        4,
+                        6
+                    ],
+                    [
+                        5,
+                        0
+                    ],
+                    [
+                        7,
+                        15
+                    ]
+                ],
+                [
+                    [
+                        92,
+                        130
+                    ],
+                    [
+                        1,
+                        1
+                    ]
+                ],
+                [
+                    [
+                        54,
+                        126
+                    ],
+                    [
+                        2,
+                        -5
+                    ],
+                    [
+                        0,
+                        -8
+                    ]
+                ],
+                [
+                    [
+                        56,
+                        113
+                    ],
+                    [
+                        -2,
+                        -1
+                    ]
+                ],
+                [
+                    [
+                        51,
+                        126
+                    ],
+                    [
+                        3,
+                        -14
+                    ]
+                ],
+                [
+                    [
+                        54,
+                        112
+                    ],
+                    [
+                        -11,
+                        -2
+                    ]
+                ],
+                [
+                    [
+                        28,
+                        124
+                    ],
+                    [
+                        7,
+                        1
+                    ]
+                ],
+                [
+                    [
+                        43,
+                        123
+                    ],
+                    [
+                        0,
+                        -13
+                    ]
+                ],
+                [
+                    [
+                        43,
+                        110
+                    ],
+                    [
+                        -9,
+                        0
+                    ],
+                    [
+                        -5,
+                        -2
+                    ]
+                ],
+                [
+                    [
+                        11,
+                        131
+                    ],
+                    [
+                        7,
+                        -1
+                    ]
+                ],
+                [
+                    [
+                        18,
+                        130
+                    ],
+                    [
+                        7,
+                        0
+                    ],
+                    [
+                        3,
+                        -6
+                    ]
+                ],
+                [
+                    [
+                        28,
+                        124
+                    ],
+                    [
+                        -1,
+                        -7
+                    ]
+                ],
+                [
+                    [
+                        13,
+                        121
+                    ],
+                    [
+                        -6,
+                        5
+                    ]
+                ],
+                [
+                    [
+                        3,
+                        130
+                    ],
+                    [
+                        8,
+                        1
+                    ]
+                ],
+                [
+                    [
+                        11,
+                        131
+                    ],
+                    [
+                        -4,
+                        -5
+                    ]
+                ],
+                [
+                    [
+                        7,
+                        126
+                    ],
+                    [
+                        -4,
+                        4
+                    ]
+                ],
+                [
+                    [
+                        27,
+                        117
+                    ],
+                    [
+                        2,
+                        -9
+                    ]
+                ],
+                [
+                    [
+                        29,
+                        108
+                    ],
+                    [
+                        -4,
+                        1
+                    ],
+                    [
+                        -7,
+                        6
+                    ]
+                ],
+                [
+                    [
+                        21,
+                        119
+                    ],
+                    [
+                        6,
+                        -2
+                    ]
+                ],
+                [
+                    [
+                        13,
+                        121
+                    ],
+                    [
+                        6,
+                        3
+                    ],
+                    [
+                        2,
+                        -5
+                    ]
+                ],
+                [
+                    [
+                        21,
+                        119
+                    ],
+                    [
+                        -3,
+                        -4
+                    ]
+                ],
+                [
+                    [
+                        18,
+                        115
+                    ],
+                    [
+                        -5,
+                        6
+                    ]
+                ],
+                [
+                    [
+                        35,
+                        125
+                    ],
+                    [
+                        4,
+                        8
+                    ],
+                    [
+                        11,
+                        5
+                    ],
+                    [
+                        2,
+                        -1
+                    ]
+                ],
+                [
+                    [
+                        52,
+                        137
+                    ],
+                    [
+                        5,
+                        -8
+                    ]
+                ],
+                [
+                    [
+                        57,
+                        129
+                    ],
+                    [
+                        -3,
+                        -3
+                    ]
+                ],
+                [
+                    [
+                        54,
+                        126
+                    ],
+                    [
+                        -3,
+                        0
+                    ]
+                ],
+                [
+                    [
+                        51,
+                        126
+                    ],
+                    [
+                        -9,
+                        0
+                    ],
+                    [
+                        1,
+                        -3
+                    ]
+                ],
+                [
+                    [
+                        43,
+                        123
+                    ],
+                    [
+                        -8,
+                        2
+                    ]
+                ],
+                [
+                    [
+                        130,
+                        110
+                    ],
+                    [
+                        -5,
+                        1
+                    ],
+                    [
+                        -9,
+                        -4
+                    ],
+                    [
+                        -9,
+                        3
+                    ],
+                    [
+                        -3,
+                        -4
+                    ]
+                ],
+                [
+                    [
+                        97,
+                        102
+                    ],
+                    [
+                        -4,
+                        7
+                    ],
+                    [
+                        2,
+                        7
+                    ]
+                ],
+                [
+                    [
+                        95,
+                        116
+                    ],
+                    [
+                        8,
+                        2
+                    ],
+                    [
+                        2,
+                        3
+                    ],
+                    [
+                        7,
+                        1
+                    ],
+                    [
+                        5,
+                        5
+                    ]
+                ],
+                [
+                    [
+                        117,
+                        127
+                    ],
+                    [
+                        3,
+                        -7
+                    ]
+                ],
+                [
+                    [
+                        104,
+                        106
+                    ],
+                    [
+                        -2,
+                        -12
+                    ],
+                    [
+                        -4,
+                        -3
+                    ],
+                    [
+                        -1,
+                        -6
+                    ],
+                    [
+                        -4,
+                        -3
+                    ],
+                    [
+                        -4,
+                        1
+                    ]
+                ],
+                [
+                    [
+                        85,
+                        82
+                    ],
+                    [
+                        -2,
+                        3
+                    ]
+                ],
+                [
+                    [
+                        89,
+                        102
+                    ],
+                    [
+                        8,
+                        0
+                    ]
+                ],
+                [
+                    [
+                        97,
+                        102
+                    ],
+                    [
+                        7,
+                        4
+                    ]
+                ],
+                [
+                    [
+                        84,
+                        102
+                    ],
+                    [
+                        5,
+                        0
+                    ]
+                ],
+                [
+                    [
+                        89,
+                        102
+                    ],
+                    [
+                        3,
+                        -2
+                    ],
+                    [
+                        0,
+                        -11
+                    ],
+                    [
+                        -8,
+                        -1
+                    ],
+                    [
+                        -1,
+                        -3
+                    ]
+                ],
+                [
+                    [
+                        83,
+                        85
+                    ],
+                    [
+                        -7,
+                        8
+                    ],
+                    [
+                        2,
+                        6
+                    ]
+                ],
+                [
+                    [
+                        79,
+                        102
+                    ],
+                    [
+                        5,
+                        0
+                    ]
+                ],
+                [
+                    [
+                        84,
+                        102
+                    ],
+                    [
+                        0,
+                        -3
+                    ],
+                    [
+                        -6,
+                        0
+                    ]
+                ],
+                [
+                    [
+                        78,
+                        99
+                    ],
+                    [
+                        1,
+                        3
+                    ]
+                ],
+                [
+                    [
+                        140,
+                        73
+                    ],
+                    [
+                        6,
+                        -2
+                    ]
+                ],
+                [
+                    [
+                        139,
+                        53
+                    ],
+                    [
+                        -3,
+                        0
+                    ],
+                    [
+                        -8,
+                        -7
+                    ],
+                    [
+                        -4,
+                        1
+                    ]
+                ],
+                [
+                    [
+                        124,
+                        47
+                    ],
+                    [
+                        -6,
+                        1
+                    ]
+                ],
+                [
+                    [
+                        120,
+                        66
+                    ],
+                    [
+                        1,
+                        -1
+                    ]
+                ],
+                [
+                    [
+                        121,
+                        65
+                    ],
+                    [
+                        4,
+                        0
+                    ],
+                    [
+                        12,
+                        -6
+                    ],
+                    [
+                        -4,
+                        4
+                    ],
+                    [
+                        2,
+                        10
+                    ],
+                    [
+                        5,
+                        0
+                    ]
+                ],
+                [
+                    [
+                        146,
+                        71
+                    ],
+                    [
+                        3,
+                        -1
+                    ],
+                    [
+                        2,
+                        -6
+                    ]
+                ],
+                [
+                    [
+                        147,
+                        57
+                    ],
+                    [
+                        1,
+                        10
+                    ],
+                    [
+                        -2,
+                        4
+                    ]
+                ],
+                [
+                    [
+                        151,
+                        64
+                    ],
+                    [
+                        8,
+                        0
+                    ],
+                    [
+                        9,
+                        4
+                    ]
+                ],
+                [
+                    [
+                        168,
+                        68
+                    ],
+                    [
+                        1,
+                        -13
+                    ],
+                    [
+                        -4,
+                        -5
+                    ],
+                    [
+                        -6,
+                        -2
+                    ],
+                    [
+                        -8,
+                        -9
+                    ],
+                    [
+                        3,
+                        -4
+                    ],
+                    [
+                        0,
+                        -6
+                    ],
+                    [
+                        -9,
+                        -4
+                    ],
+                    [
+                        1,
+                        -3
+                    ]
+                ],
+                [
+                    [
+                        146,
+                        22
+                    ],
+                    [
+                        -2,
+                        0
+                    ]
+                ],
+                [
+                    [
+                        143,
+                        25
+                    ],
+                    [
+                        -2,
+                        10
+                    ]
+                ],
+                [
+                    [
+                        141,
+                        35
+                    ],
+                    [
+                        5,
+                        7
+                    ],
+                    [
+                        0,
+                        8
+                    ],
+                    [
+                        -7,
+                        3
+                    ]
+                ],
+                [
+                    [
+                        139,
+                        53
+                    ],
+                    [
+                        -1,
+                        2
+                    ],
+                    [
+                        9,
+                        2
+                    ]
+                ],
+                [
+                    [
+                        147,
+                        57
+                    ],
+                    [
+                        4,
+                        -1
+                    ],
+                    [
+                        1,
+                        -6
+                    ],
+                    [
+                        3,
+                        2
+                    ],
+                    [
+                        -4,
+                        7
+                    ],
+                    [
+                        0,
+                        5
+                    ]
+                ],
+                [
+                    [
+                        144,
+                        22
+                    ],
+                    [
+                        -1,
+                        3
+                    ]
+                ],
+                [
+                    [
+                        143,
+                        25
+                    ],
+                    [
+                        1,
+                        -3
+                    ]
+                ],
+                [
+                    [
+                        89,
+                        83
+                    ],
+                    [
+                        -3,
+                        -3
+                    ]
+                ],
+                [
+                    [
+                        86,
+                        80
+                    ],
+                    [
+                        -1,
+                        2
+                    ]
+                ],
+                [
+                    [
+                        85,
+                        82
+                    ],
+                    [
+                        4,
+                        1
+                    ]
+                ],
+                [
+                    [
+                        87,
+                        79
+                    ],
+                    [
+                        11,
+                        1
+                    ],
+                    [
+                        2,
+                        -5
+                    ],
+                    [
+                        14,
+                        1
+                    ],
+                    [
+                        1,
+                        -11
+                    ],
+                    [
+                        5,
+                        1
+                    ]
+                ],
+                [
+                    [
+                        120,
+                        66
+                    ],
+                    [
+                        1,
+                        -1
+                    ]
+                ],
+                [
+                    [
+                        121,
+                        65
+                    ],
+                    [
+                        0,
+                        -5
+                    ],
+                    [
+                        -7,
+                        0
+                    ],
+                    [
+                        0,
+                        -8
+                    ],
+                    [
+                        4,
+                        -4
+                    ]
+                ],
+                [
+                    [
+                        118,
+                        48
+                    ],
+                    [
+                        -33,
+                        0
+                    ]
+                ],
+                [
+                    [
+                        85,
+                        48
+                    ],
+                    [
+                        2,
+                        11
+                    ],
+                    [
+                        4,
+                        6
+                    ],
+                    [
+                        -3,
+                        6
+                    ],
+                    [
+                        -1,
+                        8
+                    ]
+                ],
+                [
+                    [
+                        139,
+                        89
+                    ],
+                    [
+                        -3,
+                        -5
+                    ]
+                ],
+                [
+                    [
+                        136,
+                        84
+                    ],
+                    [
+                        -1,
+                        4
+                    ]
+                ],
+                [
+                    [
+                        194,
+                        62
+                    ],
+                    [
+                        2,
+                        -10
+                    ],
+                    [
+                        -7,
+                        -22
+                    ],
+                    [
+                        -7,
+                        -5
+                    ],
+                    [
+                        -4,
+                        2
+                    ],
+                    [
+                        -2,
+                        8
+                    ],
+                    [
+                        4,
+                        7
+                    ],
+                    [
+                        -2,
+                        6
+                    ],
+                    [
+                        7,
+                        4
+                    ],
+                    [
+                        9,
+                        10
+                    ]
+                ],
+                [
+                    [
+                        3,
+                        133
+                    ],
+                    [
+                        -1,
+                        -1
+                    ]
+                ],
+                [
+                    [
+                        2,
+                        132
+                    ],
+                    [
+                        1,
+                        1
+                    ]
+                ],
+                [
+                    [
+                        75,
+                        198
+                    ],
+                    [
+                        8,
+                        0
+                    ],
+                    [
+                        -3,
+                        -7
+                    ],
+                    [
+                        4,
+                        -4
+                    ]
+                ],
+                [
+                    [
+                        45,
+                        193
+                    ],
+                    [
+                        10,
+                        4
+                    ],
+                    [
+                        20,
+                        1
+                    ]
+                ],
+                [
+                    [
+                        75,
+                        198
+                    ],
+                    [
+                        -2,
+                        -10
+                    ],
+                    [
+                        4,
+                        -3
+                    ],
+                    [
+                        1,
+                        -5
+                    ]
+                ],
+                [
+                    [
+                        86,
+                        161
+                    ],
+                    [
+                        -19,
+                        -11
+                    ],
+                    [
+                        -4,
+                        -1
+                    ]
+                ],
+                [
+                    [
+                        63,
+                        149
+                    ],
+                    [
+                        -26,
+                        16
+                    ]
+                ],
+                [
+                    [
+                        37,
+                        165
+                    ],
+                    [
+                        -11,
+                        7
+                    ]
+                ],
+                [
+                    [
+                        156,
+                        136
+                    ],
+                    [
+                        1,
+                        5
+                    ],
+                    [
+                        5,
+                        5
+                    ]
+                ],
+                [
+                    [
+                        162,
+                        146
+                    ],
+                    [
+                        3,
+                        -6
+                    ],
+                    [
+                        11,
+                        -9
+                    ]
+                ],
+                [
+                    [
+                        45,
+                        193
+                    ],
+                    [
+                        2,
+                        -8
+                    ],
+                    [
+                        -4,
+                        0
+                    ],
+                    [
+                        -3,
+                        -4
+                    ],
+                    [
+                        -14,
+                        -5
+                    ],
+                    [
+                        0,
+                        -4
+                    ]
+                ],
+                [
+                    [
+                        26,
+                        172
+                    ],
+                    [
+                        -10,
+                        -4
+                    ]
+                ],
+                [
+                    [
+                        16,
+                        168
+                    ],
+                    [
+                        -8,
+                        -13
+                    ],
+                    [
+                        -6,
+                        0
+                    ]
+                ],
+                [
+                    [
+                        2,
+                        155
+                    ],
+                    [
+                        6,
+                        12
+                    ],
+                    [
+                        6,
+                        6
+                    ],
+                    [
+                        7,
+                        3
+                    ],
+                    [
+                        3,
+                        10
+                    ],
+                    [
+                        7,
+                        4
+                    ],
+                    [
+                        3,
+                        5
+                    ],
+                    [
+                        11,
+                        -2
+                    ]
+                ],
+                [
+                    [
+                        158,
+                        157
+                    ],
+                    [
+                        -35,
+                        0
+                    ]
+                ],
+                [
+                    [
+                        124,
+                        183
+                    ],
+                    [
+                        11,
+                        -2
+                    ],
+                    [
+                        8,
+                        2
+                    ],
+                    [
+                        9,
+                        -5
+                    ],
+                    [
+                        -3,
+                        -6
+                    ],
+                    [
+                        -3,
+                        3
+                    ],
+                    [
+                        12,
+                        -18
+                    ]
+                ],
+                [
+                    [
+                        123,
+                        157
+                    ],
+                    [
+                        0,
+                        -6
+                    ],
+                    [
+                        -3,
+                        -1
+                    ]
+                ],
+                [
+                    [
+                        120,
+                        150
+                    ],
+                    [
+                        -12,
+                        5
+                    ],
+                    [
+                        -11,
+                        6
+                    ],
+                    [
+                        -3,
+                        -2
+                    ]
+                ],
+                [
+                    [
+                        94,
+                        159
+                    ],
+                    [
+                        -8,
+                        2
+                    ]
+                ],
+                [
+                    [
+                        86,
+                        161
+                    ],
+                    [
+                        -5,
+                        2
+                    ],
+                    [
+                        -3,
+                        5
+                    ],
+                    [
+                        2,
+                        8
+                    ],
+                    [
+                        -2,
+                        4
+                    ]
+                ],
+                [
+                    [
+                        78,
+                        180
+                    ],
+                    [
+                        6,
+                        7
+                    ]
+                ],
+                [
+                    [
+                        84,
+                        187
+                    ],
+                    [
+                        11,
+                        -2
+                    ],
+                    [
+                        1,
+                        -2
+                    ],
+                    [
+                        10,
+                        -4
+                    ],
+                    [
+                        2,
+                        5
+                    ],
+                    [
+                        5,
+                        3
+                    ],
+                    [
+                        11,
+                        -4
+                    ]
+                ],
+                [
+                    [
+                        124,
+                        183
+                    ],
+                    [
+                        -1,
+                        -6
+                    ],
+                    [
+                        0,
+                        -20
+                    ]
+                ],
+                [
+                    [
+                        189,
+                        118
+                    ],
+                    [
+                        -8,
+                        -8
+                    ],
+                    [
+                        -9,
+                        -3
+                    ]
+                ],
+                [
+                    [
+                        172,
+                        107
+                    ],
+                    [
+                        -6,
+                        -2
+                    ],
+                    [
+                        -5,
+                        1
+                    ],
+                    [
+                        -8,
+                        5
+                    ]
+                ],
+                [
+                    [
+                        149,
+                        122
+                    ],
+                    [
+                        7,
+                        11
+                    ],
+                    [
+                        0,
+                        3
+                    ]
+                ],
+                [
+                    [
+                        156,
+                        136
+                    ],
+                    [
+                        5,
+                        1
+                    ],
+                    [
+                        8,
+                        -2
+                    ],
+                    [
+                        5,
+                        -4
+                    ]
+                ],
+                [
+                    [
+                        174,
+                        131
+                    ],
+                    [
+                        2,
+                        0
+                    ]
+                ],
+                [
+                    [
+                        176,
+                        131
+                    ],
+                    [
+                        0,
+                        -3
+                    ]
+                ],
+                [
+                    [
+                        175,
+                        126
+                    ],
+                    [
+                        -1,
+                        5
+                    ]
+                ],
+                [
+                    [
+                        193,
+                        127
+                    ],
+                    [
+                        0,
+                        -5
+                    ],
+                    [
+                        -4,
+                        -4
+                    ]
+                ],
+                [
+                    [
+                        189,
+                        118
+                    ],
+                    [
+                        -12,
+                        3
+                    ],
+                    [
+                        -2,
+                        5
+                    ]
+                ],
+                [
+                    [
+                        175,
+                        126
+                    ],
+                    [
+                        1,
+                        2
+                    ]
+                ],
+                [
+                    [
+                        176,
+                        128
+                    ],
+                    [
+                        4,
+                        -3
+                    ],
+                    [
+                        13,
+                        2
+                    ]
+                ],
+                [
+                    [
+                        149,
+                        93
+                    ],
+                    [
+                        -10,
+                        0
+                    ]
+                ],
+                [
+                    [
+                        137,
+                        92
+                    ],
+                    [
+                        0,
+                        6
+                    ],
+                    [
+                        4,
+                        4
+                    ],
+                    [
+                        -1,
+                        4
+                    ]
+                ],
+                [
+                    [
+                        149,
+                        108
+                    ],
+                    [
+                        3,
+                        -7
+                    ],
+                    [
+                        -3,
+                        -8
+                    ]
+                ],
+                [
+                    [
+                        139,
+                        93
+                    ],
+                    [
+                        0,
+                        -4
+                    ]
+                ],
+                [
+                    [
+                        139,
+                        89
+                    ],
+                    [
+                        -4,
+                        -1
+                    ]
+                ],
+                [
+                    [
+                        135,
+                        88
+                    ],
+                    [
+                        2,
+                        4
+                    ]
+                ],
+                [
+                    [
+                        137,
+                        92
+                    ],
+                    [
+                        2,
+                        1
+                    ]
+                ],
+                [
+                    [
+                        140,
+                        106
+                    ],
+                    [
+                        -3,
+                        3
+                    ],
+                    [
+                        -7,
+                        1
+                    ]
+                ],
+                [
+                    [
+                        130,
+                        110
+                    ],
+                    [
+                        -8,
+                        9
+                    ]
+                ],
+                [
+                    [
+                        122,
+                        119
+                    ],
+                    [
+                        -2,
+                        1
+                    ]
+                ],
+                [
+                    [
+                        120,
+                        120
+                    ],
+                    [
+                        4,
+                        4
+                    ],
+                    [
+                        11,
+                        -2
+                    ],
+                    [
+                        7,
+                        1
+                    ],
+                    [
+                        5,
+                        7
+                    ],
+                    [
+                        2,
+                        -8
+                    ]
+                ],
+                [
+                    [
+                        149,
+                        122
+                    ],
+                    [
+                        0,
+                        -2
+                    ]
+                ],
+                [
+                    [
+                        149,
+                        120
+                    ],
+                    [
+                        -1,
+                        -3
+                    ],
+                    [
+                        5,
+                        -6
+                    ]
+                ],
+                [
+                    [
+                        153,
+                        111
+                    ],
+                    [
+                        -4,
+                        -3
+                    ]
+                ],
+                [
+                    [
+                        149,
+                        108
+                    ],
+                    [
+                        -1,
+                        -2
+                    ],
+                    [
+                        -8,
+                        0
+                    ]
+                ]
+            ]
+        }
+    }
+}

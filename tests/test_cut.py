@@ -365,3 +365,14 @@ def test_cut_shared_paths_ring_ABCA_line_BCAB_no_cuts():
 
     assert len(topo["junctions"]) == 0
     assert len(topo["bookkeeping_duplicates"]) == 0
+
+
+# topoquantize can have low values, but prequantize cannot. this smells as a bug
+# fixed issue in find_duplicates()
+def test_cut_low_prequantize():
+    import topojson as tp
+
+    data = tp.utils.example_data_africa()
+    topo = Cut(data, options={"prequantize": 75}).to_dict()
+
+    assert len(topo["bookkeeping_duplicates"]) == 153

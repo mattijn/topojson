@@ -2,24 +2,32 @@
 layout: default
 title: Example usage
 nav_order: 3
+nav_active_show: 2
 has_children: true
 permalink: /example-usage
 --- 
 
 # Example usage
 
-The most common usage op topojson is to first compute the topology.
+The most common usage of Python Topojson is to first compute the Topology.
 
-Using the computed topology apply the `toposimplify` and `topoquantize` settings and visualize till pleased.
+Using the computed Topology apply the `toposimplify` and `topoquantize` settings and visualize till pleased.
 
 The following code-snippet is an example of such:
 
 ```python
 import topojson as tp
 
-tj = tp.Topology(your_geo_data)
-tj.toposimplify(1).topoquantize(1e6).to_svg()
+# load example data representing continental Africa
+data = tp.utils.example_data_africa()  
+
+# compute the topology
+topo = tp.Topology(data)  
+
+# apply simplification on the topology and render as SVG
+topo.toposimplify(10).to_svg()
 ```
+<img src="./images/africa_toposimp.svg">
 
 This page is further subdivided in the following three sections for more detailed description and usages: 
 

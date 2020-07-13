@@ -6,102 +6,32 @@ nav_order: 1
 ---
 
 # Types of input data
+{: .no_toc}
 
 This library can be useful for you if you have if one of the following geographical input data:
 
-- `geojson.Feature` or a `geojson.FeatureCollection`
-- `geopandas.GeoDataFrame` or a `geopandas.GeoSeries`
-- any `shapely.geometry` object (eg. `Multi-``LineString` / `Multi-``Polygon` / `Multi-``Point` / `GeometryCollection`)
-- any object that support the `__geo_interface__`
-- any object that can be parsed into a `__geo_interface__`
-- `dict` of objects that provide a valid `__geo_interface__` or can be parsed into one
-- `list` of objects that provide a valid `__geo_interface__` or can be parsed into one
+1. TOC
+{:toc}
+
+
+
 
 * * * 
 
-### Type: `list`
-The list should contain items that supports the `__geo_interface__`
+### `geopandas.GeoDataFrame`
+From the package `geopandas` (not a hard dependency)
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
 
 ```python
 import topojson as tp
-
-list_in = [
-    {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
-    {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}
-]
-
-tp.Topology(list_in, prequantize=False).to_json()
-```
-
-```python
-{
-    "type": "Topology",
-    "objects": {
-        "data": {
-            "geometries": [
-                {"type": "Polygon", "arcs": [[-2, 0]]}, {"type": "Polygon", "arcs": [[1, 2]]}
-            ],
-            "type": "GeometryCollection"
-        }
-    },
-    "bbox": [0.0, 0.0, 2.0, 1.0],
-    "arcs": [
-        [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]],
-        [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]
-    ]
-}
-```
-
-* * * 
-
-### Type: `dict`
-The dictionary should be structured like {`key1`: `obj1`, `key2`: `obj2`}.
-
-```python
-import topojson as tp
-
-dict_in = {
-    0: {
-        "type": "Polygon",
-        "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
-    },
-    1: {
-        "type": "Polygon",
-        "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
-    }
-}
-
-tp.Topology(dict_in, prequantize=False).to_json()
-```
-
-```python
-{
-    "type": "Topology",
-    "objects": {
-        "data": {
-            "geometries": [
-                {"type": "Polygon", "arcs": [[-2, 0]]}, {"type": "Polygon", "arcs": [[1, 2]]}
-            ],
-            "type": "GeometryCollection"
-        }
-    },
-    "bbox": [0.0, 0.0, 2.0, 1.0],
-    "arcs": [
-        [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]],
-        [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]
-    ]
-}
-```
-
-* * * 
-
-### Type: `GeoDataFrame` 
-From the package `geopandas` (if installed)
-
-```python
 import geopandas
 from shapely import geometry
-import topojson as tp
 %matplotlib inline
 
 gdf = geopandas.GeoDataFrame({
@@ -158,15 +88,25 @@ tp.Topology(gdf, prequantize=False).to_json()
     ]
 }
 ```
+</div>
+</div>
 
 * * * 
 
-### Type: `FeatureCollection` 
-From the package `geojson` (if installed)
+### `geojson.FeatureCollection`
+From the package `geojson` (not a hard dependency)
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
 
 ```python
-from geojson import Feature, Polygon, FeatureCollection
 import topojson as tp
+from geojson import Feature, Polygon, FeatureCollection
+
 
 feat_1 = Feature(
     geometry=Polygon([[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]),
@@ -200,3 +140,175 @@ tp.Topology(fc, prequantize=False).to_json()
     ]
 }
 ```
+</div>
+</div>
+
+* * * 
+
+### `fiona.Collection`
+From the package `fiona` (not a hard dependency)
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+
+```python
+import topojson as tp
+import fiona
+
+with fiona.open('tests/files_shapefile/mesh2d.geojson') as fio_col:
+    topo = tp.Topology(fio_col)
+
+topo.to_svg()
+```
+<img src="../images/mesh2d.svg">
+</div>
+</div>
+
+* * *
+
+### `shapely.geometry` object
+From the package `shapely`
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+
+```python
+import topojson as tp
+from shapely import geometry
+
+data = geometry.MultiLineString([
+    [(0, 0), (10, 0), (10, 5), (20, 5)], 
+    [(5, 0), (25, 0), (25, 5), (16, 5), (16, 10), (14, 10), (14, 5), (0, 5)]
+])
+
+tp.Topology(data).to_svg()
+```
+<img src="../images/shared_paths.svg">
+</div>
+</div>
+
+* * * 
+
+### object that support the `__geo_interface__` 
+This example use the package `pyshp` (not a hard dependency)
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+
+```python
+import topojson as tp
+import shapefile
+
+data = shapefile.Reader("tests/files_shapefile/southamerica.shp")
+topo = tp.Topology(data)
+topo.toposimplify(4).to_svg()
+```
+<img src="../images/southamerica_toposimp.svg">
+</div>
+</div>
+
+* * *
+
+### `list` of objects that provide a valid `__geo_interface__` or can be parsed into one
+The list should contain items that supports the `__geo_interface__`
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+
+```python
+import topojson as tp
+
+list_in = [
+    {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
+    {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}
+]
+
+tp.Topology(list_in, prequantize=False).to_json()
+```
+
+```python
+{
+    "type": "Topology",
+    "objects": {
+        "data": {
+            "geometries": [
+                {"type": "Polygon", "arcs": [[-2, 0]]}, {"type": "Polygon", "arcs": [[1, 2]]}
+            ],
+            "type": "GeometryCollection"
+        }
+    },
+    "bbox": [0.0, 0.0, 2.0, 1.0],
+    "arcs": [
+        [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]],
+        [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]
+    ]
+}
+```
+</div>
+</div>
+
+* * * 
+
+### `dict` of objects that provide a valid `__geo_interface__` or can be parsed into one
+The dictionary should be structured like {`key1`: `obj1`, `key2`: `obj2`}.
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+
+```python
+import topojson as tp
+
+dict_in = {
+    0: {
+        "type": "Polygon",
+        "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
+    },
+    1: {
+        "type": "Polygon",
+        "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]],
+    }
+}
+
+tp.Topology(dict_in, prequantize=False).to_json()
+```
+
+```python
+{
+    "type": "Topology",
+    "objects": {
+        "data": {
+            "geometries": [
+                {"type": "Polygon", "arcs": [[-2, 0]]}, {"type": "Polygon", "arcs": [[1, 2]]}
+            ],
+            "type": "GeometryCollection"
+        }
+    },
+    "bbox": [0.0, 0.0, 2.0, 1.0],
+    "arcs": [
+        [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]],
+        [[1.0, 1.0], [2.0, 1.0], [2.0, 0.0], [1.0, 0.0]]
+    ]
+}
+```
+</div>
+</div>

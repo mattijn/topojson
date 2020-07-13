@@ -22,7 +22,8 @@ data = [
     {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}
 ]
 
-tp.Topology(data, prequantize=False).to_json()
+topo = tp.Topology(data, prequantize=False)
+print(topo.to_json(style='pretty'))
 ```
 Returns something as such:
 
@@ -54,24 +55,23 @@ Topojson requires `numpy` and `shapely` as dependencies and are installed automa
 
 To improve the speed of the `presimplify`/`toposimplify` parameter settings or if you want to use another simplification algorithm you can install (_optional_):
 
-- simplification
+- `simplification`
 
 To visualise the output as a mesh and/or return the output as geodataframe you will need (_optional_):
 
-- altair
-- geopandas
+- `altair`
+- `geopandas`
 
 To interactively analyse the effects of `toposimplify` and `topoquantize` as a widget (_optional_):
 
-- ipywidgets
-- ipywidgets JupyterLab extension
+- `ipywidgets`
+- `ipywidgets` JupyterLab extension
 
 
 ## Development Install
 
 To run the full test suite a few additional dependencies are required:
 
-- pytest
-- geopandas
-- geojson
-- pyshp
+- `pytest`
+- `geojson`
+- `pyshp` (for `import shapefile`)
