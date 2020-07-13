@@ -558,46 +558,37 @@ data
 Continue with defining two Topology objects, one with the outer rings clock wise and the inner rings counter clockwise (`CW_CCW`) and one with the outer rings counter clock wise and the inner rings clock wise (`CCW_CW`).
 
 ```python
-CW_CCW = tp.Topology(data, winding_order='CW_CCW', prequantize=False).to_dict()
-CCW_CW = tp.Topology(data, winding_order='CCW_CW', prequantize=False).to_dict()
+CW_CCW = tp.Topology(data, winding_order='CW_CCW', prequantize=False)
+CCW_CW = tp.Topology(data, winding_order='CCW_CW', prequantize=False)
 
-CW_CCW, CCW_CW
+print(CW_CCW)
+print(CCW_CW)
 ```
 <pre class="code_no_highlight">
-({'type': 'Topology',
-  'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[0]]}],
-    'type': 'GeometryCollection'}},
-  'bbox': (0.0, 0.0, 10.0, 10.0),
-  'arcs': [[[0.0, 0.0], [0.0, 10.0], [10.0, 10.0], [10.0, 0.0], [0.0, 0.0]]]},
- {'type': 'Topology',
-  'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[0]]}],
-    'type': 'GeometryCollection'}},
-  'bbox': (0.0, 0.0, 10.0, 10.0),
-  'arcs': [[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0], [0.0, 10.0], [0.0, 0.0]]]})
+Topology(
+{'arcs': [[[0.0, 0.0], [0.0, 10.0], [10.0, 10.0], [10.0, 0.0], [0.0, 0.0]]],
+ 'bbox': (0.0, 0.0, 10.0, 10.0),
+ 'coordinates': [],
+ 'objects': {'data': {'geometries': [{'arcs': [[0]], 'type': 'Polygon'}],
+                      'type': 'GeometryCollection'}},
+ 'type': 'Topology'}
+)
+Topology(
+{'arcs': [[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0], [0.0, 10.0], [0.0, 0.0]]],
+ 'bbox': (0.0, 0.0, 10.0, 10.0),
+ 'coordinates': [],
+ 'objects': {'data': {'geometries': [{'arcs': [[0]], 'type': 'Polygon'}],
+                      'type': 'GeometryCollection'}},
+ 'type': 'Topology'}
+)
 </pre>
 As you can see the `arcs` for type `Polygon` are reversed. The effect seems to be negligible, but the effect should be taken into account when using geographic projections, as it defines which part is 'inside' and 'outside' the `Polgygon`:
 
 ```python
-alt_left = tp.Topology(
-    data, 
-    winding_order='CW_CCW'
-).to_alt(
-    projection='equalEarth', color='type:N'
-).properties(
-    title='CW_CCW'
-)
+alt_left = CW_CCW.to_alt(projection='equalEarth', color='type:N').properties(title='CW_CCW')
+alt_right = CCW_CW.to_alt(projection='equalEarth', color='type:N').properties(title='CCW_CW')
 
-alt_right = tp.Topology(
-    data, 
-    winding_order='CCW_CW'
-).to_alt(
-    projection='equalEarth', 
-    color='type:N'
-).properties(
-    title='CCW_CW'
-)
-
-alt_left & alt_right
+alt_left | alt_right
 ```
 <div id="embed_tuning_winding_order"></div>
 </div>

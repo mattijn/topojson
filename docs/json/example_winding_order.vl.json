@@ -6,13 +6,13 @@
             "continuousHeight": 300
         }
     },
-    "vconcat": [
+    "hconcat": [
         {
             "view": {
                 "fill": "transparent"
             },
             "data": {
-                "name": "data-a4e96b1c68c97ee5a26004920d23ccd0",
+                "name": "data-12100b0748d754a274d574356955fb14",
                 "format": {
                     "feature": "data",
                     "type": "topojson"
@@ -46,7 +46,7 @@
                 "fill": "transparent"
             },
             "data": {
-                "name": "data-c2ff144c3d6e61e0456342162dddaebb",
+                "name": "data-74eacaa9a0072346730b17ce447ab1c0",
                 "format": {
                     "feature": "data",
                     "type": "topojson"
@@ -78,7 +78,7 @@
     ],
     "$schema": "https://vega.github.io/schema/vega-lite/v4.8.1.json",
     "datasets": {
-        "data-a4e96b1c68c97ee5a26004920d23ccd0": {
+        "data-12100b0748d754a274d574356955fb14": {
             "type": "Topology",
             "objects": {
                 "data": {
@@ -101,16 +101,6 @@
                 10,
                 10
             ],
-            "transform": {
-                "scale": [
-                    0.00001000001000001,
-                    0.00001000001000001
-                ],
-                "translate": [
-                    0,
-                    0
-                ]
-            },
             "arcs": [
                 [
                     [
@@ -119,24 +109,24 @@
                     ],
                     [
                         0,
-                        999999
+                        10
                     ],
                     [
-                        999999,
+                        10,
+                        10
+                    ],
+                    [
+                        10,
                         0
                     ],
                     [
                         0,
-                        -999999
-                    ],
-                    [
-                        -999999,
                         0
                     ]
                 ]
             ]
         },
-        "data-c2ff144c3d6e61e0456342162dddaebb": {
+        "data-74eacaa9a0072346730b17ce447ab1c0": {
             "type": "Topology",
             "objects": {
                 "data": {
@@ -159,16 +149,6 @@
                 10,
                 10
             ],
-            "transform": {
-                "scale": [
-                    0.00001000001000001,
-                    0.00001000001000001
-                ],
-                "translate": [
-                    0,
-                    0
-                ]
-            },
             "arcs": [
                 [
                     [
@@ -176,20 +156,20 @@
                         0
                     ],
                     [
-                        999999,
+                        10,
                         0
                     ],
                     [
-                        0,
-                        999999
+                        10,
+                        10
                     ],
                     [
-                        -999999,
+                        0,
+                        10
+                    ],
+                    [
+                        0,
                         0
-                    ],
-                    [
-                        0,
-                        -999999
                     ]
                 ]
             ]
