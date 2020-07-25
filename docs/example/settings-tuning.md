@@ -8,7 +8,7 @@ nav_order: 2
 # Settings and tuning
 {: .no_toc}
 
-By adopting the TopoJSON format is possible to store geographical data as topology. Adopting this approach makes smaller files than its GeoJSON counterpart. In this process are a few options, which are described below:
+By adopting the TopoJSON format is possible to store geographical data as topology. Adopting this approach makes smaller files than its GeoJSON counterpart. This process allows varies options, which are described below:
 
 1. TOC
 {:toc}
@@ -29,7 +29,7 @@ Example 🔧
 </div>
 <div class="example-text" markdown="1">
 
-Given the following two polygon with one side sharing:
+Given the following two linestrings with one side sharing:
 ```python
 import topojson as tp
 from shapely import geometry
@@ -58,7 +58,7 @@ Topology(
  'type': 'Topology'}
 )
 </pre>
-As can be seen, the geometries are referenced by two segments (`'arcs': [[0], [1]]`), where each segment is a single Polygon (see: `arcs`).
+As can be seen, the geometries are referenced by two segments (`'arcs': [[0], [1]]`), where each segment is a single linestring (see: `arcs`).
 
 When doing the same with `topology=True`, there are three `arcs`. Where one arc is referenced two times, namely arc `2` (arc `-3` is arc `2` reversed).
 ```python
@@ -585,10 +585,10 @@ Topology(
 As you can see the `arcs` for type `Polygon` are reversed. The effect seems to be negligible, but the effect should be taken into account when using geographic projections, as it defines which part is 'inside' and 'outside' the `Polgygon`:
 
 ```python
-alt_left = CW_CCW.to_alt(projection='equalEarth', color='type:N').properties(title='CW_CCW')
-alt_right = CCW_CW.to_alt(projection='equalEarth', color='type:N').properties(title='CCW_CW')
+alt_top = CW_CCW.to_alt(projection='equalEarth', color='type:N').properties(title='CW_CCW')
+alt_bottom = CCW_CW.to_alt(projection='equalEarth', color='type:N').properties(title='CCW_CW')
 
-alt_left | alt_right
+alt_top & alt_bottom
 ```
 <div id="embed_tuning_winding_order"></div>
 </div>
@@ -620,5 +620,5 @@ window.addEventListener("DOMContentLoaded", event => {
 });
 </script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@4.0.0"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@4"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
