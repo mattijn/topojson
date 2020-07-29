@@ -9,9 +9,11 @@ permalink: /example-usage
 
 # Example usage
 
-The most common usage of Python Topojson is to first compute the Topology.
 
-Using the computed Topology apply the `toposimplify` and `topoquantize` settings and visualize till pleased.
+The most common usage of Python Topojson is to first compute the Topology, often including prequantization (`prequantize`).
+
+Using the computed Topology apply the `toposimplify` and settings and visualize till pleased.
+
 
 The following code-snippet is an example of such:
 
@@ -30,9 +32,4 @@ topo.toposimplify(10).to_svg()
 <img src="./images/africa_toposimp.svg">
 
 This page is further subdivided in the following three sections for more detailed description and usages: 
-
-- The first section describes what type of data types can be parsed into Python TopoJSON.
-- The second sections is going about what type of settings can be provided in order to derive the TopoJSON.
-- In the third section is shown how to derive different types of output from the computed TopoJSON.
-
 

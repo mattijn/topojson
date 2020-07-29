@@ -13,12 +13,9 @@ This library can be useful for you if you have if one of the following geographi
 1. TOC
 {:toc}
 
-
-
-
 * * * 
 
-### `geopandas.GeoDataFrame`
+## GeoDataFrame or GeoSeries
 From the package `geopandas` (not a hard dependency)
 
 <div class="code-example mx-1 bg-example">
@@ -93,7 +90,8 @@ tp.Topology(gdf, prequantize=False).to_json()
 
 * * * 
 
-### `geojson.FeatureCollection`
+
+## FeatureCollection or Features
 From the package `geojson` (not a hard dependency)
 
 <div class="code-example mx-1 bg-example">
@@ -145,7 +143,7 @@ tp.Topology(fc, prequantize=False).to_json()
 
 * * * 
 
-### `fiona.Collection`
+## fiona.Collection
 From the package `fiona` (not a hard dependency)
 
 <div class="code-example mx-1 bg-example">
@@ -170,7 +168,7 @@ topo.to_svg()
 
 * * *
 
-### `shapely.geometry` object
+## `shapely.geometry` object
 From the package `shapely`
 
 <div class="code-example mx-1 bg-example">
@@ -197,7 +195,7 @@ tp.Topology(data).to_svg()
 
 * * * 
 
-### object that support the `__geo_interface__` 
+## object that support the `__geo_interface__` 
 This example use the package `pyshp` (not a hard dependency)
 
 <div class="code-example mx-1 bg-example">
@@ -221,7 +219,7 @@ topo.toposimplify(4).to_svg()
 
 * * *
 
-### `list` of objects that provide a valid `__geo_interface__` or can be parsed into one
+## `list` of objects that provide a valid `__geo_interface__` or can be parsed into one
 The list should contain items that supports the `__geo_interface__`
 
 <div class="code-example mx-1 bg-example">
@@ -265,7 +263,7 @@ tp.Topology(list_in, prequantize=False).to_json()
 
 * * * 
 
-### `dict` of objects that provide a valid `__geo_interface__` or can be parsed into one
+## `dict` of objects that provide a valid `__geo_interface__` or can be parsed into one
 The dictionary should be structured like {`key1`: `obj1`, `key2`: `obj2`}.
 
 <div class="code-example mx-1 bg-example">

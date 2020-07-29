@@ -5,18 +5,33 @@ nav_order: 6
 ---
 
 # Contribute
+{: .no_toc}
 
-## Package
+
+Contributions are much welcome for the documentation and for defects. Defects means here both behaviour not conforming the specification and missing but desirable features. The following two sections describes the process that I use for code development and documentation writing.
+
+1. TOC
+{:toc}
+
+* * *
+
+## Contribution for the Python Package
+
+The code and development happens in this GitHub [repository](http://github.com/mattijn/topojson). 
+
+For contributions, use the following guidelines:
 
 1. Fork the project on GitHub, clone the fork to your Operating System and open the repository as folder/workspace in your favorite IDE. _I use VSCode + Python extension._
 
 2. Any change applied to the source code should be tested against the multiple tests included within the repository.
 
-3. Once satisfied push the changes you've made as a new branch to your fork and create a Pull Request to the original repository.
+3. Once satisfied, push your changes as a new branch to your fork and create a Pull Request to the original repository.
 
-4. A Pull Request triggers the tests again on the main GitHub repository and only after passing these tests a PR can be merged into master by the maintainer.
+4. A Pull Request triggers the Continous Integration tests on the main GitHub repository and only after passing these tests a PR can be merged into master by the maintainer.
 
-## Documentation
+* * * 
+
+## Contribution for the Documentation
 
 The documentation page is build upon Github Pages. To build the documentation page locally, make sure you have installed:
 1. Ruby 
@@ -34,7 +49,8 @@ bundle exec jekyll serve --baseurl ''
 
 **Note:** On Windows, a Windows Defender Firewall dialog can popup. Click allow access to give permission.
 
-The server address is shown in the cmd. Now any changes made in the Markdown documentation is directly reflected on this website.
+
+The server address is shown in cmd. Any changes you make in the Markdown documentation is directly reflected on this website.
 
 The _API reference_ documentation is created using `pydocmd`. The created markdown is subsequently changed to align with the style of this page. 
 

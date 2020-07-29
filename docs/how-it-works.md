@@ -16,9 +16,9 @@ As explained before we can do so through:
 
 ## Topology computation
 
-While the 2nd and 3rd bullets from above list have a significant impact on the filesize reduction, we will start with the 1st bullet. The computation of the topology, since it is basically the core of this library.
+While the 2nd and 3rd bullets from above list have a significant impact on the filesize reduction, we will describe here the 1st bullet -the computation of the Topology- since it is basically the core of this library.
 
-The computation of the topology consists of the following sequence:
+The computation of the Topology consists of the following sequence:
 
 1. `extract`:
    - Detection of geometrical type of the object
@@ -38,29 +38,3 @@ The computation of the topology consists of the following sequence:
 The names are borrowed from the JavaScript variant of TopoJSON, to establish a certain synergy between the packages, even though the code differs significant (and sometimes even the TopoJSON output).
 
 The addopted approach involves secure bookkeeping on multiple levels in order to succesfully pass all steps.
-
-## Fixed-precision integer encoding of coordinates
-
-
-
-## Simplification and quantization of arcs
-
-https://stackoverflow.com/questions/18900022/topojson-quantization-vs-simplification
-
-## Conclusion
-
-The package can be summarized by the following bullets:
-
-- It aims to create TopoJSON of _any_ geographic vector data known in Python
-- Ability to select the winding order of the geometric input.
-- Options to `prequantize` and `presimplify` the geometric features preparatory computing the topology.
-- Options to `topoquantize` and `toposimplify` after the topology is computed
-- Choose between the package `shapely` or `simplification` to simplify the linestrings or arcs.
-- Direct support to analyze the arcs as svg
-- Optional support to parse the TopoJSON into a `GeoDataFrame` if `geopandas` is installed.
-- Optional support to visualise the TopoJSON in `altair` if the package is installed.
-- Optional support to interactively explore the results of `topoquantize` and `toposimplify` if `ipywidgets` is installed.
-
-Info urls
-- https://stackoverflow.com/questions/14740705/difference-between-geojson-and-topojson
-

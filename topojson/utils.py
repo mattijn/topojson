@@ -539,7 +539,6 @@ def serialize_as_geojson(
 
 def serialize_as_altair(
     topo_object,
-    mesh=True,
     color=None,
     tooltip=True,
     projection="identity",
@@ -548,24 +547,28 @@ def serialize_as_altair(
 ):
     import altair as alt
 
+    if projection == "identity":
+        reflectY = True
+    else:
+        reflectY = False
     # create a mesh visualization
-    if geo_interface and mesh:
+    if geo_interface:
         # chart object
         chart = (
             alt.Chart(topo_object, width=300)
             .mark_geoshape(filled=False)
-            .project(type=projection, reflectY=True)
+            .project(type=projection, reflectY=reflectY)
         )
 
     # create a mesh visualization
-    elif mesh and color is None:
+    elif color is None:
         data = alt.InlineData(
             values=topo_object, format=alt.DataFormat(mesh=objectname, type="topojson")
         )
         chart = (
             alt.Chart(data, width=300)
             .mark_geoshape(filled=False)
-            .project(type=projection, reflectY=True)
+            .project(type=projection, reflectY=reflectY)
         )
 
     # creating a chloropleth visualisation
@@ -582,7 +585,7 @@ def serialize_as_altair(
             .encode(
                 color=alt.Color(color, legend=alt.Legend(columns=2)), tooltip=tooltip
             )
-            .project(type=projection, reflectY=True)
+            .project(type=projection, reflectY=reflectY)
         )
 
     return chart

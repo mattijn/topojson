@@ -6,7 +6,7 @@
             "continuousHeight": 300
         }
     },
-    "hconcat": [
+    "vconcat": [
         {
             "view": {
                 "fill": "transparent"

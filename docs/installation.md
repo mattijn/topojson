@@ -23,7 +23,7 @@ data = [
 ]
 
 topo = tp.Topology(data, prequantize=False)
-print(topo.to_json(style='pretty'))
+print(topo.to_json(pretty=True))
 ```
 Returns something as such:
 
@@ -47,10 +47,14 @@ Returns something as such:
 ```
 
 ## Dependencies
+
 * * *
+
 #### Hard Dependencies
-Topojson requires `numpy` and `shapely` as dependencies and are installed automatically if not available.
+Topojson requires `numpy` and `shapely`. These are installed automatically if not available.
+
 * * *
+
 #### Soft Dependencies
 
 To improve the speed of the `presimplify`/`toposimplify` parameter settings or if you want to use another simplification algorithm you can install (_optional_):
@@ -62,7 +66,7 @@ To visualise the output as a mesh and/or return the output as geodataframe you w
 - `altair`
 - `geopandas`
 
-To interactively analyse the effects of `toposimplify` and `topoquantize` as a widget (_optional_):
+To interactively analyse the effects of `toposimplify` and `topoquantize` as a widget, you also need (_optional_):
 
 - `ipywidgets`
 - `ipywidgets` JupyterLab extension
@@ -70,8 +74,8 @@ To interactively analyse the effects of `toposimplify` and `topoquantize` as a w
 
 ## Development Install
 
-To run the full test suite a few additional dependencies are required:
+To run the full test suite a few additional dependencies are required, next to the hard and soft dependencies:
 
 - `pytest`
 - `geojson`
-- `pyshp` (for `import shapefile`)
+- `pyshp` (to be able to do `import shapefile`)

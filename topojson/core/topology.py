@@ -247,26 +247,19 @@ class Topology(Hashmap):
         return serialize_as_geodataframe(topo_object)
 
     def to_alt(
-        self,
-        mesh=True,
-        color=None,
-        tooltip=True,
-        projection="identity",
-        objectname="data",
+        self, color=None, tooltip=True, projection="identity", objectname="data"
     ):
         """
         Display as Altair visualization.
 
         Parameters
         ----------
-        mesh : boolean
-            If `True`, render arcs only (mesh object). If `False` render as geoshape. 
-            Default is `True`.
         color : str
-            Assign an property attribute to be used for color encoding. Remember that
-            most of the time the wanted attribute is nested within properties. Moreover,
-            specific type declaration is required. Eg `color='properties.name:N'`. 
-            Default is `None`.
+            Assign an property attribute to be used for color encoding and renders the
+            Altair visualization as geoshape. Remember that most of the time the wanted 
+            attribute is nested within properties. Moreover, specific type declaration 
+            is required. Eg `color='properties.name:N'`. 
+            Default is `None` (render as mesh).
         tooltip : boolean
             Option to include or exclude tooltips on geoshape objects
             Default is `True`.
@@ -281,9 +274,8 @@ class Topology(Hashmap):
 
         topo_object = copy.deepcopy(self.output)
         topo_object = self._resolve_coords(topo_object)
-        return serialize_as_altair(
-            topo_object, mesh, color, tooltip, projection, objectname
-        )
+
+        return serialize_as_altair(topo_object, color, tooltip, projection, objectname)
 
     def to_widget(
         self,
