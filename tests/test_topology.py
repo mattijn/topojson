@@ -419,4 +419,3 @@ def test_topology_geojson_winding_order():
     gj = topo.to_geojson()
 
     assert gj
-

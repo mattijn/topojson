@@ -7,6 +7,7 @@ nav_order: 6
 # Contribute
 {: .no_toc}
 
+
 Contributions are much welcome for the documentation and for defects. Defects means here both behaviour not conforming the specification and missing but desirable features. The following two sections describes the process that I use for code development and documentation writing.
 
 1. TOC
@@ -47,6 +48,7 @@ bundle exec jekyll serve --baseurl ''
 ```
 
 **Note:** On Windows, a Windows Defender Firewall dialog can popup. Click allow access to give permission.
+
 
 The server address is shown in cmd. Any changes you make in the Markdown documentation is directly reflected on this website.
 

@@ -9,9 +9,11 @@ permalink: /example-usage
 
 # Example usage
 
+
 The most common usage of Python Topojson is to first compute the Topology, often including prequantization (`prequantize`).
 
 Using the computed Topology apply the `toposimplify` and settings and visualize till pleased.
+
 
 The following code-snippet is an example of such:
 

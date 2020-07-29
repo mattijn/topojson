@@ -90,6 +90,7 @@ tp.Topology(gdf, prequantize=False).to_json()
 
 * * * 
 
+
 ## FeatureCollection or Features
 From the package `geojson` (not a hard dependency)
 
@@ -167,9 +168,8 @@ topo.to_svg()
 
 * * *
 
-## shapely.geometry object
+## `shapely.geometry` object
 From the package `shapely`
-{: .text-delta}
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
