@@ -388,14 +388,35 @@ def test_topology_fiona_shapefile_to_geojson():
     assert gj["type"] == "FeatureCollection"
 
 
-def test_winding_order_geojson():
+def test_topology_topojson_winding_order():
     data = geometry.MultiLineString(
         [
             [[0, 0], [0.97, 0], [0.97, 1], [0, 1], [0, 0]],
             [[1.03, 0], [2, 0], [2, 1], [1.03, 1], [1.03, 0]],
         ]
     )
-    tp = topojson.Topology(data, prequantize=False, winding_order="CW_CCW")
-    gj = geojson.loads(tp.to_geojson())
+    topo = topojson.Topology(data, prequantize=False, winding_order="CW_CCW")
+    gj = geojson.loads(topo.to_geojson())
 
     assert gj["type"] == "FeatureCollection"
+
+
+def test_topology_geojson_winding_order():
+    data = geopandas.GeoDataFrame(
+        {
+            "name": ["P1", "P2"],
+            "geometry": [
+                geometry.Polygon(
+                    [(0, 0), (0, 3), (3, 3), (3, 0), (0, 0)],
+                    [[(1, 1), (2, 1), (2, 2), (1, 2), (1, 1)]],
+                ),
+                geometry.Polygon([(1, 1), (1, 2), (2, 2), (2, 1), (1, 1)]),
+            ],
+        }
+    )
+
+    topo = topojson.Topology(data, prequantize=False)
+    gj = topo.to_geojson()
+
+    assert gj
+
