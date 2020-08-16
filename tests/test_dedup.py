@@ -244,3 +244,31 @@ def test_dedup_topology_false():
 
     assert len(topo["linestrings"]) == 288
     assert len(topo["junctions"]) == 0
+
+
+# see https://github.com/mattijn/topojson/issues/104 for context
+# TypeError: cannot unpack non-iterable NoneType object and
+# TypeError: 'NoneType' object is not iterable
+def test_dedup_merge_continous():
+    data = [
+        {"type": "LineString", "coordinates": [(1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]},
+        {
+            "type": "LineString",
+            "coordinates": [
+                (5, 0),
+                (4, -1),
+                (4, 0),
+                (4, 1),
+                (3, 1),
+                (3, 0),
+                (2, 1),
+                (2, 0),
+                (1, 0),
+                (1, 1),
+            ],
+        },
+    ]
+    topo = Dedup(data, options={"prequantize": False}).to_dict()
+
+    assert len(topo["linestrings"]) == 6
+    assert len(topo["junctions"]) == 5
