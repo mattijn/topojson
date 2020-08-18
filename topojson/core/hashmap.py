@@ -66,7 +66,7 @@ class Hashmap(Dedup):
         topo_object = copy.copy(self.output)
         topo_object = geometry.MultiLineString(topo_object["linestrings"])
 
-        return serialize_as_altair(topo_object, mesh=True, geo_interface=True)
+        return serialize_as_altair(topo_object, geo_interface=True)
 
     def _hashmapper(self, data):
         """

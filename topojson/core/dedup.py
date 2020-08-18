@@ -99,12 +99,9 @@ class Dedup(Cut):
             idx_merged_dups = self._merge_contigious_arcs(data, sliced_array_bk_ndp)
             # use deduplicate as proxy-function for merged arcs index bookkeeping
             if idx_merged_dups is not None:
-                array_bk, array_bk_sarcs = self._deduplicate(
+                array_bk, array_bk_sarcs = self._pop_merged_arcs(
                     idx_merged_dups, data["linestrings"], array_bk
                 )
-            # # pop the merged contigious arcs and maintain bookkeeping.
-            # self._pop_merged_arcs(idx_merged_dups, data["linestrings"], array_bk)
-            # self._pop_merged_arcs(data, array_bk, array_bk_sarcs)
 
         # prepare to return object
         del data["bookkeeping_linestrings"]
@@ -262,6 +259,8 @@ class Dedup(Cut):
     def _pop_merged_arcs(self, bk_dups, linestring_list, array_bk):
         """
         The collected indici that can be popped, since they have been merged
+        This functions looks like _deduplicate(), but is slightly different where 
+        vals2pop indici are set to 0 (NaN).
         """
 
         # guarantee that first column contain higher values than second column
@@ -269,7 +268,7 @@ class Dedup(Cut):
         bk_dups = bk_dups[:, ::-1]
 
         # define arrays from wich the indices can be kept and popped
-        vals2keep = bk_dups[:, 0]
+        # vals2keep = bk_dups[:, 0]
         vals2pop = bk_dups[:, 1]
 
         # remove duplicate linestrings (loop over indices backwards to avoid popping
@@ -284,7 +283,8 @@ class Dedup(Cut):
         arr = arr.astype(np.int64)
 
         # replace duplicates by single values, add +1 since NaNs are on 0
-        arr_map = map_values(arr, vals2pop + 1, vals2keep + 1)
+        zeroarray = np.zeros_like(vals2pop)
+        arr_map = map_values(arr, vals2pop + 1, zeroarray)
 
         # popped indices changes the bookkeeping, align decremented indices
         # add +1 since NaNs are on 0
@@ -296,15 +296,8 @@ class Dedup(Cut):
         arr_new[arr_new == 0] = np.nan
         arr_new -= 1
 
-        self._idx_merged_dups.sort(reverse=True)
-        for idx_pop in self._idx_merged_dups:
+        # collect new indices of shared arcs
+        u, c = np.unique(arr_new, return_counts=True)
+        arr_bk_sarcs = u[c > 1]
 
-            # remove merged linestring
-            del data["linestrings"][idx_pop]
-
-            # change reference of merged linestring and all index elements greater
-            # then idx_pop
-            array_bk[array_bk == idx_pop] = np.nan
-            with np.errstate(invalid="ignore"):
-                array_bk[array_bk > idx_pop] -= 1
-                array_bk_sarcs[array_bk_sarcs > idx_pop] -= 1
+        return arr_new, arr_bk_sarcs
