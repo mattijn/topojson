@@ -71,7 +71,7 @@ def test_hashmap_benin_surrounding_countries():
     ]
     topo = Hashmap(data).to_dict()
 
-    assert len(topo["linestrings"]) == 7
+    assert len(topo["linestrings"]) == 6
 
 
 # something is wrong with hashmapping once a geometry has only shared arcs
@@ -101,7 +101,7 @@ def test_hashmap_shared_arcs_ordering_issues():
         | (data.name == "Zambia")
     ]
     topo = Hashmap(data).to_dict()
-    assert len(topo["linestrings"]) == 18
+    assert len(topo["linestrings"]) == 17
 
 
 def test_hashmap_super_function():
