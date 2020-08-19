@@ -8,6 +8,7 @@ from ..ops import asvoid
 from ..ops import map_values
 from ..ops import np_array_from_lists
 from ..ops import lists_from_np_array
+from ..ops import cart
 from ..utils import serialize_as_svg
 
 
@@ -21,7 +22,7 @@ class Dedup(Cut):
         super().__init__(data, options)
 
         # initation topology items
-        self._merged_arcs_idx = []
+        self._idx_merged_dups = []
 
         # execute main function of Dedup
         self.output = self._deduper(self.output)
@@ -94,12 +95,13 @@ class Dedup(Cut):
             slice_idx = np.all(~np.isnan(array_bk_ndp)[:, [0, -1]], axis=1)
             sliced_array_bk_ndp = array_bk_ndp[slice_idx]
 
-            # apply linemerge on geoms containing contigious arcs and maintain
-            # bookkeeping
-            self._merge_contigious_arcs(data, sliced_array_bk_ndp)
-
-            # pop the merged contigious arcs and maintain bookkeeping.
-            self._pop_merged_arcs(data, array_bk, array_bk_sarcs)
+            # apply linemerge on geoms containing contigious arcs and collect idx
+            idx_merged_dups = self._merge_contigious_arcs(data, sliced_array_bk_ndp)
+            # use deduplicate as proxy-function for merged arcs index bookkeeping
+            if idx_merged_dups is not None:
+                array_bk, array_bk_sarcs = self._pop_merged_arcs(
+                    idx_merged_dups, data["linestrings"], array_bk
+                )
 
         # prepare to return object
         del data["bookkeeping_linestrings"]
@@ -128,8 +130,8 @@ class Dedup(Cut):
 
         Returns
         -------
-        int
-            index of LineString that contains merged LineStrings
+        np.array
+            combinations of index of LineString that contains merged LineStrings
         """
 
         for segment_idx in range(no_ndp_arcs):
@@ -139,11 +141,13 @@ class Dedup(Cut):
                     asvoid(data["linestrings"][i]), asvoid(ndp_arcs[segment_idx])
                 ).any()
                 for i in ndp_arcs_bk
-            ].count(True)
-            if merged_arcs_bool == 2:
-                return segment_idx, "first_last"
-            elif merged_arcs_bool == len(ndp_arcs_bk):
-                return segment_idx, "all"
+            ]
+            count_merged_arcs = merged_arcs_bool.count(True)
+            if count_merged_arcs >= 2:
+                merged_arcs = ndp_arcs_bk[merged_arcs_bool]
+                # create dedup pairs of merged arcs
+                merged_dedups = cart(merged_arcs)
+                return segment_idx, merged_dedups
 
     def _deduplicate(self, bk_dups, linestring_list, array_bk):
         """
@@ -151,7 +155,7 @@ class Dedup(Cut):
 
         Parameters
         ----------
-        dup_pair_list : numpy.ndarray
+        bk_dups : numpy.ndarray
             array containing pair of indexes that refer to duplicate linestrings.
         linestring_list : list of shapely.geometry.LineStrings
             list of linestrings from which items will be removed.
@@ -173,11 +177,13 @@ class Dedup(Cut):
         vals2keep = bk_dups[:, 0]
         vals2pop = bk_dups[:, 1]
 
-        # remove duplicate linestrings (loop over indices backwards to avoid popping subsequent indices)
+        # remove duplicate linestrings (loop over indices backwards to avoid popping
+        # subsequent indices)
         for idx in sorted(vals2pop, reverse=True):
             del linestring_list[idx]
 
-        # prepare bookkeeping array, add +1 so NaN can be 0 and array only contains positive integers
+        # prepare bookkeeping array, add +1 so NaN can be 0 and array only contains
+        # positive integers
         arr = array_bk + 1
         arr[np.isnan(arr)] = 0
         arr = arr.astype(np.int64)
@@ -195,7 +201,7 @@ class Dedup(Cut):
         arr_new[arr_new == 0] = np.nan
         arr_new -= 1
 
-        # collect new indices of shared ars
+        # collect new indices of shared arcs
         u, c = np.unique(arr_new, return_counts=True)
         arr_bk_sarcs = u[c > 1]
 
@@ -216,6 +222,7 @@ class Dedup(Cut):
             bookkeeping array where shared linestrings are set to np.nan.
         """
 
+        list_merged_dups = []
         for arcs_geom_bk in sliced_array_bk_ndp:
             # set number of arcs before trying linemerge
             ndp_arcs_bk = arcs_geom_bk[~np.isnan(arcs_geom_bk)].astype(np.int64)
@@ -232,35 +239,64 @@ class Dedup(Cut):
             # bookkeeping
             if no_ndp_arcs != no_ndp_arcs_bk:
                 # get the idx of the linestring which was merged
-                idx_merg_arc, consec_behavior = self._find_merged_linestring(
+                idx_merg_arc, merged_dedups = self._find_merged_linestring(
                     data, no_ndp_arcs, ndp_arcs, ndp_arcs_bk
                 )
 
-                # keep last arc of non-duplicate arcs and pop the remaining arcs
-                idx_keep = ndp_arcs_bk[-1]
-                # replace linestring of idx_keep with merged linestring
+                # replace arc with highest index of non-duplicate arcs
+                # and collect remaining arcs as duplicates
+                idx_keep = merged_dedups[0][0]
                 data["linestrings"][idx_keep] = np.asarray(ndp_arcs[idx_merg_arc])
-                if consec_behavior == "first_last":
-                    idx_pop = ndp_arcs_bk[0]
-                    self._merged_arcs_idx.append(idx_pop)
-                elif consec_behavior == "all":
-                    idx_pop = np.delete(ndp_arcs_bk, -1)
-                    self._merged_arcs_idx.extend(idx_pop.tolist())
+                list_merged_dups.append(merged_dedups)
 
-    def _pop_merged_arcs(self, data, array_bk, array_bk_sarcs):
+        if len(list_merged_dups):
+            idx_merged_dups = np.vstack(list_merged_dups)
+            return idx_merged_dups
+        else:
+            return None
+
+    def _pop_merged_arcs(self, bk_dups, linestring_list, array_bk):
         """
         The collected indici that can be popped, since they have been merged
+        This functions looks like _deduplicate(), but is slightly different where 
+        vals2pop indici are set to 0 (NaN).
         """
 
-        self._merged_arcs_idx.sort(reverse=True)
-        for idx_pop in self._merged_arcs_idx:
+        # guarantee that first column contain higher values than second column
+        bk_dups.sort(axis=1)
+        bk_dups = bk_dups[:, ::-1]
 
-            # remove merged linestring
-            del data["linestrings"][idx_pop]
+        # define arrays from wich the indices can be kept and popped
+        # vals2keep = bk_dups[:, 0]
+        vals2pop = bk_dups[:, 1]
 
-            # change reference of merged linestring and all index elements greater
-            # then idx_pop
-            array_bk[array_bk == idx_pop] = np.nan
-            with np.errstate(invalid="ignore"):
-                array_bk[array_bk > idx_pop] -= 1
-                array_bk_sarcs[array_bk_sarcs > idx_pop] -= 1
+        # remove duplicate linestrings (loop over indices backwards to avoid popping
+        # subsequent indices)
+        for idx in sorted(vals2pop, reverse=True):
+            del linestring_list[idx]
+
+        # prepare bookkeeping array, add +1 so NaN can be 0 and array only contains
+        # positive integers
+        arr = array_bk + 1
+        arr[np.isnan(arr)] = 0
+        arr = arr.astype(np.int64)
+
+        # replace duplicates by single values, add +1 since NaNs are on 0
+        zeroarray = np.zeros_like(vals2pop)
+        arr_map = map_values(arr, vals2pop + 1, zeroarray)
+
+        # popped indices changes the bookkeeping, align decremented indices
+        # add +1 since NaNs are on 0
+        arr_bin = np.digitize(arr_map, sorted(vals2pop + 1), right=False)
+        arr_new = arr_map - arr_bin
+
+        # set 0 to nan and subtract -1
+        arr_new = arr_new.astype(float)
+        arr_new[arr_new == 0] = np.nan
+        arr_new -= 1
+
+        # collect new indices of shared arcs
+        u, c = np.unique(arr_new, return_counts=True)
+        arr_bk_sarcs = u[c > 1]
+
+        return arr_new, arr_bk_sarcs
