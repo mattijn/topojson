@@ -224,7 +224,6 @@ class Dedup(Cut):
 
         list_merged_dups = []
         for arcs_geom_bk in sliced_array_bk_ndp:
-            list_merged_dups = []
             # set number of arcs before trying linemerge
             ndp_arcs_bk = arcs_geom_bk[~np.isnan(arcs_geom_bk)].astype(np.int64)
             no_ndp_arcs_bk = len(ndp_arcs_bk)
