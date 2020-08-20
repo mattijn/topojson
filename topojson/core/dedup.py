@@ -95,13 +95,14 @@ class Dedup(Cut):
             slice_idx = np.all(~np.isnan(array_bk_ndp)[:, [0, -1]], axis=1)
             sliced_array_bk_ndp = array_bk_ndp[slice_idx]
 
-            # apply linemerge on geoms containing contigious arcs and collect idx
-            idx_merged_dups = self._merge_contigious_arcs(data, sliced_array_bk_ndp)
-            # use deduplicate as proxy-function for merged arcs index bookkeeping
-            if idx_merged_dups is not None:
-                array_bk, array_bk_sarcs = self._pop_merged_arcs(
-                    idx_merged_dups, data["linestrings"], array_bk
-                )
+            if sliced_array_bk_ndp.shape[1] > 1:
+                # apply linemerge on geoms containing contigious arcs and collect idx
+                idx_merged_dups = self._merge_contigious_arcs(data, sliced_array_bk_ndp)
+                # use deduplicate as proxy-function for merged arcs index bookkeeping
+                if idx_merged_dups is not None:
+                    array_bk, array_bk_sarcs = self._pop_merged_arcs(
+                        idx_merged_dups, data["linestrings"], array_bk
+                    )
 
         # prepare to return object
         del data["bookkeeping_linestrings"]
@@ -229,7 +230,7 @@ class Dedup(Cut):
             no_ndp_arcs_bk = len(ndp_arcs_bk)
 
             # apply linemerge
-            ndp_arcs = linemerge([data["linestrings"][i].tolist() for i in ndp_arcs_bk])
+            ndp_arcs = linemerge([data["linestrings"][i] for i in ndp_arcs_bk])
             if isinstance(ndp_arcs, geometry.LineString):
                 ndp_arcs = [ndp_arcs]
             no_ndp_arcs = len(ndp_arcs)
