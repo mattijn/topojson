@@ -230,21 +230,43 @@ class Topology(Hashmap):
             fc, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
         )
 
-    def to_gdf(self):
+    def to_gdf(
+        self, crs=None, validate=False, winding_order="CCW_CW", objectname="data"
+    ):
         """
         Convert the Topology to a GeoDataFrame. Remember that this will destroy the
         computed Topology. 
 
-        Note: This function use the TopoJSON driver within Fiona to parse the Topology
-        to a GeoDataFrame. If data is missing (eg. Fiona cannot parse nested 
-        geometrycollections) you can trying using the `.to_geojson()` function prior 
-        creating the GeoDataFrame. 
+        Note: This function use not the TopoJSON driver within Fiona, but a custom 
+        implemented more robust variant. See for info the `to_geojson()` function. 
+
+        Parameters
+        ----------
+        crs : str, dict
+            coordinate reference system to set on the resulting frame.
+            Default is `None`. 
+        validate : boolean
+            Set to `True` to validate each feature before inclusion in the GeoJSON. Only 
+            features that are valid geometries objects will be included.
+            Default is `False`.
+        winding_order : str
+            Determines the winding order of the features in the output geometry. Choose 
+            between `CW_CCW` for clockwise orientation for outer rings and counter-
+            clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer 
+            rings and clockwise for interior rings. 
+            Default is `CCW_CW` for GeoJSON.            
+        objectname : str
+            The name of the object within the Topology to convert to GeoJSON.
+            Default is `data`.            
         """
         from ..utils import serialize_as_geodataframe
 
         topo_object = copy.deepcopy(self.output)
         topo_object = self._resolve_coords(topo_object)
-        return serialize_as_geodataframe(topo_object)
+        fc = serialize_as_geojson(
+            topo_object, validate=validate, objectname=objectname, order=winding_order
+        )
+        return serialize_as_geodataframe(fc, crs=crs)
 
     def to_alt(
         self, color=None, tooltip=True, projection="identity", objectname="data"
