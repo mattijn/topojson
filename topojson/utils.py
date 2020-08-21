@@ -161,9 +161,11 @@ def coordinates(arcs, tp_arcs, geom_type):
         coords = coords[~np.isnan(coords).any(axis=1)].tolist()
         if geom_type in ["Polygon", "MultiPolygon"]:
             if len(coords) < 3:
+                # This may happen if an arc has only two points.
                 coords.extend([coords[0]])
         elif geom_type in ["LineString", "MultiLineString"]:
             if len(coords) < 2:
+                # This should never happen per the specification.
                 coords.extend([coords[0]])
         return coords
     elif isinstance(arcs[0], (list, tuple)):
