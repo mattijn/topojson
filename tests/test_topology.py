@@ -414,8 +414,16 @@ def test_topology_geojson_winding_order():
             ],
         }
     )
-
     topo = topojson.Topology(data, prequantize=False)
     gj = topo.to_geojson()
 
     assert gj
+
+
+def test_topology_geodataframe_valid():
+    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    topo = topojson.Topology(data)
+    gdf = topo.toposimplify(10, prevent_oversimplify=False).to_gdf()
+
+    assert gdf.shape[0] == 177
+

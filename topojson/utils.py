@@ -142,7 +142,7 @@ def singledispatch_class(func):
 
 
 # --------- supportive functions for serialization -----------
-def coordinates(arcs, tp_arcs):
+def coordinates(arcs, tp_arcs, geom_type):
     """
     Return GeoJSON coordinates for the sequence(s) of arcs.
     
@@ -159,9 +159,17 @@ def coordinates(arcs, tp_arcs):
             ]
         )
         coords = coords[~np.isnan(coords).any(axis=1)].tolist()
+        if geom_type in ["Polygon", "MultiPolygon"]:
+            if len(coords) < 3:
+                # This may happen if an arc has only two points.
+                coords.extend([coords[0]])
+        elif geom_type in ["LineString", "MultiLineString"]:
+            if len(coords) < 2:
+                # This should never happen per the specification.
+                coords.extend([coords[0]])
         return coords
     elif isinstance(arcs[0], (list, tuple)):
-        return list(coordinates(arc, tp_arcs) for arc in arcs)
+        return list(coordinates(arc, tp_arcs, geom_type) for arc in arcs)
     else:
         raise ValueError("Invalid input %s", arcs)
 
@@ -197,7 +205,10 @@ def geometry(obj, tp_arcs, transform=None):
         return {"type": obj["type"], "coordinates": point_coord[0]}
 
     else:
-        return {"type": obj["type"], "coordinates": coordinates(obj["arcs"], tp_arcs)}
+        return {
+            "type": obj["type"],
+            "coordinates": coordinates(obj["arcs"], tp_arcs, obj["type"]),
+        }
 
 
 def prettyjson(obj, indent=2, maxlinelength=80):
@@ -372,41 +383,26 @@ def indentitems(items, indent, level):
 
 
 # ----------------- serialization functions ------------------
-def serialize_as_geodataframe(topo_object, url=False):
+def serialize_as_geodataframe(fc, crs=None):
     """
     Convert a topology dictionary or string into a GeoDataFrame.
 
     Parameters
     ----------
-    topo_object : dict, str
-        a complete object representing an topojson encoded file as
-        dict, str-object or str-url
+    fc : dict, str
+        a complete object representing a GeoJSON file
+    crs : str, dict
+        coordinate reference system to set on the resulting frame.
+        Default is `None`.      
 
     Returns
     -------
     geopandas.GeoDataFrame
         topojson object parsed as GeoDataFrame
     """
-    import fiona
     import geopandas
-    import json
 
-    # parse the object as byte string
-    if isinstance(topo_object, dict):
-        bytes_topo = str.encode(json.dumps(topo_object))
-    elif url is True:
-        import requests
-
-        request = requests.get(topo_object)
-        bytes_topo = bytes(request.content)
-    else:
-        bytes_topo = str.encode(topo_object)
-    # into an in-memory file
-    vsimem = fiona.ogrext.buffer_to_virtual_file(bytes_topo)
-
-    # read the features from a fiona collection into a GeoDataFrame
-    with fiona.Collection(vsimem, driver="TopoJSON") as f:
-        gdf = geopandas.GeoDataFrame.from_features(f, crs=f.crs)
+    gdf = geopandas.GeoDataFrame().from_features(features=fc["features"], crs=crs)
     return gdf
 
 
@@ -518,6 +514,8 @@ def serialize_as_geojson(
         f = {"id": index, "type": "Feature"}
         if "properties" in feature.keys():
             f["properties"] = feature["properties"].copy()
+        else:
+            f["properties"] = {}
 
         # the transform is only used in cases of points or multipoints
         geommap = geometry(feature, np_arcs, transform)
