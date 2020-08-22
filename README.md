@@ -64,6 +64,12 @@ For now, just use the Github issues. That can be:
 - or anything related
 
 ## Changelog
+Version `1.0rc11`:
+- support for `fiona` Collections, using the optional `geojson` module #100
+- improvements on popping of merged linestrings #105, #107
+- the `to_gdf()` funtion is serialized through GeoJSON features and not through Fiona/OGR #108
+- documentation updates #101 and #103
+
 Version `1.0rc10`:
 - introduced `shared_coords` as new default strategy to detect junctions #76 (thanks @martinfleis!)
 - optimize reading geopandas objects #77
