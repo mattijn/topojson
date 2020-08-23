@@ -31,7 +31,7 @@ See the Python [Topojson Documentation Site](https://mattijn.github.io/topojson)
 <img src="docs/images/africa_simplify.jpeg" alt="simplifying with and without topology" width="600px">
 </p>
 
-_On the top row the picture shows the result of linestring simplification on a computed Topology (right) and on the geographical object directly (left). On the bottom row it shows the impact on file size reduction between Raw GeoJSON and Topological optimized TopoJSON._ 
+_Top row (right) presents linestring simplification on a computed Topology and (left) on the geographical object directly. Bottom row presents visual impact on file size reduction between (left) Raw GeoJSON and (right) Topological optimized TopoJSON._ 
 
 ## Installation
 
@@ -62,6 +62,8 @@ For now, just use the Github issues. That can be:
 - bug reports
 - feature suggestions
 - or anything related
+
+Finally, see the Python [Topojson Documentation Site](https://mattijn.github.io/topojson) for more info.
 
 ## Changelog
 Version `1.0rc11`:
@@ -130,8 +132,3 @@ Version `1.0rc2`:
 Version `1.0rc1`:
 
 - initial release
-
-## Tests
-
-There are many tests writen to make sure all type of corner-cases are covered. To make sure all tests will pass, you must have version >=0.5.0 of `geopandas` in combination with `fiona` version >=1.8.6.
-Shapely version 1.7a2 is recommended (because of https://github.com/Toblerity/Shapely/pull/733), but all tests pass from version >=1.6.3.
