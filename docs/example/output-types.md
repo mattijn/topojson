@@ -264,7 +264,6 @@ print(topo.to_json(pretty=True))
 The `pretty` option depends on the setting `indent` and `maxlinelength`, these default to `4` and `88` respectively.
 
 More options in generating the GeoJSON from the computed Topololgy are `validate` (`True` or `False`) and `winding_order`. Where the TopoJSON standard defines a winding order of clock-wise orientation for outer polygons and counter-clockwise orientation for innner polygons is the winding order in the GeoJSON standard the opposite (`CCW_CW`).
-</pre>
 </div>
 </div>
 
@@ -342,7 +341,7 @@ topo.to_alt(color='properties.name:N', projection='equalEarth')
 
 Serialize the Topology object into a GeoPandas GeoDataFrame. This destroys the Topology. GeoPandas is an optional dependency and not automatically installed. 
 
-**Note:** Currently this uses the Fiona/OGR `TopoJSON` driver. Soon this will be replaced with a custom TopoJSON parser, because there is no winding order enforcement in the OGR model, see [#102](https://github.com/mattijn/topojson/issues/102).  
+**Note:** There is no winding-order enforcement in the OGR model; so the Fiona/OGR `TopoJSON` driver is NOT used in this routine, but the `.to_geojson()` function.  
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
