@@ -152,13 +152,12 @@ def coordinates(arcs, tp_arcs, geom_type):
     """
 
     if isinstance(arcs[0], int):
-        coords = np.concatenate(
-            [
-                tp_arcs[arc if arc >= 0 else ~arc][:: arc >= 0 or -1][i > 0 :]
-                for i, arc in enumerate(arcs)
-            ]
-        )
-        coords = coords[~np.isnan(coords).any(axis=1)].tolist()
+        coord_list = []
+        for i, arc in enumerate(arcs):
+            arc_coords = tp_arcs[arc if arc >= 0 else ~arc][:: arc >= 0 or -1]
+            arc_coords = arc_coords[~np.isnan(arc_coords).any(axis=1)]
+            coord_list.append(arc_coords[i > 0:])
+        coords = np.concatenate(coord_list).tolist()
         if geom_type in ["Polygon", "MultiPolygon"]:
             if len(coords) < 3:
                 # This may happen if an arc has only two points.

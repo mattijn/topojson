@@ -1,6 +1,6 @@
 import os
 import json
-from shapely import geometry
+from shapely import geometry, wkt
 import geopandas
 import geojson
 import fiona
@@ -427,3 +427,14 @@ def test_topology_geodataframe_valid():
 
     assert gdf.shape[0] == 177
 
+
+def test_topology_geojson_duplicates():
+
+    p0 = wkt.loads('POLYGON ((0 0, 0 1, 1 1, 2 1, 2 0, 1 0, 0 0))')
+    p1 = wkt.loads('POLYGON ((0 1, 0 2, 1 2, 1 1, 0 1))')
+    p2 = wkt.loads('POLYGON ((1 0, 2 0, 2 -1, 1 -1, 1 0))')
+    data = geopandas.GeoDataFrame({"name": ["abc", "def", "ghi"], "geometry": [p0, p1, p2]})
+    topo = topojson.Topology(data, prequantize=False)
+    p0_wkt = topo.to_gdf().geometry[0].wkt
+
+    assert p0_wkt == 'POLYGON ((0 1, 0 0, 1 0, 2 0, 2 1, 1 1, 0 1))'
