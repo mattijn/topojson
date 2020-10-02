@@ -28,6 +28,9 @@ The computation of the Topology involves secure bookkeeping on multiple levels i
 
 * * *
 
+#### Toy example
+{: .no_toc}
+
 The following example data is used to clarify the steps:
 
 <div class="code-example mx-1 bg-example">
@@ -62,8 +65,16 @@ The orange line starts bottom-left and goes with a zig-zag to top-right. The gre
 
 ## Extract
 
-   - Detection of geometrical type of the object
-   - Extraction of linestrings from the object
+The first step is Extract. 
+
+<img src="images/extract.png" width="450px"/>
+
+This class instance is determines the geometrical type of input data (eg. `dict`, `geojson.FeatureCollection`, `geopandas.GeoDataFrame`), and based on the type it extracts all geometric entities as `shapely.geometry.LineString`'s or `shapely.geometry.Point`'s and stores them in a top-level object with references in each geometric entity.
+
+Target objectives:
+   - Detection of geometrical type of the input data
+   - Extraction of linestrings and points from all geometric entities
+
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
@@ -71,6 +82,8 @@ Example 🔧
 {: .label .label-blue-000 }
 </div>
 <div class="example-text" markdown="1">
+
+We use the data as is prepared in the [toy example](how-it-works.html#toy-example) section.
 
 ```python
 from topojson.core.extract import Extract
@@ -113,6 +126,10 @@ Extract(data).to_svg(separate=True)
 
 ## Join
 
+The second step is Join. The Join class pass the data first _down_ towards the Extract class, before starting the Join phase. 
+
+<img src="images/join.png" width="450px"/>
+
    - Quantization of input linestrings if necessary
    - Identifies junctions of shared paths
 
@@ -122,6 +139,8 @@ Example 🔧
 {: .label .label-blue-000 }
 </div>
 <div class="example-text" markdown="1">
+
+We use the data as is prepared in the [toy example](how-it-works.html#toy-example) section.
 
 ```python
 from topojson.core.join import Join
@@ -168,6 +187,10 @@ Join(data).to_svg(separate=True, include_junctions=True)
 
 ## Cut
 
+The third step is Cut. The Cut class passes the data first _down_ towards the Extract and subsequently Join class, before starting the Cut phase. 
+
+<img src="images/cut.png" width="450px"/>
+
    - Split linestrings given the junctions of shared paths
    - Identifies indexes of linestrings that are duplicates
 
@@ -177,6 +200,8 @@ Example 🔧
 {: .label .label-blue-000 }
 </div>
 <div class="example-text" markdown="1">
+
+We use the data as is prepared in the [toy example](how-it-works.html#toy-example) section.
 
 ```python
 from topojson.core.cut import Cut
@@ -243,6 +268,10 @@ Cut(data).to_svg(separate=True, include_junctions=True)
 
 ## Dedup
 
+The fourth step is Dedup. The Dedup class passes the data first _down_ towards the Extract and subsequently Join and Cut class, before starting the Dedup phase.
+
+<img src="images/dedup.png" width="450px"/>
+
    - Deduplication of linestrings that contain duplicates
    - Merge contiguous arcs
 
@@ -252,6 +281,8 @@ Example 🔧
 {: .label .label-blue-000 }
 </div>
 <div class="example-text" markdown="1">
+
+We use the data as is prepared in the [toy example](how-it-works.html#toy-example) section.
 
 ```python
 from topojson.core.dedup import Dedup
@@ -315,6 +346,10 @@ Dedup(data).to_svg(separate=True)
 
 ## Hashmap
 
+The fifth step is Hashmap. The Hashmap class passes the data first _down_ towards the Extract and subsequently Join, Cut and Dedup class, before starting the Hashmap phase.
+
+<img src="images/hashmap.png" width="450px"/>
+
    - Resolves bookkeeping results to object arcs.
 
 <div class="code-example mx-1 bg-example">
@@ -323,6 +358,8 @@ Example 🔧
 {: .label .label-blue-000 }
 </div>
 <div class="example-text" markdown="1">
+
+We use the data as is prepared in the [toy example](how-it-works.html#toy-example) section.
 
 ```python
 from topojson.core.hashmap import Hashmap
@@ -362,6 +399,10 @@ The `bookkeeping_*` keys are removed and the `arcs` for each geometry within `ob
 
 ## Topology
 
+The sixt and last step is Topology. The Topology class passes the data first _down_ towards the Extract and subsequently Join, Cut, Dedup and Hashmap class, before starting the Topology phase.
+
+<img src="images/topology.png" width="450px"/>
+
    - Applies all custom settings and output functions.
 
 <div class="code-example mx-1 bg-example">
@@ -370,6 +411,8 @@ Example 🔧
 {: .label .label-blue-000 }
 </div>
 <div class="example-text" markdown="1">
+
+We use the data as is prepared in the [toy example](how-it-works.html#toy-example) section.
 
 ```python
 from topojson.core.topology import Topology
