@@ -1,5 +1,3 @@
-from functools import singledispatch, update_wrapper
-from types import SimpleNamespace
 import numpy as np
 import pprint
 import json
@@ -8,42 +6,9 @@ from .ops import np_array_from_arcs
 from .ops import winding_order
 
 
-# ----------- dummy files for geopandas, geojson and shapefile ----------
-class GeoDataFrame(object):
-    pass
+def instance(obj):
+    return type(obj).__name__
 
-
-class GeoSeries(object):
-    pass
-
-
-geopandas = SimpleNamespace()
-setattr(geopandas, "GeoDataFrame", GeoDataFrame)
-setattr(geopandas, "GeoSeries", GeoSeries)
-setattr(geopandas, "is_placeholder", True)
-
-
-class Feature(object):
-    pass
-
-
-class FeatureCollection(object):
-    pass
-
-
-geojson = SimpleNamespace()
-setattr(geojson, "Feature", Feature)
-setattr(geojson, "FeatureCollection", FeatureCollection)
-setattr(geojson, "is_placeholder", True)
-
-
-class Collection(object):
-    pass
-
-
-fiona = SimpleNamespace()
-setattr(fiona, "Collection", Collection)
-setattr(fiona, "is_placeholder", True)
 
 # ----------------- topology options object ------------------
 class TopoOptions(object):
@@ -118,27 +83,6 @@ class TopoOptions(object):
 
     def __repr__(self):
         return "TopoOptions(\n  {}\n)".format(pprint.pformat(self.__dict__))
-
-
-def singledispatch_class(func):
-    """
-    The singledispatch function only applies to functions. This function creates a
-    wrapper around the singledispatch so it can be used for class instances.
-
-    Returns
-    -------
-    dispatch
-        dispatcher for methods
-    """
-
-    dispatcher = singledispatch(func)
-
-    def wrapper(*args, **kw):
-        return dispatcher.dispatch(args[1].__class__)(*args, **kw)
-
-    wrapper.register = dispatcher.register
-    update_wrapper(wrapper, dispatcher)
-    return wrapper
 
 
 # --------- supportive functions for serialization -----------
@@ -569,7 +513,7 @@ def serialize_as_altair(
         )
 
     # creating a chloropleth visualisation
-    elif color is not None:
+    else:
         data = alt.InlineData(
             values=topo_object,
             format=alt.DataFormat(feature=objectname, type="topojson"),
