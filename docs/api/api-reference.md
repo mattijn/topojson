@@ -4,6 +4,7 @@ title: API reference
 nav_order: 5
 has_children: true
 permalink: /api-reference
+nav_no_fold: false
 --- 
 
 

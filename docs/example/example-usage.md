@@ -5,6 +5,7 @@ nav_order: 3
 nav_active_show: 2
 has_children: true
 permalink: /example-usage
+nav_no_fold : true
 --- 
 
 # Example usage
