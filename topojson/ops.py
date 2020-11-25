@@ -6,7 +6,7 @@ from shapely import wkt
 from shapely.strtree import STRtree
 import pprint
 import copy
-import logging
+import logging 
 
 
 try:
