@@ -4,12 +4,6 @@
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![build status](http://img.shields.io/travis/mattijn/topojson/master.svg?style=flat)](https://travis-ci.org/mattijn/topojson)
 
-_Its not yet version 1.0, but that's merely because of missing documentation. No new features will be introduced before version 1.0. With other words: you should be safe to use it!_
-
-_If you do find a bug, please report!_ 
-
-#
-
 # Encode geographic data as topology in Python!
 
 Topojson is a library that is capable of creating a topojson encoded format of merely any geographical object in Python.
@@ -66,6 +60,11 @@ For now, just use the Github issues. That can be:
 Finally, see the Python [Topojson Documentation Site](https://mattijn.github.io/topojson) for more info.
 
 ## Changelog
+Version `1.0`:
+- fix duplicate coordinates in geojson export #112
+- add docs [how-it-works](https://mattijn.github.io/topojson/how-it-works.html)
+- replace dispatcher with if-else statments #114
+
 Version `1.0rc11`:
 - support for `fiona` Collections, using the optional `geojson` module #100
 - improvements on popping of merged linestrings #105, #107
