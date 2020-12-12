@@ -202,15 +202,8 @@ def test_topology_polygon_point():
 def test_topology_point():
     data = [{"type": "Point", "coordinates": [0.5, 0.5]}]
     topo = topojson.Topology(data, topoquantize=True).to_dict()
-    # with pytest.warns(RuntimeWarning) as topo:
-    #     topojson.Topology(data, topoquantize=True).to_dict()
 
     assert len(topo["arcs"]) == 0
-    # assert topo._record is True
-    # assert (
-    #     topo._list[0].message.args[0] == "divide by zero encountered in double_scalars"
-    # )
-    # # assert topo.value.code == "Cannot quantize when xmax-xmin OR ymax-ymin equals 0"
 
 
 def test_topology_multipoint():
@@ -438,3 +431,13 @@ def test_topology_geojson_duplicates():
     p0_wkt = topo.to_gdf().geometry[0].wkt
 
     assert p0_wkt == 'POLYGON ((0 1, 0 0, 1 0, 2 0, 2 1, 1 1, 0 1))'
+
+# test for https://github.com/mattijn/topojson/issues/110
+def test_topology_topoquantization_dups():
+    gdf = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    gdf = gdf[gdf.name.isin(['France', 'Belgium', 'Netherlands'])]
+    topo = topojson.Topology(data=gdf, prequantize=False).toposimplify(4)
+    topo = topo.topoquantize(50).to_dict()
+
+    assert topo['arcs'][6] == [[44, 47], [0, 0]]
+ 

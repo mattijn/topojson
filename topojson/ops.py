@@ -516,7 +516,8 @@ def quantize(linestrings, bbox, quant_factor=1e6):
         `bbox`, bounding box of all linestrings
     """
 
-    x0, y0, x1, y1 = bbox
+    x0, y0, x1, y1 = bbox 
+
     try:
         kx = 1 if (x1 - x0) == 0 else (x1 - x0) / (quant_factor - 1)
         ky = 1 if (y1 - y0) == 0 else (y1 - y0) / (quant_factor - 1)
@@ -539,11 +540,18 @@ def quantize(linestrings, bbox, quant_factor=1e6):
             np.insert(np.absolute(np.diff(ls_xy, 1, axis=0)).sum(axis=1), 0, 1) != 0
         )
 
+        # only remove repeating coordinates when possible
+        # linestring should not become a single point
         if not bool_slice.sum() == 1 or len(ls_xy) == bool_slice.sum():
             if hasattr(ls, "coords"):
                 ls.coords = ls_xy[bool_slice]
             else:
                 linestrings[idx] = ls_xy[bool_slice].tolist()
+        else:
+            if hasattr(ls, "coords"):
+                ls.coords = ls_xy
+            else:
+                linestrings[idx] = ls_xy.tolist()            
 
     transform_ = {"scale": [kx, ky], "translate": [x0, y0]}
 
