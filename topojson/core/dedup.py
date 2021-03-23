@@ -45,10 +45,10 @@ class Dedup(Cut):
         Parameters
         ----------
         separate : boolean
-            If `True`, each of the linestrings will be displayed separately. 
+            If `True`, each of the linestrings will be displayed separately.
             Default is `False`
         include_junctions : boolean
-            If `True`, the detected junctions will be displayed as well. 
+            If `True`, the detected junctions will be displayed as well.
             Default is `False`
         """
         serialize_as_svg(self.output, separate, include_junctions)
@@ -259,7 +259,7 @@ class Dedup(Cut):
     def _pop_merged_arcs(self, bk_dups, linestring_list, array_bk):
         """
         The collected indici that can be popped, since they have been merged
-        This functions looks like _deduplicate(), but is slightly different where 
+        This functions looks like _deduplicate(), but is slightly different where
         vals2pop indici are set to 0 (NaN).
         """
 

@@ -29,8 +29,8 @@ class Extract(object):
     with an equivalent `"coordinates"` array that points to one of the
     linestrings as indexed in `bookkeeping_geoms` and stored in `linestrings`.
 
-    For Points geometries count the same, but are stored in `coordinates` and 
-    referenced in `bookkeeping_coords`.    
+    For Points geometries count the same, but are stored in `coordinates` and
+    referenced in `bookkeeping_coords`.
 
     Parameters
     ----------
@@ -91,13 +91,13 @@ class Extract(object):
         Parameters
         ----------
         separate : boolean
-            If `True`, each of the linestrings will be displayed separately. 
+            If `True`, each of the linestrings will be displayed separately.
             Default is `False`
         """
         serialize_as_svg(self.output, separate, include_junctions=False)
 
     def _extractor(self, data):
-        """"
+        """
         Entry point for the class Extract.
 
         The extract function is the first step in the topology computation.
@@ -120,7 +120,7 @@ class Extract(object):
         with an equivalent `"coordinates"` array that points to one of the
         linestrings as indexed in `bookkeeping_geoms` and stored in `linestrings`.
 
-        For Points geometries count the same, but are stored in `coordinates` and 
+        For Points geometries count the same, but are stored in `coordinates` and
         referenced in `bookkeeping_coords`.
         """
 
@@ -696,4 +696,3 @@ class Extract(object):
             # reset geom collection counter and level
             self._geomcollection_counter = 0
             self._geom_level_1 = 0
-

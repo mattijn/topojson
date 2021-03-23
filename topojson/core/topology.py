@@ -16,73 +16,73 @@ from ..utils import serialize_as_geojson
 
 class Topology(Hashmap):
     """
-    Returns a TopoJSON topology for the specified geometric object. TopoJSON is an 
-    extension of GeoJSON providing multiple approaches to compress the geographical 
-    input data. These options include simplifying the linestrings or quantizing the 
+    Returns a TopoJSON topology for the specified geometric object. TopoJSON is an
+    extension of GeoJSON providing multiple approaches to compress the geographical
+    input data. These options include simplifying the linestrings or quantizing the
     coordinates but foremost the computation of a topology.
 
     Parameters
     ----------
     data : _any_ geometric type
-        Geometric data that should be converted into TopoJSON 
+        Geometric data that should be converted into TopoJSON
     topology : boolean
-        Specifiy if the topology should be computed for deriving the TopoJSON. 
+        Specifiy if the topology should be computed for deriving the TopoJSON.
         Default is `True`.
     prequantize : boolean, int
-        If the prequantization parameter is specified, the input geometry is 
-        quantized prior to computing the topology, the returned topology is 
-        quantized, and its arcs are delta-encoded. Quantization is recommended to 
-        improve the quality of the topology if the input geometry is messy (i.e., 
-        small floating point error means that adjacent boundaries do not have 
-        identical values); typical values are powers of ten, such as `1e4`, `1e5` or 
-        `1e6`. 
+        If the prequantization parameter is specified, the input geometry is
+        quantized prior to computing the topology, the returned topology is
+        quantized, and its arcs are delta-encoded. Quantization is recommended to
+        improve the quality of the topology if the input geometry is messy (i.e.,
+        small floating point error means that adjacent boundaries do not have
+        identical values); typical values are powers of ten, such as `1e4`, `1e5` or
+        `1e6`.
         Default is `True` (which correspond to a quantize factor of `1e6`).
     topoquantize : boolean or int
-        If the topoquantization parameter is specified, the input geometry is quantized 
-        after the topology is constructed. If the topology is already quantized this 
-        will be resolved first before the topoquantization is applied. See for more 
-        details the `prequantize` parameter. 
+        If the topoquantization parameter is specified, the input geometry is quantized
+        after the topology is constructed. If the topology is already quantized this
+        will be resolved first before the topoquantization is applied. See for more
+        details the `prequantize` parameter.
         Default is `False`.
     presimplify : boolean, float
-        Apply presimplify to remove unnecessary points from linestrings before the 
+        Apply presimplify to remove unnecessary points from linestrings before the
         topology is constructed. This will simplify the input geometries. Use with care.
         Default is `False`.
-    toposimplify : boolean, float 
-        Apply toposimplify to remove unnecessary points from arcs after the topology 
-        is constructed. This will simplify the constructed arcs without altering the 
-        topological relations. Sensible values for coordinates stored in degrees are 
-        in the range of `0.0001` to `10`. 
+    toposimplify : boolean, float
+        Apply toposimplify to remove unnecessary points from arcs after the topology
+        is constructed. This will simplify the constructed arcs without altering the
+        topological relations. Sensible values for coordinates stored in degrees are
+        in the range of `0.0001` to `10`.
         Defaults to `False`.
     shared_coords : boolean
-        Sets the strategy to detect junctions. When set to `True` a path is 
-        considered shared when all coordinates appear in both paths 
-        (`coords-connected`). When set to `False` a path is considered shared when 
-        coordinates are the same path (`path-connected`). The path-connected strategy 
-        is more 'correct', but slower. 
+        Sets the strategy to detect junctions. When set to `True` a path is
+        considered shared when all coordinates appear in both paths
+        (`coords-connected`). When set to `False` a path is considered shared when
+        coordinates are the same path (`path-connected`). The path-connected strategy
+        is more 'correct', but slower.
         Default is `True`.
     prevent_oversimplify: boolean
-        If this setting is set to `True`, the simplification is slower, but the 
-        likelihood of producing valid geometries is higher as it prevents 
-        oversimplification. Simplification happens on paths separately, so this 
-        setting is especially relevant for rings with no partial shared paths. This 
-        is also known as a topology-preserving variant of simplification. 
-        Default is `True`.        
+        If this setting is set to `True`, the simplification is slower, but the
+        likelihood of producing valid geometries is higher as it prevents
+        oversimplification. Simplification happens on paths separately, so this
+        setting is especially relevant for rings with no partial shared paths. This
+        is also known as a topology-preserving variant of simplification.
+        Default is `True`.
     simplify_with : str
-        Sets the package to use for simplifying (both pre- and toposimplify). Choose 
-        between `shapely` or `simplification`. Shapely adopts solely Douglas-Peucker 
-        and simplification both Douglas-Peucker and Visvalingam-Whyatt. The pacakge 
-        simplification is known to be quicker than shapely. 
+        Sets the package to use for simplifying (both pre- and toposimplify). Choose
+        between `shapely` or `simplification`. Shapely adopts solely Douglas-Peucker
+        and simplification both Douglas-Peucker and Visvalingam-Whyatt. The pacakge
+        simplification is known to be quicker than shapely.
         Default is `shapely`.
     simplify_algorithm : str
-        Choose between `dp` and `vw`, for Douglas-Peucker or Visvalingam-Whyatt 
-        respectively. `vw` will only be selected if `simplify_with` is set to 
-        `simplification`. 
+        Choose between `dp` and `vw`, for Douglas-Peucker or Visvalingam-Whyatt
+        respectively. `vw` will only be selected if `simplify_with` is set to
+        `simplification`.
         Default is `dp`.
     winding_order : str
-        Determines the winding order of the features in the output geometry. Choose 
+        Determines the winding order of the features in the output geometry. Choose
         between `CW_CCW` for clockwise orientation for outer rings and counter-
-        clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer 
-        rings and clockwise for interior rings. 
+        clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer
+        rings and clockwise for interior rings.
         Default is `CW_CCW` for TopoJSON.
     """
 
@@ -123,7 +123,7 @@ class Topology(Hashmap):
         Parameters
         ----------
         options : boolean
-            If `True`, the options also will be included. 
+            If `True`, the options also will be included.
             Default is `False`
         """
         topo_object = copy.deepcopy(self.output)
@@ -139,7 +139,7 @@ class Topology(Hashmap):
         Parameters
         ----------
         separate : boolean
-            If `True`, each of the arcs will be displayed separately. 
+            If `True`, each of the arcs will be displayed separately.
             Default is `False`
         """
         serialize_as_svg(self.output, separate, include_junctions=False)
@@ -154,11 +154,11 @@ class Topology(Hashmap):
             If set, writes the object to a file on drive.
             Default is `None`.
         options : boolean
-            If `True`, the options also will be included. 
+            If `True`, the options also will be included.
             Default is `False`.
         pretty : boolean
-            If `pretty=True`, the JSON object will be 'pretty', depending on the 
-            `ident` and `maxlinelength` options. If `pretty=False`, it will `compact`, 
+            If `pretty=True`, the JSON object will be 'pretty', depending on the
+            `ident` and `maxlinelength` options. If `pretty=False`, it will `compact`,
             eliminating whitespace.
             Default is `False`.
         indent : int
@@ -189,7 +189,7 @@ class Topology(Hashmap):
     ):
         """
         Convert the Topology to a GeoJSON object. Remember that this will destroy the
-        computed Topology. 
+        computed Topology.
 
         Parameters
         ----------
@@ -197,8 +197,8 @@ class Topology(Hashmap):
             If set, writes the object to a file on drive.
             Default is `None`
         pretty : boolean
-            If `pretty=True`, the JSON object will be 'pretty', depending on the 
-            `ident` and `maxlinelength` options. If `pretty=False`, it will `compact`, 
+            If `pretty=True`, the JSON object will be 'pretty', depending on the
+            `ident` and `maxlinelength` options. If `pretty=False`, it will `compact`,
             eliminating whitespace.
             Default is `False`.
         indent : int
@@ -208,15 +208,15 @@ class Topology(Hashmap):
             If `pretty=True`, declares the maximum length of each line.
             Default is `88`.
         validate : boolean
-            Set to `True` to validate each feature before inclusion in the GeoJSON. Only 
+            Set to `True` to validate each feature before inclusion in the GeoJSON. Only
             features that are valid geometries objects will be included.
             Default is `False`.
         winding_order : str
-            Determines the winding order of the features in the output geometry. Choose 
+            Determines the winding order of the features in the output geometry. Choose
             between `CW_CCW` for clockwise orientation for outer rings and counter-
-            clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer 
-            rings and clockwise for interior rings. 
-            Default is `CCW_CW` for GeoJSON.            
+            clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer
+            rings and clockwise for interior rings.
+            Default is `CCW_CW` for GeoJSON.
         objectname : str
             The name of the object within the Topology to convert to GeoJSON.
             Default is `data`.
@@ -235,29 +235,29 @@ class Topology(Hashmap):
     ):
         """
         Convert the Topology to a GeoDataFrame. Remember that this will destroy the
-        computed Topology. 
+        computed Topology.
 
-        Note: This function use not the TopoJSON driver within Fiona, but a custom 
-        implemented more robust variant. See for info the `to_geojson()` function. 
+        Note: This function use not the TopoJSON driver within Fiona, but a custom
+        implemented more robust variant. See for info the `to_geojson()` function.
 
         Parameters
         ----------
         crs : str, dict
             coordinate reference system to set on the resulting frame.
-            Default is `None`. 
+            Default is `None`.
         validate : boolean
-            Set to `True` to validate each feature before inclusion in the GeoJSON. Only 
+            Set to `True` to validate each feature before inclusion in the GeoJSON. Only
             features that are valid geometries objects will be included.
             Default is `False`.
         winding_order : str
-            Determines the winding order of the features in the output geometry. Choose 
+            Determines the winding order of the features in the output geometry. Choose
             between `CW_CCW` for clockwise orientation for outer rings and counter-
-            clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer 
-            rings and clockwise for interior rings. 
-            Default is `CCW_CW` for GeoJSON.            
+            clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer
+            rings and clockwise for interior rings.
+            Default is `CCW_CW` for GeoJSON.
         objectname : str
             The name of the object within the Topology to convert to GeoJSON.
-            Default is `data`.            
+            Default is `data`.
         """
         from ..utils import serialize_as_geodataframe
 
@@ -278,9 +278,9 @@ class Topology(Hashmap):
         ----------
         color : str
             Assign an property attribute to be used for color encoding and renders the
-            Altair visualization as geoshape. Remember that most of the time the wanted 
-            attribute is nested within properties. Moreover, specific type declaration 
-            is required. Eg `color='properties.name:N'`. 
+            Altair visualization as geoshape. Remember that most of the time the wanted
+            attribute is nested within properties. Moreover, specific type declaration
+            is required. Eg `color='properties.name:N'`.
             Default is `None` (render as mesh).
         tooltip : boolean
             Option to include or exclude tooltips on geoshape objects
@@ -305,7 +305,7 @@ class Topology(Hashmap):
         slider_topoquantize={"min": 1, "max": 6, "step": 1, "value": 1e5, "base": 10},
     ):
         """
-        Create an interactive widget based on Altair. The widget includes sliders to 
+        Create an interactive widget based on Altair. The widget includes sliders to
         interactively change the `toposimplify` and `topoquantize` settings.
 
         Parameters
@@ -328,9 +328,9 @@ class Topology(Hashmap):
 
     def topoquantize(self, quant_factor, inplace=False):
         """
-        Quantization is recommended to improve the quality of the topology if the 
-        input geometry is messy (i.e., small floating point error means that 
-        adjacent boundaries do not have identical values); typical values are powers 
+        Quantization is recommended to improve the quality of the topology if the
+        input geometry is messy (i.e., small floating point error means that
+        adjacent boundaries do not have identical values); typical values are powers
         of ten, such as `1e4`, `1e5` or  `1e6`.
 
         Parameters
@@ -338,13 +338,13 @@ class Topology(Hashmap):
         quant_factor : float
             tolerance parameter
         inplace : bool, optional
-            If `True`, do operation inplace and return `None`. 
+            If `True`, do operation inplace and return `None`.
             Default is `False`.
 
         Returns
         -------
         object or None
-            Quantized coordinates and delta-encoded arcs if `inplace` is `False`. 
+            Quantized coordinates and delta-encoded arcs if `inplace` is `False`.
         """
         result = copy.deepcopy(self)
         arcs = result.output["arcs"]
@@ -386,9 +386,9 @@ class Topology(Hashmap):
         inplace=False,
     ):
         """
-        Apply toposimplify to remove unnecessary points from arcs after the topology 
-        is constructed. This will simplify the constructed arcs without altering the 
-        topological relations. Sensible values for coordinates stored in degrees are 
+        Apply toposimplify to remove unnecessary points from arcs after the topology
+        is constructed. This will simplify the constructed arcs without altering the
+        topological relations. Sensible values for coordinates stored in degrees are
         in the range of `0.0001` to `10`.
 
         Parameters
@@ -396,31 +396,31 @@ class Topology(Hashmap):
         epsilon : float
             tolerance parameter.
         simplify_algorithm : str, optional
-            Choose between `dp` and `vw`, for Douglas-Peucker or Visvalingam-Whyatt 
-            respectively. `vw` will only be selected if `simplify_with` is set to 
-            `simplification`. 
-            Default is `None`, meaning that the default (`dp`) is not overwritten.  
+            Choose between `dp` and `vw`, for Douglas-Peucker or Visvalingam-Whyatt
+            respectively. `vw` will only be selected if `simplify_with` is set to
+            `simplification`.
+            Default is `None`, meaning that the default (`dp`) is not overwritten.
         simplify_with : str, optional
-            Sets the package to use for simplifying. Choose between `shapely` or 
-            `simplification`. Shapely adopts solely Douglas-Peucker and simplification 
-            both Douglas-Peucker and Visvalingam-Whyatt. The pacakge simplification is 
-            known to be quicker than shapely. 
-            Default is `None`, meaning that the default (`shapely`) is not overwritten.                         
+            Sets the package to use for simplifying. Choose between `shapely` or
+            `simplification`. Shapely adopts solely Douglas-Peucker and simplification
+            both Douglas-Peucker and Visvalingam-Whyatt. The pacakge simplification is
+            known to be quicker than shapely.
+            Default is `None`, meaning that the default (`shapely`) is not overwritten.
         prevent_oversimplify: boolean, optional
-            If this setting is set to `True`, the simplification is slower, but the 
-            likelihood of producing valid geometries is higher as it prevents 
-            oversimplification. Simplification happens on paths separately, so this 
-            setting is especially relevant for rings with no partial shared paths. This 
-            is also known as a topology-preserving variant of simplification. 
+            If this setting is set to `True`, the simplification is slower, but the
+            likelihood of producing valid geometries is higher as it prevents
+            oversimplification. Simplification happens on paths separately, so this
+            setting is especially relevant for rings with no partial shared paths. This
+            is also known as a topology-preserving variant of simplification.
             Default is `None`, meaning that the default (`True`) is not overwritten.
         inplace : bool, optional
-            If `True`, do operation inplace and return `None`. 
+            If `True`, do operation inplace and return `None`.
             Default is `False`.
 
         Returns
         -------
         object or None
-            Topology object with simplfified linestrings if `inplace` is `False`. 
+            Topology object with simplfified linestrings if `inplace` is `False`.
         """
         result = copy.deepcopy(self)
 

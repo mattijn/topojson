@@ -38,7 +38,7 @@ class Hashmap(Dedup):
         Parameters
         ----------
         separate : boolean
-            If `True`, each of the linestrings will be displayed separately. 
+            If `True`, each of the linestrings will be displayed separately.
             Default is `False`
         """
         serialize_as_svg(self.output, separate, include_junctions=False)
