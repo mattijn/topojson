@@ -38,7 +38,7 @@ class Hashmap(Dedup):
         Parameters
         ----------
         separate : boolean
-            If `True`, each of the linestrings will be displayed separately. 
+            If `True`, each of the linestrings will be displayed separately.
             Default is `False`
         """
         serialize_as_svg(self.output, separate, include_junctions=False)
@@ -328,7 +328,7 @@ class Hashmap(Dedup):
             arcs_in_geom = self._data[bk_objects][geom]
             for idx_arc, arc_ref in enumerate(arcs_in_geom):
                 arc_ids = self._data[bk_element][arc_ref]
-                if len(arc_ids) > 1 and key is not "coordinates":
+                if len(arc_ids) > 1 and key != "coordinates":
                     self._inner = True if idx_arc > 0 else False
                     arc_ids = self._backward_arcs(arc_ids)
 

@@ -79,10 +79,10 @@ class Join(Extract):
         Parameters
         ----------
         separate : boolean
-            If `True`, each of the linestrings will be displayed separately. 
+            If `True`, each of the linestrings will be displayed separately.
             Default is `False`
         include_junctions : boolean
-            If `True`, the detected junctions will be displayed as well. 
+            If `True`, the detected junctions will be displayed as well.
             Default is `False`
         """
         serialize_as_svg(self.output, separate, include_junctions)
@@ -240,7 +240,7 @@ class Join(Extract):
 
     def _validate_linemerge(self, merged_line):
         """
-        Return list of linestrings. If the linemerge was a MultiLineString 
+        Return list of linestrings. If the linemerge was a MultiLineString
         then returns a list of multiple single linestrings
         """
 

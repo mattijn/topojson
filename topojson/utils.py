@@ -89,9 +89,9 @@ class TopoOptions(object):
 def coordinates(arcs, tp_arcs, geom_type):
     """
     Return GeoJSON coordinates for the sequence(s) of arcs.
-    
-    The arcs parameter may be a sequence of ints, each the index of a coordinate 
-    sequence within tp_arcs within the entire topology describing a line string, a 
+
+    The arcs parameter may be a sequence of ints, each the index of a coordinate
+    sequence within tp_arcs within the entire topology describing a line string, a
     sequence of such sequences, describing a polygon, or a sequence of polygon arcs.
     """
 
@@ -100,7 +100,7 @@ def coordinates(arcs, tp_arcs, geom_type):
         for i, arc in enumerate(arcs):
             arc_coords = tp_arcs[arc if arc >= 0 else ~arc][:: arc >= 0 or -1]
             arc_coords = arc_coords[~np.isnan(arc_coords).any(axis=1)]
-            coord_list.append(arc_coords[i > 0:])
+            coord_list.append(arc_coords[i > 0 :])
         coords = np.concatenate(coord_list).tolist()
         if geom_type in ["Polygon", "MultiPolygon"]:
             if len(coords) < 3:
@@ -120,7 +120,7 @@ def coordinates(arcs, tp_arcs, geom_type):
 def geometry(obj, tp_arcs, transform=None):
     """
     Converts a topology object to a geometry object.
-    
+
     The topology object is a dict with 'type' and 'arcs' items.
     """
     if obj["type"] == "GeometryCollection":
@@ -336,7 +336,7 @@ def serialize_as_geodataframe(fc, crs=None):
         a complete object representing a GeoJSON file
     crs : str, dict
         coordinate reference system to set on the resulting frame.
-        Default is `None`.      
+        Default is `None`.
 
     Returns
     -------

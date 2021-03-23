@@ -65,10 +65,10 @@ class Cut(Join):
         Parameters
         ----------
         separate : boolean
-            If `True`, each of the linestrings will be displayed separately. 
+            If `True`, each of the linestrings will be displayed separately.
             Default is `False`
         include_junctions : boolean
-            If `True`, the detected junctions will be displayed as well. 
+            If `True`, the detected junctions will be displayed as well.
             Default is `False`
         """
         serialize_as_svg(

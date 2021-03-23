@@ -6,7 +6,7 @@ from shapely import wkt
 from shapely.strtree import STRtree
 import pprint
 import copy
-import logging 
+import logging
 
 
 try:
@@ -45,7 +45,7 @@ def asvoid(arr):
 
     arr = np.ascontiguousarray(arr)
     if np.issubdtype(arr.dtype, np.floating):
-        """ Care needs to be taken here since
+        """Care needs to be taken here since
         np.array([-0.]).view(np.void) != np.array([0.]).view(np.void)
         Adding 0. converts -0. to 0.
         """
@@ -100,7 +100,7 @@ def insert_coords_in_line(line, tree_splitter):
     Returns
     -------
     (numpy.array)
-        `new_ls_xy` is an array with inserted coordinates, if any, representing a line 
+        `new_ls_xy` is an array with inserted coordinates, if any, representing a line
         segment
     (numpy.array)
         `pts_xy_on_line` is an array with coordinates that are on the line
@@ -333,7 +333,7 @@ def compare_bounds(b0, b1):
     b0 : tuple
         tuple of xmin, ymin, xmax, ymax
     b1 : tuple
-        tuple of xmin, ymin, xmax, ymax        
+        tuple of xmin, ymin, xmax, ymax
 
     Returns
     -------
@@ -516,7 +516,7 @@ def quantize(linestrings, bbox, quant_factor=1e6):
         `bbox`, bounding box of all linestrings
     """
 
-    x0, y0, x1, y1 = bbox 
+    x0, y0, x1, y1 = bbox
 
     try:
         kx = 1 if (x1 - x0) == 0 else (x1 - x0) / (quant_factor - 1)
@@ -551,7 +551,7 @@ def quantize(linestrings, bbox, quant_factor=1e6):
             if hasattr(ls, "coords"):
                 ls.coords = ls_xy
             else:
-                linestrings[idx] = ls_xy.tolist()            
+                linestrings[idx] = ls_xy.tolist()
 
     transform_ = {"scale": [kx, ky], "translate": [x0, y0]}
 
@@ -580,7 +580,7 @@ def simplify(
     * https://observablehq.com/@lemonnish/minify-topojson-in-the-browser
     * https://github.com/topojson/topojson-simplify#planarTriangleArea
     * https://www.jasondavies.com/simplify/
-    * https://bost.ocks.org/mike/simplify/    
+    * https://bost.ocks.org/mike/simplify/
     * https://pdfs.semanticscholar.org/9877/cdf50a15367bcb86649b67df8724425c5451.pdf
 
     Parameters
@@ -824,8 +824,8 @@ def cart(arr):
 
 def find_duplicates(segments_list, type="array"):
     """
-    Function for solely detecting and recording duplicate LineStrings. The function 
-    converts sorts the coordinates of each linestring and gets the hash. Using the 
+    Function for solely detecting and recording duplicate LineStrings. The function
+    converts sorts the coordinates of each linestring and gets the hash. Using the
     hashes it can quickly detect duplicates and return the indices.
 
     Parameters
@@ -881,7 +881,7 @@ def map_values(arr, search_vals, replace_vals):
     This function replace values element-wise in a numpy array.
     Its quick and avoids a np.where-loop (which is slow).
     The result is a new array, not inplace.
-    
+
     Parameters
     ----------
     arr : np.array
@@ -890,7 +890,7 @@ def map_values(arr, search_vals, replace_vals):
         array with 'bad' values
     replace_vals : list or 1D np.array
         array with 'good' values
-    
+
     Returns
     -------
     np.array
