@@ -59,7 +59,7 @@ class Extract(object):
         self._invalid_geoms = 0
         self._tried_geojson = False
 
-        if instance(data) is "Collection":  # fiona.Collection)
+        if instance(data) == "Collection":  # fiona.Collection
             copydata = data
         else:
             # FIXME: try except is not necessary once the following issue is fixed:
