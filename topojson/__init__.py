@@ -20,6 +20,6 @@ Main Features
   - Optional support for UI controls to exploring the results of topoquantize
     and toposimplify interactively if ipywidgets is installed.
 """
-__version__ = "1.0"
+__version__ = "1.1"
 
 from .core.topology import Topology  # noqa
