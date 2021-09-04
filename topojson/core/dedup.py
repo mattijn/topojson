@@ -298,6 +298,6 @@ class Dedup(Cut):
 
         # collect new indices of shared arcs
         u, c = np.unique(arr_new, return_counts=True)
-        arr_bk_sarcs = u[c > 1]
+        arr_bk_sarcs = u[c > 1]  # should I check here if c also is not NaN? 
 
         return arr_new, arr_bk_sarcs
