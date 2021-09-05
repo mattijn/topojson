@@ -8,6 +8,7 @@ from ..ops import dequantize
 from ..ops import quantize
 from ..ops import simplify
 from ..ops import delta_encoding
+from ..ops import bounds
 from ..utils import TopoOptions
 from ..utils import serialize_as_svg
 from ..utils import serialize_as_json
@@ -84,6 +85,10 @@ class Topology(Hashmap):
         clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer
         rings and clockwise for interior rings.
         Default is `CW_CCW` for TopoJSON.
+    objects_name : str
+        Name to use as key for the objects in the topojson file. This name is used for
+        writing and reading topojson file formats.
+        Default is `data`.
     """
 
     def __init__(
@@ -99,11 +104,33 @@ class Topology(Hashmap):
         simplify_with="shapely",
         simplify_algorithm="dp",
         winding_order="CW_CCW",
+        objects_name="data"
     ):
 
         options = TopoOptions(locals())
-        # execute previous steps
-        super().__init__(data, options)
+
+        # shorcut when dealing with topojson data
+        if 'type' in data.keys() and data['type'].casefold() == 'Topology'.casefold():
+            # change options to reflect this
+            options.prequantize = False
+            options.presimplify = False
+
+            arcs_asarray = [np.asarray(a) for a in data['arcs']]
+            parse_topo = {
+                "type": "Topology",
+                "linestrings": arcs_asarray,
+                "coordinates": [],
+                "options": options,
+                "bbox": bounds(arcs_asarray),
+                "objects": data['objects']
+            }
+            self.output = parse_topo
+            self.options = options
+
+        # all others follow normal route
+        else:
+            # execute previous steps
+            super().__init__(data, options)
 
         # execute main function of Topology
         self.output = self._topo(self.output)
@@ -114,7 +141,8 @@ class Topology(Hashmap):
     @property
     def __geo_interface__(self):
         topo_object = copy.deepcopy(self.output)
-        return serialize_as_geojson(topo_object, validate=False, objectname="data")
+        objectname = self.options.objects_name
+        return serialize_as_geojson(topo_object, validate=False, objectname=objectname)
 
     def to_dict(self, options=False):
         """
@@ -184,8 +212,7 @@ class Topology(Hashmap):
         indent=4,
         maxlinelength=88,
         validate=False,
-        winding_order="CCW_CW",
-        objectname="data",
+        winding_order="CCW_CW"
     ):
         """
         Convert the Topology to a GeoJSON object. Remember that this will destroy the
@@ -217,12 +244,13 @@ class Topology(Hashmap):
             clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer
             rings and clockwise for interior rings.
             Default is `CCW_CW` for GeoJSON.
-        objectname : str
-            The name of the object within the Topology to convert to GeoJSON.
-            Default is `data`.
+        # objectname : str
+        #     The name of the object within the Topology to convert to GeoJSON.
+        #     Default is `data`.
         """
         topo_object = copy.deepcopy(self.output)
         topo_object = self._resolve_coords(topo_object)
+        objectname = self.options.objects_name
         fc = serialize_as_geojson(
             topo_object, validate=validate, objectname=objectname, order=winding_order
         )
@@ -231,7 +259,7 @@ class Topology(Hashmap):
         )
 
     def to_gdf(
-        self, crs=None, validate=False, winding_order="CCW_CW", objectname="data"
+        self, crs=None, validate=False, winding_order="CCW_CW"
     ):
         """
         Convert the Topology to a GeoDataFrame. Remember that this will destroy the
@@ -255,21 +283,22 @@ class Topology(Hashmap):
             clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer
             rings and clockwise for interior rings.
             Default is `CCW_CW` for GeoJSON.
-        objectname : str
-            The name of the object within the Topology to convert to GeoJSON.
-            Default is `data`.
+        # objectname : str
+        #     The name of the object within the Topology to convert to GeoJSON.
+        #     Default is `data`.
         """
         from ..utils import serialize_as_geodataframe
 
         topo_object = copy.deepcopy(self.output)
         topo_object = self._resolve_coords(topo_object)
+        objectname = self.options.objects_name
         fc = serialize_as_geojson(
             topo_object, validate=validate, objectname=objectname, order=winding_order
         )
         return serialize_as_geodataframe(fc, crs=crs)
 
     def to_alt(
-        self, color=None, tooltip=True, projection="identity", objectname="data"
+        self, color=None, tooltip=True, projection="identity"
     ):
         """
         Display as Altair visualization.
@@ -288,14 +317,15 @@ class Topology(Hashmap):
         projection : str
             Defines the projection of the visualization. Defaults to a non-geographic,
             Cartesian projection (known by Altair as `identity`).
-        objectname : str
-            The name of the object within the Topology to display.
-            Default is `data`.
+        # objectname : str
+        #     The name of the object within the Topology to display.
+        #     Default is `data`.
         """
         from ..utils import serialize_as_altair
 
         topo_object = copy.deepcopy(self.output)
         topo_object = self._resolve_coords(topo_object)
+        objectname = self.options.objects_name
 
         return serialize_as_altair(topo_object, color, tooltip, projection, objectname)
 
@@ -488,7 +518,7 @@ class Topology(Hashmap):
             return result
 
     def _resolve_coords(self, data):
-        geoms = data["objects"]["data"]["geometries"]
+        geoms = data["objects"][self.options.objects_name]["geometries"]
         for idx, feat in enumerate(geoms):
             if feat["type"] in ["Point", "MultiPoint"]:
 
