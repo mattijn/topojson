@@ -59,19 +59,19 @@ class Extract(object):
         self._invalid_geoms = 0
         self._tried_geojson = False
 
-        if instance(data) == "Collection":  # fiona.Collection
-            copydata = data
-        else:
-            # FIXME: try except is not necessary once the following issue is fixed:
-            # https://github.com/geopandas/geopandas/issues/1070
-            try:
-                copydata = copy.deepcopy(data)
-            except TypeError:
-                if hasattr(data, "copy"):
-                    copydata = data.copy()
-                else:
-                    copydata = data
-        self.output = self._extractor(copydata)
+        # if instance(data) == "Collection":  # fiona.Collection
+        #     copydata = data
+        # else:
+        #     # FIXME: try except is not necessary once the following issue is fixed:
+        #     # https://github.com/geopandas/geopandas/issues/1070
+        #     try:
+        #         copydata = copy.deepcopy(data)
+        #     except TypeError:
+        #         if hasattr(data, "copy"):
+        #             copydata = data.copy()
+        #         else:
+        #             copydata = data
+        self.output = self._extractor(data)
 
     def __repr__(self):
         return "Extract(\n{}\n)".format(pprint.pformat(self.output))
@@ -610,6 +610,7 @@ class Extract(object):
         """
 
         self._is_single = False
+        self._data = copy.deepcopy(self._data)
         # iterate over the input dictionary or geographical object
         for key in list(self._data):
             # based on the geom type the right function is serialized
