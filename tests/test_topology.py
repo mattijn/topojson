@@ -441,3 +441,11 @@ def test_topology_topoquantization_dups():
 
     assert topo['arcs'][6] == [[44, 47], [0, 0]]
  
+ # parse topojson from file
+def test_topology_topojson_from_file():
+    with open("tests/files_topojson/naturalearth.topojson", 'r') as f:
+        data = json.load(f)
+
+    topo = topojson.Topology(data).to_dict()
+
+    assert len(topo["objects"]) == 1   
