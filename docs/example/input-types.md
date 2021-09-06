@@ -310,3 +310,29 @@ tp.Topology(dict_in, prequantize=False).to_json()
 ```
 </div>
 </div>
+
+* * * 
+
+## TopoJSON file loaded as json-dict
+A TopoJSON file can be postprocessed.
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+
+```python
+import topojson as tp
+import json
+
+with open("tests/files_topojson/naturalearth_lowres_africa.topojson", 'r') as f:
+    data = json.load(f)
+# parse topojson file using `objects_name`
+topo = topojson.Topology(data, objects_name="data")
+topo.toposimplify(4).to_svg()
+```
+<img src="../images/africa_toposimp.svg">
+</div>
+</div>
