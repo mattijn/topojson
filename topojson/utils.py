@@ -411,6 +411,17 @@ def serialize_as_svg(topo_object, separate=False, include_junctions=False):
 
 
 def serialize_as_json(topo_object, fp, pretty=False, indent=4, maxlinelength=88):
+    # https://stackoverflow.com/a/57915246
+    class NpEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj, np.integer):
+                return int(obj)
+            if isinstance(obj, np.floating):
+                return float(obj)
+            if isinstance(obj, np.ndarray):
+                return obj.tolist()
+            return super(NpEncoder, self).default(obj)   
+
     if fp:
         with open(fp, "w") as f:
             if pretty is True:
@@ -419,16 +430,16 @@ def serialize_as_json(topo_object, fp, pretty=False, indent=4, maxlinelength=88)
                     file=f,
                 )
             elif pretty is False:
-                json.dump(topo_object, separators=(",", ":"), fp=f)
+                json.dump(topo_object, separators=(",", ":"), fp=f, cls=NpEncoder)
             else:
-                json.dump(topo_object, fp=f)
+                json.dump(topo_object, fp=f, cls=NpEncoder)
     else:
         if pretty is True:
             return prettyjson(topo_object, indent=indent, maxlinelength=maxlinelength)
         elif pretty is False:
-            return json.dumps(topo_object, separators=(",", ":"))
+            return json.dumps(topo_object, separators=(",", ":"), cls=NpEncoder)
         else:
-            return json.dumps(topo_object)
+            return json.dumps(topo_object, cls=NpEncoder)
 
 
 def serialize_as_geojson(
@@ -453,6 +464,8 @@ def serialize_as_geojson(
         np_arcs = None
 
     # select object member from topology object
+    if not objectname in topo_object["objects"].keys():
+        raise SystemExit(f"'{objectname}' is not an object name in your topojson file")    
     features = topo_object["objects"][objectname]["geometries"]
 
     # prepare geojson featurecollection
