@@ -211,7 +211,6 @@ def test_extract_geopandas_geoseries():
     assert len(topo["objects"]) == 3
     assert len(topo["bookkeeping_geoms"]) == 3
     assert len(topo["linestrings"]) == 3
-    # TEST FAILS because of https://github.com/geopandas/geopandas/issues/1070
 
 
 # test shapely geometry collection.
@@ -362,6 +361,7 @@ def test_extract_fiona_file_gpkg():
 
     assert len(topo["bookkeeping_geoms"]) == 4
 
+# test to check if original data is not modified
 def test_extract_dict_org_data_untouched():
     data = {
         "foo": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
@@ -374,6 +374,7 @@ def test_extract_dict_org_data_untouched():
     assert 'arcs' in topo_foo.keys()
     assert 'arcs' not in data_foo.keys()
 
+# test to check if original data is not modified
 def test_extract_list_org_data_untouched():
     data = [
         geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]),
@@ -386,6 +387,7 @@ def test_extract_list_org_data_untouched():
     assert 'arcs' in topo_0.keys()
     assert data_0.type == 'Polygon'
 
+# test to check if original data is not modified
 def test_extract_gdf_org_data_untouched():
     data = geopandas.read_file(
         "tests/files_geojson/naturalearth_alb_grc.geojson", driver="GeoJSON"
@@ -397,6 +399,7 @@ def test_extract_gdf_org_data_untouched():
     assert 'arcs' in topo_0.keys()
     assert data_0.geometry.type == 'Polygon'
 
+# test to check if original data is not modified
 def test_extract_shapely_org_data_untouched():
     data = geometry.LineString([[0, 0], [1, 0], [1, 1], [0, 1]])
     topo = Extract(data).to_dict()  
@@ -405,6 +408,7 @@ def test_extract_shapely_org_data_untouched():
     assert 'arcs' in topo_0.keys()
     assert data.type == 'LineString'    
 
+# test to check if original data is not modified
 def test_extract_shapefile_org_data_untouched():
     import shapefile
 
@@ -414,4 +418,4 @@ def test_extract_shapefile_org_data_untouched():
     data_0 = data.__geo_interface__['features'][0]['geometry']
 
     assert 'arcs' in topo_0.keys()
-    assert 'arcs' not in data_0.keys() 
+    assert 'arcs' not in data_0.keys()  

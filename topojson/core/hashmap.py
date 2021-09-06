@@ -105,7 +105,7 @@ class Hashmap(Dedup):
             objects["geometries"].append(feat)
 
         data["objects"] = {}
-        data["objects"]["data"] = objects
+        data["objects"][self.options.objects_name] = objects
 
         # prepare to return object
         data = self._data
