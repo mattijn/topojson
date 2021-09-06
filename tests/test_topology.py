@@ -35,7 +35,7 @@ def test_topology_winding_order_TopoOptions():
     topo = topojson.Topology(data, winding_order="CW_CCW").to_dict(options=True)
 
     assert len(topo["objects"]) == 1
-    assert len(topo["options"]) == 10
+    assert len(topo["options"]) == 11
 
 
 # test winding order using kwarg variables
@@ -46,7 +46,7 @@ def test_topology_winding_order_kwarg_vars():
     topo = topojson.Topology(data, winding_order="CW_CCW").to_dict(options=True)
 
     assert len(topo["objects"]) == 1
-    assert len(topo["options"]) == 10
+    assert len(topo["options"]) == 11
 
 
 def test_topology_computing_topology():
@@ -441,7 +441,7 @@ def test_topology_topoquantization_dups():
 
     assert topo['arcs'][6] == [[44, 47], [0, 0]]
  
- # parse topojson from file
+# parse topojson from file
 def test_topology_topojson_from_file():
     with open("tests/files_topojson/naturalearth.topojson", 'r') as f:
         data = json.load(f)
@@ -449,3 +449,29 @@ def test_topology_topojson_from_file():
     topo = topojson.Topology(data).to_dict()
 
     assert len(topo["objects"]) == 1   
+
+# parse topojson file and plot with altair
+def test_topology_topojson_to_alt():
+    # load topojson file into dict
+    with open("tests/files_topojson/naturalearth_lowres_africa.topojson", 'r') as f:
+        data = json.load(f)
+        
+    # parse topojson file using `objects_name`
+    topo = topojson.Topology(data, objects_name="data")
+    # apply toposimplify and serialize to altair
+    chart = topo.toposimplify(1).to_alt()    
+
+    assert len(chart.__dict__.keys()) == 2
+
+# Object of type int64 is not JSON serializable
+def test_topology_topojson_to_alt_int64():
+    # load topojson file into dict
+    with open("tests/files_topojson/mesh2d.topojson", 'r') as f:
+        data = json.load(f)    
+
+    # parse topojson file using `objects_name`
+    topo = topojson.Topology(data, objects_name="mesh2d_flowelem_bl")
+    # apply toposimplify and serialize to altair
+    chart = topo.toposimplify(1).to_alt()  
+
+    assert len(chart.__dict__.keys()) == 2       
