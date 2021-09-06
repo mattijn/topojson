@@ -10,6 +10,7 @@ from ..ops import simplify
 from ..ops import delta_encoding
 from ..ops import bounds
 from ..utils import TopoOptions
+from ..utils import instance
 from ..utils import serialize_as_svg
 from ..utils import serialize_as_json
 from ..utils import serialize_as_geojson
@@ -110,7 +111,8 @@ class Topology(Hashmap):
         options = TopoOptions(locals())
 
         # shorcut when dealing with topojson data
-        if 'type' in data.keys() and data['type'].casefold() == 'Topology'.casefold():
+         
+        if instance(data) == "dict" and 'type' in data.keys() and data['type'].casefold() == 'Topology'.casefold():
             # change options to reflect this
             options.prequantize = False
             options.presimplify = False
@@ -158,6 +160,8 @@ class Topology(Hashmap):
         topo_object = self._resolve_coords(topo_object)
         if options:
             topo_object["options"] = vars(self.options)
+        else:
+            topo_object.pop('options', None)          
         return topo_object
 
     def to_svg(self, separate=False):
@@ -201,6 +205,8 @@ class Topology(Hashmap):
 
         if options is True:
             topo_object["options"] = vars(self.options)
+        else:
+            topo_object.pop('options', None)
         return serialize_as_json(
             topo_object, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
         )
@@ -323,9 +329,9 @@ class Topology(Hashmap):
         """
         from ..utils import serialize_as_altair
 
-        topo_object = copy.deepcopy(self.output)
-        topo_object = self._resolve_coords(topo_object)
+        topo_object = self.to_json()
         objectname = self.options.objects_name
+        
 
         return serialize_as_altair(topo_object, color, tooltip, projection, objectname)
 
@@ -518,7 +524,10 @@ class Topology(Hashmap):
             return result
 
     def _resolve_coords(self, data):
-        geoms = data["objects"][self.options.objects_name]["geometries"]
+        objectname = self.options.objects_name
+        if not objectname in data["objects"].keys():
+            raise SystemExit(f"'{objectname}' is not an object name in your topojson file")
+        geoms = data["objects"][objectname]["geometries"]
         for idx, feat in enumerate(geoms):
             if feat["type"] in ["Point", "MultiPoint"]:
 
