@@ -9,6 +9,7 @@ from ..ops import quantize
 from ..ops import simplify
 from ..ops import delta_encoding
 from ..ops import bounds
+from ..ops import compare_bounds
 from ..utils import TopoOptions
 from ..utils import instance
 from ..utils import serialize_as_svg
@@ -402,6 +403,9 @@ class Topology(Hashmap):
             arcs = l_arcs
 
         arcs_qnt, transform = quantize(arcs, result.output["bbox"], quant_factor)
+        lsbs = bounds(arcs_qnt)
+        ptbs = bounds(result.output["coordinates"])
+        result.output["bbox"] = compare_bounds(lsbs, ptbs)          
 
         result.output["arcs"] = delta_encoding(arcs_qnt)
         result.output["transform"] = transform
@@ -493,6 +497,10 @@ class Topology(Hashmap):
                 input_as="array",
                 prevent_oversimplify=result.options.prevent_oversimplify,
             )
+
+            lsbs = bounds(result.output["arcs"])
+            ptbs = bounds(result.output["coordinates"])
+            result.output["bbox"] = compare_bounds(lsbs, ptbs)            
 
             # quantize aqain if quantization was applied
             if transform is not None:
