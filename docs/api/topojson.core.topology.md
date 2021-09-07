@@ -52,7 +52,7 @@ coordinates but foremost the computation of a topology.
     (`coords-connected`). When set to `False` a path is considered shared when
     coordinates are the same path (`path-connected`). The path-connected strategy
     is more 'correct', but slower. Default is `True`.
-prevent_oversimplify: boolean
+> + ###### `prevent_oversimplify`: boolean
     If this setting is set to `True`, the simplification is slower, but the
     likelihood of producing valid geometries is higher as it prevents
     oversimplification. Simplification happens on paths separately, so this
@@ -75,6 +75,10 @@ prevent_oversimplify: boolean
     between `CW_CCW` for clockwise orientation for outer rings and counter-
     clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer
     rings and clockwise for interior rings. Default is `CW_CCW`.
+> + ###### `objects_name` : str
+    Name to use as key for the objects in the topojson file. This name is used for
+    writing and reading topojson file formats.
+    Default is `data`.
 
 ### to_dict
 ```python
