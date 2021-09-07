@@ -75,7 +75,7 @@ coordinates but foremost the computation of a topology.
     between `CW_CCW` for clockwise orientation for outer rings and counter-
     clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer
     rings and clockwise for interior rings. Default is `CW_CCW`.
-> + ###### `objects_name` : str
+> + ###### `object_name` : str
     Name to use as key for the objects in the topojson file. This name is used for
     writing and reading topojson file formats.
     Default is `data`.

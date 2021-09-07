@@ -87,7 +87,7 @@ class Topology(Hashmap):
         clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer
         rings and clockwise for interior rings.
         Default is `CW_CCW` for TopoJSON.
-    objects_name : str
+    object_name : str
         Name to use as key for the objects in the topojson file. This name is used for
         writing and reading topojson file formats.
         Default is `data`.
@@ -106,7 +106,7 @@ class Topology(Hashmap):
         simplify_with="shapely",
         simplify_algorithm="dp",
         winding_order="CW_CCW",
-        objects_name="data"
+        object_name="data"
     ):
 
         options = TopoOptions(locals())
@@ -144,7 +144,7 @@ class Topology(Hashmap):
     @property
     def __geo_interface__(self):
         topo_object = copy.deepcopy(self.output)
-        objectname = self.options.objects_name
+        objectname = self.options.object_name
         return serialize_as_geojson(topo_object, validate=False, objectname=objectname)
 
     def to_dict(self, options=False):
@@ -257,7 +257,7 @@ class Topology(Hashmap):
         """
         topo_object = copy.deepcopy(self.output)
         topo_object = self._resolve_coords(topo_object)
-        objectname = self.options.objects_name
+        objectname = self.options.object_name
         fc = serialize_as_geojson(
             topo_object, validate=validate, objectname=objectname, order=winding_order
         )
@@ -298,7 +298,7 @@ class Topology(Hashmap):
 
         topo_object = copy.deepcopy(self.output)
         topo_object = self._resolve_coords(topo_object)
-        objectname = self.options.objects_name
+        objectname = self.options.object_name
         fc = serialize_as_geojson(
             topo_object, validate=validate, objectname=objectname, order=winding_order
         )
@@ -331,7 +331,7 @@ class Topology(Hashmap):
         from ..utils import serialize_as_altair
 
         topo_object = self.to_json()
-        objectname = self.options.objects_name
+        objectname = self.options.object_name
         
 
         return serialize_as_altair(topo_object, color, tooltip, projection, objectname)
@@ -532,7 +532,7 @@ class Topology(Hashmap):
             return result
 
     def _resolve_coords(self, data):
-        objectname = self.options.objects_name
+        objectname = self.options.object_name
         if not objectname in data["objects"].keys():
             raise SystemExit(f"'{objectname}' is not an object name in your topojson file")
         geoms = data["objects"][objectname]["geometries"]

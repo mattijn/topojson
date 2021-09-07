@@ -456,8 +456,8 @@ def test_topology_topojson_to_alt():
     with open("tests/files_topojson/naturalearth_lowres_africa.topojson", 'r') as f:
         data = json.load(f)
         
-    # parse topojson file using `objects_name`
-    topo = topojson.Topology(data, objects_name="data")
+    # parse topojson file using `object_name`
+    topo = topojson.Topology(data, object_name="data")
     # apply toposimplify and serialize to altair
     chart = topo.toposimplify(1).to_alt()    
 
@@ -469,8 +469,8 @@ def test_topology_topojson_to_alt_int64():
     with open("tests/files_topojson/mesh2d.topojson", 'r') as f:
         data = json.load(f)    
 
-    # parse topojson file using `objects_name`
-    topo = topojson.Topology(data, objects_name="mesh2d_flowelem_bl")
+    # parse topojson file using `object_name`
+    topo = topojson.Topology(data, object_name="mesh2d_flowelem_bl")
     # apply toposimplify and serialize to altair
     chart = topo.toposimplify(1).to_alt()  
 
