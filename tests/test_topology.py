@@ -515,3 +515,13 @@ def test_topology_nested_list_properties():
     topo = topojson.Topology(fc, prequantize=False).to_dict()
 
     assert len(topo) == 4
+
+def test_topology_update_bbox_topoquantize_toposimplify():
+    # load example data representing continental Africa
+    data = topojson.utils.example_data_africa()  
+    # compute the topology
+    topo = topojson.Topology(data)  
+    # apply simplification on the topology and render as SVG
+    bbox = topo.topoquantize(10).to_dict()['bbox'] 
+
+    assert bbox == (0, 0, 9, 9)    
