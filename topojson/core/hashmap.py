@@ -346,6 +346,8 @@ class Hashmap(Dedup):
             if str(k) in keys and v is not None:
                 dictionary[k] = self._resolve_bookkeeping(v, k)
                 yield v
+            elif k in ["properties", "bbox"]:
+                continue
             elif isinstance(v, dict):
                 for result in self._resolve_objects(keys, v):
                     yield result

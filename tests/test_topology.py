@@ -474,4 +474,44 @@ def test_topology_topojson_to_alt_int64():
     # apply toposimplify and serialize to altair
     chart = topo.toposimplify(1).to_alt()  
 
-    assert len(chart.__dict__.keys()) == 2       
+    assert len(chart.__dict__.keys()) == 2     
+
+def test_topology_nested_list_properties():
+    from geojson import Feature, Polygon, FeatureCollection
+
+    feat_1 = Feature(
+        geometry=Polygon([[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]),
+        bbox=[-7.45337, 8.36618, -7.2835, 8.47532],
+        properties={
+            "name": "abc",
+            "geo.neighbors": [
+                "bi_ssu_2",
+                "bi_ssu_3",
+                "bi_ssu_5",
+                "bi_ssu_9",
+                "bi_ssu_11",
+                "bi_ssu_12",
+                "bi_ssu_13",
+            ],
+        },
+    )
+    feat_2 = Feature(
+        geometry=Polygon([[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]),
+        bbox=[-7.45337, 8.36618, -7.2835, 8.47532],
+        properties={
+            "name": "def",
+            "geo.neighbors": [
+                "bi_ssu_2",
+                "bi_ssu_3",
+                "bi_ssu_5",
+                "bi_ssu_9",
+                "bi_ssu_11",
+                "bi_ssu_12",
+                "bi_ssu_13",
+            ],
+        },
+    )
+    fc = FeatureCollection([feat_1, feat_2])
+    topo = topojson.Topology(fc, prequantize=False).to_dict()
+
+    assert len(topo) == 4
