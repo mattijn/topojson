@@ -329,8 +329,8 @@ import json
 
 with open("tests/files_topojson/naturalearth_lowres_africa.topojson", 'r') as f:
     data = json.load(f)
-# parse topojson file using `objects_name`
-topo = topojson.Topology(data, objects_name="data")
+# parse topojson file using `object_name`
+topo = topojson.Topology(data, object_name="data")
 topo.toposimplify(4).to_svg()
 ```
 <img src="../images/africa_toposimp.svg">

@@ -25,7 +25,7 @@ class TopoOptions(object):
         simplify_with="shapely",
         simplify_algorithm="dp",
         winding_order=None,
-        objects_name="data"
+        object_name="data"
     ):
         # get all arguments
         arguments = locals()
@@ -82,10 +82,10 @@ class TopoOptions(object):
         else:
             self.winding_order = None
 
-        if "objects_name" in arguments:
-            self.objects_name = arguments["objects_name"]
+        if "object_name" in arguments:
+            self.object_name = arguments["object_name"]
         else:
-            self.objects_name = "data"            
+            self.object_name = "data"            
 
     def __repr__(self):
         return "TopoOptions(\n  {}\n)".format(pprint.pformat(self.__dict__))
