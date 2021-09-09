@@ -127,6 +127,8 @@ class Topology(Hashmap):
                 "bbox": bounds(arcs_asarray),
                 "objects": data['objects']
             }
+            if 'transform' in data.keys():
+                parse_topo['transform'] = data['transform']
             self.output = parse_topo
             self.options = options
 
