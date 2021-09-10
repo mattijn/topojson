@@ -3,6 +3,7 @@ from topojson.core.extract import Extract
 from shapely import geometry
 import geopandas
 import geojson
+from geojson import Feature, Polygon, FeatureCollection
 import fiona
 
 
@@ -419,3 +420,25 @@ def test_extract_shapefile_org_data_untouched():
 
     assert 'arcs' in topo_0.keys()
     assert 'arcs' not in data_0.keys()  
+
+# issue 137 do not modify source data
+def test_extract_source_data_modify():
+    # prepare data
+    feat_1 = Feature(
+        geometry=Polygon([[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]),
+        properties={"name":"abc"}
+    )
+    feat_2 = Feature(
+        geometry=Polygon([[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]),
+        properties={"name":"def"}
+    )
+    data = FeatureCollection([feat_1, feat_2])
+
+    # before Topology()    
+    assert 'geometry' in data['features'][0].keys()
+
+    # apply Topology()
+    topo = Extract(data)
+
+    # after Topology()    
+    assert 'geometry' in data['features'][0].keys()
