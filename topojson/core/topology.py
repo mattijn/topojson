@@ -14,6 +14,7 @@ from ..utils import TopoOptions
 from ..utils import instance
 from ..utils import serialize_as_svg
 from ..utils import serialize_as_json
+from ..utils import serialize_as_topojson
 from ..utils import serialize_as_geojson
 
 
@@ -112,25 +113,8 @@ class Topology(Hashmap):
         options = TopoOptions(locals())
 
         # shorcut when dealing with topojson data
-         
         if instance(data) == "dict" and 'type' in data.keys() and data['type'].casefold() == 'Topology'.casefold():
-            # change options to reflect this
-            options.prequantize = False
-            options.presimplify = False
-
-            arcs_asarray = [np.asarray(a) for a in data['arcs']]
-            parse_topo = {
-                "type": "Topology",
-                "linestrings": arcs_asarray,
-                "coordinates": [],
-                "options": options,
-                "bbox": bounds(arcs_asarray),
-                "objects": data['objects']
-            }
-            if 'transform' in data.keys():
-                parse_topo['transform'] = data['transform']
-            self.output = parse_topo
-            self.options = options
+            self.output, self.options = serialize_as_topojson(data, options)
 
         # all others follow normal route
         else:
@@ -512,16 +496,18 @@ class Topology(Hashmap):
                         quant_factor = 1e6
                     else:
                         quant_factor = result.options.topoquantize
+                    result.output["arcs"], transform = quantize(
+                        result.output["arcs"], result.output["bbox"], quant_factor
+                    )                        
                 elif result.options.prequantize > 0:
                     # set default if not specifically given in the options
                     if type(result.options.prequantize) == bool:
                         quant_factor = 1e6
                     else:
                         quant_factor = result.options.prequantize
-
-                result.output["arcs"], transform = quantize(
-                    result.output["arcs"], result.output["bbox"], quant_factor
-                )
+                    result.output["arcs"], transform = quantize(
+                        result.output["arcs"], result.output["bbox"], quant_factor
+                    )
 
                 result.output["arcs"] = delta_encoding(result.output["arcs"])
                 result.output["transform"] = transform

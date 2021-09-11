@@ -2,6 +2,7 @@ import numpy as np
 import pprint
 import json
 from .ops import dequantize
+from .ops import bounds
 from .ops import np_array_from_arcs
 from .ops import winding_order
 
@@ -332,6 +333,30 @@ def indentitems(items, indent, level):
 
 
 # ----------------- serialization functions ------------------
+def serialize_as_topojson(data, options):
+
+    # change options to reflect this
+    options.prequantize = False
+    options.presimplify = False
+
+    arcs_asarray = [np.asarray(a) for a in data['arcs']]
+    parse_topo = {
+        "type": "Topology",
+        "linestrings": arcs_asarray,
+        "coordinates": [],
+        "options": options,
+        "bbox": bounds(arcs_asarray),
+        "objects": data['objects']
+    }
+    if 'transform' in data.keys():
+        parse_topo['transform'] = data['transform']
+        scale = data['transform']['scale']
+        translate = data['transform']['translate']
+        bbox_arcs = np.asarray(parse_topo['bbox']).reshape((2, 2))
+        parse_topo['bbox'] = tuple(dequantize(bbox_arcs, scale, translate).reshape(4))
+
+    return parse_topo, options  
+
 def serialize_as_geodataframe(fc, crs=None):
     """
     Convert a topology dictionary or string into a GeoDataFrame.
