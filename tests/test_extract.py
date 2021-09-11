@@ -442,3 +442,11 @@ def test_extract_source_data_modify():
 
     # after Topology()    
     assert 'geometry' in data['features'][0].keys()
+
+# why cannot load geojson file using json module?
+def test_extract_read_geojson_from_json_dict():
+    with open('tests/files_geojson/naturalearth_lowres.geojson') as f:
+        data = json.load(f)
+    topo = Extract(data).to_dict()
+
+    assert len(topo['linestrings']) == 287
