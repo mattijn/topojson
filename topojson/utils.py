@@ -4,6 +4,7 @@ import json
 from .ops import dequantize
 from .ops import bounds
 from .ops import np_array_from_arcs
+from .ops import lists_from_np_array
 from .ops import winding_order
 
 
@@ -345,15 +346,19 @@ def serialize_as_topojson(data, options):
         "linestrings": arcs_asarray,
         "coordinates": [],
         "options": options,
-        "bbox": bounds(arcs_asarray),
         "objects": data["objects"],
     }
     if "transform" in data.keys():
         parse_topo["transform"] = data["transform"]
-        scale = data["transform"]["scale"]
-        translate = data["transform"]["translate"]
-        bbox_arcs = np.asarray(parse_topo["bbox"]).reshape((2, 2))
-        parse_topo["bbox"] = tuple(dequantize(bbox_arcs, scale, translate).reshape(4))
+        if "bbox" in data.keys():
+            parse_topo["bbox"] = data["bbox"]
+        else:
+            scale = data["transform"]["scale"]
+            translate = data["transform"]["translate"]
+            dequ_arcs = dequantize(np_array_from_arcs(data["arcs"]), scale, translate)
+            parse_topo["bbox"] = bounds(dequ_arcs)
+    else:
+        parse_topo["bbox"] = bounds(arcs_asarray)
 
     return parse_topo, options
 
