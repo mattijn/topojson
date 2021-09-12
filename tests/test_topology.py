@@ -532,4 +532,15 @@ def test_topology_update_bbox_topoquantize_toposimplify():
     # apply simplification on the topology and render as SVG
     bbox = topo.topoquantize(10).to_dict()["bbox"]
 
-    assert bbox == (0, 0, 9, 9)
+    assert round(bbox[0], 1) == -17.6
+
+
+def test_topology_bbox_no_delta_transform():
+    data = {
+        "foo": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
+        "bar": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
+    }
+    topo_1 = topojson.Topology(data, object_name="topo_1").to_dict()
+    topo_2 = topojson.Topology(topo_1, object_name="topo_1").to_dict()
+
+    assert topo_1["bbox"] == topo_2["bbox"]
