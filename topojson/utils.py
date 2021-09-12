@@ -26,7 +26,7 @@ class TopoOptions(object):
         simplify_with="shapely",
         simplify_algorithm="dp",
         winding_order=None,
-        object_name="data"
+        object_name="data",
     ):
         # get all arguments
         arguments = locals()
@@ -86,7 +86,7 @@ class TopoOptions(object):
         if "object_name" in arguments:
             self.object_name = arguments["object_name"]
         else:
-            self.object_name = "data"            
+            self.object_name = "data"
 
     def __repr__(self):
         return "TopoOptions(\n  {}\n)".format(pprint.pformat(self.__dict__))
@@ -339,23 +339,24 @@ def serialize_as_topojson(data, options):
     options.prequantize = False
     options.presimplify = False
 
-    arcs_asarray = [np.asarray(a) for a in data['arcs']]
+    arcs_asarray = [np.asarray(a) for a in data["arcs"]]
     parse_topo = {
         "type": "Topology",
         "linestrings": arcs_asarray,
         "coordinates": [],
         "options": options,
         "bbox": bounds(arcs_asarray),
-        "objects": data['objects']
+        "objects": data["objects"],
     }
-    if 'transform' in data.keys():
-        parse_topo['transform'] = data['transform']
-        scale = data['transform']['scale']
-        translate = data['transform']['translate']
-        bbox_arcs = np.asarray(parse_topo['bbox']).reshape((2, 2))
-        parse_topo['bbox'] = tuple(dequantize(bbox_arcs, scale, translate).reshape(4))
+    if "transform" in data.keys():
+        parse_topo["transform"] = data["transform"]
+        scale = data["transform"]["scale"]
+        translate = data["transform"]["translate"]
+        bbox_arcs = np.asarray(parse_topo["bbox"]).reshape((2, 2))
+        parse_topo["bbox"] = tuple(dequantize(bbox_arcs, scale, translate).reshape(4))
 
-    return parse_topo, options  
+    return parse_topo, options
+
 
 def serialize_as_geodataframe(fc, crs=None):
     """
@@ -445,7 +446,7 @@ def serialize_as_json(topo_object, fp, pretty=False, indent=4, maxlinelength=88)
                 return float(obj)
             if isinstance(obj, np.ndarray):
                 return obj.tolist()
-            return super(NpEncoder, self).default(obj)   
+            return super(NpEncoder, self).default(obj)
 
     if fp:
         with open(fp, "w") as f:
@@ -490,7 +491,7 @@ def serialize_as_geojson(
 
     # select object member from topology object
     if not objectname in topo_object["objects"].keys():
-        raise SystemExit(f"'{objectname}' is not an object name in your topojson file")    
+        raise SystemExit(f"'{objectname}' is not an object name in your topojson file")
     features = topo_object["objects"][objectname]["geometries"]
 
     # prepare geojson featurecollection

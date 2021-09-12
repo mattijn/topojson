@@ -452,7 +452,7 @@ class Extract(object):
             self._obj = geom
         else:
             obj = self._obj
-        
+
         data = {}
         zfill_value = len(str(len(obj["features"])))
 
@@ -462,7 +462,9 @@ class Extract(object):
             feature["type"] = "GeometryCollection"
             feature["geometries"] = [feature["geometry"]]
             feature.pop("geometry", None)
-            data["feature_{}".format(str(idx).zfill(zfill_value))] = geometry.shape(feature)  # feature
+            data["feature_{}".format(str(idx).zfill(zfill_value))] = geometry.shape(
+                feature
+            )  # feature
 
         # new data dictionary is created, throw the geometries back to main()
         self._is_single = False
@@ -601,7 +603,10 @@ class Extract(object):
         """
 
         self._is_single = False
-        if 'type' in geom.keys() and geom['type'].casefold() == 'FeatureCollection'.casefold():
+        if (
+            "type" in geom.keys()
+            and geom["type"].casefold() == "FeatureCollection".casefold()
+        ):
             return self._extract_featurecollection(geom)
         self._data = copy.deepcopy(self._data)
 

@@ -423,58 +423,65 @@ def test_topology_geodataframe_valid():
 
 def test_topology_geojson_duplicates():
 
-    p0 = wkt.loads('POLYGON ((0 0, 0 1, 1 1, 2 1, 2 0, 1 0, 0 0))')
-    p1 = wkt.loads('POLYGON ((0 1, 0 2, 1 2, 1 1, 0 1))')
-    p2 = wkt.loads('POLYGON ((1 0, 2 0, 2 -1, 1 -1, 1 0))')
-    data = geopandas.GeoDataFrame({"name": ["abc", "def", "ghi"], "geometry": [p0, p1, p2]})
+    p0 = wkt.loads("POLYGON ((0 0, 0 1, 1 1, 2 1, 2 0, 1 0, 0 0))")
+    p1 = wkt.loads("POLYGON ((0 1, 0 2, 1 2, 1 1, 0 1))")
+    p2 = wkt.loads("POLYGON ((1 0, 2 0, 2 -1, 1 -1, 1 0))")
+    data = geopandas.GeoDataFrame(
+        {"name": ["abc", "def", "ghi"], "geometry": [p0, p1, p2]}
+    )
     topo = topojson.Topology(data, prequantize=False)
     p0_wkt = topo.to_gdf().geometry[0].wkt
 
-    assert p0_wkt == 'POLYGON ((0 1, 0 0, 1 0, 2 0, 2 1, 1 1, 0 1))'
+    assert p0_wkt == "POLYGON ((0 1, 0 0, 1 0, 2 0, 2 1, 1 1, 0 1))"
+
 
 # test for https://github.com/mattijn/topojson/issues/110
 def test_topology_topoquantization_dups():
     gdf = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    gdf = gdf[gdf.name.isin(['France', 'Belgium', 'Netherlands'])]
+    gdf = gdf[gdf.name.isin(["France", "Belgium", "Netherlands"])]
     topo = topojson.Topology(data=gdf, prequantize=False).toposimplify(4)
     topo = topo.topoquantize(50).to_dict()
 
-    assert topo['arcs'][6] == [[44, 47], [0, 0]]
- 
+    assert topo["arcs"][6] == [[44, 47], [0, 0]]
+
+
 # parse topojson from file
 def test_topology_topojson_from_file():
-    with open("tests/files_topojson/naturalearth.topojson", 'r') as f:
+    with open("tests/files_topojson/naturalearth.topojson", "r") as f:
         data = json.load(f)
 
     topo = topojson.Topology(data).to_dict()
 
-    assert len(topo["objects"]) == 1   
+    assert len(topo["objects"]) == 1
+
 
 # parse topojson file and plot with altair
 def test_topology_topojson_to_alt():
     # load topojson file into dict
-    with open("tests/files_topojson/naturalearth_lowres_africa.topojson", 'r') as f:
+    with open("tests/files_topojson/naturalearth_lowres_africa.topojson", "r") as f:
         data = json.load(f)
-        
+
     # parse topojson file using `object_name`
     topo = topojson.Topology(data, object_name="data")
     # apply toposimplify and serialize to altair
-    chart = topo.toposimplify(1).to_alt()    
+    chart = topo.toposimplify(1).to_alt()
 
     assert len(chart.__dict__.keys()) == 2
+
 
 # Object of type int64 is not JSON serializable
 def test_topology_topojson_to_alt_int64():
     # load topojson file into dict
-    with open("tests/files_topojson/mesh2d.topojson", 'r') as f:
-        data = json.load(f)    
+    with open("tests/files_topojson/mesh2d.topojson", "r") as f:
+        data = json.load(f)
 
     # parse topojson file using `object_name`
     topo = topojson.Topology(data, object_name="mesh2d_flowelem_bl")
     # apply toposimplify and serialize to altair
-    chart = topo.toposimplify(1).to_alt()  
+    chart = topo.toposimplify(1).to_alt()
 
-    assert len(chart.__dict__.keys()) == 2     
+    assert len(chart.__dict__.keys()) == 2
+
 
 def test_topology_nested_list_properties():
     from geojson import Feature, Polygon, FeatureCollection
@@ -516,12 +523,13 @@ def test_topology_nested_list_properties():
 
     assert len(topo) == 4
 
+
 def test_topology_update_bbox_topoquantize_toposimplify():
     # load example data representing continental Africa
-    data = topojson.utils.example_data_africa()  
+    data = topojson.utils.example_data_africa()
     # compute the topology
-    topo = topojson.Topology(data)  
+    topo = topojson.Topology(data)
     # apply simplification on the topology and render as SVG
-    bbox = topo.topoquantize(10).to_dict()['bbox'] 
+    bbox = topo.topoquantize(10).to_dict()["bbox"]
 
-    assert bbox == (0, 0, 9, 9)    
+    assert bbox == (0, 0, 9, 9)
