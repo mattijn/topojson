@@ -3,6 +3,7 @@ from topojson.core.extract import Extract
 from shapely import geometry
 import geopandas
 import geojson
+from geojson import Feature, Polygon, FeatureCollection
 import fiona
 
 
@@ -361,6 +362,7 @@ def test_extract_fiona_file_gpkg():
 
     assert len(topo["bookkeeping_geoms"]) == 4
 
+
 # test to check if original data is not modified
 def test_extract_dict_org_data_untouched():
     data = {
@@ -368,11 +370,12 @@ def test_extract_dict_org_data_untouched():
         "bar": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [2, 0]]},
     }
     topo = Extract(data).to_dict()
-    topo_foo = topo['objects']['foo']
+    topo_foo = topo["objects"]["foo"]
     data_foo = data["foo"]
 
-    assert 'arcs' in topo_foo.keys()
-    assert 'arcs' not in data_foo.keys()
+    assert "arcs" in topo_foo.keys()
+    assert "arcs" not in data_foo.keys()
+
 
 # test to check if original data is not modified
 def test_extract_list_org_data_untouched():
@@ -381,11 +384,12 @@ def test_extract_list_org_data_untouched():
         geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]),
     ]
     topo = Extract(data).to_dict()
-    topo_0 = topo['objects'][0]
+    topo_0 = topo["objects"][0]
     data_0 = data[0]
 
-    assert 'arcs' in topo_0.keys()
-    assert data_0.type == 'Polygon'
+    assert "arcs" in topo_0.keys()
+    assert data_0.type == "Polygon"
+
 
 # test to check if original data is not modified
 def test_extract_gdf_org_data_untouched():
@@ -393,20 +397,22 @@ def test_extract_gdf_org_data_untouched():
         "tests/files_geojson/naturalearth_alb_grc.geojson", driver="GeoJSON"
     )
     topo = Extract(data).to_dict()
-    topo_0 = topo['objects'][0]
+    topo_0 = topo["objects"][0]
     data_0 = data.iloc[0]
 
-    assert 'arcs' in topo_0.keys()
-    assert data_0.geometry.type == 'Polygon'
+    assert "arcs" in topo_0.keys()
+    assert data_0.geometry.type == "Polygon"
+
 
 # test to check if original data is not modified
 def test_extract_shapely_org_data_untouched():
     data = geometry.LineString([[0, 0], [1, 0], [1, 1], [0, 1]])
-    topo = Extract(data).to_dict()  
-    topo_0 = topo['objects'][0]
+    topo = Extract(data).to_dict()
+    topo_0 = topo["objects"][0]
 
-    assert 'arcs' in topo_0.keys()
-    assert data.type == 'LineString'    
+    assert "arcs" in topo_0.keys()
+    assert data.type == "LineString"
+
 
 # test to check if original data is not modified
 def test_extract_shapefile_org_data_untouched():
@@ -414,8 +420,40 @@ def test_extract_shapefile_org_data_untouched():
 
     data = shapefile.Reader("tests/files_shapefile/southamerica.shp")
     topo = Extract(data).to_dict()
-    topo_0 = topo['objects']['feature_00']['geometries'][0]
-    data_0 = data.__geo_interface__['features'][0]['geometry']
+    topo_0 = topo["objects"]["feature_00"]["geometries"][0]
+    data_0 = data.__geo_interface__["features"][0]["geometry"]
 
-    assert 'arcs' in topo_0.keys()
-    assert 'arcs' not in data_0.keys()  
+    assert "arcs" in topo_0.keys()
+    assert "arcs" not in data_0.keys()
+
+
+# issue 137 do not modify source data
+def test_extract_source_data_modify():
+    # prepare data
+    feat_1 = Feature(
+        geometry=Polygon([[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]),
+        properties={"name": "abc"},
+    )
+    feat_2 = Feature(
+        geometry=Polygon([[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]),
+        properties={"name": "def"},
+    )
+    data = FeatureCollection([feat_1, feat_2])
+
+    # before Topology()
+    assert "geometry" in data["features"][0].keys()
+
+    # apply Topology()
+    topo = Extract(data)
+
+    # after Topology()
+    assert "geometry" in data["features"][0].keys()
+
+
+# why cannot load geojson file using json module?
+def test_extract_read_geojson_from_json_dict():
+    with open("tests/files_geojson/naturalearth_lowres.geojson") as f:
+        data = json.load(f)
+    topo = Extract(data).to_dict()
+
+    assert len(topo["linestrings"]) == 287

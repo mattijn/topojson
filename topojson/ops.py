@@ -315,10 +315,14 @@ def bounds(arr):
     tuple
         (minx, miny, maxx, maxy)
     """
-    if arr:
-        arr = np.vstack(arr).T
     if len(arr):
-        bounds = arr[0].min(), arr[1].min(), arr[0].max(), arr[1].max()
+        arr = np.vstack(arr).T
+        bounds = (
+            np.nanmin(arr[0]),
+            np.nanmin(arr[1]),
+            np.nanmax(arr[0]),
+            np.nanmax(arr[1]),
+        )
     else:
         bounds = []
     return bounds

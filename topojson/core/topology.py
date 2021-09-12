@@ -14,6 +14,7 @@ from ..utils import TopoOptions
 from ..utils import instance
 from ..utils import serialize_as_svg
 from ..utils import serialize_as_json
+from ..utils import serialize_as_topojson
 from ..utils import serialize_as_geojson
 
 
@@ -106,31 +107,18 @@ class Topology(Hashmap):
         simplify_with="shapely",
         simplify_algorithm="dp",
         winding_order="CW_CCW",
-        object_name="data"
+        object_name="data",
     ):
 
         options = TopoOptions(locals())
 
         # shorcut when dealing with topojson data
-         
-        if instance(data) == "dict" and 'type' in data.keys() and data['type'].casefold() == 'Topology'.casefold():
-            # change options to reflect this
-            options.prequantize = False
-            options.presimplify = False
-
-            arcs_asarray = [np.asarray(a) for a in data['arcs']]
-            parse_topo = {
-                "type": "Topology",
-                "linestrings": arcs_asarray,
-                "coordinates": [],
-                "options": options,
-                "bbox": bounds(arcs_asarray),
-                "objects": data['objects']
-            }
-            if 'transform' in data.keys():
-                parse_topo['transform'] = data['transform']
-            self.output = parse_topo
-            self.options = options
+        if (
+            instance(data) == "dict"
+            and "type" in data.keys()
+            and data["type"].casefold() == "Topology".casefold()
+        ):
+            self.output, self.options = serialize_as_topojson(data, options)
 
         # all others follow normal route
         else:
@@ -164,7 +152,7 @@ class Topology(Hashmap):
         if options:
             topo_object["options"] = vars(self.options)
         else:
-            topo_object.pop('options', None)          
+            topo_object.pop("options", None)
         return topo_object
 
     def to_svg(self, separate=False):
@@ -209,7 +197,7 @@ class Topology(Hashmap):
         if options is True:
             topo_object["options"] = vars(self.options)
         else:
-            topo_object.pop('options', None)
+            topo_object.pop("options", None)
         return serialize_as_json(
             topo_object, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
         )
@@ -221,7 +209,7 @@ class Topology(Hashmap):
         indent=4,
         maxlinelength=88,
         validate=False,
-        winding_order="CCW_CW"
+        winding_order="CCW_CW",
     ):
         """
         Convert the Topology to a GeoJSON object. Remember that this will destroy the
@@ -267,9 +255,7 @@ class Topology(Hashmap):
             fc, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
         )
 
-    def to_gdf(
-        self, crs=None, validate=False, winding_order="CCW_CW"
-    ):
+    def to_gdf(self, crs=None, validate=False, winding_order="CCW_CW"):
         """
         Convert the Topology to a GeoDataFrame. Remember that this will destroy the
         computed Topology.
@@ -306,9 +292,7 @@ class Topology(Hashmap):
         )
         return serialize_as_geodataframe(fc, crs=crs)
 
-    def to_alt(
-        self, color=None, tooltip=True, projection="identity"
-    ):
+    def to_alt(self, color=None, tooltip=True, projection="identity"):
         """
         Display as Altair visualization.
 
@@ -334,7 +318,6 @@ class Topology(Hashmap):
 
         topo_object = self.to_json()
         objectname = self.options.object_name
-        
 
         return serialize_as_altair(topo_object, color, tooltip, projection, objectname)
 
@@ -390,6 +373,7 @@ class Topology(Hashmap):
 
         if not arcs:
             return result
+        
         # dequantize if quantization is applied
         if "transform" in result.output.keys():
             np_arcs = np_array_from_arcs(arcs)
@@ -403,11 +387,13 @@ class Topology(Hashmap):
             for ls in np_arcs:
                 l_arcs.append(ls[~np.isnan(ls)[:, 0]].tolist())
             arcs = l_arcs
+            lsbs = bounds(arcs)
+        else:
+            lsbs = bounds(arcs)
 
         arcs_qnt, transform = quantize(arcs, result.output["bbox"], quant_factor)
-        lsbs = bounds(arcs_qnt)
         ptbs = bounds(result.output["coordinates"])
-        result.output["bbox"] = compare_bounds(lsbs, ptbs)          
+        result.output["bbox"] = compare_bounds(lsbs, ptbs)
 
         result.output["arcs"] = delta_encoding(arcs_qnt)
         result.output["transform"] = transform
@@ -502,7 +488,7 @@ class Topology(Hashmap):
 
             lsbs = bounds(result.output["arcs"])
             ptbs = bounds(result.output["coordinates"])
-            result.output["bbox"] = compare_bounds(lsbs, ptbs)            
+            result.output["bbox"] = compare_bounds(lsbs, ptbs)
 
             # quantize aqain if quantization was applied
             if transform is not None:
@@ -512,16 +498,18 @@ class Topology(Hashmap):
                         quant_factor = 1e6
                     else:
                         quant_factor = result.options.topoquantize
+                    result.output["arcs"], transform = quantize(
+                        result.output["arcs"], result.output["bbox"], quant_factor
+                    )
                 elif result.options.prequantize > 0:
                     # set default if not specifically given in the options
                     if type(result.options.prequantize) == bool:
                         quant_factor = 1e6
                     else:
                         quant_factor = result.options.prequantize
-
-                result.output["arcs"], transform = quantize(
-                    result.output["arcs"], result.output["bbox"], quant_factor
-                )
+                    result.output["arcs"], transform = quantize(
+                        result.output["arcs"], result.output["bbox"], quant_factor
+                    )
 
                 result.output["arcs"] = delta_encoding(result.output["arcs"])
                 result.output["transform"] = transform
@@ -536,7 +524,9 @@ class Topology(Hashmap):
     def _resolve_coords(self, data):
         objectname = self.options.object_name
         if not objectname in data["objects"].keys():
-            raise SystemExit(f"'{objectname}' is not an object name in your topojson file")
+            raise SystemExit(
+                f"'{objectname}' is not an object name in your topojson file"
+            )
         geoms = data["objects"][objectname]["geometries"]
         for idx, feat in enumerate(geoms):
             if feat["type"] in ["Point", "MultiPoint"]:
