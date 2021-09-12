@@ -373,6 +373,7 @@ class Topology(Hashmap):
 
         if not arcs:
             return result
+        
         # dequantize if quantization is applied
         if "transform" in result.output.keys():
             np_arcs = np_array_from_arcs(arcs)
@@ -386,9 +387,11 @@ class Topology(Hashmap):
             for ls in np_arcs:
                 l_arcs.append(ls[~np.isnan(ls)[:, 0]].tolist())
             arcs = l_arcs
+            lsbs = bounds(arcs)
+        else:
+            lsbs = bounds(arcs)
 
         arcs_qnt, transform = quantize(arcs, result.output["bbox"], quant_factor)
-        lsbs = bounds(arcs_qnt)
         ptbs = bounds(result.output["coordinates"])
         result.output["bbox"] = compare_bounds(lsbs, ptbs)
 
