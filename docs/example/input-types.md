@@ -88,6 +88,61 @@ tp.Topology(gdf, prequantize=False).to_json()
 </div>
 </div>
 
+* * *
+
+## GeoJSON data from file
+A GeoJSON file can be parsed as json dictionary.
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+
+```python
+import topojson as tp
+import json
+
+with open("tests/files_topojson/example_data_africa.geojson", 'r') as f:
+    data = json.load(f)
+
+assert data['type']) == 'FeatureCollection'
+topo = topojson.Topology(data)
+
+# to visualise we use the (optional!) package Altair.
+topo.toposimplify(4).to_alt()
+```
+<div id="embed_output_mesh_altair_from_geojson"></div>
+</div>
+</div>
+
+* * * 
+
+## TopoJSON data from file
+A TopoJSON file can be postprocessed using json dictionary.
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+
+```python
+import topojson as tp
+import json
+
+with open("tests/files_topojson/naturalearth_lowres_africa.topojson", 'r') as f:
+    data = json.load(f)
+# parse topojson file using `object_name`
+topo = topojson.Topology(data, object_name="data")
+topo.toposimplify(4).to_svg()
+```
+<img src="../images/africa_toposimp.svg">
+</div>
+</div>
+
 * * * 
 
 
@@ -311,28 +366,19 @@ tp.Topology(dict_in, prequantize=False).to_json()
 </div>
 </div>
 
-* * * 
+<script>
+window.addEventListener("DOMContentLoaded", event => {
+    var opt = {
+        mode: "vega-lite",
+        renderer: "svg",
+        actions: false
+    };
 
-## TopoJSON file loaded as json-dict
-A TopoJSON file can be postprocessed.
+    var spec_mesh_altair = "{{site.baseurl}}/json/example_mesh.vl.json";
+    vegaEmbed("#embed_output_mesh_altair_from_geojson", spec_mesh_altair, opt).catch(console.err); 
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
-
-```python
-import topojson as tp
-import json
-
-with open("tests/files_topojson/naturalearth_lowres_africa.topojson", 'r') as f:
-    data = json.load(f)
-# parse topojson file using `object_name`
-topo = topojson.Topology(data, object_name="data")
-topo.toposimplify(4).to_svg()
-```
-<img src="../images/africa_toposimp.svg">
-</div>
-</div>
+});
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@4"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
