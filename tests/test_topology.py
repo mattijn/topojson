@@ -544,3 +544,18 @@ def test_topology_bbox_no_delta_transform():
     topo_2 = topojson.Topology(topo_1, object_name="topo_1").to_dict()
 
     assert topo_1["bbox"] == topo_2["bbox"]
+
+# test for https://github.com/mattijn/topojson/issues/140
+def test_topology_toposimplify_on_topojson_data():
+    # load topojson file into dict
+    with open("tests/files_topojson/gm.topo.json", 'r') as f:
+        data = json.load(f)
+
+    # read as topojson and as geojson
+    topo_0 = topojson.Topology(data, object_name="gm_features")
+    gdf_0 = topo_0.toposimplify(10).to_gdf()
+
+    topo_1 = topojson.Topology(topo_0.to_geojson(), prequantize=False, object_name="out")    
+    gdf_1 = topo_1.toposimplify(10).to_gdf()
+
+    assert gdf_0.iloc[0].geometry.is_valid == gdf_1.iloc[0].geometry.is_valid
