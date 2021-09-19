@@ -474,6 +474,8 @@ class Topology(Hashmap):
 
             # dequantize if transform exist
             if transform is not None:
+                power_estimate = len(str(int(np_arcs[:,0].max())))
+                quant_factor_estimate = 10 ** power_estimate
                 np_arcs = dequantize(np_arcs, scale, translate)
 
             # apply simplify
@@ -492,25 +494,27 @@ class Topology(Hashmap):
 
             # quantize aqain if quantization was applied
             if transform is not None:
+                quant_factor = None
                 if result.options.topoquantize > 0:
                     # set default if not specifically given in the options
                     if type(result.options.topoquantize) == bool:
                         quant_factor = 1e6
                     else:
                         quant_factor = result.options.topoquantize
-                    result.output["arcs"], transform = quantize(
-                        result.output["arcs"], result.output["bbox"], quant_factor
-                    )
                 elif result.options.prequantize > 0:
                     # set default if not specifically given in the options
                     if type(result.options.prequantize) == bool:
                         quant_factor = 1e6
                     else:
                         quant_factor = result.options.prequantize
-                    result.output["arcs"], transform = quantize(
-                        result.output["arcs"], result.output["bbox"], quant_factor
-                    )
+                else:
+                    # no options set, use the guessed estimate from input data
+                    quant_factor = quant_factor_estimate
 
+                # apply quantization and delta encode result.
+                result.output["arcs"], transform = quantize(
+                    result.output["arcs"], result.output["bbox"], quant_factor
+                )
                 result.output["arcs"] = delta_encoding(result.output["arcs"])
                 result.output["transform"] = transform
         if inplace:
