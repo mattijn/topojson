@@ -12,6 +12,12 @@ Topojson can be installed through PyPI by the following command:
 python3 -m pip install topojson
 ```
 
+And through conda using the following command:
+
+```
+conda install -c conda-forge topojson
+```
+
 The library is installed succesfully if the following code.
 
 ```python
