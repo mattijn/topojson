@@ -254,7 +254,7 @@ Example 🔧
 {: .label .label-blue-000 }
 </div>
 <div class="example-text" markdown="1">
-Here we load continental Afria as data file and apply the `presimplify` on the input-space.
+Here we load continental Africa as data file and apply the `presimplify` on the input-space.
 The plot shows the borders including linestring simplification, derived _before_ the `Topology` is computed.
 
 ```python
@@ -493,7 +493,7 @@ str
 Choose between `dp` and `vw`, for Douglas-Peucker or Visvalingam-Whyatt 
 respectively. `vw` will only be selected if `simplify_with` is set to 
 `simplification`. Default is `dp`, since it still "produces the most accurate 
-generalization" (Chi & Cheung, 2006).
+generalization" (Shi & Cheung, 2006).
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
