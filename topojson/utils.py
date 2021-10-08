@@ -4,7 +4,6 @@ import json
 from .ops import dequantize
 from .ops import bounds
 from .ops import np_array_from_arcs
-from .ops import lists_from_np_array
 from .ops import winding_order
 
 
@@ -474,7 +473,7 @@ def serialize_as_json(topo_object, fp, pretty=False, indent=4, maxlinelength=88)
 
 
 def serialize_as_geojson(
-    topo_object, fp=None, validate=False, objectname="data", order="CCW_CW"
+    topo_object, fp=None, validate=False, objectname="data", order="CCW_CW", decimals=None
 ):
     from shapely.geometry import shape
 
@@ -493,6 +492,10 @@ def serialize_as_geojson(
             np_arcs = dequantize(np_arcs, scale, translate)
     else:
         np_arcs = None
+
+    # evenly round the coordinates to the given number of decimals
+    if decimals is not None and isinstance(decimals, int):
+        np_arcs = np.around(np_arcs, decimals=decimals)
 
     # select object member from topology object
     if not objectname in topo_object["objects"].keys():
