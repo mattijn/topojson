@@ -263,7 +263,7 @@ print(topo.to_json(pretty=True))
 </pre>
 The `pretty` option depends on the setting `indent` and `maxlinelength`, these default to `4` and `88` respectively.
 
-More options in generating the GeoJSON from the computed Topololgy are `validate` (`True` or `False`) and `winding_order`. Where the TopoJSON standard defines a winding order of clock-wise orientation for outer polygons and counter-clockwise orientation for innner polygons is the winding order in the GeoJSON standard the opposite (`CCW_CW`).
+More options in generating the GeoJSON from the computed Topololgy are `validate` (`True` or `False`), `winding_order` and `decimals`. Where the TopoJSON standard defines a winding order of clock-wise orientation for outer polygons and counter-clockwise orientation for innner polygons is the winding order in the GeoJSON standard the opposite (`CCW_CW`). The `decimals` option defines the number of decimals for the output coordinates.
 </div>
 </div>
 

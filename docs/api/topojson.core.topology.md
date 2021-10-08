@@ -161,6 +161,9 @@ computed Topology.
 > + ###### `objectname` : str
     The name of the object within the Topology to convert to GeoJSON.
     Default is `data`
+> + ###### `decimals` : int or None
+    Evenly round the coordinates to the given number of decimals. 
+    Default is `None`, which means no rounding is applied. 
 
 ### to_gdf
 ```python

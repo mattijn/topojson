@@ -559,3 +559,21 @@ def test_topology_toposimplify_on_topojson_data():
     gdf_1 = topo_1.toposimplify(10).to_gdf()
 
     assert gdf_0.iloc[0].geometry.is_valid == gdf_1.iloc[0].geometry.is_valid
+
+def test_topology_round_coordinates_geojson():
+    # load example data representing continental Africa
+    data = topojson.utils.example_data_africa()
+    # compute the topology
+    topo = topojson.Topology(data)
+    # apply simplification on the topology and render as SVG
+    gjson = topo.topoquantize(10).to_geojson(decimals=2)
+    coord_0 = json.loads(gjson)['features'][0]['geometry']['coordinates'][0][0]
+    assert coord_0 == [35.85, -2.74]
+
+def test_topology_topoquantize():
+    # load example data representing continental Africa
+    data = topojson.utils.example_data_africa()
+    # compute the topology
+    topo = topojson.Topology(data, topoquantize=9).to_dict()
+
+    assert len(topo['arcs']) == 149    

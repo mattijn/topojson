@@ -210,6 +210,7 @@ class Topology(Hashmap):
         maxlinelength=88,
         validate=False,
         winding_order="CCW_CW",
+        decimals=None
     ):
         """
         Convert the Topology to a GeoJSON object. Remember that this will destroy the
@@ -241,15 +242,16 @@ class Topology(Hashmap):
             clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer
             rings and clockwise for interior rings.
             Default is `CCW_CW` for GeoJSON.
-        # objectname : str
-        #     The name of the object within the Topology to convert to GeoJSON.
-        #     Default is `data`.
+        decimals : int or None
+            Evenly round the coordinates to the given number of decimals. 
+            Default is None, which means no rounding is applied.
         """
         topo_object = copy.deepcopy(self.output)
         topo_object = self._resolve_coords(topo_object)
         objectname = self.options.object_name
         fc = serialize_as_geojson(
-            topo_object, validate=validate, objectname=objectname, order=winding_order
+            topo_object, validate=validate, objectname=objectname, order=winding_order, 
+            decimals=decimals
         )
         return serialize_as_json(
             fc, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
@@ -278,9 +280,6 @@ class Topology(Hashmap):
             clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer
             rings and clockwise for interior rings.
             Default is `CCW_CW` for GeoJSON.
-        # objectname : str
-        #     The name of the object within the Topology to convert to GeoJSON.
-        #     Default is `data`.
         """
         from ..utils import serialize_as_geodataframe
 
@@ -401,7 +400,9 @@ class Topology(Hashmap):
 
         if inplace:
             # update into self
-            self = result
+            self.output["arcs"] = result.output["arcs"]
+            self.output["transform"] = result.output["transform"]
+            self.options.topoquantize = result.options.topoquantize      
         else:
             return result
 
@@ -572,5 +573,15 @@ class Topology(Hashmap):
                 simplify_factor = self.options.toposimplify
 
             self.toposimplify(epsilon=simplify_factor, inplace=True)
+
+        # topoquantize linestrings if required
+        if self.options.topoquantize > 0:
+            # set default if not specifically given in the options
+            if type(self.options.topoquantize) == bool:
+                quant_factor = 1e6
+            else:
+                quant_factor = self.options.topoquantize
+
+            self.topoquantize(quant_factor=quant_factor, inplace=True)           
 
         return self.output
