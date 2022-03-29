@@ -310,6 +310,9 @@ def basictype2str(obj):
         strobj = '"' + str(obj) + '"'
     elif isinstance(obj, bool):
         strobj = {True: "true", False: "false"}[obj]
+    # convert None to 'null' since None is not a valid syntax in JSON
+    elif obj is None:
+        strobj = 'null'
     else:
         strobj = str(obj)
     return strobj

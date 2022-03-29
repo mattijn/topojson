@@ -351,6 +351,28 @@ def test_topology_to_json(tmp_path):
     assert topo_reloaded
 
 
+def test_topology_to_json_pretty_and_null():
+    data = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {
+                    "end_date": None,
+                },
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
+                }
+            }
+        ]
+    }
+    data = geopandas.GeoDataFrame.from_features(data)
+    topo = topojson.Topology(data).to_json(pretty=True)
+
+    assert '"end_date": null' in topo
+
+
 def test_topology_topoquantize():
     data = [
         {"type": "LineString", "coordinates": [[4, 0], [2, 2], [0, 0]]},
