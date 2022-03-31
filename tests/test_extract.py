@@ -449,6 +449,23 @@ def test_extract_source_data_modify():
     # after Topology()
     assert "geometry" in data["features"][0].keys()
 
+# issue 151 properties are not kept in geojson data
+def test_extract_keep_properties():
+    # prepare data
+    feat_1 = Feature(
+        geometry=Polygon([[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]),
+        properties={"name": "abc"},
+    )
+    feat_2 = Feature(
+        geometry=Polygon([[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]),
+        properties={"name": {"def": "ghi"}},
+    )
+    data = FeatureCollection([feat_1, feat_2])
+    topo = Extract(data).to_dict()
+    
+    assert topo['objects']['feature_0']['properties']['name'] == 'abc'
+    assert topo['objects']['feature_1']['properties']['name']['def'] == 'ghi'
+
 
 # why cannot load geojson file using json module?
 def test_extract_read_geojson_from_json_dict():
