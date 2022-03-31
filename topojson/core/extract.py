@@ -458,19 +458,13 @@ class Extract(object):
 
         # each Feature becomes a new GeometryCollection
         for idx, feature in enumerate(obj["features"]):
-            # A GeoJSON Feature is mapped to a GeometryCollection => directly mapped to specific geometry, so that to save the attributes
-            feature["type"] = feature["geometry"]['type']
-            # feature["geometry"] = feature["geometry"]
-            # feature.pop("geometry", None)
-
-            ### here not save the features for visualization:
-            data["feature_{}".format(str(idx).zfill(zfill_value))] = {**feature['properties'],**{'geometry':geometry.shape(
-                feature['geometry']
-            )}}  # feature
-
-            # data["feature_{}".format(str(idx).zfill(zfill_value))] = geometry.shape(
-            #     feature
-            # )  # feature
+            # A GeoJSON Feature is mapped to a GeometryCollection
+            feature["type"] = "GeometryCollection"
+            feature["geometries"] = [feature["geometry"]]
+            feature.pop("geometry", None)
+            data["feature_{}".format(str(idx).zfill(zfill_value))] = geometry.shape(
+                feature
+            )  # feature
 
         # new data dictionary is created, throw the geometries back to main()
         self._is_single = False
