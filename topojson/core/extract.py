@@ -44,7 +44,7 @@ class Extract(object):
         object created including the keys `type`, `linestrings`, `coordinates` `bookkeeping_geoms`, `bookkeeping_coords`, `objects`
     """
 
-    def __init__(self, data, options={}):
+    def     __init__(self, data, options={}):
         # initation topology options
         if isinstance(options, TopoOptions):
             self.options = options
@@ -463,10 +463,15 @@ class Extract(object):
             # feature["geometry"] = feature["geometry"]
             # feature.pop("geometry", None)
 
-            ### here not save the features for visualization:
-            data["feature_{}".format(str(idx).zfill(zfill_value))] = {**feature['properties'],**{'geometry':geometry.shape(
+            feature_dict = {**(feature.get('properties') if feature.get('properties') else {}), **{'geometry' : geometry.shape(
                 feature['geometry']
-            )}}  # feature
+            )}}
+
+            if feature["type"] == 'GeometryCollection':
+                feature_dict['geometries'] = feature['geometry']['geometries']
+
+            ### here not save the features for visualization:
+            data["feature_{}".format(str(idx).zfill(zfill_value))] = feature_dict  # feature
 
             # data["feature_{}".format(str(idx).zfill(zfill_value))] = geometry.shape(
             #     feature
@@ -636,7 +641,14 @@ class Extract(object):
                     # extract geometry and collect type and properties
                     geom = self._obj["geometry"]
                     self._obj.pop("geometry", None)
-                    self._obj = {"properties": self._obj, "type": geom.geom_type}
+
+                    if geom.geom_type == 'GeometryCollection':
+                        geometries = self._obj["geometries"]
+                        self._obj.pop("geometries",None)
+                        self._obj = {"properties" : self._obj, "type" : geom.geom_type,'geometries':geometries}
+                    else:
+                        self._obj = {"properties": self._obj, "type": geom.geom_type}
+
                     self._data[self._key] = self._obj
 
                 # no direct shapely geometries available. Try forcing
