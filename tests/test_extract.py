@@ -169,9 +169,9 @@ def test_extract_featurecollection():
     assert len(topo["objects"]) == 2
     assert len(topo["bookkeeping_geoms"]) == 2
     assert len(topo["linestrings"]) == 2
-    assert topo["objects"]["feature_0"]["geometries"][0]["type"] == "LineString"
+    assert topo["objects"]["feature_0"]["type"] == "LineString"
     assert (
-        topo["objects"]["feature_1"]["geometries"][0]["geometries"][0]["type"]
+        topo["objects"]["feature_1"]["geometries"][0]["type"]
         == "Polygon"
     )
 
@@ -420,7 +420,7 @@ def test_extract_shapefile_org_data_untouched():
 
     data = shapefile.Reader("tests/files_shapefile/southamerica.shp")
     topo = Extract(data).to_dict()
-    topo_0 = topo["objects"]["feature_00"]["geometries"][0]
+    topo_0 = topo["objects"]["feature_00"]
     data_0 = data.__geo_interface__["features"][0]["geometry"]
 
     assert "arcs" in topo_0.keys()
