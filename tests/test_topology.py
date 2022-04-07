@@ -259,7 +259,11 @@ def test_topology_to_geojson_nested_geometrycollection():
                             {
                                 "type": "Polygon",
                                 "coordinates": [[[0.5, 0.6], [0.7, 0.8], [0.9, 1.0]]],
-                            }
+                            },
+                            {
+                                "type": "LineString",
+                                "coordinates": [[0.1, 0.2], [0.3, 0.4]],
+                            }                        
                         ],
                     },
                 },
@@ -268,8 +272,8 @@ def test_topology_to_geojson_nested_geometrycollection():
     }
     topo = topojson.Topology(data).to_geojson()
 
-    assert "]]]}]}]}}]}" in topo
-
+    assert ']]}]}}]}' in topo
+    
 
 def test_topology_to_geojson_polygon_geometrycollection():
     data = {
