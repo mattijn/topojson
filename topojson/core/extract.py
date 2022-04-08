@@ -44,7 +44,7 @@ class Extract(object):
         object created including the keys `type`, `linestrings`, `coordinates` `bookkeeping_geoms`, `bookkeeping_coords`, `objects`
     """
 
-    def     __init__(self, data, options={}):
+    def __init__(self, data, options={}):
         # initation topology options
         if isinstance(options, TopoOptions):
             self.options = options
@@ -268,7 +268,7 @@ class Extract(object):
             data = [geom]
             return self._extractor(data)
 
-        for line in geom:
+        for line in geom.geoms:
             self._extract_line(line)
 
     def _extract_ring(self, geom):
@@ -298,9 +298,9 @@ class Extract(object):
         if isinstance(boundary, geometry.MultiLineString):
             # record index as list of items
             # and store each linestring geom
-            lst_idx = list(range(idx_ls, idx_ls + len(list(boundary))))
+            lst_idx = list(range(idx_ls, idx_ls + len(boundary.geoms)))
             self._bookkeeping_geoms.append(lst_idx)
-            for ls in boundary:
+            for ls in boundary.geoms:
                 self._linestrings.append(ls)
         else:
             # record index and store single linestring geom
@@ -329,7 +329,7 @@ class Extract(object):
         if self._is_single:
             return self._extractor([geom])
 
-        for ring in geom:
+        for ring in geom.geoms:
             self._extract_ring(ring)
 
     def _extract_point(self, geom):
@@ -377,7 +377,7 @@ class Extract(object):
         if self._is_single:
             return self._extractor([geom])
 
-        for point in geom:
+        for point in geom.geoms:
             self._extract_point(point)
 
     def _extract_geometrycollection(self, geom):
@@ -400,17 +400,17 @@ class Extract(object):
 
         # obj = self._data[self._key]
         self._geomcollection_counter += 1
-        self.records_collection = len(geom)
+        self.records_collection = len(geom.geoms)
 
         # iterate over the parsed shape(geom)
         # the original data objects is set as self._obj
         # the following lines can catch a GeometryCollection untill two levels deep
         # improvements on this are welcome
-        for idx, geo in enumerate(geom):
+        for idx, geo in enumerate(geom.geoms):
             # if geom is GeometryCollection, collect geometries within collection
             # on right level
             if isinstance(geo, geometry.GeometryCollection):
-                self.records_collection = len(geo)
+                self.records_collection = len(geo.geoms)
                 if self._geomcollection_counter == 1:
                     self._obj = obj["geometries"]
                     self._geom_level_1 = idx

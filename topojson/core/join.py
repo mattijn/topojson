@@ -245,7 +245,7 @@ class Join(Extract):
         """
 
         if not isinstance(merged_line, geometry.LineString):
-            merged_line = [ls for ls in merged_line]
+            merged_line = [ls for ls in merged_line.geoms]
         else:
             merged_line = [merged_line]
         return merged_line
@@ -278,8 +278,8 @@ class Join(Extract):
         # continue if any shared path was detected
         if fw_bw and not fw_bw.is_empty:
 
-            forward = fw_bw[0]
-            backward = fw_bw[1]
+            forward = fw_bw.geoms[0]
+            backward = fw_bw.geoms[1]
 
             if backward.is_empty:
                 # only contains forward objects
@@ -295,7 +295,7 @@ class Join(Extract):
                 shared_segments = geometry.MultiLineString(forward + backward)
 
             # add shared paths to segments
-            self._segments.extend([list(shared_segments)])
+            self._segments.extend([list(shared_segments.geoms)])
 
             # also add the first coordinates of both geoms as a vertice to segments
             p1_g1 = geometry.Point([g1.xy[0][0], g1.xy[1][0]])

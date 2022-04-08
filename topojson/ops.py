@@ -138,7 +138,7 @@ def insert_coords_in_line(line, tree_splitter):
 
     # compute the distance from the beginning of the linestring for each junction on line
     splitter_dist = np.array(
-        [line.project(pt) for pt in geometry.MultiPoint(pts_xy_nonexst)]
+        [line.project(pt) for pt in geometry.MultiPoint(pts_xy_nonexst).geoms]
     )
     splitter_dist = splitter_dist[splitter_dist > 0]
 
