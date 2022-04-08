@@ -11,7 +11,7 @@ def test_join_undefined_for_non_junction_points():
     }
     topo = Join(data).to_dict()
 
-    assert geometry.Point(1.0, 0.0) not in geometry.MultiPoint(topo["junctions"])
+    assert geometry.Point(1.0, 0.0) not in geometry.MultiPoint(topo["junctions"]).geoms
 
 
 # exact duplicate lines ABC & ABC have no junctions
@@ -57,7 +57,7 @@ def test_join_reversed_line_CBA_extends_new_line_AB():
     }
     topo = Join(data).to_dict()
 
-    assert geometry.Point(1.0, 0.0) in geometry.MultiPoint(topo["junctions"])
+    assert geometry.Point(1.0, 0.0) in geometry.MultiPoint(topo["junctions"]).geoms
 
 
 # when a new line ABC extends an old line AB, there is a junction at B
