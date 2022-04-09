@@ -73,7 +73,7 @@ def np_array_bbox_points_line(line, tree_splitter):
     """
 
     # get junctions that contain within bbox line
-    pts_within_bbox = tree_splitter.query(line)
+    pts_within_bbox = tree_splitter.query_geoms(line)
 
     if len(pts_within_bbox) == 0:
         # no point near bbox, nothing to insert, nothing to split
@@ -107,7 +107,7 @@ def insert_coords_in_line(line, tree_splitter):
     """
 
     # get junctions that contain within bbox line
-    pts_within_bbox = tree_splitter.query(line)
+    pts_within_bbox = tree_splitter.query_geoms(line)
 
     # select junctions that are within tolerance of line
     tol_dist = 1e-8
@@ -426,12 +426,12 @@ def get_matches(geoms, tree_idx):
         value of each key is a list of junctions intersecting bounds of linestring.
     """
 
-    # find near linestrings by querying tree
+    # find near linestrings by querying tree and use query items to collect indices.
     matches = []
     for idx_ls, obj in enumerate(geoms):
-        intersect_ls = tree_idx.query(obj)
+        intersect_ls = tree_idx.query_items(obj)
         if len(intersect_ls):
-            matches.extend([[[idx_ls], [ls.i for ls in intersect_ls]]])
+            matches.extend([[[idx_ls], intersect_ls]])
 
     return matches
 
@@ -477,9 +477,7 @@ def select_unique_combs(linestrings):
         of a unique couple LineString with overlapping enveloppe
     """
 
-    # create spatial index and add idx as attribute
-    for i, ls in enumerate(linestrings):
-        ls.i = i
+    # create spatial index
     tree_idx = STRtree(linestrings)
 
     # get index of linestrings intersecting each linestring
@@ -530,7 +528,7 @@ def quantize(linestrings, bbox, quant_factor=1e6):
 
     for idx, ls in enumerate(linestrings):
         if hasattr(ls, "coords"):
-            ls_xy = np.asarray(ls.coords).T
+            ls_xy = np.array(ls.coords).T
         else:
             ls_xy = np.asarray(ls).T
         ls_xy = (
@@ -548,12 +546,12 @@ def quantize(linestrings, bbox, quant_factor=1e6):
         # linestring should not become a single point
         if not bool_slice.sum() == 1 or len(ls_xy) == bool_slice.sum():
             if hasattr(ls, "coords"):
-                ls.coords = ls_xy[bool_slice]
+                linestrings[idx] = geometry.LineString(ls_xy[bool_slice])
             else:
                 linestrings[idx] = ls_xy[bool_slice].tolist()
         else:
             if hasattr(ls, "coords"):
-                ls.coords = ls_xy
+                linestrings[idx] = geometry.LineString(ls_xy)
             else:
                 linestrings[idx] = ls_xy.tolist()
 
@@ -630,7 +628,7 @@ def simplify(
                 simple_ls = simple_ls.simplify(
                     epsilon, preserve_topology=prevent_oversimplify
                 )
-                list_arcs.append(np.array(simple_ls).tolist())
+                list_arcs.append(np.array(simple_ls.coords).tolist())
         elif input_as == "linestring":
             for idx, ls in enumerate(linestrings):
                 linestrings[idx] = ls.simplify(
@@ -666,10 +664,10 @@ def simplify(
                 simple_ls = alg(coords_to_simp, epsilon)
                 list_arcs.append(simple_ls.tolist())
         elif input_as == "linestring":
-            for ls in linestrings:
-                coords_to_simp = np.array(ls)
+            for idx, ls in enumerate(linestrings):
+                coords_to_simp = np.array(ls.coords)
                 simple_ls = alg(coords_to_simp, epsilon)
-                ls.coords = simple_ls
+                linestrings[idx] = geometry.LineString(simple_ls)
             list_arcs = linestrings
     else:
         raise NameError(
@@ -807,7 +805,10 @@ def delta_encoding(linestrings):
     """
 
     for idx, ls in enumerate(linestrings):
-        ls = np.array(ls).astype(np.int64)
+        if hasattr(ls, "coords"):
+            ls = np.array(ls.coords).astype(np.int64)
+        else:
+            ls = np.array(ls).astype(np.int64)
         ls_p1 = copy.copy(ls[0])
         ls -= np.roll(ls, 1, axis=0)
         ls[0] = ls_p1

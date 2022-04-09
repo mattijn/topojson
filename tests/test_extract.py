@@ -356,8 +356,12 @@ def test_extract_fiona_file():
 
 
 def test_extract_fiona_file_gpkg():
-    with fiona.open("tests/files_shapefile/rivers.gpkg") as data:
-        feats = data[24:26]
+    with fiona.open("tests/files_shapefile/rivers.gpkg") as col:
+        feats = []
+        for idx, feat in enumerate(col):
+            if idx in [24,25]:
+                feats.append(feat)
+            
     topo = Extract(feats).to_dict()
 
     assert len(topo["bookkeeping_geoms"]) == 4

@@ -69,7 +69,7 @@ class Dedup(Cut):
         # deduplicate equal geometries
         # create numpy array from bookkeeping_geoms variable for numerical computation
         if not self.options.topology and data["linestrings"]:
-            data["linestrings"] = [np.asarray(d) for d in data["linestrings"]]
+            data["linestrings"] = [np.array(d.coords) for d in data["linestrings"]]
 
         if len(data["bookkeeping_linestrings"]):
             array_bk = np.vstack(data["bookkeeping_linestrings"])
@@ -139,7 +139,7 @@ class Dedup(Cut):
             # use in1d function as proxy for contains
             merged_arcs_bool = [
                 np.in1d(
-                    asvoid(data["linestrings"][i]), asvoid(ndp_arcs[segment_idx])
+                    asvoid(data["linestrings"][i]), asvoid(ndp_arcs.geoms[segment_idx].coords)
                 ).any()
                 for i in ndp_arcs_bk
             ]
@@ -232,8 +232,8 @@ class Dedup(Cut):
             # apply linemerge
             ndp_arcs = linemerge([data["linestrings"][i] for i in ndp_arcs_bk])
             if isinstance(ndp_arcs, geometry.LineString):
-                ndp_arcs = [ndp_arcs]
-            no_ndp_arcs = len(ndp_arcs)
+                ndp_arcs = geometry.MultiLineString([ndp_arcs])
+            no_ndp_arcs = len(ndp_arcs.geoms)
 
             # if no_ndp_arcs is different than no_ndp_arcs_bk, than a merge took place
             # if lengths are equal, than no merge did occur and no need to solve the
@@ -247,7 +247,7 @@ class Dedup(Cut):
                 # replace arc with highest index of non-duplicate arcs
                 # and collect remaining arcs as duplicates
                 idx_keep = merged_dedups[0][0]
-                data["linestrings"][idx_keep] = np.asarray(ndp_arcs[idx_merg_arc])
+                data["linestrings"][idx_keep] = np.array(ndp_arcs.geoms[idx_merg_arc].coords)
                 list_merged_dups.append(merged_dedups)
 
         if len(list_merged_dups):

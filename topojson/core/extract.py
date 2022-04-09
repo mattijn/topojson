@@ -353,7 +353,7 @@ class Extract(object):
             idx_pt = len(self._coordinates)
             # record index and store linestring geom
             self._bookkeeping_coords.append([idx_pt])
-            self._coordinates.append(np.expand_dims(np.asarray(geom), axis=0))
+            self._coordinates.append(np.array(geom.coords))
 
             # track record in object as well
             obj = self._obj
