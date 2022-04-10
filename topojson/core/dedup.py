@@ -139,7 +139,8 @@ class Dedup(Cut):
             # use in1d function as proxy for contains
             merged_arcs_bool = [
                 np.in1d(
-                    asvoid(data["linestrings"][i]), asvoid(ndp_arcs.geoms[segment_idx].coords)
+                    asvoid(data["linestrings"][i]),
+                    asvoid(ndp_arcs.geoms[segment_idx].coords),
                 ).any()
                 for i in ndp_arcs_bk
             ]
@@ -247,7 +248,9 @@ class Dedup(Cut):
                 # replace arc with highest index of non-duplicate arcs
                 # and collect remaining arcs as duplicates
                 idx_keep = merged_dedups[0][0]
-                data["linestrings"][idx_keep] = np.array(ndp_arcs.geoms[idx_merg_arc].coords)
+                data["linestrings"][idx_keep] = np.array(
+                    ndp_arcs.geoms[idx_merg_arc].coords
+                )
                 list_merged_dups.append(merged_dedups)
 
         if len(list_merged_dups):

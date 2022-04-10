@@ -460,24 +460,21 @@ class Extract(object):
 
         # each Feature becomes a new GeometryCollection
         for idx, feature in enumerate(obj["features"]):
-            # A GeoJSON Feature is mapped to a GeometryCollection => directly mapped to specific geometry, so that to save the attributes
-            feature["type"] = feature["geometry"]['type']
-            # feature["geometry"] = feature["geometry"]
-            # feature.pop("geometry", None)
+            # A GeoJSON Feature is mapped to a GeometryCollection
+            # => directly mapped to specific geometry, so that to save the attributes
+            feature["type"] = feature["geometry"]["type"]
 
-            feature_dict = {**(feature.get('properties') if feature.get('properties') else {}), **{'geometry' : geometry.shape(
-                feature['geometry']
-            )}}
+            feature_dict = {
+                **(feature.get("properties") if feature.get("properties") else {}),
+                **{"geometry": geometry.shape(feature["geometry"])},
+            }
 
-            if feature["type"] == 'GeometryCollection':
-                feature_dict['geometries'] = feature['geometry']['geometries']
+            if feature["type"] == "GeometryCollection":
+                feature_dict["geometries"] = feature["geometry"]["geometries"]
 
-            ### here not save the features for visualization:
-            data["feature_{}".format(str(idx).zfill(zfill_value))] = feature_dict  # feature
-
-            # data["feature_{}".format(str(idx).zfill(zfill_value))] = geometry.shape(
-            #     feature
-            # )  # feature
+            data[
+                "feature_{}".format(str(idx).zfill(zfill_value))
+            ] = feature_dict  # feature
 
         # new data dictionary is created, throw the geometries back to main()
         self._is_single = False
@@ -644,10 +641,14 @@ class Extract(object):
                     geom = self._obj["geometry"]
                     self._obj.pop("geometry", None)
 
-                    if geom.geom_type == 'GeometryCollection':
+                    if geom.geom_type == "GeometryCollection":
                         geometries = self._obj["geometries"]
-                        self._obj.pop("geometries",None)
-                        self._obj = {"properties" : self._obj, "type" : geom.geom_type,'geometries':geometries}
+                        self._obj.pop("geometries", None)
+                        self._obj = {
+                            "properties": self._obj,
+                            "type": geom.geom_type,
+                            "geometries": geometries,
+                        }
                     else:
                         self._obj = {"properties": self._obj, "type": geom.geom_type}
 

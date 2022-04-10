@@ -263,7 +263,7 @@ def test_topology_to_geojson_nested_geometrycollection():
                             {
                                 "type": "LineString",
                                 "coordinates": [[0.1, 0.2], [0.3, 0.4]],
-                            }                        
+                            },
                         ],
                     },
                 },
@@ -272,8 +272,8 @@ def test_topology_to_geojson_nested_geometrycollection():
     }
     topo = topojson.Topology(data).to_geojson()
 
-    assert ']]}]}}]}' in topo
-    
+    assert "]]}]}}]}" in topo
+
 
 def test_topology_to_geojson_polygon_geometrycollection():
     data = {
@@ -367,9 +367,9 @@ def test_topology_to_json_pretty_and_null():
                 "geometry": {
                     "type": "Polygon",
                     "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
-                }
+                },
             }
-        ]
+        ],
     }
     data = geopandas.GeoDataFrame.from_features(data)
     topo = topojson.Topology(data).to_json(pretty=True)
@@ -571,20 +571,24 @@ def test_topology_bbox_no_delta_transform():
 
     assert topo_1["bbox"] == topo_2["bbox"]
 
+
 # test for https://github.com/mattijn/topojson/issues/140
 def test_topology_toposimplify_on_topojson_data():
     # load topojson file into dict
-    with open("tests/files_topojson/gm.topo.json", 'r') as f:
+    with open("tests/files_topojson/gm.topo.json", "r") as f:
         data = json.load(f)
 
     # read as topojson and as geojson
     topo_0 = topojson.Topology(data, object_name="gm_features")
     gdf_0 = topo_0.toposimplify(10).to_gdf()
 
-    topo_1 = topojson.Topology(topo_0.to_geojson(), prequantize=False, object_name="out")    
+    topo_1 = topojson.Topology(
+        topo_0.to_geojson(), prequantize=False, object_name="out"
+    )
     gdf_1 = topo_1.toposimplify(10).to_gdf()
 
     assert gdf_0.iloc[0].geometry.is_valid == gdf_1.iloc[0].geometry.is_valid
+
 
 def test_topology_round_coordinates_geojson():
     # load example data representing continental Africa
@@ -593,8 +597,9 @@ def test_topology_round_coordinates_geojson():
     topo = topojson.Topology(data)
     # apply simplification on the topology and render as SVG
     gjson = topo.topoquantize(10).to_geojson(decimals=2)
-    coord_0 = json.loads(gjson)['features'][0]['geometry']['coordinates'][0][0]
+    coord_0 = json.loads(gjson)["features"][0]["geometry"]["coordinates"][0][0]
     assert coord_0 == [35.85, -2.74]
+
 
 def test_topology_topoquantize():
     # load example data representing continental Africa
@@ -602,4 +607,4 @@ def test_topology_topoquantize():
     # compute the topology
     topo = topojson.Topology(data, topoquantize=9).to_dict()
 
-    assert len(topo['arcs']) == 149    
+    assert len(topo["arcs"]) == 149

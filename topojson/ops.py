@@ -25,6 +25,7 @@ except ImportError:
             return orient_(geom, sign)
         return geom
 
+
 import contextlib
 import shapely
 import warnings
@@ -38,15 +39,19 @@ except ImportError:
     shapely_warning = None
 
 if shapely_warning is not None and not SHAPELY_GE_20:
+
     @contextlib.contextmanager
     def ignore_shapely2_warnings():
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=shapely_warning)
             yield
+
 else:
+
     @contextlib.contextmanager
     def ignore_shapely2_warnings():
         yield
+
 
 def asvoid(arr):
     """

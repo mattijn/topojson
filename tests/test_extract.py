@@ -170,10 +170,7 @@ def test_extract_featurecollection():
     assert len(topo["bookkeeping_geoms"]) == 2
     assert len(topo["linestrings"]) == 2
     assert topo["objects"]["feature_0"]["type"] == "LineString"
-    assert (
-        topo["objects"]["feature_1"]["geometries"][0]["type"]
-        == "Polygon"
-    )
+    assert topo["objects"]["feature_1"]["geometries"][0]["type"] == "Polygon"
 
 
 # test to parse feature collection from a geojson file through geojson library
@@ -359,9 +356,9 @@ def test_extract_fiona_file_gpkg():
     with fiona.open("tests/files_shapefile/rivers.gpkg") as col:
         feats = []
         for idx, feat in enumerate(col):
-            if idx in [24,25]:
+            if idx in [24, 25]:
                 feats.append(feat)
-            
+
     topo = Extract(feats).to_dict()
 
     assert len(topo["bookkeeping_geoms"]) == 4
@@ -453,6 +450,7 @@ def test_extract_source_data_modify():
     # after Topology()
     assert "geometry" in data["features"][0].keys()
 
+
 # issue 151 properties are not kept in geojson data
 def test_extract_keep_properties():
     # prepare data
@@ -466,9 +464,9 @@ def test_extract_keep_properties():
     )
     data = FeatureCollection([feat_1, feat_2])
     topo = Extract(data).to_dict()
-    
-    assert topo['objects']['feature_0']['properties']['name'] == 'abc'
-    assert topo['objects']['feature_1']['properties']['name']['def'] == 'ghi'
+
+    assert topo["objects"]["feature_0"]["properties"]["name"] == "abc"
+    assert topo["objects"]["feature_1"]["properties"]["name"]["def"] == "ghi"
 
 
 # why cannot load geojson file using json module?

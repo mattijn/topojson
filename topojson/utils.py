@@ -312,7 +312,7 @@ def basictype2str(obj):
         strobj = {True: "true", False: "false"}[obj]
     # convert None to 'null' since None is not a valid syntax in JSON
     elif obj is None:
-        strobj = 'null'
+        strobj = "null"
     else:
         strobj = str(obj)
     return strobj
@@ -476,7 +476,12 @@ def serialize_as_json(topo_object, fp, pretty=False, indent=4, maxlinelength=88)
 
 
 def serialize_as_geojson(
-    topo_object, fp=None, validate=False, objectname="data", order="CCW_CW", decimals=None
+    topo_object,
+    fp=None,
+    validate=False,
+    objectname="data",
+    order="CCW_CW",
+    decimals=None,
 ):
     from shapely.geometry import shape
 

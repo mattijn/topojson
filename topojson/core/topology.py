@@ -210,7 +210,7 @@ class Topology(Hashmap):
         maxlinelength=88,
         validate=False,
         winding_order="CCW_CW",
-        decimals=None
+        decimals=None,
     ):
         """
         Convert the Topology to a GeoJSON object. Remember that this will destroy the
@@ -243,15 +243,18 @@ class Topology(Hashmap):
             rings and clockwise for interior rings.
             Default is `CCW_CW` for GeoJSON.
         decimals : int or None
-            Evenly round the coordinates to the given number of decimals. 
+            Evenly round the coordinates to the given number of decimals.
             Default is None, which means no rounding is applied.
         """
         topo_object = copy.deepcopy(self.output)
         topo_object = self._resolve_coords(topo_object)
         objectname = self.options.object_name
         fc = serialize_as_geojson(
-            topo_object, validate=validate, objectname=objectname, order=winding_order, 
-            decimals=decimals
+            topo_object,
+            validate=validate,
+            objectname=objectname,
+            order=winding_order,
+            decimals=decimals,
         )
         return serialize_as_json(
             fc, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
@@ -372,7 +375,7 @@ class Topology(Hashmap):
 
         if not arcs:
             return result
-        
+
         # dequantize if quantization is applied
         if "transform" in result.output.keys():
             np_arcs = np_array_from_arcs(arcs)
@@ -402,7 +405,7 @@ class Topology(Hashmap):
             # update into self
             self.output["arcs"] = result.output["arcs"]
             self.output["transform"] = result.output["transform"]
-            self.options.topoquantize = result.options.topoquantize      
+            self.options.topoquantize = result.options.topoquantize
         else:
             return result
 
@@ -475,8 +478,8 @@ class Topology(Hashmap):
 
             # dequantize if transform exist
             if transform is not None:
-                power_estimate = len(str(int(np_arcs[:,0].max())))
-                quant_factor_estimate = 10 ** power_estimate
+                power_estimate = len(str(int(np_arcs[:, 0].max())))
+                quant_factor_estimate = 10**power_estimate
                 np_arcs = dequantize(np_arcs, scale, translate)
 
             # apply simplify
@@ -580,6 +583,6 @@ class Topology(Hashmap):
             else:
                 quant_factor = self.options.topoquantize
 
-            self.topoquantize(quant_factor=quant_factor, inplace=True)           
+            self.topoquantize(quant_factor=quant_factor, inplace=True)
 
         return self.output
