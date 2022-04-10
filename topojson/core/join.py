@@ -2,6 +2,7 @@
 import copy
 import pprint
 from shapely import geometry
+from shapely.errors import ShapelyError
 from shapely.wkb import loads
 from shapely.ops import shared_paths
 from shapely.ops import linemerge
@@ -271,7 +272,7 @@ class Join(Extract):
         # detect potential shared paths between two linestrings
         try:
             fw_bw = shared_paths(g1, g2)
-        except ValueError:
+        except (ShapelyError, ValueError):
             self._valerr = True
             fw_bw = False
 
