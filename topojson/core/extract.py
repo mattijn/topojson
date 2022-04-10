@@ -9,6 +9,7 @@ from ..utils import instance
 from ..utils import serialize_as_svg
 from ..utils import TopoOptions
 from ..ops import winding_order
+from ..ops import ignore_shapely2_warnings
 
 
 class Extract(object):
@@ -663,14 +664,15 @@ class Extract(object):
                     # then the object might be a GeoJSON Feature or FeatureCollection. If
                     # this fails as well then the object is not recognized and removed.
                     try:
-                        geom = geometry.shape(self._obj)
+                        with ignore_shapely2_warnings():
+                            geom = geometry.shape(self._obj)
                         # object can be mapped, but may not be valid. remove invalid objects
                         # and continue
                         if not geom.is_valid:
                             self._invalid_geoms += 1
                             del self._data[self._key]
                             continue
-                    except (ValueError, ShapelyError):
+                    except (ShapelyError, ValueError):
                         # object might be a GeoJSON Feature or FeatureCollection
                         # check if geojson is installed
                         try:
