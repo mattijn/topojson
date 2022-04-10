@@ -25,6 +25,28 @@ except ImportError:
             return orient_(geom, sign)
         return geom
 
+import contextlib
+import shapely
+import warnings
+from distutils.version import LooseVersion
+
+SHAPELY_GE_20 = str(shapely.__version__) >= LooseVersion("2.0")
+
+try:
+    from shapely.errors import ShapelyDeprecationWarning as shapely_warning
+except ImportError:
+    shapely_warning = None
+
+if shapely_warning is not None and not SHAPELY_GE_20:
+    @contextlib.contextmanager
+    def ignore_shapely2_warnings():
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=shapely_warning)
+            yield
+else:
+    @contextlib.contextmanager
+    def ignore_shapely2_warnings():
+        yield
 
 def asvoid(arr):
     """
@@ -316,7 +338,10 @@ def bounds(arr):
         (minx, miny, maxx, maxy)
     """
     if len(arr):
-        arr = np.vstack(arr).T
+        if hasattr(arr[0], "coords"):
+            arr = np.vstack([a.coords for a in arr]).T
+        else:
+            arr = np.vstack(arr).T
         bounds = (
             np.nanmin(arr[0]),
             np.nanmin(arr[1]),
