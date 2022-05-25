@@ -276,3 +276,22 @@ def test_hashmap_fiona_gpkg_to_dict():
     topo = topo.to_dict()
 
     assert len(topo["linestrings"]) == 4
+
+# issue #148
+def test_hashmap_serializing_holes():
+    mp = geometry.shape({
+        "type": "MultiPolygon",
+        "coordinates": [
+            [
+                [[0, 0], [20, 0], [10, 20], [0, 0]],  # CCW
+                [[3, 2], [10, 16], [17, 2], [3, 2]],  # CW
+            ],
+            [[[6, 4], [14, 4], [10, 12], [6, 4]]],  # CCW
+        ]
+    })   
+    topo = Hashmap(mp)
+    topo = topo.to_dict()
+
+    arc = topo['objects']['data']['geometries'][0]['arcs']
+    assert len(arc) == len(mp)
+
