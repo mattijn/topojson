@@ -41,7 +41,7 @@ python -m pip install topojson
 And through conda using the following command:
 
 ```
-conda install -c conda-forge topojson
+conda install topojson -c conda-forge
 ```
 
 This package `topojson` has the following hard dependencies:
