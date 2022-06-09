@@ -3,6 +3,7 @@ import geopandas
 import fiona
 from shapely import geometry
 from topojson.core.hashmap import Hashmap
+import pytest
 
 # duplicate rotated geometry bar with hole interior in geometry foo
 def test_hashmap_geomcol_multipolygon_polygon():
