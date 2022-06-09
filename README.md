@@ -51,11 +51,11 @@ This package `topojson` has the following hard dependencies:
 
 Further, optional soft dependencies are:
 
-- `altair` (enlarge the experience by visualizing your TopoJSON output)
-- `simplification` (more and quicker simplification options)
-- `geojson` (parse string input with GeoJSON data)
-- `geopandas` (parse your TopoJSON output directly into a GeoDataFrame)
-- `ipywidgets` + (lab)extension (make your life complete with the interactive experience)
+- `altair` - enlarge the experience by visualizing your TopoJSON output
+- `simplification` - more and quicker simplification options
+- `geojson` - parse string input with GeoJSON data
+- `geopandas` - parse your TopoJSON output directly into a GeoDataFrame
+- `ipywidgets` + (lab)extension - make your life complete with the interactive experience
 
 ## Get in touch
 
