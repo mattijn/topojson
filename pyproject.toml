@@ -3,14 +3,16 @@ requires = ["flit"]
 build-backend = "flit.buildapi"
 
 [project]
-module = "topojson"
-author = "Mattijn van Hoek"
-author-email = "mattijn@gmail.com"
-home-page = "https://github.com/mattijn/topojson"
-requires = ["numpy", "shapely"]
+name = "topojson"
+dynamic = ["version", "description"]
+authors = [
+    {name = "Mattijn van Hoek", email = "mattijn@gmail.com"},
+]
+dependencies = ["numpy", "shapely"]
 keywords = "topojson python github topology geojson"
 description-file = "README.md"
 classifiers = ["License :: OSI Approved :: BSD License"]
+
 
 [project.optional-dependencies]
 dev = [    
@@ -24,3 +26,7 @@ dev = [
     "ipywidgets"    
 ]
 
+[project.urls]
+Documentation = "https://mattijn.github.io/topojson"
+Source = "https://github.com/mattijn/topojson"
+Releases = "https://github.com/mattijn/topojson/releases"
