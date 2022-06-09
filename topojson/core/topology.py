@@ -531,7 +531,7 @@ class Topology(Hashmap):
 
     def _resolve_coords(self, data):
         objectname = self.options.object_name
-        if not objectname in data["objects"].keys():
+        if objectname not in data["objects"].keys():
             raise SystemExit(
                 f"'{objectname}' is not an object name in your topojson file"
             )

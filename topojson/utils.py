@@ -173,7 +173,7 @@ def prettyjson(obj, indent=2, maxlinelength=80):
     return indentitems(items, indent, level=0)
 
 
-def getsubitems(obj, itemkey, islast, maxlinelength, level):
+def getsubitems(obj, itemkey, islast, maxlinelength, level):  # noqa: C901
     items = []
     is_inline = (
         True  # at first, assume we can concatenate the inner tokens into one line
@@ -506,7 +506,7 @@ def serialize_as_geojson(
         np_arcs = np.around(np_arcs, decimals=decimals)
 
     # select object member from topology object
-    if not objectname in topo_object["objects"].keys():
+    if objectname not in topo_object["objects"].keys():
         raise SystemExit(f"'{objectname}' is not an object name in your topojson file")
     features = topo_object["objects"][objectname]["geometries"]
 

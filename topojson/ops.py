@@ -1,5 +1,4 @@
 import itertools
-import logging
 import numpy as np
 from shapely import geometry
 from shapely import wkt
@@ -104,7 +103,7 @@ def np_array_bbox_points_line(line, tree_splitter):
         pts_within_bbox = tree_splitter.query_geoms(line)
     except AttributeError:
         # catch < v1.8 behaviour of shapely
-        pts_within_bbox = tree_splitter.query(line)        
+        pts_within_bbox = tree_splitter.query(line)
 
     if len(pts_within_bbox) == 0:
         # no point near bbox, nothing to insert, nothing to split

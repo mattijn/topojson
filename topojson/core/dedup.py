@@ -6,7 +6,6 @@ from shapely.ops import linemerge
 from .cut import Cut
 from ..ops import asvoid
 from ..ops import map_values
-from ..ops import np_array_from_lists
 from ..ops import lists_from_np_array
 from ..ops import cart
 from ..utils import serialize_as_svg
