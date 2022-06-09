@@ -14,6 +14,7 @@ With topojson it is possible to reduce the size of your spatial data. Mostly by 
 - Fixed-precision integer encoding of coordinates and
 - Simplification and quantization of arcs
 
+See [Topojson Documentation Site](https://mattijn.github.io/topojson) for all info how to use this package.
 
 ## Usage
 
