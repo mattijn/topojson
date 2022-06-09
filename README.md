@@ -35,7 +35,7 @@ _Top row (right) presents linestring simplification on a computed Topology and (
 Installation can be done through PyPI by the following command:
 
 ```
-python3 -m pip install topojson
+python -m pip install topojson
 ```
 
 And through conda using the following command:
