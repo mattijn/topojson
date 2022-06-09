@@ -9,8 +9,8 @@ authors = [
     {name = "Mattijn van Hoek", email = "mattijn@gmail.com"},
 ]
 dependencies = ["numpy", "shapely"]
-keywords = "topojson python github topology geojson"
-description-file = "README.md"
+keywords = ["topojson", "python", "github", "topology", "geojson"]
+readme = "README.md"
 classifiers = ["License :: OSI Approved :: BSD License"]
 
 
