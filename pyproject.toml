@@ -2,7 +2,7 @@
 requires = ["flit"]
 build-backend = "flit.buildapi"
 
-[tool.flit.metadata]
+[project]
 module = "topojson"
 author = "Mattijn van Hoek"
 author-email = "mattijn@gmail.com"
@@ -12,8 +12,8 @@ keywords = "topojson python github topology geojson"
 description-file = "README.md"
 classifiers = ["License :: OSI Approved :: BSD License"]
 
-[tool.flit.metadata.requires-extra]
-dev = [
+[project.optional-dependencies]
+dev = [    
     "shapely >=1.7a2",
     "geojson", 
     "simplification", 
@@ -21,6 +21,6 @@ dev = [
     "fiona >=1.8.6", 
     "geopandas", 
     "altair", 
-    "ipywidgets"
+    "ipywidgets"    
 ]
 
