@@ -29,6 +29,20 @@ For contributions, use the following guidelines:
 
 4. A Pull Request triggers the Continous Integration tests on the main GitHub repository and only after passing these tests a PR can be merged into master by the maintainer.
 
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Note to self 📝
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+One can install the package including optional dependencies directly from the GitHub repository using:
+```cmd
+python -m pip install "topojson[dev] @ git+https://github.com/mattijn/topojson.git"
+```
+</div>
+</div>
+
+
 * * * 
 
 ## Contribution for the Documentation
