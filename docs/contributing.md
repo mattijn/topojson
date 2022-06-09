@@ -40,6 +40,15 @@ One can install the package including optional dependencies directly from the Gi
 ```cmd
 python -m pip install "topojson[dev] @ git+https://github.com/mattijn/topojson.git"
 ```
+
+Or partly using conda:
+```cmd
+conda create -n topo_dev
+conda activate topo_dev
+conda install numpy shapely geojson pyshp fiona geopandas altair ipywidgets git
+python -m pip install simplification
+```
+
 </div>
 </div>
 
