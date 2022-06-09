@@ -278,7 +278,7 @@ def test_hashmap_fiona_gpkg_to_dict():
     assert len(topo["linestrings"]) == 4
 
 # issue #148
-@pytest.mark.skip(reason="test is present, solution yet unknown..")
+@pytest.mark.skip(reason="test is present, solution yet unknown.")
 def test_hashmap_serializing_holes():
     mp = geometry.shape({
         "type": "MultiPolygon",
