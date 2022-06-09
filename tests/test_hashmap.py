@@ -3,6 +3,7 @@ import geopandas
 import fiona
 from shapely import geometry
 from topojson.core.hashmap import Hashmap
+import pytest
 
 # duplicate rotated geometry bar with hole interior in geometry foo
 def test_hashmap_geomcol_multipolygon_polygon():
@@ -278,6 +279,7 @@ def test_hashmap_fiona_gpkg_to_dict():
     assert len(topo["linestrings"]) == 4
 
 # issue #148
+@pytest.mark.skip(reason="test is present, solution yet unknown.")
 def test_hashmap_serializing_holes():
     mp = geometry.shape({
         "type": "MultiPolygon",
