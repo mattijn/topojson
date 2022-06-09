@@ -45,7 +45,8 @@ Or partly using conda:
 ```cmd
 conda create -n topo_dev
 conda activate topo_dev
-conda install numpy shapely geojson pyshp fiona geopandas altair ipywidgets git
+conda install flit codecov pytest flake8
+conda install numpy shapely geojson pyshp fiona geopandas altair ipywidgets
 python -m pip install simplification
 ```
 
