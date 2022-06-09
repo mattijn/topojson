@@ -51,7 +51,7 @@ Further, optional soft dependencies are:
 - `altair` (enlarge the experience by visualizing your TopoJSON output)
 - `simplification` (more and quicker simplification options)
 - `geojson` (parse string input with GeoJSON data)
-- `geopandas` (with `fiona` version >=1.8.6!, parse your TopoJSON output directly into a GeoDataFrame)
+- `geopandas` (parse your TopoJSON output directly into a GeoDataFrame)
 - `ipywidgets` + (lab)extension (make your life complete with the interactive experience)
 
 ## Get in touch
