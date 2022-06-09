@@ -42,9 +42,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install flit codecov pytest flake8
           flit install --deps develop
+        continue-on-error: true  
       - name: Lint with flake8
         run: |          
           flake8 topojson
+        continue-on-error: true
       - name: Test with pytest
         run: |
-          pytest tests     
+          pytest tests
