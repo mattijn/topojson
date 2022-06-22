@@ -18,7 +18,7 @@ And through conda using the following command:
 conda install topojson -c conda-forge
 ```
 
-The library is installed succesfully if the following code.
+The library is installed successfully if the following code.
 
 ```python
 import topojson as tp
@@ -67,12 +67,12 @@ To improve the speed of the `presimplify`/`toposimplify` parameter settings or i
 
 - `simplification`
 
-To visualise the output as a mesh and/or return the output as geodataframe you will need (_optional_):
+To visualize the output as a mesh and/or return the output as geodataframe you will need (_optional_):
 
 - `altair`
 - `geopandas`
 
-To interactively analyse the effects of `toposimplify` and `topoquantize` as a widget, you also need (_optional_):
+To interactively analyze the effects of `toposimplify` and `topoquantize` as a widget, you also need (_optional_):
 
 - `ipywidgets`
 - `ipywidgets` JupyterLab extension

@@ -19,7 +19,7 @@ By adopting the TopoJSON format is possible to store geographical data as topolo
 
 boolean
 {: .text-delta}
-Specifiy if the topology should be computed for deriving the TopoJSON.
+Specify if the topology should be computed for deriving the TopoJSON.
 Default is `True`.
 
 <div class="code-example mx-1 bg-example">
@@ -123,7 +123,7 @@ data
 ```
 <img src="../images/two_no_touching_polygon.svg">
 
-The `prequantize` option is defined as an integer number. It can be best understand as a value that defines the size of a rectangular grid, with the bottom left coordinate at `(0,0)`. Next, the `x`-numbers and `y`-numbers of all coordinates are indepentenly scaled and shifted on this rectangular grid (normalization on range). Here it is shown for the `x`-numbers only:
+The `prequantize` option is defined as an integer number. It can be best understand as a value that defines the size of a rectangular grid, with the bottom left coordinate at `(0,0)`. Next, the `x`-numbers and `y`-numbers of all coordinates are independency scaled and shifted on this rectangular grid (normalization on range). Here it is shown for the `x`-numbers only:
 ```python
 # get the x-numbers of all coordinates
 x = np.array([ls.xy[0] for ls in data])
@@ -283,7 +283,7 @@ topological relations. Sensible values for coordinates stored in degrees are
 in the range of `0.0001` to `10`. Defaults to `False`.
 
 
-**Note 1:** The units of `toposimplify` are corresoponding to the input space. The provided _sensible_ values are for degrees (eg. `epsg:4326`). When the projection of your data is in `meters` you might need to test which value should be adopted.
+**Note 1:** The units of `toposimplify` are corresponding to the input space. The provided _sensible_ values are for degrees (eg. `epsg:4326`). When the projection of your data is in `meters` you might need to test which value should be adopted.
 
 **Note 2:** This is also supported by chaining. Meaning you could first compute the Topology (which can be cost-intensive) and afterwards apply the `toposimplify` on the computed Topology.
 
@@ -293,7 +293,7 @@ Example 🔧
 {: .label .label-blue-000 }
 </div>
 <div class="example-text" markdown="1">
-Here we load continental Afria as data file and apply the `toposimplify` on the arcs.
+Here we load continental Africa as data file and apply the `toposimplify` on the arcs.
 The plot shows the borders including linestring simplification, derived _after_ the `Topology` is computed.
 
 ```python
@@ -453,7 +453,7 @@ str
 {: .text-delta}
 Sets the package to use for simplifying (both pre- and toposimplify). Choose 
 between `shapely` or `simplification`. Shapely adopts solely Douglas-Peucker 
-and simplification both Douglas-Peucker and Visvalingam-Whyatt. The pacakge 
+and simplification both Douglas-Peucker and Visvalingam-Whyatt. The package 
 simplification is known to be quicker than shapely. 
 Default is `shapely`.
 
@@ -582,7 +582,7 @@ Topology(
  'type': 'Topology'}
 )
 </pre>
-As you can see the `arcs` for type `Polygon` are reversed. The effect seems to be negligible, but the effect should be taken into account when using geographic projections, as it defines which part is 'inside' and 'outside' the `Polgygon`:
+As you can see the `arcs` for type `Polygon` are reversed. The effect seems to be negligible, but the effect should be taken into account when using geographic projections, as it defines which part is 'inside' and 'outside' the `Polygon`:
 
 ```python
 alt_top = CW_CCW.to_alt(projection='equalEarth', color='type:N').properties(title='CW_CCW')

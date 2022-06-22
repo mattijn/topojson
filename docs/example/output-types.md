@@ -211,7 +211,7 @@ Example 🔧
 
 We use the data as is prepared in the [.to_json()](output-types.html#to_json) section.
 
-Serialze and save into a JSON (GeoJSON) file
+Serialize and save into a JSON (GeoJSON) file
 ```python
 topo.to_geojson('my_file.geo.json')
 ```
@@ -263,7 +263,7 @@ print(topo.to_json(pretty=True))
 </pre>
 The `pretty` option depends on the setting `indent` and `maxlinelength`, these default to `4` and `88` respectively.
 
-More options in generating the GeoJSON from the computed Topololgy are `validate` (`True` or `False`), `winding_order` and `decimals`. Where the TopoJSON standard defines a winding order of clock-wise orientation for outer polygons and counter-clockwise orientation for innner polygons is the winding order in the GeoJSON standard the opposite (`CCW_CW`). The `decimals` option defines the number of decimals for the output coordinates.
+More options in generating the GeoJSON from the computed Topology are `validate` (`True` or `False`), `winding_order` and `decimals`. Where the TopoJSON standard defines a winding order of clock-wise orientation for outer polygons and counter-clockwise orientation for inner polygons is the winding order in the GeoJSON standard the opposite (`CCW_CW`). The `decimals` option defines the number of decimals for the output coordinates.
 </div>
 </div>
 
@@ -280,7 +280,7 @@ Example 🔧
 </div>
 <div class="example-text" markdown="1">
 
-Here we load continental Afria as data file and apply a simplificiation on the arcs after the topology is computed using `toposimplify`.
+Here we load continental Africa as data file and apply a simplification on the arcs after the topology is computed using `toposimplify`.
 ```python
 import topojson as tp
 
@@ -299,7 +299,7 @@ topo.to_alt()
 ```
 <div id="embed_output_mesh_altair"></div>
 
-A few more convenience options are included for Altair visualizations, such as assigning a color property for indiviual features and using geopgraphic projections. 
+A few more convenience options are included for Altair visualizations, such as assigning a color property for individual features and using geographic projections. 
 
 Per TopoJSON specification, information of individual features are stored as an nested object within `properties`. For example here is shown the properties of the feature at index-0:
 
@@ -321,7 +321,7 @@ topo.to_dict()['objects']['data']['geometries'][0]
  'arcs': [[-6, 0, -84, -82, -77, -3, -100, -140, -137]]}
 </pre>
 
-Next, we map the property `name` of each feature as color property using a nominal (`:N`) encoding type. The `equalEarth` is used as geopgraphic projection. By default tooltips are enabled.
+Next, we map the property `name` of each feature as color property using a nominal (`:N`) encoding type. The `equalEarth` is used as geographic projection. By default tooltips are enabled.
 
 ```python
 # this requires the (optional!) package Altair.
@@ -350,7 +350,7 @@ Example 🔧
 </div>
 <div class="example-text" markdown="1">
 
-Given the included example data set of continental Afria and application of the Topology
+Given the included example data set of continental Africa and application of the Topology
 ```python
 import topojson as tp
 
@@ -387,7 +387,7 @@ Example 🔧
 </div>
 <div class="example-text" markdown="1">
 
-Given the included example data set of continental Afria, one can enanble the interactive IPython Widget as follow 
+Given the included example data set of continental Africa, one can enable the interactive IPython Widget as follow 
 ```python
 import topojson as tp
 

@@ -54,7 +54,7 @@ class Join(Extract):
         # execute previous step
         super().__init__(data, options)
 
-        # initation topology items
+        # initiation topology items
         self._junctions = []
         self._segments = []
         self._valerr = False
@@ -90,7 +90,7 @@ class Join(Extract):
 
     def _joiner(self, data):
         """
-        Entry point for the class Join. This function identiefs junctions
+        Entry point for the class Join. This function identifies junctions
         (intersection points) of shared paths.
 
         The join function is the second step in the topology computation.
@@ -194,7 +194,7 @@ class Join(Extract):
             self._junctions = [geometry.Point(xy) for xy in set(junctions)]
         else:
 
-            # create list with unique combinations of lines using a rdtree
+            # create list with unique combinations of lines using a r-tree
             line_combs = select_unique_combs(data["linestrings"])
 
             # iterate over index combinations
@@ -259,7 +259,7 @@ class Join(Extract):
         shared paths with the opposite direction for one the two inputs.
 
         The returned object extents the `segments` property with detected segments.
-        Where each seperate segment is a linestring between two points.
+        Where each separate segment is a linestring between two points.
 
         Parameters
         ----------
@@ -298,7 +298,7 @@ class Join(Extract):
             # add shared paths to segments
             self._segments.extend([list(shared_segments.geoms)])
 
-            # also add the first coordinates of both geoms as a vertice to segments
+            # also add the first coordinates of both geoms as a vertices to segments
             p1_g1 = geometry.Point([g1.xy[0][0], g1.xy[1][0]])
             p1_g2 = geometry.Point([g2.xy[0][0], g2.xy[1][0]])
             ls_p1_g1g2 = geometry.LineString([p1_g1, p1_g2])

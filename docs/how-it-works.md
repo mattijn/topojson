@@ -21,7 +21,7 @@ As explained before we can do so through:
 While the 2nd and 3rd bullets from above list have a significant impact on the filesize reduction, we will describe here the 1st bullet _-the computation of the Topology-_ since it is basically the core of this library.
 
 
-The computation of the Topology involves secure bookkeeping on multiple levels in order to succesfully pass all steps. The following levels in derivation can be distinguished, which are explained below:
+The computation of the Topology involves secure bookkeeping on multiple levels in order to successfully pass all steps. The following levels in derivation can be distinguished, which are explained below:
 
 1. TOC
 {:toc}
@@ -100,7 +100,7 @@ Extract(
  'type': 'Topology'}
 )
 </pre>
-The Extract class creates an object with a fews different keys. From top to bottom are these
+The Extract class creates an object with a few different keys. From top to bottom are these
 - `bookkeeping_coords` which stores the references to all point-coordinates. In this input are no existing point-coordinates.
 - `bookkeeping_geoms` which stores the references to all geometries, such as LineStrings and Polygons.
 - `coordinates` the actual point-coordinates
@@ -238,7 +238,7 @@ The Cut class creates an object based on the Join object. From top to bottom are
 - `bookkeeping_coords` see Extract. Not changed.
 - `bookkeeping_duplicates` nested arrays where each array are the referenced linestrings that are duplicates (albeit reversed) from each other.
 - `bookkeeping_geoms` see Extract. Not changed.
-- `bookkeeping_linestrings` since the linestrings are splitted using the junction-points, this key maintain the bookkeeping which LineStrings appeared in which geometry.
+- `bookkeeping_linestrings` since the linestrings are split using the junction-points, this key maintain the bookkeeping which LineStrings appeared in which geometry.
 - `coordinates` see Extract. Not changed.
 - `junctions` see Extract. Not changed.
 - `linestrings` in the process of splitting LineStrings on detected junctions, the object type is changed from shapely LineString to NumPy arrays in order to make use of matrix-wise splitting.
@@ -399,7 +399,7 @@ The `bookkeeping_*` keys are removed and the `arcs` for each geometry within `ob
 
 ## Topology
 
-The sixt and last step is Topology. The Topology class passes the data first _down_ towards the Extract and subsequently Join, Cut, Dedup and Hashmap class, before starting the Topology phase.
+The sixth and last step is Topology. The Topology class passes the data first _down_ towards the Extract and subsequently Join, Cut, Dedup and Hashmap class, before starting the Topology phase.
 
 <img src="images/topology.png" width="450px"/>
 
@@ -439,7 +439,7 @@ The Topology class creates an object based on the Hashmap object. From top to bo
 - `bbox`: see Join. Not changed.
 - `coordinates` see Extract. Not changed.
 - `objects` see Hashmap. Not changed.
-- `transform` stroes the `scale` and `translate` keys, which can be used for dequantization of the quantized arcs.
+- `transform` stores the `scale` and `translate` keys, which can be used for dequantization of the quantized arcs.
 
 The `arcs` key is created storing the quantized linestrings, where shared arcs are referred from within each geometry.
 

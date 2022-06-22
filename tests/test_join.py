@@ -1,6 +1,5 @@
-from shapely import geometry
-import topojson
 import geopandas
+from shapely import geometry
 from topojson.core.join import Join
 
 # the returned hashmap has undefined for non-junction points
@@ -116,7 +115,7 @@ def test_join_shared_junctions_in_shared_paths():
 # this test was added since a shared path can be detected of two linestrings where
 # the shared path is partly from the start and partly of the end part of the
 # linestring. If any shared path are detected also add the first coordinates of both
-# linestrings to be considerd as junction. Not sure what happened if this introduces
+# linestrings to be considered as junction. Not sure what happened if this introduces
 # another problem since this coordinates may not be unique anymore, and this can be
 # skipped as a junction..
 def test_join_shared_segment_partly_start_partly_end_segment():
@@ -551,7 +550,7 @@ def test_join_exact_duplicate_rings_ABCA_ABCA_share_ABCA():
     assert len(topo["junctions"]) == 1
 
 
-# reversed duplicate rings ABCA & ACBA share the arc ABCA, but contain no juctions
+# reversed duplicate rings ABCA & ACBA share the arc ABCA, but contain no junctions
 def test_join_exact_duplicate_rings_ABCA_ACBA_share_ABCA():
     data = {
         "abca": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [0, 1], [0, 0]]]},
@@ -562,7 +561,7 @@ def test_join_exact_duplicate_rings_ABCA_ACBA_share_ABCA():
     assert len(topo["junctions"]) == 1
 
 
-# coincident rings ABCA & BCAB share the arc BCAB, but contain no junctinos
+# coincident rings ABCA & BCAB share the arc BCAB, but contain no junctions
 # this is a problem though as they are considered equal in a MultiPolygon geometry.
 # test will pass, but coincident rings should be rotated before dedup
 def test_join_coincident_rings_ABCA_BCAB_share_BCAB():
@@ -608,7 +607,7 @@ def test_join_coincident_ring_ABCA_and_line_DBE_share_B():
     assert len(topo["junctions"]) == 2
 
 
-def test_join_non_noded_interesection():
+def test_join_non_noded_intersection():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     topo = Join(data).to_dict()
 
@@ -977,7 +976,7 @@ def test_join_shared_paths_exact_duplicate_rings_ABCA_ABCA_share_ABCA():
     assert topo["junctions"] == []
 
 
-# reversed duplicate rings ABCA & ACBA share the arc ABCA, but contain no juctions
+# reversed duplicate rings ABCA & ACBA share the arc ABCA, but contain no junctions
 def test_join_shared_paths_exact_duplicate_rings_ABCA_ACBA_share_ABCA():
     data = {
         "abca": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [0, 1], [0, 0]]]},
@@ -988,7 +987,7 @@ def test_join_shared_paths_exact_duplicate_rings_ABCA_ACBA_share_ABCA():
     assert topo["junctions"] == []
 
 
-# coincident rings ABCA & BCAB share the arc BCAB, but contain no junctinos
+# coincident rings ABCA & BCAB share the arc BCAB, but contain no junctions
 # this is a problem though as they are considered equal in a MultiPolygon geometry.
 # test will pass, but coincident rings should be rotated before dedup
 def test_join_shared_paths_coincident_rings_ABCA_BCAB_share_BCAB():
@@ -1034,7 +1033,7 @@ def test_join_shared_paths_coincident_ring_ABCA_and_line_DBE_share_B():
     assert topo["junctions"] == []
 
 
-def test_join_shared_paths_non_noded_interesection():
+def test_join_shared_paths_non_noded_intersection():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     topo = Join(data, options={"shared_coords": False}).to_dict()
 

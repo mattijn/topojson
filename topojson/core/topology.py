@@ -30,7 +30,7 @@ class Topology(Hashmap):
     data : _any_ geometric type
         Geometric data that should be converted into TopoJSON
     topology : boolean
-        Specifiy if the topology should be computed for deriving the TopoJSON.
+        Specify if the topology should be computed for deriving the TopoJSON.
         Default is `True`.
     prequantize : boolean, int
         If the prequantization parameter is specified, the input geometry is
@@ -74,7 +74,7 @@ class Topology(Hashmap):
     simplify_with : str
         Sets the package to use for simplifying (both pre- and toposimplify). Choose
         between `shapely` or `simplification`. Shapely adopts solely Douglas-Peucker
-        and simplification both Douglas-Peucker and Visvalingam-Whyatt. The pacakge
+        and simplification both Douglas-Peucker and Visvalingam-Whyatt. The package
         simplification is known to be quicker than shapely.
         Default is `shapely`.
     simplify_algorithm : str
@@ -112,7 +112,7 @@ class Topology(Hashmap):
 
         options = TopoOptions(locals())
 
-        # shorcut when dealing with topojson data
+        # shortcut when dealing with topojson data
         if (
             instance(data) == "dict"
             and "type" in data.keys()
@@ -187,7 +187,7 @@ class Topology(Hashmap):
         indent : int
             If `style='pretty'`, declares the indentation of the objects.
             Default is `4`.
-        maxlinelinelength : int
+        maxlinelength : int
             If `style='pretty'`, declares the maximum length of each line.
             Default is `88`.
         """
@@ -229,7 +229,7 @@ class Topology(Hashmap):
         indent : int
             If `pretty=True`, declares the indentation of the objects.
             Default is `4`.
-        maxlinelinelength : int
+        maxlinelength : int
             If `pretty=True`, declares the maximum length of each line.
             Default is `88`.
         validate : boolean
@@ -435,7 +435,7 @@ class Topology(Hashmap):
         simplify_with : str, optional
             Sets the package to use for simplifying. Choose between `shapely` or
             `simplification`. Shapely adopts solely Douglas-Peucker and simplification
-            both Douglas-Peucker and Visvalingam-Whyatt. The pacakge simplification is
+            both Douglas-Peucker and Visvalingam-Whyatt. The package simplification is
             known to be quicker than shapely.
             Default is `None`, meaning that the default (`shapely`) is not overwritten.
         prevent_oversimplify: boolean, optional
@@ -452,7 +452,7 @@ class Topology(Hashmap):
         Returns
         -------
         object or None
-            Topology object with simplfified linestrings if `inplace` is `False`.
+            Topology object with simplified linestrings if `inplace` is `False`.
         """
         result = copy.deepcopy(self)
 
@@ -496,7 +496,7 @@ class Topology(Hashmap):
             ptbs = bounds(result.output["coordinates"])
             result.output["bbox"] = compare_bounds(lsbs, ptbs)
 
-            # quantize aqain if quantization was applied
+            # quantize again if quantization was applied
             if transform is not None:
                 quant_factor = None
                 if result.options.topoquantize > 0:

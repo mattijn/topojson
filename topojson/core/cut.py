@@ -40,7 +40,7 @@ class Cut(Join):
         # execute previous step
         super().__init__(data, options)
 
-        # initation topology items
+        # initiation topology items
         self._duplicates = []
         self._bookkeeping_linestrings = []
 
@@ -172,21 +172,21 @@ class Cut(Join):
         Returns
         -------
         list
-            segmntlist flattens the nested LineString in slist
+            segment_list flattens the nested LineString in slist
         numpy.array
             array_bk is a bookkeeping array with index values to each LineString
         """
 
         # flatten
-        segmntlist = list(itertools.chain(*slist))
+        segment_list = list(itertools.chain(*slist))
         # create slice pairs
-        segmnt_idx = list(itertools.accumulate([len(geom) for geom in slist]))
+        segment_idx = list(itertools.accumulate([len(geom) for geom in slist]))
         slice_pair = [
-            (segmnt_idx[idx - 1] if idx >= 1 else 0, current)
-            for idx, current in enumerate(segmnt_idx)
+            (segment_idx[idx - 1] if idx >= 1 else 0, current)
+            for idx, current in enumerate(segment_idx)
         ]
         # index array
-        list_bk = [range(len(segmntlist))[s[0] : s[1]] for s in slice_pair]
+        list_bk = [range(len(segment_list))[s[0] : s[1]] for s in slice_pair]
         array_bk = np_array_from_lists(list_bk)
 
-        return segmntlist, array_bk
+        return segment_list, array_bk

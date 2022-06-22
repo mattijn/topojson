@@ -80,7 +80,7 @@ class Hashmap(Dedup):
         4. dedup
         5. hashmap
 
-        Developping Notes:
+        Developing Notes:
         * PostGIS Tips for Power Users: http://2010.foss4g.org/presentations/3369.pdf
         """
 
@@ -88,7 +88,7 @@ class Hashmap(Dedup):
         self._data = data
 
         # resolve bookkeeping to arcs in objects, including backward check of arcs
-        # resolve bookkeeping of coordinates in objects, including delta-encodig
+        # resolve bookkeeping of coordinates in objects, including delta-encoding
         list(self._resolve_objects(["arcs", "coordinates"], self._data["objects"]))
 
         objects = {}
@@ -137,7 +137,7 @@ class Hashmap(Dedup):
         Returns
         -------
         order_of_arc : numpy array
-            array containg values if first or last arc should be used to order
+            array containing values if first or last arc should be used to order
         split_arc_ids : list of numpy arrays
             array containing splitted arc ids
         """
@@ -342,7 +342,7 @@ class Hashmap(Dedup):
         """
 
         for k, v in dictionary.items():
-            # resolve when key equals 'arcs' and v contains arc indici
+            # resolve when key equals 'arcs' and v contains arc indices
             if str(k) in keys and v is not None:
                 dictionary[k] = self._resolve_bookkeeping(v, k)
                 yield v

@@ -5,7 +5,6 @@ import geopandas
 import geojson
 import fiona
 import topojson
-import pytest
 
 
 # this test was added since geometries of only linestrings resulted in a topojson

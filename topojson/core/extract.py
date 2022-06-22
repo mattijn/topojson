@@ -47,7 +47,7 @@ class Extract(object):
     """
 
     def __init__(self, data, options={}):
-        # initation topology options
+        # initiation topology options
         if isinstance(options, TopoOptions):
             self.options = options
         else:
@@ -138,7 +138,7 @@ class Extract(object):
 
         if self._tried_geojson:
             logging.warning(
-                "Objects might be reconignized if python package `geojson` is installed."
+                "Objects might be recognized if python package `geojson` is installed."
             )
         return data
 
@@ -146,7 +146,7 @@ class Extract(object):
     def _serialize_geom_type(self, geom):
         """
         This function handles the different types that can occur within known
-        geographical data. Each type is registerd as its own function and called when
+        geographical data. Each type is registered as its own function and called when
         found, if none of the types match the input geom the current function is
         executed.
 
@@ -406,7 +406,7 @@ class Extract(object):
 
         # iterate over the parsed shape(geom)
         # the original data objects is set as self._obj
-        # the following lines can catch a GeometryCollection untill two levels deep
+        # the following lines can catch a GeometryCollection until two levels deep
         # improvements on this are welcome
         for idx, geo in enumerate(geom.geoms):
             # if geom is GeometryCollection, collect geometries within collection
@@ -530,7 +530,7 @@ class Extract(object):
 
         # convert Fiona Collection into a GeoJSON Feature Collection
         geom = geojson.FeatureCollection(list(geom))
-        # reparse feat_col in _extractor()
+        # re-parse feat_col in _extractor()
         self._is_single = False
         self._extractor(geom)
 
@@ -656,7 +656,7 @@ class Extract(object):
 
                 # no direct shapely geometries available. Try forcing
                 else:
-                    # detect if the obect contains a __geo_interface__.
+                    # detect if the object contains a __geo_interface__.
                     if hasattr(self._obj, "__geo_interface__"):
                         self._obj = self._obj.__geo_interface__
                         self._data[self._key] = self._obj

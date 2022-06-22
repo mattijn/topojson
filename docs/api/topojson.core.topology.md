@@ -22,7 +22,7 @@ coordinates but foremost the computation of a topology.
 > + ###### `data` : _any_ geometric type
     Geometric data that should be converted into TopoJSON
 > + ###### `topology` : boolean
-    Specifiy if the topology should be computed for deriving the TopoJSON.
+    Specify if the topology should be computed for deriving the TopoJSON.
     Default is `True`.
 > + ###### `prequantize` : boolean, int
     If the prequantization parameter is specified, the input geometry is
@@ -62,14 +62,14 @@ coordinates but foremost the computation of a topology.
 > + ###### `simplify_with` : str
     Sets the package to use for simplifying (both pre- and toposimplify). Choose
     between `shapely` or `simplification`. Shapely adopts solely Douglas-Peucker
-    and simplification both Douglas-Peucker and Visvalingam-Whyatt. The pacakge
+    and simplification both Douglas-Peucker and Visvalingam-Whyatt. The package
     simplification is known to be quicker than shapely.
     Default is `shapely`.
 > + ###### `simplify_algorithm` : str
     Choose between `dp` and `vw`, for Douglas-Peucker or Visvalingam-Whyatt
     respectively. `vw` will only be selected if `simplify_with` is set to
-    `simplification`. Default is `dp`, since it still "produces the most accurate
-    generalization" (Chi & Cheung, 2006).
+    `simplification`. Default is `dp`, since it "produced the most accurate
+    generalization" (Shi, W. & Cheung, C., 2006).
 > + ###### `winding_order` : str
     Determines the winding order of the features in the output geometry. Choose
     between `CW_CCW` for clockwise orientation for outer rings and counter-
@@ -128,7 +128,7 @@ Convert the Topology to a JSON object.
 > + ###### `indent` : int
     If `pretty=True`, declares the indentation of the objects.
     Default is `4`.
-> + ###### `maxlinelinelength` : int
+> + ###### `maxlinelength` : int
     If `pretty=True`, declares the maximum length of each line.
     Default is `88`.
 
@@ -151,7 +151,7 @@ computed Topology.
 > + ###### `indent` : int
     If `pretty=True`, declares the indentation of the objects.
     Default is `4`
-> + ###### `maxlinelinelength` : int
+> + ###### `maxlinelength` : int
     If `pretty=True`, declares the maximum length of each line.
     Default is `88`
 > + ###### `validate` : boolean
@@ -175,7 +175,7 @@ computed Topology.
 
 Note: This function use the TopoJSON driver within Fiona to parse the Topology
 to a GeoDataFrame. If data is missing (eg. Fiona cannot parse nested
-geometrycollections) you can trying using the `.to_geojson()` function prior
+geometry collections) you can trying using the `.to_geojson()` function prior
 creating the GeoDataFrame.
 
 ### to_alt
@@ -256,4 +256,4 @@ in the range of `0.0001` to `10`.
 
 > #### Returns
 > + ###### object or None
-Topology object with simplfified linestrings if `inplace` is `False`.
+Topology object with simplified linestrings if `inplace` is `False`.
