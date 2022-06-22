@@ -110,7 +110,7 @@ with open("tests/files_topojson/example_data_africa.geojson", 'r') as f:
 assert data['type']) == 'FeatureCollection'
 topo = topojson.Topology(data)
 
-# to visualise we use the (optional!) package Altair.
+# to visualize we use the (optional!) package Altair.
 topo.toposimplify(4).to_alt()
 ```
 <div id="embed_output_mesh_altair_from_geojson"></div>
@@ -120,7 +120,7 @@ topo.toposimplify(4).to_alt()
 * * * 
 
 ## TopoJSON data from file
-A TopoJSON file can be postprocessed using json dictionary.
+A TopoJSON file can be post-processed using json dictionary.
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">

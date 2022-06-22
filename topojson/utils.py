@@ -522,18 +522,18 @@ def serialize_as_geojson(
             f["properties"] = {}
 
         # the transform is only used in cases of points or multipoints
-        geommap = geometry(feature, np_arcs, transform)
+        geom_map = geometry(feature, np_arcs, transform)
 
         # enforce right-hand rule on geometry for GeoJSON
-        geommap = winding_order(geom=shape(geommap), order=order)
+        geom_map = winding_order(geom=shape(geom_map), order=order)
 
         if validate:
-            geom = shape(geommap).buffer(0)
+            geom = shape(geom_map).buffer(0)
 
             assert geom.is_valid
-            f["geometry"] = geommap.__geo_interface__
+            f["geometry"] = geom_map.__geo_interface__
         else:
-            f["geometry"] = geommap.__geo_interface__
+            f["geometry"] = geom_map.__geo_interface__
 
         fc["features"].append(f)
     return fc
@@ -573,7 +573,7 @@ def serialize_as_altair(
             .project(type=projection, reflectY=reflectY)
         )
 
-    # creating a chloropleth visualisation
+    # creating a chloropleth visualization
     else:
         data = alt.InlineData(
             values=topo_object,
@@ -608,7 +608,7 @@ def serialize_as_ipywidgets(topo_object, toposimplify, topoquantize):
     alg = widgets.RadioButtons(
         options=[("Douglas-Peucker", "dp"), ("Visvalingam-Whyatt", "vw")],
         value="vw",
-        description="Simplify algortihm",
+        description="Simplify algorithm",
         disabled=False,
         style=style,
     )

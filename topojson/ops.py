@@ -102,7 +102,7 @@ def np_array_bbox_points_line(line, tree_splitter):
     try:
         pts_within_bbox = tree_splitter.query_geoms(line)
     except AttributeError:
-        # catch < v1.8 behaviour of shapely
+        # catch < v1.8 behavior of shapely
         pts_within_bbox = tree_splitter.query(line)
 
     if len(pts_within_bbox) == 0:
@@ -140,7 +140,7 @@ def insert_coords_in_line(line, tree_splitter):
     try:
         pts_within_bbox = tree_splitter.query_geoms(line)
     except AttributeError:
-        # catch < v1.8 behaviour of shapely
+        # catch < v1.8 behavior of shapely
         pts_within_bbox = tree_splitter.query(line)
 
     # select junctions that are within tolerance of line
@@ -177,12 +177,12 @@ def insert_coords_in_line(line, tree_splitter):
     splitter_dist = splitter_dist[splitter_dist > 0]
 
     # sort distance of non-existing junctions and apply sorting to the splitter distance
-    # and corresponing junction coordinates to be inserted.
+    # and corresponding junction coordinates to be inserted.
     sort_idx = splitter_dist.argsort()
     splitter_dist = splitter_dist[sort_idx]
     pts_xy_nonexst = pts_xy_nonexst[sort_idx]
 
-    # get eucledian distance of all coords of line
+    # get euclidean distance of all coords of line
     ls_xy_roll = np.roll(ls_xy, 1, axis=0)
     roll_min_ls = ls_xy_roll - ls_xy
     eucl_dist = np.sqrt(np.einsum("ij,ij->i", roll_min_ls, roll_min_ls))
@@ -208,7 +208,7 @@ def fast_split(line, splitter):
     line : numpy.array
         numpy array with coordinates that you like to be split
     splitter : numpy.array
-        numpy array with coordiates on wich the line should be tried splitting
+        numpy array with coordinates on which the line should be tried splitting
 
     Returns
     -------
@@ -231,7 +231,7 @@ def fast_split(line, splitter):
         )
     )
 
-    # compute the indices on wich to split the line
+    # compute the indices on which to split the line
     # cannot split on first or last index of linestring
     splitter_indices = splitter_indices[
         (splitter_indices < (line.shape[0] - 1)) & (splitter_indices > 0)
@@ -447,7 +447,7 @@ def dequantize(np_arcs, scale, translate):
 
 def get_matches(geoms, tree_idx):
     """
-    Function to return the indici of the rtree that intersects with the input geometries
+    Function to return the indices of the rtree that intersects with the input geometries
 
     Parameters
     ----------
@@ -497,10 +497,10 @@ def select_unique(data):
 
 def select_unique_combs(linestrings):
     """
-    Given a set of inpit linestrings will create unique couple combinations.
-    Each combination created contains a couple of two linestrings where the enveloppe
+    Given a set of input linestrings will create unique couple combinations.
+    Each combination created contains a couple of two linestrings where the envelope
     overlaps each other.
-    Linestrings with non-overlapping enveloppes are not returned as combination.
+    Linestrings with non-overlapping envelopes are not returned as combination.
 
     Parameters
     ----------
@@ -511,7 +511,7 @@ def select_unique_combs(linestrings):
     -------
     numpy.array
         2 dimensional array, with on each row the index combination
-        of a unique couple LineString with overlapping enveloppe
+        of a unique couple LineString with overlapping envelope
     """
 
     # create spatial index
@@ -631,9 +631,10 @@ def simplify(
         30-100 for "vw".
     algorithm : str, optional
         Choose between `dp` for Douglas-Peucker and `vw` for Visvalingam–Whyatt.
-        Defaults to `dp`, as its evaluation maintains to be good (Song & Miao, 2016).
+        Defaults to `dp`, as its evaluation maintains to be good (Shi, W. & 
+        Cheung, C., 2006).
     package : str, optional
-        Choose between `simplification` or `shapely`. Both pachakges contains
+        Choose between `simplification` or `shapely`. Both packages contains
         simplification algorithms (`shapely` only `dp`, and `simplification` both `dp`
         and `vw`).
     input_as : str, optional
@@ -775,7 +776,7 @@ def round_coordinates(linestrings, rounding_precision):
     linestrings : list of shapely.geometry.LineStrings
         LineStrings of which the coordinates will be rounded
     rounding_precision : int
-        Precision value. Up till how many decimales the coordinates should be rounded.
+        Precision value. Up till how many decimals the coordinates should be rounded.
 
     Returns
     -------
@@ -801,7 +802,7 @@ def prettify(topojson_object):
     Returns
     -------
     topojson.Topojson
-        pretty printed JSON variant of the topoloy object
+        pretty printed JSON variant of the topology object
     """
     return pprint.pprint(topojson_object)
 
@@ -810,7 +811,7 @@ def properties_level(topojson_object, position="nested"):
     """
     Define where the attributes of the geometry object should be placed. Choose between
     `nested` or `foreign`. Default is `nested` where the attribute information is placed
-    within the "properties" ditctionary, part of the geometry.
+    within the "properties" dictionary, part of the geometry.
     `foreign`, tries to place the attributes on the same level as the geometry.
 
     Parameters
@@ -823,7 +824,7 @@ def properties_level(topojson_object, position="nested"):
 
     import warnings
 
-    warnings.warn(("\nNot yet implemened."), DeprecationWarning, stacklevel=2)
+    warnings.warn(("\nNot yet implemented."), DeprecationWarning, stacklevel=2)
 
 
 def delta_encoding(linestrings):
@@ -899,7 +900,7 @@ def find_duplicates(segments_list, type="array"):
         sorted_hashes, return_counts=True, return_index=True
     )
     if count.max() > 1:
-        # split on indices that occures > 1
+        # split on indices that occurs > 1
         idx_dups = np.split(idx_sort, idx_start[1:])
         list_dups = []
         for dup in idx_dups:
@@ -939,10 +940,10 @@ def map_values(arr, search_vals, replace_vals):
         new array with replaced values
     """
     N = max(arr.max(), max(search_vals)) + 1
-    mapar = np.empty(N, dtype=np.int64)
+    maparr = np.empty(N, dtype=np.int64)
 
-    mapar[arr] = arr
-    mapar[search_vals] = replace_vals
+    maparr[arr] = arr
+    maparr[search_vals] = replace_vals
 
-    arr_upd = mapar[arr]
+    arr_upd = maparr[arr]
     return arr_upd

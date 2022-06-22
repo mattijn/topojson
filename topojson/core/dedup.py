@@ -20,7 +20,7 @@ class Dedup(Cut):
         # execute previous step
         super().__init__(data, options)
 
-        # initation topology items
+        # initiation topology items
         self._idx_merged_dups = []
 
         # execute main function of Dedup
@@ -85,7 +85,7 @@ class Dedup(Cut):
         mask = np.isin(array_bk, array_bk_sarcs)
         array_bk_ndp = copy.deepcopy(array_bk.astype(float))
 
-        # only do merging of arcs if there are contigous arcs in geoms
+        # only do merging of arcs if there are contiguous arcs in geoms
         if array_bk_ndp[mask].size != 0:
             # make sure the idx of shared arcs are set to np.nan
             array_bk_ndp[mask] = np.nan
@@ -95,8 +95,8 @@ class Dedup(Cut):
             sliced_array_bk_ndp = array_bk_ndp[slice_idx]
 
             if sliced_array_bk_ndp.shape[1] > 1:
-                # apply linemerge on geoms containing contigious arcs and collect idx
-                idx_merged_dups = self._merge_contigious_arcs(data, sliced_array_bk_ndp)
+                # apply linemerge on geoms containing contiguous arcs and collect idx
+                idx_merged_dups = self._merge_contiguous_arcs(data, sliced_array_bk_ndp)
                 # use deduplicate as proxy-function for merged arcs index bookkeeping
                 if idx_merged_dups is not None:
                     array_bk, array_bk_sarcs = self._pop_merged_arcs(
@@ -174,7 +174,7 @@ class Dedup(Cut):
         bk_dups.sort(axis=1)
         bk_dups = bk_dups[:, ::-1]
 
-        # define arrays from wich the indices can be kept and popped
+        # define arrays from which the indices can be kept and popped
         vals2keep = bk_dups[:, 0]
         vals2pop = bk_dups[:, 1]
 
@@ -208,10 +208,10 @@ class Dedup(Cut):
 
         return arr_new, arr_bk_sarcs
 
-    def _merge_contigious_arcs(self, data, sliced_array_bk_ndp):
+    def _merge_contiguous_arcs(self, data, sliced_array_bk_ndp):
         """
         Function that iterate over geoms that contain shared arcs and try linemerge
-        on remaining arcs. The merged contigious arc is placed back in the 'linestrings'
+        on remaining arcs. The merged contiguous arc is placed back in the 'linestrings'
         object.
         The arcs that can be popped are placed within the merged_arcs_idx list
 
@@ -240,7 +240,7 @@ class Dedup(Cut):
             # bookkeeping
             if no_ndp_arcs != no_ndp_arcs_bk:
                 # get the idx of the linestring which was merged
-                idx_merg_arc, merged_dedups = self._find_merged_linestring(
+                idx_merged_arc, merged_dedups = self._find_merged_linestring(
                     data, no_ndp_arcs, ndp_arcs, ndp_arcs_bk
                 )
 
@@ -248,7 +248,7 @@ class Dedup(Cut):
                 # and collect remaining arcs as duplicates
                 idx_keep = merged_dedups[0][0]
                 data["linestrings"][idx_keep] = np.array(
-                    ndp_arcs.geoms[idx_merg_arc].coords
+                    ndp_arcs.geoms[idx_merged_arc].coords
                 )
                 list_merged_dups.append(merged_dedups)
 
@@ -260,16 +260,16 @@ class Dedup(Cut):
 
     def _pop_merged_arcs(self, bk_dups, linestring_list, array_bk):
         """
-        The collected indici that can be popped, since they have been merged
+        The collected indices that can be popped, since they have been merged
         This functions looks like _deduplicate(), but is slightly different where
-        vals2pop indici are set to 0 (NaN).
+        vals2pop indices are set to 0 (NaN).
         """
 
         # guarantee that first column contain higher values than second column
         bk_dups.sort(axis=1)
         bk_dups = bk_dups[:, ::-1]
 
-        # define arrays from wich the indices can be kept and popped
+        # define arrays from which the indices can be kept and popped
         # vals2keep = bk_dups[:, 0]
         vals2pop = bk_dups[:, 1]
 
@@ -285,8 +285,8 @@ class Dedup(Cut):
         arr = arr.astype(np.int64)
 
         # replace duplicates by single values, add +1 since NaNs are on 0
-        zeroarray = np.zeros_like(vals2pop)
-        arr_map = map_values(arr, vals2pop + 1, zeroarray)
+        zero_array = np.zeros_like(vals2pop)
+        arr_map = map_values(arr, vals2pop + 1, zero_array)
 
         # popped indices changes the bookkeeping, align decremented indices
         # add +1 since NaNs are on 0

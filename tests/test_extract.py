@@ -59,7 +59,7 @@ def test_extract_invalid_polygon():
     assert len(topo["linestrings"]) == 1
 
 
-# test multiliinestring
+# test multilinestring
 def test_extract_multilinestring():
     data = {
         "foo": {
@@ -76,7 +76,7 @@ def test_extract_multilinestring():
     assert len(topo["linestrings"]) == 3
 
 
-# test nested geojosn geometrycollection collection
+# test nested geojson geometrycollection collection
 def test_extract_nested_geometrycollection():
     data = {
         "foo": {
@@ -334,7 +334,7 @@ def test_extract_geopandas_geodataframe():
     assert len(topo["bookkeeping_geoms"]) == 3
 
 
-# dict shoud have a valued key:geom_object. Otherwise key:value is removed
+# dict should have a valued key:geom_object. Otherwise key:value is removed
 def test_extract_invalid_dict_item():
     data = {
         "type": "MultiPolygon",

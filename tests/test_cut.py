@@ -1,4 +1,3 @@
-import topojson
 import geopandas
 from shapely import geometry
 from topojson.core.cut import Cut
@@ -46,7 +45,7 @@ def test_cut_overlapping_rings_are_cut():
     assert topo["bookkeeping_duplicates"].tolist() == [[4, 1]]
 
 
-# currently the border between Sudan and Eqypt is not recognized as duplicate
+# currently the border between Sudan and Egypt is not recognized as duplicate
 # because of floating-precision. Should be solved by a "snap_to_grid" option.
 def test_cut_border_egypt_sudan():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
@@ -175,7 +174,7 @@ def test_cut_reversed_rings_ABCA_ACBA_no_cuts():
 
 
 # cut rotated duplicate rings BCAB & ABCA have no cuts
-# changed the assertion of bookkeeping_duplicates, since the method rotated polyons are
+# changed the assertion of bookkeeping_duplicates, since the method rotated polygons are
 # not detected anymore in find_duplicate function when shapely is used for shared_paths.
 def test_cut_rotated_duplicates_rings_BCAB_ABCA_no_cuts():
     data = {
@@ -207,7 +206,7 @@ def test_cut_ring_ABCA_line_ABCA_no_cuts():
 
 
 # cut ring BCAB & line ABCA have no cuts
-# changed the assertion of bookkeeping_duplicates, since the method rotated polyons are
+# changed the assertion of bookkeeping_duplicates, since the method rotated polygons are
 # not detected anymore in find_duplicate function when shapely is used for shared_paths.
 def test_cut_ring_BCAB_line_ABCA_no_cuts():
     data = {
@@ -227,7 +226,7 @@ def test_cut_ring_BCAB_line_ABCA_no_cuts():
 
 
 # cut ring ABCA & line BCAB have no cuts
-# changed the assertion of bookkeeping_duplicates, since the method rotated polyons are
+# changed the assertion of bookkeeping_duplicates, since the method rotated polygons are
 # not detected anymore in find_duplicate function when shapely is used for shared_paths.
 def test_cut_ring_ABCA_line_BCAB_no_cuts():
     data = {
@@ -296,7 +295,7 @@ def test_cut_shared_paths_reversed_rings_ABCA_ACBA_no_cuts():
 
 
 # cut rotated duplicate rings BCAB & ABCA have no cuts
-# changed the assertion of bookkeeping_duplicates, since the method rotated polyons are
+# changed the assertion of bookkeeping_duplicates, since the method rotated polygons are
 # not detected anymore in find_duplicate function when shapely is used for shared_paths.
 def test_cut_shared_paths_rotated_duplicates_rings_BCAB_ABCA_no_cuts():
     data = {
@@ -328,7 +327,7 @@ def test_cut_shared_paths_ring_ABCA_line_ABCA_no_cuts():
 
 
 # cut ring BCAB & line ABCA have no cuts
-# changed the assertion of bookkeeping_duplicates, since the method rotated polyons are
+# changed the assertion of bookkeeping_duplicates, since the method rotated polygons are
 # not detected anymore in find_duplicate function when shapely is used for shared_paths.
 def test_cut_shared_paths_ring_BCAB_line_ABCA_no_cuts():
     data = {
@@ -348,7 +347,7 @@ def test_cut_shared_paths_ring_BCAB_line_ABCA_no_cuts():
 
 
 # cut ring ABCA & line BCAB have no cuts
-# changed the assertion of bookkeeping_duplicates, since the method rotated polyons are
+# changed the assertion of bookkeeping_duplicates, since the method rotated polygons are
 # not detected anymore in find_duplicate function when shapely is used for shared_paths.
 def test_cut_shared_paths_ring_ABCA_line_BCAB_no_cuts():
     data = {

@@ -75,7 +75,7 @@ This function is a replacement for the shapely.ops.split function, but faster.
 > + ###### `line` : numpy.array
     numpy array with coordinates that you like to be split
 > + ###### `splitter` : numpy.array
-    numpy array with coordiates on wich the line should be tried splitting
+    numpy array with coordinates on which the line should be tried splitting
 
 > #### Returns
 > + ###### list of numpy.array
@@ -193,7 +193,7 @@ are filtered
 get_matches(geoms, tree_idx)
 ```
 
-Function to return the indici of the rtree that intersects with the input geometries
+Function to return the indices of the rtree that intersects with the input geometries
 
 > #### Parameters
 > + ###### `geoms` : list
@@ -226,10 +226,10 @@ Example: input as [[1,2], [2,1]] will return as [[1,2]]
 select_unique_combs(linestrings)
 ```
 
-Given a set of inpit linestrings will create unique couple combinations.
-Each combination created contains a couple of two linestrings where the enveloppe
+Given a set of input linestrings will create unique couple combinations.
+Each combination created contains a couple of two linestrings where the envelope
 overlaps each other.
-Linestrings with non-overlapping enveloppes are not returned as combination.
+Linestrings with non-overlapping envelopes are not returned as combination.
 
 > #### Parameters
 > + ###### `linestrings` : list of LineString
@@ -289,9 +289,10 @@ Docs
     30-100 for "vw".
 > + ###### `algorithm` : str, optional
     Choose between `dp` for Douglas-Peucker and `vw` for Visvalingam–Whyatt.
-    Defaults to `dp`, as its evaluation maintains to be good (Song & Miao, 2016).
+    Defaults to `dp`, as its evaluation maintains to be good (Shi, W. & 
+    Cheung, C., 2006)
 > + ###### `package` : str, optional
-    Choose between `simplification` or `shapely`. Both pachakges contains
+    Choose between `simplification` or `shapely`. Both packages contains
     simplification algorithms (`shapely` only `dp`, and `simplification` both `dp`
     and `vw`).
 > + ###### `input_as` : str, optional
@@ -352,7 +353,7 @@ to 3 decimals on the resulting output geometries (after the topology is computed
 > + ###### `linestrings` : list of shapely.geometry.LineStrings
     LineStrings of which the coordinates will be rounded
 > + ###### `rounding_precision` : int
-    Precision value. Up till how many decimales the coordinates should be rounded.
+    Precision value. Up till how many decimals the coordinates should be rounded.
 
 > #### Returns
 > + ###### list of shapely.geometry.LineStrings
@@ -371,7 +372,7 @@ prettify TopoJSON Format output for readability.
 
 > #### Returns
 > + ###### topojson.Topojson
-pretty printed JSON variant of the topoloy object
+pretty printed JSON variant of the topology object
 
 ## properties_level
 ```python
@@ -380,7 +381,7 @@ properties_level(topojson_object, position='nested')
 
 Define where the attributes of the geometry object should be placed. Choose between
 `nested` or `foreign`. Default is `nested` where the attribute information is placed
-within the "properties" ditctionary, part of the geometry.
+within the "properties" dictionary, part of the geometry.
 `foreign`, tries to place the attributes on the same level as the geometry.
 
 > #### Parameters

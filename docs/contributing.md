@@ -8,7 +8,7 @@ nav_order: 6
 {: .no_toc}
 
 
-Contributions are much welcome for the documentation and for defects. Defects means here both behaviour not conforming the specification and missing but desirable features. The following two sections describes the process that I use for code development and documentation writing.
+Contributions are much welcome for the documentation and for defects. Defects means here both behavior not conforming the specification and missing but desirable features. The following two sections describes the process that I use for code development and documentation writing.
 
 1. TOC
 {:toc}
@@ -27,7 +27,7 @@ For contributions, use the following guidelines:
 
 3. Once satisfied, push your changes as a new branch to your fork and create a Pull Request to the original repository.
 
-4. A Pull Request triggers the Continous Integration tests on the main GitHub repository and only after passing these tests a PR can be merged into master by the maintainer.
+4. A Pull Request triggers the Continuous Integration tests on the main GitHub repository and only after passing these tests a PR can be merged into master by the maintainer.
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">

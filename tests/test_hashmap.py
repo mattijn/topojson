@@ -1,4 +1,3 @@
-import topojson
 import geopandas
 import fiona
 from shapely import geometry
@@ -54,7 +53,7 @@ def test_hashmap_backward_polygon():
     assert topo["objects"]["data"]["geometries"][1]["arcs"] == [[1, 2]]
 
 
-# this test should catch a shared boundary and a hashed multipolgon
+# this test should catch a shared boundary and a hashed multipolygon
 # related to https://github.com/Toblerity/Shapely/issues/535
 def test_hashmap_albania_greece():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
@@ -91,7 +90,7 @@ def test_hashmap_geom_surrounding_many_geometries():
 
 
 # this test was added since the shared_arcs bookkeeping is doing well, but the
-# wrong arc gots deleted. How come?
+# wrong arc got deleted. How come?
 def test_hashmap_shared_arcs_ordering_issues():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     data = data[
@@ -120,7 +119,7 @@ def test_hashmap_super_function():
     assert geoms[1]["arcs"] == [[1, 2]]
 
 
-# this test was added since objects with nested geometreycollections seems not
+# this test was added since objects with nested geometry-collections seems not
 # being parsed in the topojson format.
 # Pass for now:
 def test_hashmap_of_nested_geometrycollection():
