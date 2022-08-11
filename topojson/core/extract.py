@@ -542,8 +542,14 @@ class Extract(object):
         geom : geopandas.GeoDataFrame
             GeoDataFrame instance
         """
-
-        self._data = dict(enumerate(geom.to_dict(orient="records")))
+        
+        if geom.crs:
+            self._defined_crs_source = geom.crs
+        # DataFrame index must be unique for orient='index'.
+        if geom.index.is_unique:
+            self._data = geom.to_dict(orient="index")
+        else:
+            self._data = dict(enumerate(geom.to_dict(orient="records")))
         self._extract_dictionary(self._data)
 
     def _extract_geopandas_geoseries(self, geom):
