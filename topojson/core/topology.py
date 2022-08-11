@@ -272,7 +272,7 @@ class Topology(Hashmap):
         ----------
         crs : str, dict
             coordinate reference system to set on the resulting frame.
-            Default is `None`.
+            Default tries to use crs from data-input, otherwise is `None`.
         validate : boolean
             Set to `True` to validate each feature before inclusion in the GeoJSON. Only
             features that are valid geometries objects will be included.
@@ -292,6 +292,9 @@ class Topology(Hashmap):
         fc = serialize_as_geojson(
             topo_object, validate=validate, objectname=objectname, order=winding_order
         )
+        
+        if crs is None and hasattr(self, '_defined_crs_source'):
+            crs = self._defined_crs_source
         return serialize_as_geodataframe(fc, crs=crs)
 
     def to_alt(self, color=None, tooltip=True, projection="identity"):
