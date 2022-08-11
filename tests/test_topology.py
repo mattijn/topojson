@@ -607,3 +607,15 @@ def test_topology_topoquantize():
     topo = topojson.Topology(data, topoquantize=9).to_dict()
 
     assert len(topo["arcs"]) == 149
+
+# test for https://github.com/mattijn/topojson/issues/164
+def test_topology_gdf_keep_index():
+    gdf = (
+        geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+        .query('continent == "Africa"')
+        .head()
+    )
+    topo = topojson.Topology(data=gdf)
+    gdf_idx = topo.to_gdf().index.to_list()
+
+    assert gdf_idx == [1, 2, 11, 12, 13]
