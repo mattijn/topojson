@@ -96,6 +96,7 @@ class Hashmap(Dedup):
         objects["type"] = "GeometryCollection"
         for feature in data["objects"]:
             feat = data["objects"][feature]
+            feat["id"] = feature
 
             if "geometries" in feat and len(feat["geometries"]) == 1:
                 feat["type"] = feat["geometries"][0]["type"]
