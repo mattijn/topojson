@@ -382,12 +382,14 @@ def serialize_as_geodataframe(fc, crs=None):
     geopandas.GeoDataFrame
         topojson object parsed as GeoDataFrame
     """
-    import geopandas
+    from geopandas import GeoDataFrame
+    from pandas import json_normalize
 
-    gdf = geopandas.GeoDataFrame().from_features(features=fc["features"], crs=crs)
-    gdf = gdf.set_index(geopandas.pd.json_normalize(fc["features"])["id"].values)
-
-    return gdf
+    features = fc["features"]
+    return (
+        GeoDataFrame.from_features(features=features, crs=crs)
+        .set_axis(json_normalize(features)["id"].values)
+    )
 
 
 def serialize_as_svg(topo_object, separate=False, include_junctions=False):
