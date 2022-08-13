@@ -574,6 +574,11 @@ class Extract(object):
         geom : list
             List instance
         """
+        # check len of object_name
+        if type(self.options.object_name) == list and len(self.options.object_name) > 1:
+            self._is_multi = True
+            # and then ... to be continued
+            
         # convert list to indexed-dictionary
         data = dict(enumerate(geom))
 
