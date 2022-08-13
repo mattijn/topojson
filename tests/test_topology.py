@@ -228,9 +228,9 @@ def test_topology_polygon():
 
 def test_topology_point_multipoint():
     data = [
-        {"type": "Point", "coordinates": [0.5, 0.5]},
+        {"type": "Point", "coordinates": [0.0, 0.0]},
         {"type": "MultiPoint", "coordinates": [[0.5, 0.5], [1.0, 1.0]]},
-        {"type": "Point", "coordinates": [2.5, 3.5]},
+        {"type": "Point", "coordinates": [1.5, 1.5]},
     ]
     topo = topojson.Topology(data, topoquantize=True).to_dict()
 
