@@ -30,9 +30,8 @@ def test_hashmap_geomcol_multipolygon_polygon():
     topo = Hashmap(data).to_dict()
 
     assert topo["objects"]["data"]["geometries"][0]["geometries"][0]["arcs"] == [
-        [[4, 0]],
-        [[1]],
-        [[2]],
+        [[4, 0], [1]], 
+        [[2]]
     ]
 
 
@@ -277,22 +276,22 @@ def test_hashmap_fiona_gpkg_to_dict():
 
     assert len(topo["linestrings"]) == 4
 
-# issue #148
-@pytest.mark.skip(reason="test is present, solution yet unknown.")
+# issue #148 and issue #167
 def test_hashmap_serializing_holes():
     mp = geometry.shape({
         "type": "MultiPolygon",
         "coordinates": [
             [
                 [[0, 0], [20, 0], [10, 20], [0, 0]],  # CCW
-                [[3, 2], [10, 16], [17, 2], [3, 2]],  # CW
+                [[8, 2], [12, 12], [17, 2], [8, 2]],  # CW
+                [[3, 2], [5, 6], [7, 2], [3, 2]],  # CW            
             ],
-            [[[6, 4], [14, 4], [10, 12], [6, 4]]],  # CCW
+            [[[10, 3], [15, 3], [12, 9], [10, 3]]],  # CCW
         ]
-    })   
+    })  
     topo = Hashmap(mp)
     topo = topo.to_dict()
 
     arc = topo['objects']['data']['geometries'][0]['arcs']
-    assert len(arc) == len(mp)
+    assert arc == [[[0], [1], [2]], [[3]]]
 

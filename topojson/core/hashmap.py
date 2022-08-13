@@ -1,5 +1,6 @@
 import copy
 import pprint
+from itertools import chain
 import numpy as np
 from shapely import geometry
 from .dedup import Dedup
@@ -326,14 +327,16 @@ class Hashmap(Dedup):
 
         arcs = []
         for geom in geoms:
-            arcs_in_geom = self._data[bk_objects][geom]
+            arcs_in_geom = copy.copy(self._data[bk_objects][geom])
             for idx_arc, arc_ref in enumerate(arcs_in_geom):
                 arc_ids = self._data[bk_element][arc_ref]
+                # check if the shared arcs in geom should be backward
                 if len(arc_ids) > 1 and key != "coordinates":
                     self._inner = True if idx_arc > 0 else False
                     arc_ids = self._backward_arcs(arc_ids)
 
-                arcs.append(arc_ids)
+                arcs_in_geom[idx_arc] = arc_ids
+            arcs.append(arcs_in_geom)
         return arcs
 
     def _resolve_objects(self, keys, dictionary):
@@ -366,7 +369,7 @@ class Hashmap(Dedup):
                 f_arc = feat["geometries"][0]["arcs"][0]
             else:
                 f_arc = feat["arcs"][0]
-            feat["arcs"] = f_arc
+            feat["arcs"] = list(chain.from_iterable(f_arc))
             feat.pop("geometries", None)
 
         elif feat["type"] == "MultiLineString":
@@ -374,7 +377,7 @@ class Hashmap(Dedup):
                 f_arcs = feat["geometries"][0]["arcs"]
             else:
                 f_arcs = feat["arcs"]
-            feat["arcs"] = f_arcs
+            feat["arcs"] = [list(chain.from_iterable(arc)) for arc in f_arcs]
             feat.pop("geometries", None)
 
         elif feat["type"] == "Polygon":
@@ -383,7 +386,7 @@ class Hashmap(Dedup):
             else:
                 f_arc = feat["arcs"]
 
-            feat["arcs"] = f_arc
+            feat["arcs"] = list(chain.from_iterable(f_arc))
             feat.pop("geometries", None)
 
         elif feat["type"] == "MultiPolygon":
@@ -391,7 +394,7 @@ class Hashmap(Dedup):
                 f_arcs = feat["geometries"][0]["arcs"]
             else:
                 f_arcs = feat["arcs"]
-            feat["arcs"] = [[arc] for arc in f_arcs]
+            feat["arcs"] = f_arcs
             feat.pop("geometries", None)
 
         elif feat["type"] == "GeometryCollection":
@@ -405,7 +408,7 @@ class Hashmap(Dedup):
             else:
                 f_arc = feat["coordinates"]
 
-            feat["coordinates"] = f_arc
+            feat["coordinates"] = list(chain.from_iterable(f_arc))
             feat.pop("geometries", None)
 
         elif feat["type"] == "MultiPoint":
@@ -413,7 +416,7 @@ class Hashmap(Dedup):
                 f_arcs = feat["geometries"][0]["coordinates"]
             else:
                 f_arcs = feat["coordinates"]
-            feat["coordinates"] = [[arc] for arc in f_arcs]
+            feat["coordinates"] = f_arcs
             feat.pop("geometries", None)
 
         return feat
