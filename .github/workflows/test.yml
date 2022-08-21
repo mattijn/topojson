@@ -30,6 +30,7 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10"]
+        shapely-version: ["1.7.1", "1.8.0", "1.8.4", "2.0a1"]
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
@@ -40,7 +41,9 @@ jobs:
       - name: Install test dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flit codecov pytest flake8
+          python -m pip install flit codecov pytest flake8
+      - name: Install matrix-shapely version
+        run: python -m pip install "shapely~=${{ matrix.shapely-version }}"       
       - name: Install package dependencies
         run: flit install --deps develop        
       - name: Lint with flake8
