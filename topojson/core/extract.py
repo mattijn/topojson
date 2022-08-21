@@ -542,7 +542,7 @@ class Extract(object):
         geom : geopandas.GeoDataFrame
             GeoDataFrame instance
         """
-        
+
         if geom.crs:
             self._defined_crs_source = geom.crs
         # DataFrame index must be unique for orient='index'.
@@ -680,7 +680,7 @@ class Extract(object):
                             self._invalid_geoms += 1
                             del self._data[self._key]
                             continue
-                    except GeometryTypeError as e:
+                    except GeometryTypeError:
                         # object might be a GeoJSON Feature or FeatureCollection
                         # check if geojson is installed
                         try:
@@ -692,13 +692,13 @@ class Extract(object):
                             self._tried_geojson = True
                             self._invalid_geoms += 1
                             del self._data[self._key]
-                            continue                        
+                            continue
                     except ValueError:
                         # object is not valid, remove invalid objects
                         # and continue
                         self._invalid_geoms += 1
                         del self._data[self._key]
-                        continue                          
+                        continue
                     except AttributeError:
                         # check if geojson is installed
                         try:
