@@ -30,7 +30,7 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10"]
-        shapely-version: ["1.7.1", "1.8.0", "1.8.4", "2.0a1"]
+        shapely-version: ["1.8.0", "1.8.4", "2.0a1"]
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
