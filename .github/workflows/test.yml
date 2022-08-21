@@ -41,11 +41,11 @@ jobs:
       - name: Install test dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install flit codecov pytest flake8
-      - name: Install matrix-shapely version
-        run: python -m pip install "shapely~=${{ matrix.shapely-version }}"       
+          python -m pip install flit codecov pytest flake8     
       - name: Install package dependencies
         run: flit install --deps develop        
+      - name: Overrule shapely version from matrix
+        run: python -m pip install "shapely~=${{ matrix.shapely-version }}"          
       - name: Lint with flake8
         run: flake8 topojson
         continue-on-error: true
