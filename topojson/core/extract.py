@@ -4,7 +4,7 @@ import logging
 import pprint
 import numpy as np
 from shapely import geometry
-from shapely.errors import ShapelyError
+from shapely.errors import GeometryTypeError
 from ..utils import instance
 from ..utils import serialize_as_svg
 from ..utils import TopoOptions
@@ -673,13 +673,14 @@ class Extract(object):
                     try:
                         with ignore_shapely2_warnings():
                             geom = geometry.shape(self._obj)
+
                         # object can be mapped, but may not be valid. remove invalid objects
                         # and continue
                         if not geom.is_valid:
                             self._invalid_geoms += 1
                             del self._data[self._key]
                             continue
-                    except (ShapelyError, ValueError):
+                    except GeometryTypeError as e:
                         # object might be a GeoJSON Feature or FeatureCollection
                         # check if geojson is installed
                         try:
@@ -691,7 +692,13 @@ class Extract(object):
                             self._tried_geojson = True
                             self._invalid_geoms += 1
                             del self._data[self._key]
-                            continue
+                            continue                        
+                    except ValueError:
+                        # object is not valid, remove invalid objects
+                        # and continue
+                        self._invalid_geoms += 1
+                        del self._data[self._key]
+                        continue                          
                     except AttributeError:
                         # check if geojson is installed
                         try:
