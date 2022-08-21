@@ -292,7 +292,7 @@ class Topology(Hashmap):
         fc = serialize_as_geojson(
             topo_object, validate=validate, objectname=objectname, order=winding_order
         )
-        
+
         if crs is None and hasattr(self, '_defined_crs_source'):
             crs = self._defined_crs_source
         return serialize_as_geodataframe(fc, crs=crs)

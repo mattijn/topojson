@@ -79,6 +79,34 @@ def asvoid(arr):
     return arr.view(np.dtype((np.void, arr.dtype.itemsize * arr.shape[-1])))
 
 
+def strtree_query_geoms(tree, arc):
+    # get junctions that contain within bbox line
+    if hasattr(tree, 'geometries'):
+        # shapely version >= 1.8.3
+        tree_index = tree.query(arc)
+        tree_geom = tree.geometries.take(tree_index)
+    elif hasattr(tree, 'query_geoms'):
+        # 1.8.0 <= shapely version < 1.8.3
+        tree_geom = tree.query_geoms(arc)
+    else:
+        # shapely version < 1.8.0
+        tree_geom = tree.query(arc)
+    return tree_geom  # pts_within_bbox
+
+
+def strtree_query_index(tree, arc):
+    if hasattr(tree, 'geometries'):
+        # shapely version >= 1.8.3
+        tree_index = tree.query(arc)
+    elif hasattr(tree, 'query_items'):
+        # 1.8.0 <= shapely version < 1.8.3
+        tree_index = tree.query_items(arc)
+    else:
+        # shapely version < 1.8.0
+        raise AttributeError("This version is not supported within topojson")
+    return tree_index
+
+
 def np_array_bbox_points_line(line, tree_splitter):
     """
     Get junctions within bbox of line and return both as numpy array
@@ -99,11 +127,7 @@ def np_array_bbox_points_line(line, tree_splitter):
     """
 
     # get junctions that contain within bbox line
-    try:
-        pts_within_bbox = tree_splitter.query_geoms(line)
-    except AttributeError:
-        # catch < v1.8 behavior of shapely
-        pts_within_bbox = tree_splitter.query(line)
+    pts_within_bbox = strtree_query_geoms(tree_splitter, line)
 
     if len(pts_within_bbox) == 0:
         # no point near bbox, nothing to insert, nothing to split
@@ -137,11 +161,7 @@ def insert_coords_in_line(line, tree_splitter):
     """
 
     # get junctions that contain within bbox line
-    try:
-        pts_within_bbox = tree_splitter.query_geoms(line)
-    except AttributeError:
-        # catch < v1.8 behavior of shapely
-        pts_within_bbox = tree_splitter.query(line)
+    pts_within_bbox = strtree_query_geoms(tree_splitter, line)
 
     # select junctions that are within tolerance of line
     tol_dist = 1e-8
@@ -466,7 +486,7 @@ def get_matches(geoms, tree_idx):
     # find near linestrings by querying tree and use query items to collect indices.
     matches = []
     for idx_ls, obj in enumerate(geoms):
-        intersect_ls = tree_idx.query_items(obj)
+        intersect_ls = strtree_query_index(tree_idx, obj)
         if len(intersect_ls):
             matches.extend([[[idx_ls], intersect_ls]])
 
@@ -631,7 +651,7 @@ def simplify(
         30-100 for "vw".
     algorithm : str, optional
         Choose between `dp` for Douglas-Peucker and `vw` for Visvalingam–Whyatt.
-        Defaults to `dp`, as its evaluation maintains to be good (Shi, W. & 
+        Defaults to `dp`, as its evaluation maintains to be good (Shi, W. &
         Cheung, C., 2006).
     package : str, optional
         Choose between `simplification` or `shapely`. Both packages contains
