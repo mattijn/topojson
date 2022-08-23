@@ -6,7 +6,6 @@ from shapely.errors import ShapelyError
 from shapely.wkb import loads
 from shapely.ops import shared_paths
 from shapely.ops import linemerge
-from shapely import speedups
 from ..ops import select_unique_combs
 from ..ops import simplify
 from ..ops import quantize
@@ -14,9 +13,6 @@ from ..ops import bounds
 from ..ops import compare_bounds
 from ..utils import serialize_as_svg
 from .extract import Extract
-
-if speedups.available:
-    speedups.enable()
 
 
 class Join(Extract):
