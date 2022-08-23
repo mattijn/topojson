@@ -619,3 +619,15 @@ def test_topology_gdf_keep_index():
     gdf_idx = topo.to_gdf().index.to_list()
 
     assert gdf_idx == [1, 2, 11, 12, 13]
+
+def test_topology_write_multiple_object_json_dict():
+    world = geopandas.read_file(geopandas.datasets.get_path('naturalearth_lowres'))
+    world = world[['continent', 'geometry', 'pop_est']]
+    continents = world.dissolve(by='continent', aggfunc='sum')
+
+    topo = topojson.Topology(
+        data=[world, continents], 
+        options=['world', 'continents']
+    ).to_dict()
+
+    assert len(topo['objects']) == 2
