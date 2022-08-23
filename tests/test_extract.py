@@ -487,4 +487,4 @@ def test_extract_read_multiple_gdf_object_name():
         options={'object_name': ['world', 'continents']}
     ).to_dict()
 
-    assert topo
+    assert len(topo['objects']) == len(world) + len(continents)

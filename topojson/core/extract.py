@@ -574,13 +574,18 @@ class Extract(object):
         geom : list
             List instance
         """
-        # check len of object_name
+        # check if list is list of features of list of objects. Use object_name
         if type(self.options.object_name) == list and len(self.options.object_name) > 1:
-            self._is_multi = True
-            # and then ... to be continued
-            
-        # convert list to indexed-dictionary
-        data = dict(enumerate(geom))
+            if len(self.options.object_name) != len(geom):
+                raise LookupError('the number of data objects does not match the number of object_name')
+            for ix, df_geom in enumerate(geom):
+                df_geom['__geom_name'] = self.options.object_name[ix]
+            import pandas as pd
+            data = pd.concat(geom)
+            self._is_multi_geom = True
+        else:
+            # convert list to indexed-dictionary
+            data = dict(enumerate(geom))
 
         # new data dictionary is created, throw the geometries back to main()
         self._is_single = False
