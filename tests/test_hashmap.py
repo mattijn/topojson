@@ -295,3 +295,14 @@ def test_hashmap_serializing_holes():
     arc = topo['objects']['data']['geometries'][0]['arcs']
     assert arc == [[[0], [1], [2]], [[3]]]
 
+def test_hashmap_read_multiple_gdf_object_name():
+    world = geopandas.read_file(geopandas.datasets.get_path('naturalearth_lowres'))
+    world = world[['continent', 'geometry', 'pop_est']]
+    continents = world.dissolve(by='continent', aggfunc='sum')
+
+    topo = Hashmap(
+        data=[world, continents], 
+        options={'object_name': ['world', 'continents']}
+    ).to_dict()
+
+    assert len(topo['objects']) == 2

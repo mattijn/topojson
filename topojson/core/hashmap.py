@@ -92,22 +92,45 @@ class Hashmap(Dedup):
         # resolve bookkeeping of coordinates in objects, including delta-encoding
         list(self._resolve_objects(["arcs", "coordinates"], self._data["objects"]))
 
-        objects = {}
-        objects["geometries"] = []
-        objects["type"] = "GeometryCollection"
-        for feature in data["objects"]:
-            feat = data["objects"][feature]
-            feat["id"] = feature
+        if self._is_multi_geom:
+            resolved_data_objects = {}
+            for object_name in self.options.object_name:
+                objects = {}
+                objects["geometries"] = []
+                objects["type"] = "GeometryCollection"
+                for feature in data["objects"]:
+                    feat = data["objects"][feature]
+                    feat["id"] = feature
 
-            if "geometries" in feat and len(feat["geometries"]) == 1:
-                feat["type"] = feat["geometries"][0]["type"]
+                    if feat['properties']['__geom_name'] == object_name:
 
-            self._resolve_arcs(feat)
+                        if "geometries" in feat and len(feat["geometries"]) == 1:
+                            feat["type"] = feat["geometries"][0]["type"]
 
-            objects["geometries"].append(feat)
+                        self._resolve_arcs(feat)
 
-        data["objects"] = {}
-        data["objects"][self.options.object_name] = objects
+                        objects["geometries"].append(feat)
+                resolved_data_objects[object_name] = objects
+            data["objects"] = {}
+            data["objects"] = resolved_data_objects
+
+        else:
+            objects = {}
+            objects["geometries"] = []
+            objects["type"] = "GeometryCollection"
+            for feature in data["objects"]:
+                feat = data["objects"][feature]
+                feat["id"] = feature
+
+                if "geometries" in feat and len(feat["geometries"]) == 1:
+                    feat["type"] = feat["geometries"][0]["type"]
+
+                self._resolve_arcs(feat)
+
+                objects["geometries"].append(feat)
+
+            data["objects"] = {}
+            data["objects"][self.options.object_name] = objects
 
         # prepare to return object
         data = self._data
