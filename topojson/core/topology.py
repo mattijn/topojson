@@ -28,7 +28,10 @@ class Topology(Hashmap):
     Parameters
     ----------
     data : _any_ geometric type
-        Geometric data that should be converted into TopoJSON
+        Geometric data that should be converted into TopoJSON.
+        It is possible to provide a list of multiple geopandas.GeoDataFrames as
+        separate objects. In this case it is required to provide an equal length list of
+        the names of the objects for parameter `object_name`.
     topology : boolean
         Specify if the topology should be computed for deriving the TopoJSON.
         Default is `True`.
@@ -88,10 +91,13 @@ class Topology(Hashmap):
         clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer
         rings and clockwise for interior rings.
         Default is `CW_CCW` for TopoJSON.
-    object_name : str
+    object_name : Union[str, list[str]]
         Name to use as key for the objects in the topojson file. This name is used for
         writing and reading topojson file formats.
-        Default is `data`.
+        It is possible to define multiple objects within the topojson file. In this
+        case it is required to provide a list of the referenced `object_name` in
+        combination with an equal length list of `data` objects.
+        Default is a single object named `data`.
     """
 
     def __init__(
@@ -134,7 +140,7 @@ class Topology(Hashmap):
     @property
     def __geo_interface__(self):
         topo_object = copy.deepcopy(self.output)
-        objectname = self.options.object_name
+        objectname = self._resolve_object_name(0)
         return serialize_as_geojson(topo_object, validate=False, objectname=objectname)
 
     def to_dict(self, options=False):
@@ -211,6 +217,7 @@ class Topology(Hashmap):
         validate=False,
         winding_order="CCW_CW",
         decimals=None,
+        object_name=0
     ):
         """
         Convert the Topology to a GeoJSON object. Remember that this will destroy the
@@ -245,10 +252,14 @@ class Topology(Hashmap):
         decimals : int or None
             Evenly round the coordinates to the given number of decimals.
             Default is None, which means no rounding is applied.
+        object_name : str, int
+            The name or the index of the object within the Topology to display.
+            Default is index 0.
         """
         topo_object = copy.deepcopy(self.output)
         topo_object = self._resolve_coords(topo_object)
-        objectname = self.options.object_name
+        objectname = self._resolve_object_name(object_name)
+
         fc = serialize_as_geojson(
             topo_object,
             validate=validate,
@@ -260,7 +271,7 @@ class Topology(Hashmap):
             fc, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
         )
 
-    def to_gdf(self, crs=None, validate=False, winding_order="CCW_CW"):
+    def to_gdf(self, crs=None, validate=False, winding_order="CCW_CW", object_name=0):
         """
         Convert the Topology to a GeoDataFrame. Remember that this will destroy the
         computed Topology.
@@ -283,12 +294,15 @@ class Topology(Hashmap):
             clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer
             rings and clockwise for interior rings.
             Default is `CCW_CW` for GeoJSON.
+        object_name : str, int
+            Name or index of the object.
+            Default is index `0` to select the first object.
         """
         from ..utils import serialize_as_geodataframe
 
         topo_object = copy.deepcopy(self.output)
         topo_object = self._resolve_coords(topo_object)
-        objectname = self.options.object_name
+        objectname = self._resolve_object_name(object_name)
         fc = serialize_as_geojson(
             topo_object, validate=validate, objectname=objectname, order=winding_order
         )
@@ -297,7 +311,7 @@ class Topology(Hashmap):
             crs = self._defined_crs_source
         return serialize_as_geodataframe(fc, crs=crs)
 
-    def to_alt(self, color=None, tooltip=True, projection="identity"):
+    def to_alt(self, color=None, tooltip=True, projection="identity", object_name=0):
         """
         Display as Altair visualization.
 
@@ -315,14 +329,14 @@ class Topology(Hashmap):
         projection : str
             Defines the projection of the visualization. Defaults to a non-geographic,
             Cartesian projection (known by Altair as `identity`).
-        # objectname : str
-        #     The name of the object within the Topology to display.
-        #     Default is `data`.
+        object_name : str, int
+            The name or the index of the object within the Topology to display.
+            Default is index 0.
         """
         from ..utils import serialize_as_altair
 
         topo_object = self.to_json()
-        objectname = self.options.object_name
+        objectname = self._resolve_object_name(object_name)
 
         return serialize_as_altair(topo_object, color, tooltip, projection, objectname)
 
@@ -533,29 +547,46 @@ class Topology(Hashmap):
             return result
 
     def _resolve_coords(self, data):
-        objectname = self.options.object_name
-        if objectname not in data["objects"].keys():
-            raise SystemExit(
-                f"'{objectname}' is not an object name in your topojson file"
-            )
-        geoms = data["objects"][objectname]["geometries"]
-        for idx, feat in enumerate(geoms):
-            if feat["type"] in ["Point", "MultiPoint"]:
 
-                lofl = feat["coordinates"]
-                repeat = 1 if feat["type"] == "Point" else 2
+        for objectname in self.options.object_name:
 
-                for _ in range(repeat):
-                    lofl = list(itertools.chain(*lofl))
+            if objectname not in data["objects"]:
+                raise SystemExit(
+                    f"'{objectname}' is not an object name in your topojson file"
+                )
+            geoms = data["objects"][objectname]["geometries"]
+            for idx, feat in enumerate(geoms):
+                if feat["type"] in ["Point", "MultiPoint"]:
 
-                for idx, val in enumerate(lofl):
-                    coord = data["coordinates"][val][0]
-                    lofl[idx] = np.asarray(coord).tolist()
+                    lofl = feat["coordinates"]
+                    repeat = 1 if feat["type"] == "Point" else 2
 
-                feat["coordinates"] = lofl[0] if len(lofl) == 1 else lofl
-                feat.pop("reset_coords", None)
-        data.pop("coordinates", None)
+                    for _ in range(repeat):
+                        lofl = list(itertools.chain(*lofl))
+
+                    for idx, val in enumerate(lofl):
+                        coord = data["coordinates"][val][0]
+                        lofl[idx] = np.asarray(coord).tolist()
+
+                    feat["coordinates"] = lofl[0] if len(lofl) == 1 else lofl
+                    feat.pop("reset_coords", None)
+            data.pop("coordinates", None)
         return data
+
+    def _resolve_object_name(self, object_name):
+        # check if object_name as str or index is within self.options.object_name
+        if type(object_name) is int:
+            ix = object_name
+            if ix < len(self.options.object_name):
+                objectname = self.options.object_name[ix]
+            else:
+                raise IndexError(f'Cannot use object_name: "{object_name}" as index in objects: {self.options.object_name}. List index out of range')
+        else:
+            if object_name in self.options.object_name:
+                objectname = object_name
+            else:
+                raise LookupError(f'object_name: "{object_name}" not in objects: {self.options.object_name}')
+        return objectname
 
     def _topo(self, data):
         self.output["arcs"] = data["linestrings"]
