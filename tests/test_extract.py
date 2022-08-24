@@ -477,14 +477,14 @@ def test_extract_read_geojson_from_json_dict():
 
     assert len(topo["linestrings"]) == 287
 
+
 def test_extract_read_multiple_gdf_object_name():
-    world = geopandas.read_file(geopandas.datasets.get_path('naturalearth_lowres'))
-    world = world[['continent', 'geometry', 'pop_est']]
-    continents = world.dissolve(by='continent', aggfunc='sum')
+    world = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    world = world[["continent", "geometry", "pop_est"]]
+    continents = world.dissolve(by="continent", aggfunc="sum")
 
     topo = Extract(
-        data=[world, continents], 
-        options={'object_name': ['world', 'continents']}
+        data=[world, continents], options={"object_name": ["world", "continents"]}
     ).to_dict()
 
-    assert len(topo['objects']) == len(world) + len(continents)
+    assert len(topo["objects"]) == len(world) + len(continents)

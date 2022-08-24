@@ -217,7 +217,7 @@ class Topology(Hashmap):
         validate=False,
         winding_order="CCW_CW",
         decimals=None,
-        object_name=0
+        object_name=0,
     ):
         """
         Convert the Topology to a GeoJSON object. Remember that this will destroy the
@@ -307,7 +307,7 @@ class Topology(Hashmap):
             topo_object, validate=validate, objectname=objectname, order=winding_order
         )
 
-        if crs is None and hasattr(self, '_defined_crs_source'):
+        if crs is None and hasattr(self, "_defined_crs_source"):
             crs = self._defined_crs_source
         return serialize_as_geodataframe(fc, crs=crs)
 
@@ -496,7 +496,7 @@ class Topology(Hashmap):
             # dequantize if transform exist
             if transform is not None:
                 power_estimate = len(str(int(np_arcs[:, 0].max())))
-                quant_factor_estimate = 10**power_estimate
+                quant_factor_estimate = 10 ** power_estimate
                 np_arcs = dequantize(np_arcs, scale, translate)
 
             # apply simplify
@@ -580,12 +580,16 @@ class Topology(Hashmap):
             if ix < len(self.options.object_name):
                 objectname = self.options.object_name[ix]
             else:
-                raise IndexError(f'Cannot use object_name: "{object_name}" as index in objects: {self.options.object_name}. List index out of range')
+                raise IndexError(
+                    f'Cannot use object_name: "{object_name}" as index in objects: {self.options.object_name}. List index out of range'
+                )
         else:
             if object_name in self.options.object_name:
                 objectname = object_name
             else:
-                raise LookupError(f'object_name: "{object_name}" not in objects: {self.options.object_name}')
+                raise LookupError(
+                    f'object_name: "{object_name}" not in objects: {self.options.object_name}'
+                )
         return objectname
 
     def _topo(self, data):

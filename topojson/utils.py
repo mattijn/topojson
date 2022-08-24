@@ -389,9 +389,8 @@ def serialize_as_geodataframe(fc, crs=None):
     from pandas import json_normalize
 
     features = fc["features"]
-    return (
-        GeoDataFrame.from_features(features=features, crs=crs)
-        .set_axis(json_normalize(features)["id"].values)
+    return GeoDataFrame.from_features(features=features, crs=crs).set_axis(
+        json_normalize(features)["id"].values
     )
 
 
@@ -521,8 +520,8 @@ def serialize_as_geojson(
 
     # fill the featurecollection with geometry object members
     for index, feature in enumerate(features):
-        f = {"id": feature.get('id', index), "type": "Feature"}
-        f["properties"] = feature.get('properties', {})
+        f = {"id": feature.get("id", index), "type": "Feature"}
+        f["properties"] = feature.get("properties", {})
 
         # the transform is only used in cases of points or multipoints
         geom_map = geometry(feature, np_arcs, transform)

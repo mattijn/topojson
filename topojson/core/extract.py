@@ -582,14 +582,16 @@ class Extract(object):
         if len(self.options.object_name) > 1:
             # list consist of objects
             if len(self.options.object_name) != len(geom):
-                raise LookupError('the number of data objects does not match the number of object_name')
+                raise LookupError(
+                    "the number of data objects does not match the number of object_name"
+                )
             geom_offset = np.cumsum([len(gdf) for gdf in geom]).tolist()
             geom_offset.pop()
             geom_offset.insert(0, 0)
             self._geom_offset = geom_offset
             for ix, gdf in enumerate(geom):
                 start = geom_offset[ix]
-                gdf['__geom_name'] = self.options.object_name[ix]
+                gdf["__geom_name"] = self.options.object_name[ix]
                 geom[ix] = dict(enumerate(gdf.to_dict(orient="records"), start))
 
             for ix in range(1, len(geom)):
