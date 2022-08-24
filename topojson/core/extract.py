@@ -61,6 +61,7 @@ class Extract(object):
         self._invalid_geoms = 0
         self._tried_geojson = False
         self._is_multi_geom = False
+        self._geom_offset = 0
 
         self.output = self._extractor(data)
 
@@ -582,10 +583,18 @@ class Extract(object):
             # list consist of objects
             if len(self.options.object_name) != len(geom):
                 raise LookupError('the number of data objects does not match the number of object_name')
-            for ix, df_geom in enumerate(geom):
-                df_geom['__geom_name'] = self.options.object_name[ix]
-            import pandas as pd
-            data = pd.concat(geom)
+            geom_offset = np.cumsum([len(gdf) for gdf in geom]).tolist()
+            geom_offset.pop()
+            geom_offset.insert(0, 0)
+            self._geom_offset = geom_offset
+            for ix, gdf in enumerate(geom):
+                start = geom_offset[ix]
+                gdf['__geom_name'] = self.options.object_name[ix]
+                geom[ix] = dict(enumerate(gdf.to_dict(orient="records"), start))
+
+            for ix in range(1, len(geom)):
+                geom[0].update(geom.pop(ix))
+            data = geom[0]
             self._is_multi_geom = True
         else:
             # list consist of features
