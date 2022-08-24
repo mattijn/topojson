@@ -590,6 +590,7 @@ class Extract(object):
             geom_offset.insert(0, 0)
             self._geom_offset = geom_offset
             for ix, gdf in enumerate(geom):
+                gdf = gdf.copy()
                 start = geom_offset[ix]
                 gdf["__geom_name"] = self.options.object_name[ix]
                 geom[ix] = dict(enumerate(gdf.to_dict(orient="records"), start))
