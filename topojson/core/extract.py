@@ -60,6 +60,7 @@ class Extract(object):
         self._is_single = True
         self._invalid_geoms = 0
         self._tried_geojson = False
+        self._is_multi_geom = False
 
         self.output = self._extractor(data)
 
@@ -165,6 +166,7 @@ class Extract(object):
         - geopandas.GeoSeries
         - dict of objects that provide a __geo_interface__
         - list of objects that provide a __geo_interface__
+        - list of geopandas.GeoDataFrames
         - object that provide a __geo_interface__
         - TopoJSON dict
         - TopoJSON string
@@ -574,8 +576,10 @@ class Extract(object):
         geom : list
             List instance
         """
-        # check if list is list of features of list of objects. Use object_name
-        if type(self.options.object_name) == list and len(self.options.object_name) > 1:
+        # check if there are multiple entries in the `object_name` in settings.
+        # currently only supports multiple GeoDataFrames as input entries
+        if len(self.options.object_name) > 1:
+            # list consist of objects
             if len(self.options.object_name) != len(geom):
                 raise LookupError('the number of data objects does not match the number of object_name')
             for ix, df_geom in enumerate(geom):
@@ -584,6 +588,7 @@ class Extract(object):
             data = pd.concat(geom)
             self._is_multi_geom = True
         else:
+            # list consist of features
             # convert list to indexed-dictionary
             data = dict(enumerate(geom))
 
