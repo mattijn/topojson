@@ -627,7 +627,8 @@ def test_topology_write_multiple_object_json_dict():
 
     topo = topojson.Topology(
         data=[world, continents], 
-        options=['world', 'continents']
-    ).to_dict()
+        object_name=['world', 'continents']
+    )
+    topo_dict = topo.to_dict()
 
-    assert len(topo['objects']) == 2
+    assert len(topo_dict['objects']) == 2
