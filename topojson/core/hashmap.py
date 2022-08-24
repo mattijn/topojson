@@ -93,17 +93,22 @@ class Hashmap(Dedup):
         list(self._resolve_objects(["arcs", "coordinates"], self._data["objects"]))
 
         resolved_data_objects = {}
-        for object_name in self.options.object_name:
+        for object_ix, object_name in enumerate(self.options.object_name):
             objects = {}
             objects["geometries"] = []
             objects["type"] = "GeometryCollection"
             for feature in data["objects"]:
                 feat = data["objects"][feature]
-                feat["id"] = feature            
                 if not self._is_multi_geom:
                     do_resolve = True
-                elif feat['properties']['__geom_name'] == object_name:
+                    feat["id"] = feature
+                elif (
+                    "__geom_name" in feat["properties"]
+                    and feat["properties"]["__geom_name"] == object_name
+                ):
                     do_resolve = True
+                    feat["id"] = feature - self._geom_offset[object_ix]
+                    del feat["properties"]["__geom_name"]
                 else:
                     do_resolve = False
 
