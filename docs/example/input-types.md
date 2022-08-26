@@ -425,7 +425,7 @@ topo.to_dict()
 topo.to_gdf(object_name='geom_2').plot(column='shrd_name')
 topo.to_gdf(object_name='geom_1').plot(column='uniq_name')
 ```
-<img src="../images/multiple_objects.png">
+<img src="../images/multiple_objects.png" style="max-width: 375px;">
 
 </div>
 </div>
