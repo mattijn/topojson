@@ -1,9 +1,11 @@
 import itertools
 import pprint
 import copy
+import warnings
 import numpy as np
 from shapely import geometry
 from shapely.strtree import STRtree
+from shapely.errors import ShapelyDeprecationWarning
 from .join import Join
 from ..ops import insert_coords_in_line
 from ..ops import np_array_bbox_points_line
@@ -109,7 +111,9 @@ class Cut(Join):
                 mp = geometry.MultiPoint([mp])
 
             # create spatial index on junctions
-            tree_splitter = STRtree(mp)
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=ShapelyDeprecationWarning)
+                tree_splitter = STRtree(mp)
             slist = []
             # junctions are only existing in coordinates of linestring
             if self.options.shared_coords:
