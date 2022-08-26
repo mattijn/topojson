@@ -608,6 +608,7 @@ def test_topology_topoquantize():
 
     assert len(topo["arcs"]) == 149
 
+
 # test for https://github.com/mattijn/topojson/issues/164
 def test_topology_gdf_keep_index():
     gdf = (
@@ -619,3 +620,16 @@ def test_topology_gdf_keep_index():
     gdf_idx = topo.to_gdf().index.to_list()
 
     assert gdf_idx == [1, 2, 11, 12, 13]
+
+
+def test_topology_write_multiple_object_json_dict():
+    world = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    world = world[["continent", "geometry", "pop_est"]]
+    continents = world.dissolve(by="continent", aggfunc="sum")
+
+    topo = topojson.Topology(
+        data=[world, continents], object_name=["world", "continents"]
+    )
+    topo_dict = topo.to_dict()
+
+    assert len(topo_dict["objects"]) == 2

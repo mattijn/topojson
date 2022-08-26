@@ -366,6 +366,69 @@ tp.Topology(dict_in, prequantize=False).to_json()
 </div>
 </div>
 
+* * * 
+
+## `list` of GeoDataFrames
+From the package `geopandas` (not a hard dependency).
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+
+```python
+import topojson as tp
+import geopandas gpd
+
+gdf_1 = gpd.GeoDataFrame({
+    "uniq_name": ["abc", "def"],
+    "shrd_name": ["rect", "rect"],    
+    "geometry": [
+        geometry.Polygon([[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]),
+        geometry.Polygon([[0, 1], [1, 1], [1, 2], [0, 2], [0, 1]])          
+    ]
+})
+gdf_2 = gdf_1.dissolve(by='shrd_name', as_index=False)
+
+topo = tp.Topology(data=[gdf_1, gdf_2], object_name=['geom_1', 'geom_2'], prequantize=False)
+topo.to_dict()
+
+```
+
+```python
+{'type': 'Topology',
+ 'objects': {'geom_1': {'geometries': [{'properties': {'uniq_name': 'abc',
+      'shrd_name': 'rect'},
+     'type': 'Polygon',
+     'arcs': [[-1, 2]],
+     'id': 0},
+    {'properties': {'uniq_name': 'def', 'shrd_name': 'rect'},
+     'type': 'Polygon',
+     'arcs': [[1, 0, 3]],
+     'id': 1}],
+   'type': 'GeometryCollection'},
+  'geom_2': {'geometries': [{'properties': {'shrd_name': 'rect',
+      'uniq_name': 'abc'},
+     'type': 'Polygon',
+     'arcs': [[1, 2, 3]],
+     'id': 0}],
+   'type': 'GeometryCollection'}},
+ 'bbox': (0.0, 1.0, 2.0, 2.0),
+ 'arcs': [[[1.0, 2.0], [1.0, 1.0]],
+  [[0.0, 1.0], [0.0, 2.0], [1.0, 2.0]],
+  [[1.0, 2.0], [2.0, 2.0], [2.0, 1.0], [1.0, 1.0]],
+  [[1.0, 1.0], [0.0, 1.0]]]}
+```
+```python
+topo.to_gdf(object_name='geom_2').plot(column='shrd_name')
+topo.to_gdf(object_name='geom_1').plot(column='uniq_name')
+```
+<img src="../images/multiple_objects.png">
+
+</div>
+</div>
 <script>
 window.addEventListener("DOMContentLoaded", event => {
     var opt = {

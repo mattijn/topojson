@@ -60,6 +60,8 @@ class Extract(object):
         self._is_single = True
         self._invalid_geoms = 0
         self._tried_geojson = False
+        self._is_multi_geom = False
+        self._geom_offset = 0
 
         self.output = self._extractor(data)
 
@@ -165,6 +167,7 @@ class Extract(object):
         - geopandas.GeoSeries
         - dict of objects that provide a __geo_interface__
         - list of objects that provide a __geo_interface__
+        - list of geopandas.GeoDataFrames
         - object that provide a __geo_interface__
         - TopoJSON dict
         - TopoJSON string
@@ -574,8 +577,32 @@ class Extract(object):
         geom : list
             List instance
         """
-        # convert list to indexed-dictionary
-        data = dict(enumerate(geom))
+        # check if there are multiple entries in the `object_name` in settings.
+        # currently only supports multiple GeoDataFrames as input entries
+        if len(self.options.object_name) > 1:
+            # list consist of objects
+            if len(self.options.object_name) != len(geom):
+                raise LookupError(
+                    "the number of data objects does not match the number of object_name"
+                )
+            geom_offset = np.cumsum([len(gdf) for gdf in geom]).tolist()
+            geom_offset.pop()
+            geom_offset.insert(0, 0)
+            self._geom_offset = geom_offset
+            for ix, gdf in enumerate(geom):
+                gdf = gdf.copy()
+                start = geom_offset[ix]
+                gdf["__geom_name"] = self.options.object_name[ix]
+                geom[ix] = dict(enumerate(gdf.to_dict(orient="records"), start))
+
+            for ix in range(1, len(geom)):
+                geom[0].update(geom.pop(ix))
+            data = geom[0]
+            self._is_multi_geom = True
+        else:
+            # list consist of features
+            # convert list to indexed-dictionary
+            data = dict(enumerate(geom))
 
         # new data dictionary is created, throw the geometries back to main()
         self._is_single = False

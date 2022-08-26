@@ -84,9 +84,12 @@ class TopoOptions(object):
             self.winding_order = None
 
         if "object_name" in arguments:
-            self.object_name = arguments["object_name"]
+            if type(arguments["object_name"]) is not list:
+                self.object_name = [arguments["object_name"]]
+            else:
+                self.object_name = arguments["object_name"]
         else:
-            self.object_name = "data"
+            self.object_name = ["data"]
 
     def __repr__(self):
         return "TopoOptions(\n  {}\n)".format(pprint.pformat(self.__dict__))
@@ -386,9 +389,8 @@ def serialize_as_geodataframe(fc, crs=None):
     from pandas import json_normalize
 
     features = fc["features"]
-    return (
-        GeoDataFrame.from_features(features=features, crs=crs)
-        .set_axis(json_normalize(features)["id"].values)
+    return GeoDataFrame.from_features(features=features, crs=crs).set_axis(
+        json_normalize(features)["id"].values
     )
 
 
@@ -396,12 +398,11 @@ def serialize_as_svg(topo_object, separate=False, include_junctions=False):
     from IPython.display import SVG, display
     from shapely import geometry
 
-    keys = topo_object.keys()
-    if "arcs" in keys:
+    if "arcs" in topo_object:
         arcs = topo_object["arcs"]
         if arcs:
             # dequantize if quantization is applied
-            if "transform" in keys:
+            if "transform" in topo_object:
 
                 np_arcs = np_array_from_arcs(arcs)
 
@@ -492,7 +493,7 @@ def serialize_as_geojson(
     # prepare arcs from topology object
     arcs = topo_object["arcs"]
     transform = None
-    if "transform" in topo_object.keys():
+    if "transform" in topo_object:
         transform = topo_object["transform"]
         scale = transform["scale"]
         translate = transform["translate"]
@@ -510,8 +511,8 @@ def serialize_as_geojson(
         np_arcs = np.around(np_arcs, decimals=decimals)
 
     # select object member from topology object
-    if objectname not in topo_object["objects"].keys():
-        raise SystemExit(f"'{objectname}' is not an object name in your topojson file")
+    if objectname not in topo_object["objects"]:
+        raise LookupError(f"'{objectname}' is not an object name in your topojson file")
     features = topo_object["objects"][objectname]["geometries"]
 
     # prepare geojson featurecollection
@@ -519,8 +520,8 @@ def serialize_as_geojson(
 
     # fill the featurecollection with geometry object members
     for index, feature in enumerate(features):
-        f = {"id": feature.get('id', index), "type": "Feature"}
-        f["properties"] = feature.get('properties', {})
+        f = {"id": feature.get("id", index), "type": "Feature"}
+        f["properties"] = feature.get("properties", {})
 
         # the transform is only used in cases of points or multipoints
         geom_map = geometry(feature, np_arcs, transform)

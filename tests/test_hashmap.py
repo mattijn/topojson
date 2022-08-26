@@ -30,8 +30,8 @@ def test_hashmap_geomcol_multipolygon_polygon():
     topo = Hashmap(data).to_dict()
 
     assert topo["objects"]["data"]["geometries"][0]["geometries"][0]["arcs"] == [
-        [[4, 0], [1]], 
-        [[2]]
+        [[4, 0], [1]],
+        [[2]],
     ]
 
 
@@ -276,22 +276,36 @@ def test_hashmap_fiona_gpkg_to_dict():
 
     assert len(topo["linestrings"]) == 4
 
+
 # issue #148 and issue #167
 def test_hashmap_serializing_holes():
-    mp = geometry.shape({
-        "type": "MultiPolygon",
-        "coordinates": [
-            [
-                [[0, 0], [20, 0], [10, 20], [0, 0]],  # CCW
-                [[8, 2], [12, 12], [17, 2], [8, 2]],  # CW
-                [[3, 2], [5, 6], [7, 2], [3, 2]],  # CW            
+    mp = geometry.shape(
+        {
+            "type": "MultiPolygon",
+            "coordinates": [
+                [
+                    [[0, 0], [20, 0], [10, 20], [0, 0]],  # CCW
+                    [[8, 2], [12, 12], [17, 2], [8, 2]],  # CW
+                    [[3, 2], [5, 6], [7, 2], [3, 2]],  # CW
+                ],
+                [[[10, 3], [15, 3], [12, 9], [10, 3]]],  # CCW
             ],
-            [[[10, 3], [15, 3], [12, 9], [10, 3]]],  # CCW
-        ]
-    })  
+        }
+    )
     topo = Hashmap(mp)
     topo = topo.to_dict()
 
-    arc = topo['objects']['data']['geometries'][0]['arcs']
+    arc = topo["objects"]["data"]["geometries"][0]["arcs"]
     assert arc == [[[0], [1], [2]], [[3]]]
 
+
+def test_hashmap_read_multiple_gdf_object_name():
+    world = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    world = world[["continent", "geometry", "pop_est"]]
+    continents = world.dissolve(by="continent", aggfunc="sum")
+
+    topo = Hashmap(
+        data=[world, continents], options={"object_name": ["world", "continents"]}
+    ).to_dict()
+
+    assert len(topo["objects"]) == 2

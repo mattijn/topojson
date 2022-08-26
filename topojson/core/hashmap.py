@@ -92,22 +92,36 @@ class Hashmap(Dedup):
         # resolve bookkeeping of coordinates in objects, including delta-encoding
         list(self._resolve_objects(["arcs", "coordinates"], self._data["objects"]))
 
-        objects = {}
-        objects["geometries"] = []
-        objects["type"] = "GeometryCollection"
-        for feature in data["objects"]:
-            feat = data["objects"][feature]
-            feat["id"] = feature
+        resolved_data_objects = {}
+        for object_ix, object_name in enumerate(self.options.object_name):
+            objects = {}
+            objects["geometries"] = []
+            objects["type"] = "GeometryCollection"
+            for feature in data["objects"]:
+                feat = data["objects"][feature]
+                if not self._is_multi_geom:
+                    do_resolve = True
+                    feat["id"] = feature
+                elif (
+                    "__geom_name" in feat["properties"]
+                    and feat["properties"]["__geom_name"] == object_name
+                ):
+                    do_resolve = True
+                    feat["id"] = feature - self._geom_offset[object_ix]
+                    del feat["properties"]["__geom_name"]
+                else:
+                    do_resolve = False
 
-            if "geometries" in feat and len(feat["geometries"]) == 1:
-                feat["type"] = feat["geometries"][0]["type"]
+                if do_resolve:
+                    if "geometries" in feat and len(feat["geometries"]) == 1:
+                        feat["type"] = feat["geometries"][0]["type"]
 
-            self._resolve_arcs(feat)
+                    self._resolve_arcs(feat)
 
-            objects["geometries"].append(feat)
-
+                    objects["geometries"].append(feat)
+            resolved_data_objects[object_name] = objects
         data["objects"] = {}
-        data["objects"][self.options.object_name] = objects
+        data["objects"] = resolved_data_objects
 
         # prepare to return object
         data = self._data

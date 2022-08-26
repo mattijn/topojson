@@ -263,7 +263,8 @@ print(topo.to_json(pretty=True))
 </pre>
 The `pretty` option depends on the setting `indent` and `maxlinelength`, these default to `4` and `88` respectively.
 
-More options in generating the GeoJSON from the computed Topology are `validate` (`True` or `False`), `winding_order` and `decimals`. Where the TopoJSON standard defines a winding order of clock-wise orientation for outer polygons and counter-clockwise orientation for inner polygons is the winding order in the GeoJSON standard the opposite (`CCW_CW`). The `decimals` option defines the number of decimals for the output coordinates.
+More options in generating the GeoJSON from the computed Topology are `validate` (`True` or `False`), `winding_order` and `decimals` and `object_name`. Where the TopoJSON standard defines a winding order of clock-wise orientation for outer polygons and counter-clockwise orientation for inner polygons is the winding order in the GeoJSON standard the opposite (`CCW_CW`). The `decimals` option defines the number of decimals for the output coordinates. With the option `object_name` it is possible to specify which object you want to serialize to GeoJSON (in case of multiple objects in the input data), defaults to index `0`.
+
 </div>
 </div>
 
@@ -299,7 +300,7 @@ topo.to_alt()
 ```
 <div id="embed_output_mesh_altair"></div>
 
-A few more convenience options are included for Altair visualizations, such as assigning a color property for individual features and using geographic projections. 
+A few more convenience options are included for Altair visualizations, such as assigning a color property for individual features and using geographic projections and defining the `object_name`. With the option `object_name` it is possible to specify which object you want to serialize to Altair (in case of multiple objects in the input data), defaults to index `0`. 
 
 Per TopoJSON specification, information of individual features are stored as an nested object within `properties`. For example here is shown the properties of the feature at index-0:
 
@@ -339,7 +340,7 @@ topo.to_alt(color='properties.name:N', projection='equalEarth')
 
 ## .to_gdf()
 
-Serialize the Topology object into a GeoPandas GeoDataFrame. This destroys the Topology. GeoPandas is an optional dependency and not automatically installed. 
+Serialize the Topology object into a GeoPandas GeoDataFrame. This destroys the Topology. GeoPandas is an optional dependency and not automatically installed. With the option `object_name` it is possible to specify which object you want to serialize into a GeoDataFrame using the `object_name` (in case of multiple objects in the input data), defaults to index `0`.
 
 **Note:** There is no winding-order enforcement in the OGR model; so the Fiona/OGR `TopoJSON` driver is NOT used in this routine, but the `.to_geojson()` function.  
 

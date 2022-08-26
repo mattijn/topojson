@@ -45,6 +45,7 @@ if shapely_warning is not None and not SHAPELY_GE_20:
             warnings.filterwarnings("ignore", category=shapely_warning)
             yield
 
+
 else:
 
     @contextlib.contextmanager
@@ -81,11 +82,11 @@ def asvoid(arr):
 
 def strtree_query_geoms(tree, arc):
     # get junctions that contain within bbox line
-    if hasattr(tree, 'geometries'):
+    if hasattr(tree, "geometries"):
         # shapely version >= 1.8.3
         tree_index = tree.query(arc)
         tree_geom = tree.geometries.take(tree_index)
-    elif hasattr(tree, 'query_geoms'):
+    elif hasattr(tree, "query_geoms"):
         # 1.8.0 <= shapely version < 1.8.3
         tree_geom = tree.query_geoms(arc)
     else:
@@ -95,10 +96,10 @@ def strtree_query_geoms(tree, arc):
 
 
 def strtree_query_index(tree, arc):
-    if hasattr(tree, 'geometries'):
+    if hasattr(tree, "geometries"):
         # shapely version >= 1.8.3
         tree_index = tree.query(arc)
-    elif hasattr(tree, 'query_items'):
+    elif hasattr(tree, "query_items"):
         # 1.8.0 <= shapely version < 1.8.3
         tree_index = tree.query_items(arc)
     else:
