@@ -1,5 +1,5 @@
 import geopandas
-from shapely import geometry
+from shapely import geometry, wkt
 from topojson.core.cut import Cut
 
 
@@ -375,3 +375,27 @@ def test_cut_low_prequantize():
     topo = Cut(data, options={"prequantize": 75}).to_dict()
 
     assert len(topo["bookkeeping_duplicates"]) == 153
+
+
+# Bug: start and end of ring is always detected as junction point, even if not the case
+# https://github.com/mattijn/topojson/issues/178
+def test_cut_shared_paths_polygons():
+    p0 = wkt.loads(
+        "Polygon((520 1108, 520 1111, 531 1111, 531 1100, 530 1100, 530 1103, "
+        "529 1103, 529 1105, 524 1110, 523 1110, 523 1108, 520 1108))"
+    )
+    p1 = wkt.loads(
+        "Polygon((529 1099, 522 1107, 522 1108, 523 1108, 523 1110, 524 1110, "
+        "529 1105, 529 1103, 530 1103, 530 1099, 529 1099))")
+    data = geopandas.GeoDataFrame(
+        {"name": ["abc", "def"], "geometry": [p0, p1]}
+    )
+    topo = Cut(data, options={"shared_coords": False}).to_dict()
+
+    assert len(topo["junctions"]) == 2
+    assert len(topo["linestrings"]) == 4
+    junctions = [list(point.coords) for point in topo["junctions"]]
+    for line in topo["linestrings"]:
+        assert [tuple(line[0])] in junctions
+        assert [tuple(line[-1])] in junctions
+    assert len(topo["bookkeeping_duplicates"]) == 1

@@ -115,25 +115,38 @@ class Cut(Join):
                 warnings.filterwarnings("ignore", category=ShapelyDeprecationWarning)
                 tree_splitter = STRtree(mp)
             slist = []
+
+            # create temp bookkeeping for linestrings
+            tmp_bookkeeping_linestrings = {
+                linestring_id: geom_id for geom_id, linestring_ids
+                in enumerate(data["bookkeeping_geoms"]) for linestring_id
+                in linestring_ids
+            }
             # junctions are only existing in coordinates of linestring
             if self.options.shared_coords:
-                for ls in data["linestrings"]:
+                for index, ls in enumerate(data["linestrings"]):
                     line, splitter = np_array_bbox_points_line(ls, tree_splitter)
                     # prev function returns None for splitter if there is nothing to split
                     if splitter is not None:
-                        slines = fast_split(line, splitter)
+                        is_ring = False
+                        if data["objects"][tmp_bookkeeping_linestrings[index]]["type"] in ["Polygon", "MultiPolygon"]:
+                            is_ring = True
+                        slines = fast_split(line, splitter, is_ring)
                         slist.append(slines)
                     else:
                         slist.append(np.array([ls.coords]))
 
             # junctions can exist between existing coords of linestring
             else:
-                for ls in data["linestrings"]:
+                for index, ls in enumerate(data["linestrings"]):
                     # slines = split(ls, mp)
                     line, splitter = insert_coords_in_line(ls, tree_splitter)
                     # prev function returns None for splitter if there is nothing to split
                     if splitter is not None:
-                        slines = fast_split(line, splitter)
+                        is_ring = False
+                        if data["objects"][tmp_bookkeeping_linestrings[index]]["type"] in ["Polygon", "MultiPolygon"]:
+                            is_ring = True
+                        slines = fast_split(line, splitter, is_ring)
                         slist.append(slines)
                     else:
                         slist.append(np.array([ls.coords]))
