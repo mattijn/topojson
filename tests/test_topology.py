@@ -633,3 +633,21 @@ def test_topology_write_multiple_object_json_dict():
     topo_dict = topo.to_dict()
 
     assert len(topo_dict["objects"]) == 2
+
+
+# Bug: start and end of ring is always detected as junction point, even if not the case
+# https://github.com/mattijn/topojson/issues/178
+def test_topology_shared_paths_polygons():
+    p0 = wkt.loads(
+        "Polygon((520 1108, 520 1111, 531 1111, 531 1100, 530 1100, 530 1103, "
+        "529 1103, 529 1105, 524 1110, 523 1110, 523 1108, 520 1108))"
+    )
+    p1 = wkt.loads(
+        "Polygon((529 1099, 522 1107, 522 1108, 523 1108, 523 1110, 524 1110, "
+        "529 1105, 529 1103, 530 1103, 530 1099, 529 1099))")
+    data = geopandas.GeoDataFrame(
+        {"name": ["abc", "def"], "geometry": [p0, p1]}
+    )
+    topo = topojson.Topology(data, prequantize=False, shared_coords=False)
+
+    assert len(topo.output["arcs"]) == 3
