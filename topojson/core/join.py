@@ -199,7 +199,8 @@ class Join(Extract):
             # calculate line intersections between all linestrings
             linestrings_gdf = gpd.GeoDataFrame(
                 geometry=data["linestrings"]  # type: ignore
-            ).reset_index()
+            )
+            linestrings_gdf["index"] = linestrings_gdf.index
             with warnings.catch_warnings():
                 # Catch expected geopandas warning
                 warnings.filterwarnings(
@@ -213,14 +214,20 @@ class Join(Extract):
                 linestrings_inters_gdf.geometry.array.data
             )
             # the start and end points of the intersections are the junctions
-            for line in linestrings_inters_gdf.geometry:
-                if isinstance(line, geometry.LineString):
+            for row in linestrings_inters_gdf.itertuples():
+                # if the linestrings are equal, no junctions
+                if pygeos.equals(
+                    linestrings_gdf.geometry.array.data[row.index_1],
+                    linestrings_gdf.geometry.array.data[row.index_2]
+                ):
+                    continue
+                if isinstance(row.geometry, geometry.LineString):
                     self._junctions.extend([
-                        geometry.Point(line.coords[0]),
-                        geometry.Point(line.coords[-1])
+                        geometry.Point(row.geometry.coords[0]),
+                        geometry.Point(row.geometry.coords[-1])
                     ])
                 else:
-                    for singleline in line.geoms:
+                    for singleline in row.geometry.geoms:
                         self._junctions.extend([
                             geometry.Point(singleline.coords[0]),
                             geometry.Point(singleline.coords[-1])
@@ -242,7 +249,6 @@ class Join(Extract):
         Return list of linestrings. If the linemerge was a MultiLineString
         then returns a list of multiple single linestrings
         """
-
         if not isinstance(merged_line, geometry.LineString):
             merged_line = [ls for ls in merged_line.geoms]
         else:

@@ -267,7 +267,7 @@ def test_cut_shared_paths_linemerge_multilinestring():
     topo = Cut(data, options={"shared_coords": False}).to_dict()
 
     assert len(topo["linestrings"]) == 12
-    assert len(topo["junctions"]) == 7
+    assert len(topo["junctions"]) == 6
 
 
 # cut exact duplicate rings ABCA & ABCA have no cuts
