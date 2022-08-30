@@ -143,7 +143,7 @@ class Cut(Join):
                         is_ring = False
                         if linestring_object_types[index] in ["Polygon", "MultiPolygon"]:
                             is_ring = True
-                        slines = fast_split(line, splitter, False)
+                        slines = fast_split(line, splitter, is_ring)
                         slist.append(slines)
                     else:
                         slist.append(np.array([ls.coords]))
