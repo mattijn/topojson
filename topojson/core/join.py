@@ -233,21 +233,6 @@ class Join(Extract):
                             geometry.Point(singleline.coords[-1])
                         ])
 
-            """
-            # the start and end points of lines are by convention also junctions.
-            # This also has as effect that lines are never rotated during cut.
-            # But, this increases the number of junctions significantly while there are
-            # also easy solutions in "cut" to deal with this...
-            for object_id, object_key in enumerate(data["objects"]):
-                object = data["objects"][object_key]
-                if object["type"] in ("LineString", "MultiLineString"):
-                    for line_id in data["bookkeeping_geoms"][object_id]:
-                        self._junctions.extend([
-                            geometry.Point(data["linestrings"][line_id].coords[0]),
-                            geometry.Point(data["linestrings"][line_id].coords[-1])
-                        ])
-            """
-
             # junctions can appear multiple times in multiple segments, remove
             # duplicates
             self._junctions = [
