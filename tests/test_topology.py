@@ -633,31 +633,3 @@ def test_topology_write_multiple_object_json_dict():
     topo_dict = topo.to_dict()
 
     assert len(topo_dict["objects"]) == 2
-
-
-# Support rotating rings
-# https://github.com/mattijn/topojson/issues/178
-def test_topology_shared_paths_polygons():
-    p0 = wkt.loads(
-        "MultiPolygon(((520 1108, 520 1111, 531 1111, 531 1100, 530 1100, 530 1103, "
-        "529 1103, 529 1105, 524 1110, 523 1110, 523 1108, 520 1108)))"
-    )
-    p1 = wkt.loads(
-        "MultiPolygon(((529 1099, 522 1107, 522 1108, 523 1108, 523 1110, 524 1110, "
-        "529 1105, 529 1103, 530 1103, 530 1099, 529 1099)))"
-    )
-    p2 = wkt.loads(
-        "Polygon((518 1107, 520 1107, 520 1103, 519 1103, 519 1102, 520 1102, 520 1100,"
-        "521 1100, 521 1099, 521 1099, 522 1099, 522 1097, 518 1097, 518 1107))"
-    )
-    p3 = wkt.loads(
-        "MultiPolygon(((522 1105, 522 1099, 521 1099, 521 1099, 521 1100, 520 1100, "
-        "520 1106, 521 1106, 521 1105, 522 1105)))"
-    )
-
-    data = geopandas.GeoDataFrame(
-        {"name": ["abc", "def", "ghi", "jkl"], "geometry": [p0, p1, p2, p3]}
-    )
-    topo = topojson.Topology(data, prequantize=False, shared_coords=False)
-
-    assert len(topo.output["arcs"]) == 9

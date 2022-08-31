@@ -267,7 +267,7 @@ def test_cut_shared_paths_linemerge_multilinestring():
     topo = Cut(data, options={"shared_coords": False}).to_dict()
 
     assert len(topo["linestrings"]) == 12
-    assert len(topo["junctions"]) == 6
+    assert len(topo["junctions"]) == 7
 
 
 # cut exact duplicate rings ABCA & ABCA have no cuts
@@ -392,8 +392,8 @@ def test_cut_shared_paths_polygons():
     )
     topo = Cut(data, options={"shared_coords": False}).to_dict()
 
-    assert len(topo["junctions"]) == 2
-    assert len(topo["linestrings"]) == 4
+    assert len(topo["junctions"]) == 4
+    assert len(topo["linestrings"]) == 6
     junctions = [list(point.coords) for point in topo["junctions"]]
     for line in topo["linestrings"]:
         assert [tuple(line[0])] in junctions

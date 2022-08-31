@@ -1,17 +1,11 @@
 # pylint: disable=unsubscriptable-object
 import copy
 import pprint
-import warnings
-
-import geopandas as gpd
-import numpy as np
-import pygeos
 from shapely import geometry
 from shapely.errors import ShapelyError
 from shapely.wkb import loads
 from shapely.ops import shared_paths
 from shapely.ops import linemerge
-
 from ..ops import select_unique_combs
 from ..ops import simplify
 from ..ops import quantize
@@ -196,45 +190,42 @@ class Join(Extract):
             self._junctions = [geometry.Point(xy) for xy in set(junctions)]
         else:
 
-            # calculate line intersections between all linestrings
-            linestrings_gdf = gpd.GeoDataFrame(
-                geometry=data["linestrings"]  # type: ignore
-            )
-            linestrings_gdf["index"] = linestrings_gdf.index
-            with warnings.catch_warnings():
-                # Catch expected geopandas warning
-                warnings.filterwarnings(
-                    action="ignore",
-                    message="^`keep_geom_type=True` in overlay",
-                    category=UserWarning)
-                linestrings_inters_gdf = linestrings_gdf.overlay(
-                    linestrings_gdf, how='intersection',
-                ).query("index_1 != index_2")
-            linestrings_inters_gdf.geometry.array.data = pygeos.line_merge(
-                linestrings_inters_gdf.geometry.array.data
-            )
-            # the start and end points of the intersections are the junctions
-            for row in linestrings_inters_gdf.itertuples():
-                # if the linestrings are equal, no junctions
-                if pygeos.equals(
-                    linestrings_gdf.geometry.array.data[row.index_1],
-                    linestrings_gdf.geometry.array.data[row.index_2]
-                ):
-                    continue
-                if isinstance(row.geometry, geometry.LineString):
-                    self._junctions.extend([
-                        geometry.Point(row.geometry.coords[0]),
-                        geometry.Point(row.geometry.coords[-1])
-                    ])
-                else:
-                    for singleline in row.geometry.geoms:
-                        self._junctions.extend([
-                            geometry.Point(singleline.coords[0]),
-                            geometry.Point(singleline.coords[-1])
-                        ])
+            # create list with unique combinations of lines using a r-tree
+            line_combs = select_unique_combs(data["linestrings"])
 
-            # junctions can appear multiple times in multiple segments, remove
-            # duplicates
+            # iterate over index combinations
+            for i1, i2 in line_combs:
+                g1 = data["linestrings"][i1]
+                g2 = data["linestrings"][i2]
+
+                # check if geometry are equal
+                # being equal meaning the geometry object coincide with each other.
+                # a rotated polygon or reversed linestring are both considered equal.
+                if not g1.equals(g2):
+                    # geoms are unique, let's find junctions
+                    self._shared_segs(g1, g2)
+
+            # self._segments are nested lists of LineStrings, get coordinates of each nest
+            s_coords = []
+            for segment in self._segments:
+                s_coords.extend(
+                    [
+                        [
+                            (x.xy[0][y], x.xy[1][y])
+                            for x in segment
+                            for y in range(len(x.xy[0]))
+                        ]
+                    ]
+                )
+
+            # only keep junctions that appear only once in each segment (nested list)
+            # coordinates that appear multiple times are not junctions
+            for coords in s_coords:
+                self._junctions.extend(
+                    [geometry.Point(i) for i in coords if coords.count(i) == 1]
+                )
+
+            # junctions can appear multiple times in multiple segments, remove duplicates
             self._junctions = [
                 loads(xy) for xy in list(set([x.wkb for x in self._junctions]))
             ]
@@ -249,6 +240,7 @@ class Join(Extract):
         Return list of linestrings. If the linemerge was a MultiLineString
         then returns a list of multiple single linestrings
         """
+
         if not isinstance(merged_line, geometry.LineString):
             merged_line = [ls for ls in merged_line.geoms]
         else:

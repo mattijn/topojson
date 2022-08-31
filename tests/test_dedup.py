@@ -198,8 +198,7 @@ def test_dedup_shared_paths_array_bk_sarcs_reference():
     topo = Dedup(data, options={"shared_coords": False}).to_dict()
 
     assert len(topo["bookkeeping_shared_arcs"]) == 1
-    junctions = [list(junction.coords) for junction in topo["junctions"]]
-    assert sorted(junctions) == sorted([[(1.0, 1.0)], [(3.0, 1.0)]])
+    assert len(topo["junctions"]) == 4
 
 
 # this test was added since there is an error stating the following during Dedup:
@@ -212,7 +211,7 @@ def test_dedup_shared_paths_s2_geometries():
     ]
     topo = Dedup(data, options={"shared_coords": False}).to_dict()
 
-    assert len(topo["junctions"]) == 4
+    assert len(topo["junctions"]) == 6
     assert len(topo["bookkeeping_duplicates"]) == 0
 
 
@@ -236,7 +235,7 @@ def test_dedup_shared_paths_linemerge_multilinestring():
     topo = Dedup(data, options={"shared_coords": False}).to_dict()
 
     assert len(topo["linestrings"]) == 9
-    assert len(topo["junctions"]) == 6
+    assert len(topo["junctions"]) == 7
 
 
 def test_dedup_topology_false():
