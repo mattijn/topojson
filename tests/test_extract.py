@@ -7,16 +7,6 @@ from geojson import Feature, Polygon, FeatureCollection
 import fiona
 
 
-def test_extract_dict():
-    import topojson.utils
-
-    data = topojson.utils.example_data_africa()
-    topo = Extract(data).to_dict()
-
-    assert len(topo["objects"]) == len(data)
-    assert len(topo["objects"]) == len(data)
-
-
 # extract copies coordinates sequentially into a buffer
 def test_extract_linestring():
     data = {
@@ -46,7 +36,6 @@ def test_extract_multipolygon():
     }
     topo = Extract(data).to_dict()
 
-    assert len(topo["objects"]) == 1
     assert len(topo["bookkeeping_geoms"]) == 3
     assert len(topo["linestrings"]) == 4
 
@@ -358,11 +347,8 @@ def test_extract_invalid_dict_item():
 
 def test_extract_fiona_file():
     with fiona.open("tests/files_shapefile/southamerica.shp") as data:
-        expected_features = len(data)
         topo = Extract(data).to_dict()
 
-    
-    assert len(topo["objects"]) == expected_features
     assert len(topo["bookkeeping_geoms"]) == 15
 
 
@@ -375,7 +361,6 @@ def test_extract_fiona_file_gpkg():
 
     topo = Extract(feats).to_dict()
 
-    assert len(topo["objects"]) == len(feats)
     assert len(topo["bookkeeping_geoms"]) == 4
 
 
