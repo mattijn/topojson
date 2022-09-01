@@ -115,25 +115,35 @@ class Cut(Join):
                 warnings.filterwarnings("ignore", category=ShapelyDeprecationWarning)
                 tree_splitter = STRtree(mp)
             slist = []
+
+            # create dict with original geometry type per linestring
+            linestring_object_types = self._get_linestring_types(data)
+
             # junctions are only existing in coordinates of linestring
             if self.options.shared_coords:
-                for ls in data["linestrings"]:
+                for index, ls in enumerate(data["linestrings"]):
                     line, splitter = np_array_bbox_points_line(ls, tree_splitter)
-                    # prev function returns None for splitter if there is nothing to split
+                    # prev function returns None for splitter if nothing to split
                     if splitter is not None:
-                        slines = fast_split(line, splitter)
+                        is_ring = False
+                        if linestring_object_types[index] in ["Polygon", "MultiPolygon"]:
+                            is_ring = True
+                        slines = fast_split(line, splitter, is_ring)
                         slist.append(slines)
                     else:
                         slist.append(np.array([ls.coords]))
 
             # junctions can exist between existing coords of linestring
             else:
-                for ls in data["linestrings"]:
+                for index, ls in enumerate(data["linestrings"]):
                     # slines = split(ls, mp)
                     line, splitter = insert_coords_in_line(ls, tree_splitter)
-                    # prev function returns None for splitter if there is nothing to split
+                    # prev function returns None for splitter if nothing to split
                     if splitter is not None:
-                        slines = fast_split(line, splitter)
+                        is_ring = False
+                        if linestring_object_types[index] in ["Polygon", "MultiPolygon"]:
+                            is_ring = True
+                        slines = fast_split(line, splitter, is_ring)
                         slist.append(slines)
                     else:
                         slist.append(np.array([ls.coords]))
@@ -162,6 +172,34 @@ class Cut(Join):
         data["bookkeeping_linestrings"] = self._bookkeeping_linestrings
 
         return data
+
+    def _get_linestring_types(self, data) -> dict:
+        # create dict with original geometry type per linestring
+        def recurse_geometries(object):
+            # If object is not a list, make it a list to be able to loop
+            if not isinstance(object, list):
+                object = [object]
+
+            # Loop over children of object
+            for object_child in object:
+                # Depending on input format there is one or more geometry in an object
+                if "geometries" in object_child:
+                    geometries = object_child["geometries"]
+                    recurse_geometries(geometries)
+                elif object_child['type'] != "Point":
+                    # For non-Point geometries, loop over arcs
+                    for arc_id in object_child["arcs"]:
+                        # Find the linestrings for the arc via bookkeeping_geoms
+                        for linestring_id in data["bookkeeping_geoms"][arc_id]:
+                            linestring_object_types[linestring_id] = (
+                                object_child["type"]
+                            )
+
+        linestring_object_types = {}
+        for object_key in data["objects"]:
+            recurse_geometries(data["objects"][object_key])
+
+        return linestring_object_types
 
     def _flatten_and_index(self, slist):
         """
