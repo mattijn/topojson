@@ -159,12 +159,12 @@ class Cut(Join):
             bk_array = np.expand_dims(
                 bk_array[~np.isnan(bk_array)].astype(np.int64), axis=1
             )
-            self._segments_list = data["linestrings"]
+            self._segments_list = [np.array(ls.coords) for ls in data["linestrings"]]
             self._duplicates = find_duplicates(data["linestrings"], type="linestring")
             self._bookkeeping_linestrings = bk_array
 
         else:
-            self._segments_list = data["linestrings"]
+            self._segments_list = [np.array(ls.coords) for ls in data["linestrings"]]
 
         # prepare to return object
         data["linestrings"] = self._segments_list
