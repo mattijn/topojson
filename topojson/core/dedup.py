@@ -67,9 +67,6 @@ class Dedup(Cut):
 
         # deduplicate equal geometries
         # create numpy array from bookkeeping_geoms variable for numerical computation
-        if not self.options.topology and data["linestrings"]:
-            data["linestrings"] = [np.array(d.coords) for d in data["linestrings"]]
-
         if len(data["bookkeeping_linestrings"]):
             array_bk = np.vstack(data["bookkeeping_linestrings"])
         else:
