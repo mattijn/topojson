@@ -886,31 +886,39 @@ def cart(arr):
     return arr
 
 
-def find_duplicates(segments_list, type="array"):
+def find_duplicates(segments_list, segment_types, type="array"):
     """
     Function for solely detecting and recording duplicate LineStrings. The function
-    converts sorts the coordinates of each linestring and gets the hash. Using the
+    converts and sorts the coordinates of each linestring and gets the hash. Using the
     hashes it can quickly detect duplicates and return the indices.
 
     Parameters
     ----------
     segments_list : list of paths
         list of valid paths
+    segment_types : dict
+        Dict indexed (= the key) on the segment index in the segments_list. The value is
+        the geometry type of the object that the segment belongs to.
     type : str
         set if paths is `array` or `linestring`
 
     """
 
-    # get hash of sorted paths
+    # get hash of sorted linestring coordinates
     hash_segments = []
 
     if type == "array":
-        for path in segments_list:
-            hash_segments.append(hash(bytes(np.sort(path, axis=0))))
+        for index, coordinates in enumerate(segments_list):
+            if segment_types[index] in ("Polygon", "Multipolygon"):
+                coordinates = coordinates[0:-1]
+            hash_segments.append(hash(bytes(np.sort(coordinates, axis=0))))
 
     else:
-        for path in segments_list:
-            hash_segments.append(hash(tuple(sorted(path.coords))))
+        for index, linestring in enumerate(segments_list):
+            coordinates = list(linestring.coords)
+            if segment_types[index] in ("Polygon", "Multipolygon"):
+                coordinates = coordinates[0:-1]
+            hash_segments.append(hash(tuple(sorted(coordinates))))
 
     hash_segments = np.array(hash_segments, dtype=np.int64)
 

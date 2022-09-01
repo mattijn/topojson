@@ -141,7 +141,14 @@ class Cut(Join):
             # flatten the splitted linestrings, create bookkeeping_geoms array
             # and find duplicates
             self._segments_list, bk_array = self._flatten_and_index(slist)
-            self._duplicates = find_duplicates(self._segments_list)
+            linestring_object_types = self._get_linestring_types(
+                objects=data["objects"],
+                bookkeeping_geoms=data["bookkeeping_geoms"],
+                bookkeeping_linestrings=bk_array,
+            )
+            self._duplicates = find_duplicates(
+                self._segments_list, segment_types=linestring_object_types
+            )
             self._bookkeeping_linestrings = bk_array.astype(float)
 
         elif data["bookkeeping_geoms"]:
@@ -150,7 +157,16 @@ class Cut(Join):
                 bk_array[~np.isnan(bk_array)].astype(np.int64), axis=1
             )
             self._segments_list = data["linestrings"]
-            self._duplicates = find_duplicates(data["linestrings"], type="linestring")
+            linestring_object_types = self._get_linestring_types(
+                objects=data["objects"],
+                bookkeeping_geoms=data["bookkeeping_geoms"],
+                bookkeeping_linestrings=bk_array,
+            )
+            self._duplicates = find_duplicates(
+                data["linestrings"],
+                type="linestring",
+                segment_types=linestring_object_types
+            )
             self._bookkeeping_linestrings = bk_array
 
         else:
@@ -162,6 +178,61 @@ class Cut(Join):
         data["bookkeeping_linestrings"] = self._bookkeeping_linestrings
 
         return data
+
+    def _get_linestring_types(
+        self, objects, bookkeeping_geoms, bookkeeping_linestrings=None
+    ) -> dict:
+        """
+        Returns the original geometry type for each linestring.
+
+        Parameters
+        ----------
+        objects : list
+            list of original objects that contains a list of arcs for each geometry.
+        bookkeeping_geoms : list
+            list of arc-linestrings for each arc in the objects list.
+        bookkeeping_linestrings : numpy array, optional
+            array with for each arc-linestring the corresponding linestrings that were
+            constructed after splitting them on junctions. Defaults to None.
+
+        Returns
+        -------
+        dict :
+            dict with for each data["linestrings"] index the geometry type of
+            the object the linestring originated from.
+        """
+        # create dict with original geometry type per linestring
+        def recurse_geometries(object):
+            # If object is not a list, make it a list to be able to loop
+            if not isinstance(object, list):
+                object = [object]
+
+            # Loop over children of object
+            for object_child in object:
+                # Depending on input format there is one or more geometry in an object
+                if "geometries" in object_child:
+                    geometries = object_child["geometries"]
+                    recurse_geometries(geometries)
+                elif object_child['type'] != "Point":
+                    # For non-Point geometries, loop over arcs
+                    for arc_id in object_child["arcs"]:
+                        # Find the linestrings for the arc via bookkeeping_geoms
+                        for arc_line_id in bookkeeping_geoms[arc_id]:
+                            if bookkeeping_linestrings is None:
+                                arc_lines = [arc_line_id]
+                            else:
+                                arc_lines = bookkeeping_linestrings[arc_line_id]
+                            for linestring_id in arc_lines:
+                                if linestring_id >= 0:
+                                    linestring_object_types[linestring_id] = (
+                                        object_child["type"]
+                                    )
+
+        linestring_object_types = {}
+        for object_key in objects:
+            recurse_geometries(objects[object_key])
+
+        return linestring_object_types
 
     def _flatten_and_index(self, slist):
         """
