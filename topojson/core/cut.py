@@ -153,32 +153,16 @@ class Cut(Join):
             # flatten the splitted linestrings, create bookkeeping_geoms array
             # and find duplicates
             self._segments_list, bk_array = self._flatten_and_index(slist)
-            linestring_object_types = self._get_linestring_types(
-                objects=data["objects"],
-                bookkeeping_geoms=data["bookkeeping_geoms"],
-                bookkeeping_linestrings=bk_array,
-            )
-            self._duplicates = find_duplicates(
-                self._segments_list, segment_types=linestring_object_types
-            )
+            self._duplicates = find_duplicates(self._segments_list)
             self._bookkeeping_linestrings = bk_array.astype(float)
 
         elif data["bookkeeping_geoms"]:
-            self._segments_list = [np.array(ls.coords) for ls in data["linestrings"]]
             bk_array = np_array_from_lists(data["bookkeeping_geoms"]).ravel()
             bk_array = np.expand_dims(
                 bk_array[~np.isnan(bk_array)].astype(np.int64), axis=1
             )
-            linestring_object_types = self._get_linestring_types(
-                objects=data["objects"],
-                bookkeeping_geoms=data["bookkeeping_geoms"],
-                bookkeeping_linestrings=bk_array,
-            )
-            self._duplicates = find_duplicates(
-                data["linestrings"],
-                type="linestring",
-                segment_types=linestring_object_types
-            )
+            self._segments_list = [np.array(ls.coords) for ls in data["linestrings"]]
+            self._duplicates = find_duplicates(data["linestrings"], type="linestring")
             self._bookkeeping_linestrings = bk_array
 
         else:
