@@ -280,5 +280,5 @@ def test_dedup_merge_continuous_shared_path():
     )
     topo = Dedup(data, options={"shared_coords": False}).to_dict()
 
-    assert len(topo["linestrings"]) == 10
+    assert len(topo["linestrings"]) == 6
     assert len(topo["junctions"]) == 0

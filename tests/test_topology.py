@@ -4,10 +4,12 @@ import os
 import fiona
 import geojson
 import geopandas
+import geopandas.datasets
 import pytest
 from shapely import geometry, wkt
 
 import topojson
+import topojson.utils
 
 
 # this test was added since geometries of only linestrings resulted in a topojson
@@ -36,11 +38,8 @@ def test_topology_naturalearth_lowres_defaults():
 # Test updated to also cover this issue:
 #     Polygons that entirely fill islands in another polygon are often not dedupped
 #     (https://github.com/mattijn/topojson/issues/183)
-@pytest.mark.parametrize(
-    "shared_coords, prequantize", 
-    [(True, True), (True, False), (False, True), (False, False)]
-)
-def test_topology_polygon_filled_island_no_junctions(shared_coords, prequantize):
+@pytest.mark.parametrize("prequantize", [(True), (False)])
+def test_topology_polygon_filled_island_no_junctions(prequantize):
     data = geopandas.GeoDataFrame(
         {
             "name": ["abcde_fghij", "jihgf"],
@@ -53,22 +52,19 @@ def test_topology_polygon_filled_island_no_junctions(shared_coords, prequantize)
             ]
         }
     )
-    topo = topojson.Topology(data, prequantize=prequantize, shared_coords=shared_coords)
+    topo = topojson.Topology(data, prequantize=prequantize, shared_coords=False)
     topo_gdf = topo.to_gdf()
 
     assert len(topo.output["arcs"]) == 2
-    assert topo_gdf.geometry[0] == data["geometry"][0]
-    assert topo_gdf.geometry[1] == data["geometry"][1]
-
+    for index in range(len(topo_gdf)):
+        assert topo_gdf.geometry[index].equals(data["geometry"][index]), (
+            f"{topo_gdf.geometry[index].wkt} != {data['geometry'][index]}"
+        )
 
 # Test created for following issue: 
 #     Polygons that entirely fill islands in another polygon are often not dedupped
 #     (https://github.com/mattijn/topojson/issues/183)
-@pytest.mark.parametrize(
-    "shared_coords, prequantize", 
-    [(True, True), (True, False), (False, True), (False, False)]
-)
-def test_topology_polygon_filled_island_with_junctions(shared_coords, prequantize):
+def test_topology_polygon_filled_island_with_junctions():
     data = geopandas.GeoDataFrame(
         {
             "name": ["abcda_efghie", "fghief", "b__cb"],
@@ -82,12 +78,14 @@ def test_topology_polygon_filled_island_with_junctions(shared_coords, prequantiz
             ]
         }
     )
-    topo = topojson.Topology(data, prequantize=prequantize, shared_coords=shared_coords)
+    topo = topojson.Topology(data, prequantize=False, shared_coords=False)
     topo_gdf = topo.to_gdf()
 
-    assert len(topo.output["arcs"]) == 8
-    # assert topo_gdf.geometry[0] == data["geometry"][0]
-    # assert topo_gdf.geometry[1] == data["geometry"][1]
+    assert len(topo.output["arcs"]) == 4
+    for index in range(len(topo_gdf)):
+        assert topo_gdf.geometry[index].equals(data["geometry"][index]), (
+            f"{topo_gdf.geometry[index].wkt} != {data['geometry'][index]}"
+        )
 
 
 # test winding order using TopoOptions object
@@ -696,28 +694,3 @@ def test_topology_write_multiple_object_json_dict():
     topo_dict = topo.to_dict()
 
     assert len(topo_dict["objects"]) == 2
-
-
-@pytest.mark.parametrize(
-    "shared_coords, prequantize", 
-    [(True, True), (True, False), (False, True), (False, False)]
-)
-def test_topology_polygon_filled_island_no_junctions(shared_coords, prequantize):
-    data = geopandas.GeoDataFrame(
-        {
-            "name": ["abcde_fghij", "jihgf"],
-            "geometry": [
-                geometry.Polygon(
-                    shell=[[0, 0], [3, 0], [3, 3], [0, 3], [0, 0]], 
-                    holes=[[[1, 1], [1, 2], [2, 2], [2, 1], [1, 1]]],
-                ),
-                geometry.Polygon([[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]),
-            ]
-        }
-    )
-    topo = topojson.Topology(data, prequantize=prequantize, shared_coords=shared_coords)
-    topo_gdf = topo.to_gdf()
-
-    assert len(topo.output["arcs"]) == 2
-    assert topo_gdf.geometry[0] == data["geometry"][0]
-    assert topo_gdf.geometry[1] == data["geometry"][1]
