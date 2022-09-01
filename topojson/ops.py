@@ -219,7 +219,7 @@ def insert_coords_in_line(line, tree_splitter):
     return new_ls_xy, pts_xy_on_line
 
 
-def fast_split(line, splitter):
+def fast_split(line, splitter, is_ring):
     """
     Split a LineString (numpy.array) with a Point or MultiPoint.
     This function is a replacement for the shapely.ops.split function, but faster.
@@ -230,6 +230,10 @@ def fast_split(line, splitter):
         numpy array with coordinates that you like to be split
     splitter : numpy.array
         numpy array with coordinates on which the line should be tried splitting
+    is_ring : bool
+        True if the line represents a ring. In this case, for the first point found, the
+        linestring will be rotated rather than split. For consecutive points it will be
+        split.
 
     Returns
     -------
@@ -251,6 +255,16 @@ def fast_split(line, splitter):
             asvoid(np.around(splitter * tol).astype(np.int64)),
         )
     )
+
+    # For a ring, rotate rather than split for the first splitter_index
+    # Remark: the start and end coordinate of a ring are the same, so keep it that way
+    if is_ring and len(splitter_indices) > 0 and splitter_indices[0] != 0:
+        first_index = splitter_indices[0]
+        line = line[:-1]
+        line = np.roll(line, -first_index, axis=0)
+        line = np.append(line, [line[0]], axis=0)
+        splitter_indices = splitter_indices[1:]
+        splitter_indices = splitter_indices - first_index
 
     # compute the indices on which to split the line
     # cannot split on first or last index of linestring
