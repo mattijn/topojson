@@ -655,8 +655,9 @@ def test_topology_polygon_filled_island_no_junctions(shared_coords, prequantize)
             ]
         }
     )
-    topo = topojson.Topology(
-        data, prequantize=prequantize, shared_coords=shared_coords
-    ).to_dict()
+    topo = topojson.Topology(data, prequantize=prequantize, shared_coords=shared_coords)
+    topo_gdf = topo.to_gdf()
 
-    assert topo["bbox"] == topo["bbox"]    
+    assert len(topo.output["arcs"]) == 2
+    assert topo_gdf.geometry[0] == data["geometry"][0]
+    assert topo_gdf.geometry[1] == data["geometry"][1]
