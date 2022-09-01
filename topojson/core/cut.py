@@ -164,11 +164,11 @@ class Cut(Join):
             self._bookkeeping_linestrings = bk_array.astype(float)
 
         elif data["bookkeeping_geoms"]:
+            self._segments_list = [np.array(ls.coords) for ls in data["linestrings"]]
             bk_array = np_array_from_lists(data["bookkeeping_geoms"]).ravel()
             bk_array = np.expand_dims(
                 bk_array[~np.isnan(bk_array)].astype(np.int64), axis=1
             )
-            self._segments_list = data["linestrings"]
             linestring_object_types = self._get_linestring_types(
                 objects=data["objects"],
                 bookkeeping_geoms=data["bookkeeping_geoms"],
@@ -182,7 +182,7 @@ class Cut(Join):
             self._bookkeeping_linestrings = bk_array
 
         else:
-            self._segments_list = data["linestrings"]
+            self._segments_list = [np.array(ls.coords) for ls in data["linestrings"]]
 
         # prepare to return object
         data["linestrings"] = self._segments_list

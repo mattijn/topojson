@@ -1,13 +1,10 @@
-import os
 import json
-from shapely import geometry, wkt
-import geopandas
-import geojson
-import pytest
+import os
 
 import fiona
 import geojson
 import geopandas
+import pytest
 from shapely import geometry, wkt
 
 import topojson
@@ -699,3 +696,28 @@ def test_topology_write_multiple_object_json_dict():
     topo_dict = topo.to_dict()
 
     assert len(topo_dict["objects"]) == 2
+
+
+@pytest.mark.parametrize(
+    "shared_coords, prequantize", 
+    [(True, True), (True, False), (False, True), (False, False)]
+)
+def test_topology_polygon_filled_island_no_junctions(shared_coords, prequantize):
+    data = geopandas.GeoDataFrame(
+        {
+            "name": ["abcde_fghij", "jihgf"],
+            "geometry": [
+                geometry.Polygon(
+                    shell=[[0, 0], [3, 0], [3, 3], [0, 3], [0, 0]], 
+                    holes=[[[1, 1], [1, 2], [2, 2], [2, 1], [1, 1]]],
+                ),
+                geometry.Polygon([[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]),
+            ]
+        }
+    )
+    topo = topojson.Topology(data, prequantize=prequantize, shared_coords=shared_coords)
+    topo_gdf = topo.to_gdf()
+
+    assert len(topo.output["arcs"]) == 2
+    assert topo_gdf.geometry[0] == data["geometry"][0]
+    assert topo_gdf.geometry[1] == data["geometry"][1]
