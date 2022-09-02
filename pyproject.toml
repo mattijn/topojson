@@ -8,7 +8,7 @@ dynamic = ["version", "description"]
 authors = [
     {name = "Mattijn van Hoek", email = "mattijn@gmail.com"},
 ]
-dependencies = ["geopandas", "numpy", "pygeos", "shapely >= 1.8.0"]
+dependencies = ["numpy", "shapely >= 1.8.0"]
 keywords = ["topojson", "python", "github", "topology", "geojson"]
 readme = "README.md"
 classifiers = ["License :: OSI Approved :: BSD License"]
@@ -21,6 +21,7 @@ dev = [
     "simplification", 
     "pyshp", 
     "fiona", 
+    "geopandas", 
     "altair", 
     "ipywidgets"    
 ]
