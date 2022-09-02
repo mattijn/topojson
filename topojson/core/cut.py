@@ -117,7 +117,9 @@ class Cut(Join):
             slist = []
 
             # create dict with original geometry type per linestring
-            linestring_object_types = self._get_linestring_types(data)
+            linestring_object_types = self._get_linestring_types(
+                objects=data["objects"], bookkeeping_geoms=data["bookkeeping_geoms"],
+            )
 
             # junctions are only existing in coordinates of linestring
             if self.options.shared_coords:
@@ -173,7 +175,28 @@ class Cut(Join):
 
         return data
 
-    def _get_linestring_types(self, data) -> dict:
+    def _get_linestring_types(
+        self, objects, bookkeeping_geoms, bookkeeping_linestrings=None
+    ) -> dict:
+        """
+        Returns the original geometry type for each linestring.
+
+        Parameters
+        ----------
+        objects : list
+            list of original objects that contains a list of arcs for each geometry.
+        bookkeeping_geoms : list
+            list of arc-linestrings for each arc in the objects list.
+        bookkeeping_linestrings : numpy array, optional
+            array with for each arc-linestring the corresponding linestrings that were
+            constructed after splitting them on junctions. Defaults to None.
+
+        Returns
+        -------
+        dict :
+            dict with for each data["linestrings"] index the geometry type of
+            the object the linestring originated from.
+        """
         # create dict with original geometry type per linestring
         def recurse_geometries(object):
             # If object is not a list, make it a list to be able to loop
@@ -190,14 +213,20 @@ class Cut(Join):
                     # For non-Point geometries, loop over arcs
                     for arc_id in object_child["arcs"]:
                         # Find the linestrings for the arc via bookkeeping_geoms
-                        for linestring_id in data["bookkeeping_geoms"][arc_id]:
-                            linestring_object_types[linestring_id] = (
-                                object_child["type"]
-                            )
+                        for arc_line_id in bookkeeping_geoms[arc_id]:
+                            if bookkeeping_linestrings is None:
+                                arc_lines = [arc_line_id]
+                            else:
+                                arc_lines = bookkeeping_linestrings[arc_line_id]
+                            for linestring_id in arc_lines:
+                                if linestring_id >= 0:
+                                    linestring_object_types[linestring_id] = (
+                                        object_child["type"]
+                                    )
 
         linestring_object_types = {}
-        for object_key in data["objects"]:
-            recurse_geometries(data["objects"][object_key])
+        for object_key in objects:
+            recurse_geometries(objects[object_key])
 
         return linestring_object_types
 

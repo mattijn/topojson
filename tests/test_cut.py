@@ -295,8 +295,6 @@ def test_cut_shared_paths_reversed_rings_ABCA_ACBA_no_cuts():
 
 
 # cut rotated duplicate rings BCAB & ABCA have no cuts
-# changed the assertion of bookkeeping_duplicates, since the method rotated polygons are
-# not detected anymore in find_duplicate function when shapely is used for shared_paths.
 def test_cut_shared_paths_rotated_duplicates_rings_BCAB_ABCA_no_cuts():
     data = {
         "abca": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
@@ -305,7 +303,7 @@ def test_cut_shared_paths_rotated_duplicates_rings_BCAB_ABCA_no_cuts():
     topo = Cut(data, options={"shared_coords": False}).to_dict()
 
     assert len(topo["junctions"]) == 0
-    assert len(topo["bookkeeping_duplicates"]) == 0
+    assert len(topo["bookkeeping_duplicates"]) == 1
 
 
 # cut ring ABCA & line ABCA have no cuts
@@ -327,8 +325,6 @@ def test_cut_shared_paths_ring_ABCA_line_ABCA_no_cuts():
 
 
 # cut ring BCAB & line ABCA have no cuts
-# changed the assertion of bookkeeping_duplicates, since the method rotated polygons are
-# not detected anymore in find_duplicate function when shapely is used for shared_paths.
 def test_cut_shared_paths_ring_BCAB_line_ABCA_no_cuts():
     data = {
         "abcaLine": {
@@ -343,12 +339,10 @@ def test_cut_shared_paths_ring_BCAB_line_ABCA_no_cuts():
     topo = Cut(data, options={"shared_coords": False}).to_dict()
 
     assert len(topo["junctions"]) == 0
-    assert len(topo["bookkeeping_duplicates"]) == 0
+    assert len(topo["bookkeeping_duplicates"]) == 1
 
 
 # cut ring ABCA & line BCAB have no cuts
-# changed the assertion of bookkeeping_duplicates, since the method rotated polygons are
-# not detected anymore in find_duplicate function when shapely is used for shared_paths.
 def test_cut_shared_paths_ring_ABCA_line_BCAB_no_cuts():
     data = {
         "bcabLine": {
@@ -363,7 +357,7 @@ def test_cut_shared_paths_ring_ABCA_line_BCAB_no_cuts():
     topo = Cut(data, options={"shared_coords": False}).to_dict()
 
     assert len(topo["junctions"]) == 0
-    assert len(topo["bookkeeping_duplicates"]) == 0
+    assert len(topo["bookkeeping_duplicates"]) == 1
 
 
 # topoquantize can have low values, but prequantize cannot. this smells as a bug

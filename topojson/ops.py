@@ -903,7 +903,7 @@ def cart(arr):
 def find_duplicates(segments_list, type="array"):
     """
     Function for solely detecting and recording duplicate LineStrings. The function
-    converts sorts the coordinates of each linestring and gets the hash. Using the
+    converts and sorts the coordinates of each linestring and gets the hash. Using the
     hashes it can quickly detect duplicates and return the indices.
 
     Parameters
@@ -915,16 +915,26 @@ def find_duplicates(segments_list, type="array"):
 
     """
 
-    # get hash of sorted paths
+    # get hash of sorted linestring coordinates
     hash_segments = []
 
-    if type == "array":
-        for path in segments_list:
-            hash_segments.append(hash(bytes(np.sort(path, axis=0))))
+    if type != "array":
+        segments_list = [
+            np.array(list(linestring.coords)) for linestring in segments_list
+        ]
 
-    else:
-        for path in segments_list:
-            hash_segments.append(hash(tuple(sorted(path.coords))))
+    for coordinates in segments_list:
+        # If start and end points are the same, remove end point before sorting
+        # Rmark: check if it was originally a ring is not relevant, because lines with
+        # equal start and end point are no probem to be deduplicated with rings.
+        if np.array_equal(coordinates[0], coordinates[-1]):
+            coordinates = coordinates[0:-1]
+            coordinates = np.sort(coordinates, axis=0)
+            coordinates = np.append(coordinates[0:2], coordinates)
+        else:
+            coordinates = np.sort(coordinates, axis=0)
+
+        hash_segments.append(hash(bytes(coordinates)))
 
     hash_segments = np.array(hash_segments, dtype=np.int64)
 
