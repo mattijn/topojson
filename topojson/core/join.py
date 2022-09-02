@@ -195,27 +195,23 @@ class Join(Extract):
             self._junctions = [geometry.Point(xy) for xy in set(junctions)]
         else:
 
-            # create list with unique combinations of lines using a r-tree
-            # line_combs, tree = select_unique_combs(data["linestrings"])
-
-            # return tree as well from `select_unique_combs`
             idx_combs, tree = select_unique_combs(data["linestrings"])
             # collect geoms from tree (this are views or copies?)
-            geom_combs = np.asarray([
-                [tree.geometries.take(idx[0]), tree.geometries.take(idx[1])] 
-                for idx in idx_combs])
+            geom_combs = np.asarray(
+                [
+                    [tree.geometries.take(idx[0]), tree.geometries.take(idx[1])]
+                    for idx in idx_combs
+                ]
+            )
 
-            # find intersection between linestrings 
-            # use relate pattern to filter shared paths
-            # thus, filtering out single point intersections of linestrings
-            g1s = geom_combs[:,0]
-            g2s = geom_combs[:,1]
-            intersect_1dim = shapely.relate_pattern(g1s, g2s, pattern='1********')
-            segments = intersection_all(geom_combs[intersect_1dim], axis=1)
+            # find intersection between linestrings
+            segments = intersection_all(geom_combs, axis=1)
             merged_segments = explode(shapely.line_merge(segments))
 
             # the start and end points of the merged_segments are the junctions
-            coords, index_group_coords = shapely.get_coordinates(merged_segments, return_index=True)
+            coords, index_group_coords = shapely.get_coordinates(
+                merged_segments, return_index=True
+            )
             _, idx_start_segment = np.unique(index_group_coords, return_index=True)
             idx_start_end = np.append(idx_start_segment, idx_start_segment - 1)
 
@@ -223,46 +219,6 @@ class Join(Extract):
             # junctions can appear multiple times in multiple segments, remove duplicates
             _, idx_uniq_junction = np.unique(asvoid(junctions), return_index=True)
             self._junctions = list(map(geometry.Point, junctions[idx_uniq_junction]))
-            # result
-            # print(len(junctions))
-
-
-            # # iterate over index combinations
-            # for i1, i2 in line_combs:
-            #     g1 = data["linestrings"][i1]
-            #     g2 = data["linestrings"][i2]
-
-            #     # check if geometry are equal
-            #     # being equal meaning the geometry object coincide with each other.
-            #     # a rotated polygon or reversed linestring are both considered equal.
-            #     if not g1.equals(g2):
-            #         # geoms are unique, let's find junctions
-            #         self._shared_segs(g1, g2)
-
-            # # self._segments are nested lists of LineStrings, get coordinates of each nest
-            # s_coords = []
-            # for segment in self._segments:
-            #     s_coords.extend(
-            #         [
-            #             [
-            #                 (x.xy[0][y], x.xy[1][y])
-            #                 for x in segment
-            #                 for y in range(len(x.xy[0]))
-            #             ]
-            #         ]
-            #     )
-
-            # # only keep junctions that appear only once in each segment (nested list)
-            # # coordinates that appear multiple times are not junctions
-            # for coords in s_coords:
-            #     self._junctions.extend(
-            #         [geometry.Point(i) for i in coords if coords.count(i) == 1]
-            #     )
-
-            # # junctions can appear multiple times in multiple segments, remove duplicates
-            # self._junctions = [
-            #     loads(xy) for xy in list(set([x.wkb for x in self._junctions]))
-            # ]
 
         # prepare to return object
         data["junctions"] = self._junctions
