@@ -8,11 +8,10 @@ import numpy as np
 import pygeos
 from shapely import geometry
 from shapely.errors import ShapelyError
-from shapely.wkb import loads
 from shapely.ops import shared_paths
 from shapely.ops import linemerge
 
-from ..ops import select_unique_combs
+from ..ops import asvoid
 from ..ops import simplify
 from ..ops import quantize
 from ..ops import bounds
@@ -210,34 +209,31 @@ class Join(Extract):
                 linestrings_inters_gdf = linestrings_gdf.overlay(
                     linestrings_gdf, how='intersection',
                 ).query("index_1 != index_2")
+
+            # if the original linestrings that intersect are equal, no junctions
+            linestrings_inters_gdf = linestrings_inters_gdf[~pygeos.equals(
+                linestrings_gdf.geometry.iloc[linestrings_inters_gdf.index_1].array.data,
+                linestrings_gdf.geometry.iloc[linestrings_inters_gdf.index_2].array.data,
+            )]
+
+            # merge lines
             linestrings_inters_gdf.geometry.array.data = pygeos.line_merge(
                 linestrings_inters_gdf.geometry.array.data
             )
-            # the start and end points of the intersections are the junctions
-            for row in linestrings_inters_gdf.itertuples():
-                # if the linestrings are equal, no junctions
-                if pygeos.equals(
-                    linestrings_gdf.geometry.array.data[row.index_1],
-                    linestrings_gdf.geometry.array.data[row.index_2]
-                ):
-                    continue
-                if isinstance(row.geometry, geometry.LineString):
-                    self._junctions.extend([
-                        geometry.Point(row.geometry.coords[0]),
-                        geometry.Point(row.geometry.coords[-1])
-                    ])
-                else:
-                    for singleline in row.geometry.geoms:
-                        self._junctions.extend([
-                            geometry.Point(singleline.coords[0]),
-                            geometry.Point(singleline.coords[-1])
-                        ])
+            # explode to single linestrings
+            linestrings_inters_gdf = linestrings_inters_gdf.explode(ignore_index=True)
 
-            # junctions can appear multiple times in multiple segments, remove
-            # duplicates
-            self._junctions = [
-                loads(xy) for xy in list(set([x.wkb for x in self._junctions]))
-            ]
+            # the start and end points of the merged_segments are the junctions
+            coords, index_group_coords = pygeos.get_coordinates(
+                linestrings_inters_gdf.geometry.array.data, return_index=True
+            )
+            _, idx_start_segment = np.unique(index_group_coords, return_index=True)
+            idx_start_end = np.append(idx_start_segment, idx_start_segment - 1)
+            junctions = coords[idx_start_end]
+
+            # junctions can appear in multiple segments, remove duplicates
+            _, idx_uniq_junction = np.unique(asvoid(junctions), return_index=True)
+            self._junctions = list(map(geometry.Point, junctions[idx_uniq_junction]))
 
         # prepare to return object
         data["junctions"] = self._junctions
