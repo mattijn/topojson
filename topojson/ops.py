@@ -560,14 +560,17 @@ def select_unique_combs(linestrings):
     tree_idx = STRtree(linestrings)
 
     # get index of linestrings intersecting each linestring
-    idx_match = get_matches(linestrings, tree_idx)
+    if SHAPELY_GE_20:
+        combs = tree_idx.query(linestrings).T
+    else:
+        idx_match = get_matches(linestrings, tree_idx)
 
-    # make combinations of unique possibilities
-    combs = []
-    for idx_comb in idx_match:
-        combs.extend(list(itertools.product(*idx_comb)))
+        # make combinations of unique possibilities
+        combs = []
+        for idx_comb in idx_match:
+            combs.extend(list(itertools.product(*idx_comb)))
 
-    combs = np.array(combs)
+        combs = np.array(combs)
     combs.sort(axis=1)
     combs = select_unique(combs)
 
