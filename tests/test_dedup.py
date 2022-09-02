@@ -1,7 +1,9 @@
 import geopandas
+import geopandas.datasets
 import geojson
 from shapely import geometry
 from shapely import wkt
+
 from topojson.core.dedup import Dedup
 
 

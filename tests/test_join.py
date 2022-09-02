@@ -1,5 +1,7 @@
 import geopandas
+import geopandas.datasets
 from shapely import geometry, wkt
+
 from topojson.core.join import Join
 
 # the returned hashmap has undefined for non-junction points

@@ -1,21 +1,21 @@
 # pylint: disable=unsubscriptable-object
 import copy
+from datetime import datetime
 import pprint
-import warnings
-
-import geopandas as gpd
 import numpy as np
-import pygeos
 from shapely import geometry
 from shapely.errors import ShapelyError
-from shapely.ops import shared_paths
 from shapely.ops import linemerge
-
-from ..ops import asvoid
+from shapely.ops import shared_paths
+from shapely.set_operations import intersection_all
+import shapely
+from ..ops import select_unique_combs
 from ..ops import simplify
 from ..ops import quantize
 from ..ops import bounds
 from ..ops import compare_bounds
+from ..ops import asvoid
+from ..ops import explode
 from ..utils import serialize_as_svg
 from .extract import Extract
 
@@ -195,45 +195,36 @@ class Join(Extract):
             self._junctions = [geometry.Point(xy) for xy in set(junctions)]
         else:
 
-            # calculate line intersections between all linestrings
-            linestrings_gdf = gpd.GeoDataFrame(
-                geometry=data["linestrings"]  # type: ignore
-            )
-            linestrings_gdf["index"] = linestrings_gdf.index
-            with warnings.catch_warnings():
-                # Catch expected geopandas warning
-                warnings.filterwarnings(
-                    action="ignore",
-                    message="^`keep_geom_type=True` in overlay",
-                    category=UserWarning)
-                linestrings_inters_gdf = linestrings_gdf.overlay(
-                    linestrings_gdf, how='intersection',
-                ).query("index_1 != index_2")
+            # calculate line intersections between all linestrings. We don't want
+            # junctions for equal linestrings, so filter them out
+            idx_combs, tree = select_unique_combs(data["linestrings"])
+            geom_combs = [
+                geoms
+                for geoms in zip(
+                    tree.geometries.take(idx_combs[:, 0]),  # type: ignore
+                    tree.geometries.take(idx_combs[:, 1]),  # type: ignore
+                )
+                if not geoms[0].equals(geoms[1])
+            ]
+            if len(geom_combs) == 0:
+                # if there are no intersections, no junctions
+                self._junctions = []
+            else:
+                # find intersection between linestrings
+                segments = intersection_all(np.asarray(geom_combs), axis=1)
+                merged_segments = explode(shapely.line_merge(segments))
 
-            # if the original linestrings that intersect are equal, no junctions
-            linestrings_inters_gdf = linestrings_inters_gdf[~pygeos.equals(
-                linestrings_gdf.geometry.iloc[linestrings_inters_gdf.index_1].array.data,
-                linestrings_gdf.geometry.iloc[linestrings_inters_gdf.index_2].array.data,
-            )]
+                # the start and end points of the merged_segments are the junctions
+                coords, index_group_coords = shapely.get_coordinates(
+                    merged_segments, return_index=True
+                )
+                _, idx_start_segment = np.unique(index_group_coords, return_index=True)
+                idx_start_end = np.append(idx_start_segment, idx_start_segment - 1)
 
-            # merge lines
-            linestrings_inters_gdf.geometry.array.data = pygeos.line_merge(
-                linestrings_inters_gdf.geometry.array.data
-            )
-            # explode to single linestrings
-            linestrings_inters_gdf = linestrings_inters_gdf.explode(ignore_index=True)
-
-            # the start and end points of the merged_segments are the junctions
-            coords, index_group_coords = pygeos.get_coordinates(
-                linestrings_inters_gdf.geometry.array.data, return_index=True
-            )
-            _, idx_start_segment = np.unique(index_group_coords, return_index=True)
-            idx_start_end = np.append(idx_start_segment, idx_start_segment - 1)
-            junctions = coords[idx_start_end]
-
-            # junctions can appear in multiple segments, remove duplicates
-            _, idx_uniq_junction = np.unique(asvoid(junctions), return_index=True)
-            self._junctions = list(map(geometry.Point, junctions[idx_uniq_junction]))
+                junctions = coords[idx_start_end]
+                # junctions can appear in multiple segments, remove duplicates
+                _, idx_uniq_junction = np.unique(asvoid(junctions), return_index=True)
+                self._junctions = list(map(geometry.Point, junctions[idx_uniq_junction]))
 
         # prepare to return object
         data["junctions"] = self._junctions
@@ -245,6 +236,7 @@ class Join(Extract):
         Return list of linestrings. If the linemerge was a MultiLineString
         then returns a list of multiple single linestrings
         """
+
         if not isinstance(merged_line, geometry.LineString):
             merged_line = [ls for ls in merged_line.geoms]
         else:
