@@ -103,7 +103,7 @@ class Cut(Join):
             - new key: bookkeeping_linestrings
         """
 
-        if data["junctions"]:
+        if len(data["junctions"]):
             # split each feature given the intersections
             # prepare the junctions as a 2d coordinate array
             mp = data["junctions"]
