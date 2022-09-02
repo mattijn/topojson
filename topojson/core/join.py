@@ -196,21 +196,18 @@ class Join(Extract):
         else:
 
             idx_combs, tree = select_unique_combs(data["linestrings"])
-            # collect geoms from tree (this are views or copies?)
-            geom_combs = np.asarray(
-                [
-                    [tree.geometries.take(idx[0]), tree.geometries.take(idx[1])]
-                    for idx in idx_combs
-                ]
-            )
+            # collect geoms from tree (views)
+            geom_combs = tree.geometries.take(idx_combs)
+            combs_no_dup = geom_combs[~shapely.equals(geom_combs[:,0], geom_combs[:,1])]
 
             # find intersection between linestrings
-            segments = intersection_all(geom_combs, axis=1)
-            merged_segments = explode(shapely.line_merge(segments))
+            segments = intersection_all(combs_no_dup, axis=1)
+            merged_segments = shapely.line_merge(segments)
+            linestring_segments = shapely.get_parts(merged_segments)
 
             # the start and end points of the merged_segments are the junctions
             coords, index_group_coords = shapely.get_coordinates(
-                merged_segments, return_index=True
+                linestring_segments, return_index=True
             )
             _, idx_start_segment = np.unique(index_group_coords, return_index=True)
             idx_start_end = np.append(idx_start_segment, idx_start_segment - 1)
@@ -218,7 +215,9 @@ class Join(Extract):
             junctions = coords[idx_start_end]
             # junctions can appear multiple times in multiple segments, remove duplicates
             _, idx_uniq_junction = np.unique(asvoid(junctions), return_index=True)
-            self._junctions = list(map(geometry.Point, junctions[idx_uniq_junction]))
+            self._junctions = shapely.points(junctions[idx_uniq_junction])
+            if not len(self._junctions):
+                self._junctions = []
 
         # prepare to return object
         data["junctions"] = self._junctions
