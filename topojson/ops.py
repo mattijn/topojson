@@ -108,13 +108,6 @@ def strtree_query_index(tree, arc):
     return tree_index
 
 
-def explode(segments):
-    list_explode = [
-        list(geom.geoms) if hasattr(geom, "geoms") else [geom] for geom in segments
-    ]
-    return list(itertools.chain.from_iterable(list_explode))
-
-
 def np_array_bbox_points_line(line, tree_splitter):
     """
     Get junctions within bbox of line and return both as numpy array

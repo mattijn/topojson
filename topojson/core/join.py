@@ -15,7 +15,6 @@ from ..ops import quantize
 from ..ops import bounds
 from ..ops import compare_bounds
 from ..ops import asvoid
-from ..ops import explode
 from ..utils import serialize_as_svg
 from .extract import Extract
 
