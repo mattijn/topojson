@@ -109,6 +109,8 @@ def strtree_query_index(tree, arc):
 
 
 def explode(segments):
+    if not isinstance(segments, list):
+        segments = [segments]
     list_explode = [
         list(geom.geoms) if hasattr(geom, "geoms") else [geom] for geom in segments
     ]

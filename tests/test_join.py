@@ -808,9 +808,8 @@ def test_join_shared_paths_line_ABD_deviates_line_ABC():
     }
     topo = Join(data, options={"shared_coords": False}).to_dict()
 
-    assert geometry.MultiPoint(topo["junctions"]).equals(
-        geometry.MultiPoint([(0.0, 0.0), (2.0, 0.0)])
-    )
+    junctions = [list(junction.coords) for junction in topo["junctions"]]
+    assert sorted(junctions) == sorted([[(0.0, 0.0)], [(2.0, 0.0)]])
 
 
 # when a new line ABD deviates from a reversed old line CBA, there is a

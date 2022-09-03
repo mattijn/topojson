@@ -7,7 +7,6 @@ from shapely import geometry
 from shapely.errors import ShapelyError
 from shapely.ops import linemerge
 from shapely.ops import shared_paths
-from shapely.set_operations import intersection_all
 import shapely
 from ..ops import select_unique_combs
 from ..ops import simplify
@@ -195,36 +194,37 @@ class Join(Extract):
             self._junctions = [geometry.Point(xy) for xy in set(junctions)]
         else:
 
-            # calculate line intersections between all linestrings. We don't want
-            # junctions for equal linestrings, so filter them out
-            idx_combs, tree = select_unique_combs(data["linestrings"])
+            # calculate line intersections between all linestrings
+            idx_combs, _ = select_unique_combs(data["linestrings"])
             geom_combs = [
-                geoms
-                for geoms in zip(
-                    tree.geometries.take(idx_combs[:, 0]),  # type: ignore
-                    tree.geometries.take(idx_combs[:, 1]),  # type: ignore
-                )
-                if not geoms[0].equals(geoms[1])
+                (data["linestrings"][idx_comb[0]], data["linestrings"][idx_comb[1]])
+                for idx_comb in idx_combs
             ]
-            if len(geom_combs) == 0:
-                # if there are no intersections, no junctions
-                self._junctions = []
-            else:
-                # find intersection between linestrings
-                intersections = intersection_all(np.asarray(geom_combs), axis=1)
-                intersections = explode(shapely.line_merge(intersections))
+            # we don't want junctions for equal linestrings, so filter them out
+            geom_combs = [
+                geoms for geoms in geom_combs if not geoms[0].equals(geoms[1])
+            ]
 
-                # the start and end points of the intersections are the junctions
-                coords, index_group_coords = shapely.get_coordinates(
-                    intersections, return_index=True
+            # find line intersections between linestrings
+            intersections = [
+                intersection
+                for geom1, geom2 in geom_combs
+                for intersection in explode(geom1.intersection(geom2))
+                if (
+                    not intersection.is_empty
+                    and not isinstance(intersection, geometry.Point)
+                    and not isinstance(intersection, geometry.MultiPoint)
                 )
-                _, idx_start_segment = np.unique(index_group_coords, return_index=True)
-                idx_start_end = np.append(idx_start_segment, idx_start_segment - 1)
+            ]
+            intersections = explode(linemerge(intersections))
 
-                junctions = coords[idx_start_end]
-                # junctions can appear in multiple intersections, remove duplicates
-                _, idx_uniq_junction = np.unique(asvoid(junctions), return_index=True)
-                self._junctions = list(map(geometry.Point, junctions[idx_uniq_junction]))
+            # the start and end points of the intersections are the junctions
+            junctions = [
+                junction for line in intersections
+                for junction in (line.coords[0], line.coords[-1])
+            ]
+            # keep unique junctions
+            self._junctions = list(map(geometry.Point, set(junctions)))
 
         # prepare to return object
         data["junctions"] = self._junctions
