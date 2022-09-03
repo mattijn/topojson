@@ -1,11 +1,14 @@
+import copy
 import itertools
+import logging
+import pprint
+from typing import List
+
 import numpy as np
 from shapely import geometry
 from shapely import wkt
+from shapely.ops import linemerge
 from shapely.strtree import STRtree
-import pprint
-import copy
-import logging
 
 
 try:
@@ -115,6 +118,28 @@ def explode(segments):
         list(geom.geoms) if hasattr(geom, "geoms") else [geom] for geom in segments
     ]
     return list(itertools.chain.from_iterable(list_explode))
+
+
+def extract_lines(geoms: List[geometry.base.BaseGeometry]):
+    explodedcollections = [
+        list(geom.geoms) if isinstance(geom, geometry.GeometryCollection) else [geom]
+        for geom in geoms
+        if not geom.is_empty
+    ]
+    explodedcollections = itertools.chain.from_iterable(
+        explodedcollections  # type: ignore
+    )
+    lines = [
+        geom for geom in explodedcollections
+        if (
+            not geom.is_empty
+            and (
+                isinstance(geom, geometry.LineString)
+                or isinstance(geom, geometry.MultiLineString)
+            )
+        )
+    ]
+    return lines
 
 
 def np_array_bbox_points_line(line, tree_splitter):

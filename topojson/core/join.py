@@ -1,21 +1,20 @@
 # pylint: disable=unsubscriptable-object
 import copy
-from datetime import datetime
 import pprint
-import numpy as np
+
 from shapely import geometry
 from shapely.errors import ShapelyError
 from shapely.ops import linemerge
 from shapely.ops import shared_paths
-import shapely
-from ..ops import select_unique_combs
-from ..ops import simplify
-from ..ops import quantize
+
 from ..ops import bounds
 from ..ops import compare_bounds
-from ..ops import asvoid
 from ..ops import explode
+from ..ops import extract_lines
+from ..ops import quantize
+from ..ops import select_unique_combs
 from ..utils import serialize_as_svg
+from ..ops import simplify
 from .extract import Extract
 
 
@@ -207,16 +206,17 @@ class Join(Extract):
 
             # find line intersections between linestrings
             intersections = [
-                intersection
+                geom1.intersection(geom2)
                 for geom1, geom2 in geom_combs
-                for intersection in explode(geom1.intersection(geom2))
-                if (
-                    not intersection.is_empty
-                    and not isinstance(intersection, geometry.Point)
-                    and not isinstance(intersection, geometry.MultiPoint)
-                )
             ]
-            intersections = explode(linemerge(intersections))
+            intersections = extract_lines(intersections)
+            intersections = [
+                linemerge(intersection)
+                if isinstance(intersection, geometry.MultiLineString)
+                else intersection
+                for intersection in intersections
+            ]
+            intersections = explode(intersections)
 
             # the start and end points of the intersections are the junctions
             junctions = [

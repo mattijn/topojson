@@ -1053,3 +1053,30 @@ def test_join_shared_paths_polygons():
     topo = Join(data, options={"shared_coords": False}).to_dict()
 
     assert len(topo["junctions"]) == 2
+
+
+# Bug: less arcs using fast shapely1 implementation
+def test_join_shared_paths_polygons_not_enoug_junctions():
+    p0 = wkt.loads(
+        "Polygon ((187 260, 187 265, 192 265, 192 264, 191 264, 191 263, 190 263, "
+        "190 262, 189 262, 189 261, 188 261, 188 260, 187 260))"
+    )
+    p1 = wkt.loads(
+        "Polygon ((188 261, 188 260, 189 260, 189 261, 188 261))"
+    )
+    p2 = wkt.loads(
+        "Polygon ((189 262, 189 261, 190 261, 190 262, 189 262))"
+    )
+    p3 = wkt.loads(
+        "Polygon ((190 263, 190 262, 191 262, 191 263, 190 263))"
+    )
+    p4 = wkt.loads(
+        "Polygon ((191 261, 191 259, 189 259, 189 260, 190 260, 190 261, 191 261))"
+    )
+
+    data = geopandas.GeoDataFrame(
+        {"name": ["a", "b", "c", "d", "e"], "geometry": [p0, p1, p2, p3, p4]}
+    )
+    topo = Join(data, options={"prequantize": False, "shared_coords": False}).to_dict()
+
+    assert len(topo["junctions"]) == 4
