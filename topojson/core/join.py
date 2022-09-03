@@ -211,18 +211,18 @@ class Join(Extract):
                 self._junctions = []
             else:
                 # find intersection between linestrings
-                segments = intersection_all(np.asarray(geom_combs), axis=1)
-                merged_segments = explode(shapely.line_merge(segments))
+                intersections = intersection_all(np.asarray(geom_combs), axis=1)
+                intersections = explode(shapely.line_merge(intersections))
 
-                # the start and end points of the merged_segments are the junctions
+                # the start and end points of the intersections are the junctions
                 coords, index_group_coords = shapely.get_coordinates(
-                    merged_segments, return_index=True
+                    intersections, return_index=True
                 )
                 _, idx_start_segment = np.unique(index_group_coords, return_index=True)
                 idx_start_end = np.append(idx_start_segment, idx_start_segment - 1)
 
                 junctions = coords[idx_start_end]
-                # junctions can appear in multiple segments, remove duplicates
+                # junctions can appear in multiple intersections, remove duplicates
                 _, idx_uniq_junction = np.unique(asvoid(junctions), return_index=True)
                 self._junctions = list(map(geometry.Point, junctions[idx_uniq_junction]))
 
