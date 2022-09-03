@@ -1,0 +1,7 @@
+run_datetime,package,package_version,operation,operation_descr,secs_taken,run_details
+2022-09-03 16:45:36.393340,topojson,1.4.1a1,topology_belgium_regions,"topology for detailed regions of Belgium (3 polygons, max 30.000 points)",0.932452,"{'shared_coords': False, 'nb_arcs': 39}"
+2022-09-03 16:48:17.867283,topojson,1.4.1a1,topomap_segmentation,topology for the raw result of segmentation of a topo map,161.239763,"{'shared_coords': False, 'nb_arcs': 15868}"
+2022-09-03 17:47:51.217410,topojson,1.4.1a1,agriparcels,topology for agricultural parcels (16.000),63.708402,"{'shared_coords': False, 'nb_arcs': 47492}"
+2022-09-03 17:50:12.543193,topojson,1.5,agriparcels,topology for agricultural parcels (16.000),43.030434,"{'shared_coords': False, 'nb_arcs': 39017}"
+2022-09-03 17:50:13.301072,topojson,1.5,topology_belgium_regions,"topology for detailed regions of Belgium (3 polygons, max 30.000 points)",0.436564,"{'shared_coords': False, 'nb_arcs': 39}"
+2022-09-03 17:50:29.975706,topojson,1.5,topomap_segmentation,topology for the raw result of segmentation of a topo map,16.4166,"{'shared_coords': False, 'nb_arcs': 12864}"
