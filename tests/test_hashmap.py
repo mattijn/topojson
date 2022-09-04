@@ -100,7 +100,7 @@ def test_hashmap_shared_arcs_ordering_issues():
         | (data.name == "Zambia")
     ]
     topo = Hashmap(data).to_dict()
-    assert len(topo["linestrings"]) == 17
+    assert len(topo["linestrings"]) == 16
 
 
 def test_hashmap_super_function():

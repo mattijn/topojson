@@ -42,8 +42,8 @@ def test_cut_overlapping_rings_are_cut():
     }
     topo = Cut(data).to_dict()
 
-    assert topo["bookkeeping_linestrings"].size == 6
-    assert topo["bookkeeping_duplicates"].tolist() == [[4, 1]]
+    assert topo["bookkeeping_linestrings"].size == 4
+    assert topo["bookkeeping_duplicates"].tolist() == [[3, 0]]
 
 
 # currently the border between Sudan and Egypt is not recognized as duplicate
@@ -62,7 +62,7 @@ def test_cut_nybb_fast_split():
     data.set_index("BoroCode", inplace=True)
     topo = Cut(data).to_dict()
 
-    assert topo["bookkeeping_linestrings"].size == 5618
+    assert topo["bookkeeping_linestrings"].size == 4664
 
 
 # this test was added since the fast_split was really slow on geometries
@@ -146,8 +146,8 @@ def test_cut_linemerge_multilinestring():
     ]
     topo = Cut(data).to_dict()
 
-    assert len(topo["linestrings"]) == 2
-    assert len(topo["junctions"]) == 0
+    assert len(topo["linestrings"]) == 12
+    assert len(topo["junctions"]) == 6
 
 
 # cut exact duplicate rings ABCA & ABCA have no cuts
@@ -158,7 +158,7 @@ def test_cut_exact_duplicate_rings_ABCA_ABCA_no_cuts():
     }
     topo = Cut(data).to_dict()
 
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
     assert topo["bookkeeping_duplicates"].tolist() == [[1, 0]]
 
 
@@ -170,13 +170,11 @@ def test_cut_reversed_rings_ABCA_ACBA_no_cuts():
     }
     topo = Cut(data).to_dict()
 
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
     assert topo["bookkeeping_duplicates"].tolist() == [[1, 0]]
 
 
 # cut rotated duplicate rings BCAB & ABCA have no cuts
-# changed the assertion of bookkeeping_duplicates, since the method rotated polygons are
-# not detected anymore in find_duplicate function when shapely is used for shared_paths.
 def test_cut_rotated_duplicates_rings_BCAB_ABCA_no_cuts():
     data = {
         "abca": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [2, 1], [0, 0]]]},
@@ -184,8 +182,8 @@ def test_cut_rotated_duplicates_rings_BCAB_ABCA_no_cuts():
     }
     topo = Cut(data).to_dict()
 
-    assert len(topo["junctions"]) == 2
-    assert len(topo["bookkeeping_duplicates"]) == 2
+    assert len(topo["junctions"]) == 0
+    assert len(topo["bookkeeping_duplicates"]) == 1
 
 
 # cut ring ABCA & line ABCA have no cuts
@@ -202,13 +200,11 @@ def test_cut_ring_ABCA_line_ABCA_no_cuts():
     }
     topo = Cut(data).to_dict()
 
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
     assert topo["bookkeeping_duplicates"].tolist() == [[1, 0]]
 
 
 # cut ring BCAB & line ABCA have no cuts
-# changed the assertion of bookkeeping_duplicates, since the method rotated polygons are
-# not detected anymore in find_duplicate function when shapely is used for shared_paths.
 def test_cut_ring_BCAB_line_ABCA_no_cuts():
     data = {
         "abcaLine": {
@@ -222,13 +218,11 @@ def test_cut_ring_BCAB_line_ABCA_no_cuts():
     }
     topo = Cut(data).to_dict()
 
-    assert len(topo["junctions"]) == 2
-    assert len(topo["bookkeeping_duplicates"]) == 2
+    assert len(topo["junctions"]) == 0
+    assert len(topo["bookkeeping_duplicates"]) == 1
 
 
 # cut ring ABCA & line BCAB have no cuts
-# changed the assertion of bookkeeping_duplicates, since the method rotated polygons are
-# not detected anymore in find_duplicate function when shapely is used for shared_paths.
 def test_cut_ring_ABCA_line_BCAB_no_cuts():
     data = {
         "bcabLine": {
@@ -242,8 +236,8 @@ def test_cut_ring_ABCA_line_BCAB_no_cuts():
     }
     topo = Cut(data).to_dict()
 
-    assert len(topo["junctions"]) == 2
-    assert len(topo["bookkeeping_duplicates"]) == 2
+    assert len(topo["junctions"]) == 0
+    assert len(topo["bookkeeping_duplicates"]) == 1
 
 
 # this test is added since its seems no extra junctions are placed at lines where other
@@ -369,4 +363,4 @@ def test_cut_low_prequantize():
     data = topojson.utils.example_data_africa()
     topo = Cut(data, options={"prequantize": 75}).to_dict()
 
-    assert len(topo["bookkeeping_duplicates"]) == 153
+    assert len(topo["bookkeeping_duplicates"]) == 163
