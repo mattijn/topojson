@@ -596,8 +596,7 @@ def select_unique_combs(linestrings):
     """
 
     # create spatial index
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=ShapelyDeprecationWarning)
+    with ignore_shapely2_warnings():
         tree_idx = STRtree(linestrings)
 
     # get index of linestrings intersecting each linestring
