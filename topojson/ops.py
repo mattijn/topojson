@@ -615,7 +615,7 @@ def select_unique_combs(linestrings):
     return uniq_line_combs, tree_idx
 
 
-def quantize(linestrings, bbox, quant_factor=1e6):
+def quantize(linestrings, bbox, quant_factor=1e5):
     """
     Function that applies quantization. Quantization removes information by reducing
     the precision of each coordinate, effectively snapping each point to a regular grid.

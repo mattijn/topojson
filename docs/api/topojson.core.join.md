@@ -31,6 +31,7 @@ The following sequence is adopted:
 > + ###### `quant_factor` : int, optional (default: None)
     quantization factor, used to constrain float numbers to integer values.
     - Use 1e4 for 5 valued values (00001-99999)
+    - Use 1e5 for 6 valued values (000001-999999)
     - Use 1e6 for 7 valued values (0000001-9999999)
 
 > #### Returns

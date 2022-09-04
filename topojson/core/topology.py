@@ -43,7 +43,7 @@ class Topology(Hashmap):
         small floating point error means that adjacent boundaries do not have
         identical values); typical values are powers of ten, such as `1e4`, `1e5` or
         `1e6`.
-        Default is `True` (which correspond to a quantize factor of `1e6`).
+        Default is `True` (which correspond to a quantize factor of `1e5`).
     topoquantize : boolean or int
         If the topoquantization parameter is specified, the input geometry is quantized
         after the topology is constructed. If the topology is already quantized this
@@ -519,13 +519,13 @@ class Topology(Hashmap):
                 if result.options.topoquantize > 0:
                     # set default if not specifically given in the options
                     if type(result.options.topoquantize) == bool:
-                        quant_factor = 1e6
+                        quant_factor = 1e5
                     else:
                         quant_factor = result.options.topoquantize
                 elif result.options.prequantize > 0:
                     # set default if not specifically given in the options
                     if type(result.options.prequantize) == bool:
-                        quant_factor = 1e6
+                        quant_factor = 1e5
                     else:
                         quant_factor = result.options.prequantize
                 else:
@@ -617,7 +617,7 @@ class Topology(Hashmap):
         if self.options.topoquantize > 0:
             # set default if not specifically given in the options
             if type(self.options.topoquantize) == bool:
-                quant_factor = 1e6
+                quant_factor = 1e5
             else:
                 quant_factor = self.options.topoquantize
 

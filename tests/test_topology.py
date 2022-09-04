@@ -255,7 +255,7 @@ def test_topology_polygon_point():
     topo = topojson.Topology(data, topoquantize=True).to_dict()
 
     assert len(topo["arcs"]) == 1
-    assert topo["objects"]["data"]["geometries"][1]["coordinates"] == [0, 999999]
+    assert topo["objects"]["data"]["geometries"][1]["coordinates"] == [0, 99999]
 
 
 # changed test since, quantization process catch zero-division
@@ -273,7 +273,7 @@ def test_topology_multipoint():
     assert len(topo["arcs"]) == 0
     assert topo["objects"]["data"]["geometries"][0]["coordinates"] == [
         [0, 0],
-        [999999, 999999],
+        [99999, 99999],
     ]
     assert topo["transform"]["translate"] == [0.5, 0.5]
 
@@ -296,7 +296,7 @@ def test_topology_point_multipoint():
     topo = topojson.Topology(data, topoquantize=True).to_dict()
 
     assert topo["objects"]["data"]["geometries"][0]["coordinates"] == [0, 0]
-    assert topo["objects"]["data"]["geometries"][2]["coordinates"] == [999999, 999999]
+    assert topo["objects"]["data"]["geometries"][2]["coordinates"] == [99999, 99999]
 
 
 def test_topology_to_geojson_nested_geometrycollection():
