@@ -1039,7 +1039,7 @@ def test_join_shared_paths_non_noded_intersection():
 
 # Bug: start and end of ring is always detected as junction point, even if not the case
 # https://github.com/mattijn/topojson/issues/178
-def test_join_shared_paths_polygons():
+def test_join_polygons_shared_path():
     p0 = wkt.loads(
         "Polygon((520 1108, 520 1111, 531 1111, 531 1100, 530 1100, 530 1103, "
         "529 1103, 529 1105, 524 1110, 523 1110, 523 1108, 520 1108))"
@@ -1055,28 +1055,46 @@ def test_join_shared_paths_polygons():
     assert len(topo["junctions"]) == 2
 
 
-# Bug: less arcs using fast shapely1 implementation
-def test_join_shared_paths_polygons_not_enoug_junctions():
+def test_join_multi_shared_paths_are_connected():
+    """ 
+    Tests nb junction when one polygon has a shared path with 2 other polygons
+    and the shared paths with those are connected as well.
+    So 2 shared paths gives 4 junctions, but one junction is the same, so 3.
+    """
+
     p0 = wkt.loads(
-        "Polygon ((187 260, 187 265, 192 265, 192 264, 191 264, 191 263, 190 263, "
-        "190 262, 189 262, 189 261, 188 261, 188 260, 187 260))"
+        "Polygon ((0 0, 1 0, 1 1, 2 1, 2 2, 3 2, 3 3, 6 3, 6 4, 0 4, 0 0))"
     )
     p1 = wkt.loads(
-        "Polygon ((188 261, 188 260, 189 260, 189 261, 188 261))"
+        "Polygon ((1 0, 1 1, 2 1, 2 0, 1 0))"
     )
     p2 = wkt.loads(
-        "Polygon ((189 262, 189 261, 190 261, 190 262, 189 262))"
-    )
-    p3 = wkt.loads(
-        "Polygon ((190 263, 190 262, 191 262, 191 263, 190 263))"
-    )
-    p4 = wkt.loads(
-        "Polygon ((191 261, 191 259, 189 259, 189 260, 190 260, 190 261, 191 261))"
+        "Polygon ((2 1, 2 2, 3 2, 3 1, 2 1))"
     )
 
     data = geopandas.GeoDataFrame(
-        {"name": ["a", "b", "c", "d", "e"], "geometry": [p0, p1, p2, p3, p4]}
+        {"name": ["a", "b", "c"], "geometry": [p0, p1, p2]}
     )
     topo = Join(data, options={"prequantize": False, "shared_coords": False}).to_dict()
 
-    assert len(topo["junctions"]) == 4
+    assert len(topo["junctions"]) == 3
+
+
+def test_join_multi_shared_paths_form_geometrycollection():
+    """ 
+    Tests junction determination when the intersection between two polygons is a 
+    geometrycollection (lines and points) and the line part has several contact points.
+    """
+    p0 = wkt.loads(
+        "Polygon ((0 0, 1 0, 1 1, 2 1, 2 2, 3 2, 3 3, 6 3, 6 4, 0 4, 0 0))"
+    )
+    p1 = wkt.loads(
+        "Polygon ((1 0, 1 1, 2 1, 2 2, 3 2, 4 2, 5 3, 6 -1, 1 -1, 1 0))"
+    )
+
+    data = geopandas.GeoDataFrame(
+        {"name": ["a", "b"], "geometry": [p0, p1]}
+    )
+    topo = Join(data, options={"prequantize": False, "shared_coords": False}).to_dict()
+
+    assert len(topo["junctions"]) == 2

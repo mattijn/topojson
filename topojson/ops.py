@@ -120,26 +120,30 @@ def explode(segments):
     return list(itertools.chain.from_iterable(list_explode))
 
 
-def extract_lines(geoms: List[geometry.base.BaseGeometry]):
-    explodedcollections = [
-        list(geom.geoms) if isinstance(geom, geometry.GeometryCollection) else [geom]
-        for geom in geoms
-        if not geom.is_empty
-    ]
-    explodedcollections = itertools.chain.from_iterable(
-        explodedcollections  # type: ignore
-    )
-    lines = [
-        geom for geom in explodedcollections
-        if (
-            not geom.is_empty
-            and (
-                isinstance(geom, geometry.LineString)
-                or isinstance(geom, geometry.MultiLineString)
+def extract_lines(geom: geometry.base.BaseGeometry) -> geometry.base.BaseGeometry:
+    if isinstance(geom, geometry.LineString):
+        return geom
+    elif isinstance(geom, geometry.MultiLineString):
+        return geom
+    elif isinstance(geom, geometry.GeometryCollection):
+        geoms = [
+            geom for geom in geom.geoms
+            if (
+                not geom.is_empty
+                and (
+                    isinstance(geom, geometry.LineString)
+                    or isinstance(geom, geometry.MultiLineString)
+                )
             )
-        )
-    ]
-    return lines
+        ]
+        if len(geoms) == 0:
+            return geometry.LineString()
+        elif len(geoms) == 0:
+            return geoms[0]
+        else:
+            return geometry.MultiLineString(geoms)
+
+    return geometry.LineString()
 
 
 def np_array_bbox_points_line(line, tree_splitter):

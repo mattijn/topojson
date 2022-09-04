@@ -204,23 +204,23 @@ class Join(Extract):
                 geoms for geoms in geom_combs if not geoms[0].equals(geoms[1])
             ]
 
-            # find line intersections between linestrings
-            intersections = [
-                geom1.intersection(geom2)
+            # calculate line intersections between linestrings
+            intersect_lines = [
+                extract_lines(geom1.intersection(geom2))
                 for geom1, geom2 in geom_combs
             ]
-            intersections = extract_lines(intersections)
-            intersections = [
-                linemerge(intersection)
-                if isinstance(intersection, geometry.MultiLineString)
-                else intersection
-                for intersection in intersections
+            # try to merge multilinestrings to one linestring
+            intersect_lines = [
+                line if isinstance(line, geometry.LineString)
+                else linemerge(line)
+                for line in intersect_lines
+                if not line.is_empty
             ]
-            intersections = explode(intersections)
+            intersect_lines = explode(intersect_lines)
 
-            # the start and end points of the intersections are the junctions
+            # the start and end points of the intersect_lines are the junctions
             junctions = [
-                junction for line in intersections
+                junction for line in intersect_lines
                 for junction in (line.coords[0], line.coords[-1])
             ]
             # keep unique junctions
