@@ -1,7 +1,8 @@
 import geopandas
+import geopandas.datasets
 from shapely import geometry
-from topojson.core.cut import Cut
 
+from topojson.core.cut import Cut
 
 # cut exact duplicate lines ABC & ABC have no cuts
 def test_cut_exact_duplicate_lines_ABC_ABC_no_cuts():
@@ -267,7 +268,7 @@ def test_cut_shared_paths_linemerge_multilinestring():
     topo = Cut(data, options={"shared_coords": False}).to_dict()
 
     assert len(topo["linestrings"]) == 12
-    assert len(topo["junctions"]) == 7
+    assert len(topo["junctions"]) == 6
 
 
 # cut exact duplicate rings ABCA & ABCA have no cuts
@@ -363,9 +364,9 @@ def test_cut_shared_paths_ring_ABCA_line_BCAB_no_cuts():
 # topoquantize can have low values, but prequantize cannot. this smells as a bug
 # fixed issue in find_duplicates()
 def test_cut_low_prequantize():
-    import topojson as tp
+    import topojson.utils
 
-    data = tp.utils.example_data_africa()
+    data = topojson.utils.example_data_africa()
     topo = Cut(data, options={"prequantize": 75}).to_dict()
 
     assert len(topo["bookkeeping_duplicates"]) == 153

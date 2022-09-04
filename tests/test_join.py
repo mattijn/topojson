@@ -1,5 +1,7 @@
 import geopandas
-from shapely import geometry
+import geopandas.datasets
+from shapely import geometry, wkt
+
 from topojson.core.join import Join
 
 # the returned hashmap has undefined for non-junction points
@@ -637,7 +639,7 @@ def test_join_shared_paths_linemerge_multilinestring():
     topo = Join(data, options={"shared_coords": False}).to_dict()
 
     assert len(topo["linestrings"]) == 2
-    assert len(topo["junctions"]) == 7
+    assert len(topo["junctions"]) == 6
 
 
 # the returned hashmap has true for junction points
@@ -648,9 +650,8 @@ def test_join_shared_paths_true_for_junction_points():
     }
     topo = Join(data, options={"shared_coords": False}).to_dict()
 
-    assert geometry.MultiPoint(topo["junctions"]).equals(
-        geometry.MultiPoint([(1.0, 0.0), (0.0, 0.0), (2.0, 0.0)])
-    )
+    junctions = [list(junction.coords) for junction in topo["junctions"]]
+    assert sorted(junctions) == sorted([[(0.0, 0.0)], [(1.0, 0.0)]])
 
 
 # forward backward lines
@@ -667,7 +668,7 @@ def test_join_shared_paths_forward_backward_lines():
     }
     topo = Join(data, options={"shared_coords": False}).to_dict()
 
-    assert len(topo["junctions"]) == 5
+    assert len(topo["junctions"]) == 4
 
 
 # more than two lines
@@ -686,7 +687,7 @@ def test_join_shared_paths_more_than_two_lines():
     }
     topo = Join(data, options={"shared_coords": False}).to_dict()
 
-    assert len(topo["junctions"]) == 5
+    assert len(topo["junctions"]) == 4
 
 
 # exact duplicate rings ABCA & ABCA have no junctions
@@ -795,9 +796,8 @@ def test_join_shared_paths_line_ABC_extends_line_BC():
     }
     topo = Join(data, options={"shared_coords": False}).to_dict()
 
-    assert geometry.MultiPoint(topo["junctions"]).equals(
-        geometry.MultiPoint([(1.0, 0.0), (0.0, 0.0), (2.0, 0.0)])
-    )
+    junctions = [list(junction.coords) for junction in topo["junctions"]]
+    assert sorted(junctions) == sorted([[(1.0, 0.0)], [(2.0, 0.0)]])
 
 
 # when a new line ABD deviates from an old line ABC, there is a junction at B
@@ -808,9 +808,8 @@ def test_join_shared_paths_line_ABD_deviates_line_ABC():
     }
     topo = Join(data, options={"shared_coords": False}).to_dict()
 
-    assert geometry.MultiPoint(topo["junctions"]).equals(
-        geometry.MultiPoint([(0.0, 0.0), (2.0, 0.0)])
-    )
+    junctions = [list(junction.coords) for junction in topo["junctions"]]
+    assert sorted(junctions) == sorted([[(0.0, 0.0)], [(2.0, 0.0)]])
 
 
 # when a new line ABD deviates from a reversed old line CBA, there is a
@@ -835,9 +834,8 @@ def test_join_shared_paths_line_DBC_merge_line_ABC():
     }
     topo = Join(data, options={"shared_coords": False}).to_dict()
 
-    assert geometry.MultiPoint(topo["junctions"]).equals(
-        geometry.MultiPoint([(1.0, 0.0), (2.0, 0.0), (3.0, 0.0), (0.0, 0.0)])
-    )
+    junctions = [list(junction.coords) for junction in topo["junctions"]]
+    assert sorted(junctions) == sorted([[(1.0, 0.0)], [(2.0, 0.0)]])
 
 
 # when a new line DBC merges into a reversed old line CBA, there is a junction at B
@@ -848,9 +846,8 @@ def test_join_shared_paths_line_DBC_merge_reversed_line_CBA():
     }
     topo = Join(data, options={"shared_coords": False}).to_dict()
 
-    assert geometry.MultiPoint(topo["junctions"]).equals(
-        geometry.MultiPoint([(2.0, 0.0), (1.0, 0.0), (3.0, 0.0)])
-    )
+    junctions = [list(junction.coords) for junction in topo["junctions"]]
+    assert sorted(junctions) == sorted([[(1.0, 0.0)], [(2.0, 0.0)]])
 
 
 # when a new line DBE shares a single midpoint with an old line ABC, there is
@@ -984,7 +981,7 @@ def test_join_shared_paths_exact_duplicate_rings_ABCA_ACBA_share_ABCA():
     }
     topo = Join(data, options={"shared_coords": False}).to_dict()
 
-    assert topo["junctions"] == []
+    assert list(topo["junctions"]) == []
 
 
 # coincident rings ABCA & BCAB share the arc BCAB, but contain no junctions
@@ -1038,3 +1035,66 @@ def test_join_shared_paths_non_noded_intersection():
     topo = Join(data, options={"shared_coords": False}).to_dict()
 
     assert len(topo["junctions"]) == 321
+
+
+# Bug: start and end of ring is always detected as junction point, even if not the case
+# https://github.com/mattijn/topojson/issues/178
+def test_join_polygons_shared_path():
+    p0 = wkt.loads(
+        "Polygon((520 1108, 520 1111, 531 1111, 531 1100, 530 1100, 530 1103, "
+        "529 1103, 529 1105, 524 1110, 523 1110, 523 1108, 520 1108))"
+    )
+    p1 = wkt.loads(
+        "Polygon((529 1099, 522 1107, 522 1108, 523 1108, 523 1110, 524 1110, "
+        "529 1105, 529 1103, 530 1103, 530 1099, 529 1099))")
+    data = geopandas.GeoDataFrame(
+        {"name": ["abc", "def"], "geometry": [p0, p1]}
+    )
+    topo = Join(data, options={"shared_coords": False}).to_dict()
+
+    assert len(topo["junctions"]) == 2
+
+
+def test_join_multi_shared_paths_are_connected():
+    """ 
+    Tests nb junction when one polygon has a shared path with 2 other polygons
+    and the shared paths with those are connected as well.
+    So 2 shared paths gives 4 junctions, but one junction is the same, so 3.
+    """
+
+    p0 = wkt.loads(
+        "Polygon ((0 0, 1 0, 1 1, 2 1, 2 2, 3 2, 3 3, 6 3, 6 4, 0 4, 0 0))"
+    )
+    p1 = wkt.loads(
+        "Polygon ((1 0, 1 1, 2 1, 2 0, 1 0))"
+    )
+    p2 = wkt.loads(
+        "Polygon ((2 1, 2 2, 3 2, 3 1, 2 1))"
+    )
+
+    data = geopandas.GeoDataFrame(
+        {"name": ["a", "b", "c"], "geometry": [p0, p1, p2]}
+    )
+    topo = Join(data, options={"prequantize": False, "shared_coords": False}).to_dict()
+
+    assert len(topo["junctions"]) == 3
+
+
+def test_join_multi_shared_paths_form_geometrycollection():
+    """ 
+    Tests junction determination when the intersection between two polygons is a 
+    geometrycollection (lines and points) and the line part has several contact points.
+    """
+    p0 = wkt.loads(
+        "Polygon ((0 0, 1 0, 1 1, 2 1, 2 2, 3 2, 3 3, 6 3, 6 4, 0 4, 0 0))"
+    )
+    p1 = wkt.loads(
+        "Polygon ((1 0, 1 1, 2 1, 2 2, 3 2, 4 2, 5 3, 6 -1, 1 -1, 1 0))"
+    )
+
+    data = geopandas.GeoDataFrame(
+        {"name": ["a", "b"], "geometry": [p0, p1]}
+    )
+    topo = Join(data, options={"prequantize": False, "shared_coords": False}).to_dict()
+
+    assert len(topo["junctions"]) == 2
