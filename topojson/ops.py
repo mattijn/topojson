@@ -10,7 +10,6 @@ from shapely import wkt
 from shapely.ops import linemerge
 from shapely.strtree import STRtree
 
-
 try:
     from shapely.ops import orient
 except ImportError:
@@ -596,7 +595,8 @@ def select_unique_combs(linestrings):
     """
 
     # create spatial index
-    tree_idx = STRtree(linestrings)
+    with ignore_shapely2_warnings():
+        tree_idx = STRtree(linestrings)
 
     # get index of linestrings intersecting each linestring
     idx_match = get_matches(linestrings, tree_idx)
