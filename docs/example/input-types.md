@@ -107,7 +107,7 @@ import json
 with open("tests/files_topojson/example_data_africa.geojson", 'r') as f:
     data = json.load(f)
 
-assert data['type']) == 'FeatureCollection'
+assert data['type'] == 'FeatureCollection'
 topo = topojson.Topology(data)
 
 # to visualize we use the (optional!) package Altair.
@@ -426,6 +426,85 @@ topo.to_gdf(object_name='geom_2').plot(column='shrd_name')
 topo.to_gdf(object_name='geom_1').plot(column='uniq_name')
 ```
 <img src="../images/multiple_objects.png" style="max-width: 375px;">
+
+</div>
+</div>
+
+* * * 
+
+## `list` of GeoJSON objects
+Requires `geojson` (not a hard dependency).
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+
+```python
+import json
+import topojson as tp
+
+with open('tests/files_geojson/geojson_1.json', 'r') as gj_1:
+    geojson_1 = json.load(gj_1)
+    
+with open('tests/files_geojson/geojson_2.json', 'r') as gj_2:
+    geojson_2 = json.load(gj_2)
+    
+topo = tp.Topology(
+    data=[geojson_1, geojson_2], 
+    object_name=['gjson_1', 'gjson_2']
+)
+print(topo.to_json(pretty=True))
+```
+
+```python
+{
+    "type": "Topology",
+    "objects": {
+        "gjson_1": {
+            "geometries": [
+                {
+                    "id": 0,
+                    "type": "Polygon",
+                    "properties": {"shrd_name": "rect", "uniq_name": "abc"},
+                    "bbox": [1.0, 1.0, 2.0, 2.0],
+                    "arcs": [[-1, 2]]
+                },
+                {
+                    "id": 1,
+                    "type": "Polygon",
+                    "properties": {"shrd_name": "rect", "uniq_name": "def"},
+                    "bbox": [0.0, 1.0, 1.0, 2.0],
+                    "arcs": [[1, 0, 3]]
+                }
+            ],
+            "type": "GeometryCollection"
+        },
+        "gjson_2": {
+            "geometries": [
+                {
+                    "id": 0,
+                    "type": "Polygon",
+                    "properties": {"shrd_name": "rect", "uniq_name": "abc"},
+                    "bbox": [0.0, 1.0, 2.0, 2.0],
+                    "arcs": [[1, 2, 3]]
+                }
+            ],
+            "type": "GeometryCollection"
+        }
+    },
+    "bbox": [0.0, 1.0, 2.0, 2.0],
+    "transform": {
+        "scale": [2.000002000002e-06, 1.000001000001e-06], "translate": [0.0, 1.0]
+    },
+    "arcs": [
+        [[500000, 999999], [0, -999999]], [[0, 0], [0, 999999], [500000, 0]],
+        [[500000, 999999], [499999, 0], [0, -999999], [-499999, 0]], [[500000, 0], [-500000, 0]]
+    ]
+}
+```
 
 </div>
 </div>
