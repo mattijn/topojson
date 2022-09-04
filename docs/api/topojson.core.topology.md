@@ -31,7 +31,7 @@ coordinates but foremost the computation of a topology.
     improve the quality of the topology if the input geometry is messy (i.e.,
     small floating point error means that adjacent boundaries do not have
     identical values); typical values are powers of ten, such as `1e4`, `1e5` or
-    `1e6`. Default is `True` (which correspond to a quantize factor of `1e6`).
+    `1e5`. Default is `True` (which correspond to a quantize factor of `1e5`).
 > + ###### `topoquantize` : boolean or int
     If the topoquantization parameter is specified, the input geometry is quantized
     after the topology is constructed. If the topology is already quantized this

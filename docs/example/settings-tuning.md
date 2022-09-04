@@ -101,7 +101,7 @@ Quantization is recommended to
 improve the quality of the topology if the input geometry is messy (i.e., 
 small floating point error means that adjacent boundaries do not have 
 identical values); typical values are powers of ten, such as `1e4`, `1e5` or 
-`1e6`. Default is `True` (which correspond to a quantize factor of `1e6`).
+`1e6`. Default is `True` (which correspond to a quantize factor of `1e5`).
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
