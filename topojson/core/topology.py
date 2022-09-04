@@ -61,12 +61,12 @@ class Topology(Hashmap):
         in the range of `0.0001` to `10`.
         Defaults to `False`.
     shared_coords : boolean
-        Sets the strategy to detect junctions. When set to `True` a path is
+        Sets the strategy to detect junctions. When set to `False` a path is considered
+        shared when coordinates are the same path (`path-connected`). The path-connected
+        strategy is more 'correct', but slightly slower. When set to `True` a path is
         considered shared when all coordinates appear in both paths
-        (`coords-connected`). When set to `False` a path is considered shared when
-        coordinates are the same path (`path-connected`). The path-connected strategy
-        is more 'correct', but slower.
-        Default is `True`.
+        (`coords-connected`). 
+        Default is `False`.
     prevent_oversimplify: boolean
         If this setting is set to `True`, the simplification is slower, but the
         likelihood of producing valid geometries is higher as it prevents
@@ -108,7 +108,7 @@ class Topology(Hashmap):
         topoquantize=False,
         presimplify=False,
         toposimplify=False,
-        shared_coords=True,
+        shared_coords=False,
         prevent_oversimplify=True,
         simplify_with="shapely",
         simplify_algorithm="dp",

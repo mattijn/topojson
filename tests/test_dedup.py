@@ -105,7 +105,7 @@ def test_dedup_arc_not_shared_arcs_got_deleted():
     ]
     topo = Dedup(data).to_dict()
 
-    assert len(topo["bookkeeping_shared_arcs"]) == 9
+    assert len(topo["bookkeeping_shared_arcs"]) == 10
     assert len(topo["bookkeeping_duplicates"]) == 0
 
 
@@ -145,8 +145,8 @@ def test_dedup_array_bk_sarcs_reference():
     }
     topo = Dedup(data).to_dict()
 
-    assert len(topo["bookkeeping_shared_arcs"]) == 0
-    assert len(topo["junctions"]) == 1
+    assert len(topo["bookkeeping_shared_arcs"]) == 1
+    assert len(topo["junctions"]) == 2
 
 
 # this test was added since there is an error stating the following during Dedup:
@@ -159,7 +159,7 @@ def test_dedup_s2_geometries():
     ]
     topo = Dedup(data).to_dict()
 
-    assert len(topo["junctions"]) == 8
+    assert len(topo["junctions"]) == 4
     assert len(topo["bookkeeping_duplicates"]) == 0
 
 
@@ -182,8 +182,8 @@ def test_dedup_linemerge_multilinestring():
     ]
     topo = Dedup(data).to_dict()
 
-    assert len(topo["linestrings"]) == 2
-    assert len(topo["junctions"]) == 0
+    assert len(topo["linestrings"]) == 9
+    assert len(topo["junctions"]) == 6
 
 
 # this test was added since the local variable "array_bk_sarcs" was
@@ -273,8 +273,8 @@ def test_dedup_merge_continuous():
     ]
     topo = Dedup(data, options={"prequantize": False}).to_dict()
 
-    assert len(topo["linestrings"]) == 6
-    assert len(topo["junctions"]) == 5
+    assert len(topo["linestrings"]) == 4
+    assert len(topo["junctions"]) == 2
 
 
 def test_dedup_merge_continuous_shared_path():

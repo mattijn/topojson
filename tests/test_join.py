@@ -111,7 +111,7 @@ def test_join_shared_junctions_in_shared_paths():
     ]
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 6
+    assert len(topo["junctions"]) == 4
 
 
 # this test was added since a shared path can be detected of two linestrings where
@@ -127,7 +127,7 @@ def test_join_shared_segment_partly_start_partly_end_segment():
     ]
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 6
+    assert len(topo["junctions"]) == 4
 
 
 def test_join_super_function_extract():
@@ -217,7 +217,7 @@ def test_join_linemerge_multilinestring():
     topo = Join(data).to_dict()
 
     assert len(topo["linestrings"]) == 2
-    assert len(topo["junctions"]) == 0
+    assert len(topo["junctions"]) == 6
 
 
 # the returned hashmap has true for junction points
@@ -245,7 +245,7 @@ def test_join_forward_backward_lines():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 0
+    assert len(topo["junctions"]) == 4
 
 
 # more than two lines
@@ -264,7 +264,7 @@ def test_join_more_than_two_lines():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 2
+    assert len(topo["junctions"]) == 4
 
 
 # exact duplicate rings ABCA & ABCA have no junctions
@@ -275,7 +275,7 @@ def test_join_exact_duplicate_rings():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
 
 
 # reversed duplicate rings ABCA & ACBA have no junctions
@@ -286,7 +286,7 @@ def test_join_reversed_duplicate_rings():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
 
 
 # rotated duplicate rings BCAB & ABCA have no junctions
@@ -296,7 +296,7 @@ def test_join_rotated_duplicate_rings():
         "bcab": {"type": "Polygon", "coordinates": [[[1, 1], [2, 0], [0, 0], [1, 1]]]},
     }
     topo = Join(data).to_dict()
-    assert len(topo["junctions"]) == 2
+    assert len(topo["junctions"]) == 0
 
 
 # ring ABCA & line ABCA have no junction at A
@@ -313,7 +313,7 @@ def test_join_equal_ring_and_line_no_junctions():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
 
 
 # ring ABCA & line ABCA have no junctions
@@ -330,7 +330,7 @@ def test_join_rotated_ring_and_line_no_junctions():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 2
+    assert len(topo["junctions"]) == 0
 
 
 # when a new arc ADE shares its start with an old arc ABC, there is no junction at A
@@ -341,7 +341,7 @@ def test_join_line_ADE_share_starts_with_ABC():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
 
 
 # ring ABA has no junctions
@@ -351,7 +351,7 @@ def test_join_single_ring_ABCA():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
 
 
 # when a new line DEC shares its end with an old line ABC, there is no junction at C
@@ -362,7 +362,7 @@ def test_join_line_DEC_share_line_ABC():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
 
 
 # when a new line starts BC in the middle of an old line ABC, there is a
@@ -386,7 +386,7 @@ def test_join_line_ABD_deviates_line_ABC():
     topo = Join(data).to_dict()
 
     assert geometry.MultiPoint(topo["junctions"]).equals(
-        geometry.MultiPoint([(1.0, 0.0), (0.0, 0.0)])
+        geometry.MultiPoint([(2.0, 0.0), (0.0, 0.0)])
     )
 
 
@@ -400,7 +400,7 @@ def test_join_line_ABD_deviates_line_CBA():
     topo = Join(data).to_dict()
 
     assert geometry.MultiPoint(topo["junctions"]).equals(
-        geometry.MultiPoint([(1.0, 0.0), (0.0, 0.0)])
+        geometry.MultiPoint([(2.0, 0.0), (0.0, 0.0)])
     )
 
 
@@ -438,7 +438,7 @@ def test_join_line_DBE_share_singe_midpoint_line_ABC():
         "dbe": {"type": "LineString", "coordinates": [[0, 1], [1, 0], [2, 1]]},
     }
     topo = Join(data).to_dict()
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
 
 
 # when a new line ABDE skips a point with an old line ABCDE, there is a no junction
@@ -451,7 +451,7 @@ def test_join_line_ABDE_skips_point_line_ABCDE():
         "abde": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [3, 0], [4, 0]]},
     }
     topo = Join(data).to_dict()
-    assert len(topo["junctions"]) == 2
+    assert len(topo["junctions"]) == 0
 
 
 # when a new line ABDE skips a point with a reversed old line EDCBA, there is
@@ -465,7 +465,7 @@ def test_join_line_ABDE_skips_point_reversed_line_EDCBA():
         "abde": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [3, 0], [4, 0]]},
     }
     topo = Join(data).to_dict()
-    assert len(topo["junctions"]) == 2
+    assert len(topo["junctions"]) == 0
 
 
 # when a line ABCDBE self-intersects with its middle, there are no junctions
@@ -478,7 +478,7 @@ def test_join_line_ABCDBE_self_intersects_with_middle():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
 
 
 # when a line ABACD self-intersects with its start, there are no junctions
@@ -491,7 +491,7 @@ def test_join_line_ABACD_self_intersects_with_middle():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
 
 
 # when a line ABCDBD self-intersects with its end, there are no junctions
@@ -504,7 +504,7 @@ def test_join_line_ABCDBD_self_intersects_with_end():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
 
 
 # when an old line ABCDBE self-intersects and shares a point B, there is
@@ -519,7 +519,7 @@ def test_join_line_ABCDB_self_intersects():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
 
 
 # when a line ABCA is closed, there is no junction at A
@@ -528,7 +528,7 @@ def test_join_line_ABCA_is_closed():
         "abca": {"type": "LineString", "coordinates": [[0, 0], [1, 0], [0, 1], [0, 0]]}
     }
     topo = Join(data).to_dict()
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
 
 
 # when a ring ABCA is closed, there are no junctions
@@ -538,7 +538,7 @@ def test_join_ring_ABCA_is_closed():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
 
 
 # exact duplicate rings ABCA & ABCA share the arc ABCA, but contain no junctions
@@ -549,7 +549,7 @@ def test_join_exact_duplicate_rings_ABCA_ABCA_share_ABCA():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
 
 
 # reversed duplicate rings ABCA & ACBA share the arc ABCA, but contain no junctions
@@ -560,7 +560,7 @@ def test_join_exact_duplicate_rings_ABCA_ACBA_share_ABCA():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 1
+    assert len(topo["junctions"]) == 0
 
 
 # coincident rings ABCA & BCAB share the arc BCAB, but contain no junctions
@@ -573,7 +573,7 @@ def test_join_coincident_rings_ABCA_BCAB_share_BCAB():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 2
+    assert len(topo["junctions"]) == 0
 
 
 # coincident rings ABCA & BACB share the arc BCAB
@@ -584,7 +584,7 @@ def test_join_coincident_rings_ABCA_BACB_share_BCAB():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 2
+    assert len(topo["junctions"]) == 0
 
 
 # coincident rings ABCA & DBED share the point B, but is no junction
@@ -595,7 +595,7 @@ def test_join_coincident_rings_ABCA_DBED_share_B():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 3
+    assert len(topo["junctions"]) == 0
 
 
 # coincident ring ABCA & line DBE share the point B
@@ -606,14 +606,14 @@ def test_join_coincident_ring_ABCA_and_line_DBE_share_B():
     }
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 2
+    assert len(topo["junctions"]) == 0
 
 
 def test_join_non_noded_intersection():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     topo = Join(data).to_dict()
 
-    assert len(topo["junctions"]) == 440
+    assert len(topo["junctions"]) == 321
 
 
 ################## shared_coords:False ##################

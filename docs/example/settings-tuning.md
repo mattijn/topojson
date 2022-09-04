@@ -317,11 +317,11 @@ topo.to_alt().properties(title='toposimplify')
 
 boolean
 {: .text-delta}
-Sets the strategy to detect junctions. When set to `True` a path is 
+Sets the strategy to detect junctions. When set to `False` a path is considered
+shared when coordinates are the same path (`path-connected`). The path-connected
+strategy is more 'correct', but slightly slower. When set to `True` a path is 
 considered shared when all coordinates appear in both paths 
-(`coords-connected`). When set to `False` a path is considered shared when 
-coordinates are the same path (`path-connected`). The path-connected strategy 
-is more 'correct', but slower. Default is `True`.
+(`coords-connected`). Default is `False`.
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
