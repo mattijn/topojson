@@ -10,7 +10,7 @@ from shapely.ops import shared_paths
 from ..ops import bounds
 from ..ops import compare_bounds
 from ..ops import explode
-from ..ops import extract_lines
+from ..ops import linemerge_ext
 from ..ops import quantize
 from ..ops import select_unique_combs
 from ..utils import serialize_as_svg
@@ -206,16 +206,10 @@ class Join(Extract):
 
             # calculate line intersections between linestrings
             intersect_lines = [
-                extract_lines(geom1.intersection(geom2))
+                linemerge_ext(geom1.intersection(geom2))
                 for geom1, geom2 in geom_combs
             ]
-            # try to merge multilinestrings to one linestring
-            intersect_lines = [
-                line if isinstance(line, geometry.LineString)
-                else linemerge(line)
-                for line in intersect_lines
-                if not line.is_empty
-            ]
+            intersect_lines = [line for line in intersect_lines if not line.is_empty]
             intersect_lines = explode(intersect_lines)
 
             # the start and end points of the intersect_lines are the junctions

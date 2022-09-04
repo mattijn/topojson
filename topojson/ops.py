@@ -120,6 +120,14 @@ def explode(segments):
     return list(itertools.chain.from_iterable(list_explode))
 
 
+def linemerge_ext(geom: geometry.base.BaseGeometry) -> geometry.base.BaseGeometry:
+    line = extract_lines(geom)
+    if isinstance(line, geometry.MultiLineString):
+        return linemerge(line)
+    else:
+        return line
+
+
 def extract_lines(geom: geometry.base.BaseGeometry) -> geometry.base.BaseGeometry:
     if isinstance(geom, geometry.LineString):
         return geom
