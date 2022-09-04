@@ -7,7 +7,6 @@ from typing import List
 import numpy as np
 from shapely import geometry
 from shapely import wkt
-from shapely.errors import ShapelyDeprecationWarning
 from shapely.ops import linemerge
 from shapely.strtree import STRtree
 
