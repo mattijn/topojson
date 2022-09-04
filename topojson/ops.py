@@ -1,11 +1,14 @@
+import copy
 import itertools
+import logging
+import pprint
+from typing import List
+
 import numpy as np
 from shapely import geometry
 from shapely import wkt
+from shapely.ops import linemerge
 from shapely.strtree import STRtree
-import pprint
-import copy
-import logging
 
 
 try:
@@ -106,6 +109,49 @@ def strtree_query_index(tree, arc):
         # shapely version < 1.8.0
         raise AttributeError("This version is not supported within topojson")
     return tree_index
+
+
+def explode(segments):
+    if not isinstance(segments, list):
+        segments = [segments]
+    list_explode = [
+        list(geom.geoms) if hasattr(geom, "geoms") else [geom] for geom in segments
+    ]
+    return list(itertools.chain.from_iterable(list_explode))
+
+
+def linemerge_ext(geom: geometry.base.BaseGeometry) -> geometry.base.BaseGeometry:
+    line = extract_lines(geom)
+    if isinstance(line, geometry.MultiLineString):
+        return linemerge(line)
+    else:
+        return line
+
+
+def extract_lines(geom: geometry.base.BaseGeometry) -> geometry.base.BaseGeometry:
+    if isinstance(geom, geometry.LineString):
+        return geom
+    elif isinstance(geom, geometry.MultiLineString):
+        return geom
+    elif isinstance(geom, geometry.GeometryCollection):
+        geoms = [
+            geom for geom in geom.geoms
+            if (
+                not geom.is_empty
+                and (
+                    isinstance(geom, geometry.LineString)
+                    or isinstance(geom, geometry.MultiLineString)
+                )
+            )
+        ]
+        if len(geoms) == 0:
+            return geometry.LineString()
+        elif len(geoms) == 1:
+            return geoms[0]
+        else:
+            return geometry.MultiLineString(geoms)
+
+    return geometry.LineString()
 
 
 def np_array_bbox_points_line(line, tree_splitter):
@@ -566,7 +612,7 @@ def select_unique_combs(linestrings):
 
     uniq_line_combs = combs[(np.diff(combs, axis=1) != 0).flatten()]
 
-    return uniq_line_combs
+    return uniq_line_combs, tree_idx
 
 
 def quantize(linestrings, bbox, quant_factor=1e6):

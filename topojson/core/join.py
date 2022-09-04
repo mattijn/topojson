@@ -1,17 +1,20 @@
 # pylint: disable=unsubscriptable-object
 import copy
 import pprint
+
 from shapely import geometry
 from shapely.errors import ShapelyError
-from shapely.wkb import loads
-from shapely.ops import shared_paths
 from shapely.ops import linemerge
-from ..ops import select_unique_combs
-from ..ops import simplify
-from ..ops import quantize
+from shapely.ops import shared_paths
+
 from ..ops import bounds
 from ..ops import compare_bounds
+from ..ops import explode
+from ..ops import linemerge_ext
+from ..ops import quantize
+from ..ops import select_unique_combs
 from ..utils import serialize_as_svg
+from ..ops import simplify
 from .extract import Extract
 
 
@@ -190,45 +193,32 @@ class Join(Extract):
             self._junctions = [geometry.Point(xy) for xy in set(junctions)]
         else:
 
-            # create list with unique combinations of lines using a r-tree
-            line_combs = select_unique_combs(data["linestrings"])
-
-            # iterate over index combinations
-            for i1, i2 in line_combs:
-                g1 = data["linestrings"][i1]
-                g2 = data["linestrings"][i2]
-
-                # check if geometry are equal
-                # being equal meaning the geometry object coincide with each other.
-                # a rotated polygon or reversed linestring are both considered equal.
-                if not g1.equals(g2):
-                    # geoms are unique, let's find junctions
-                    self._shared_segs(g1, g2)
-
-            # self._segments are nested lists of LineStrings, get coordinates of each nest
-            s_coords = []
-            for segment in self._segments:
-                s_coords.extend(
-                    [
-                        [
-                            (x.xy[0][y], x.xy[1][y])
-                            for x in segment
-                            for y in range(len(x.xy[0]))
-                        ]
-                    ]
-                )
-
-            # only keep junctions that appear only once in each segment (nested list)
-            # coordinates that appear multiple times are not junctions
-            for coords in s_coords:
-                self._junctions.extend(
-                    [geometry.Point(i) for i in coords if coords.count(i) == 1]
-                )
-
-            # junctions can appear multiple times in multiple segments, remove duplicates
-            self._junctions = [
-                loads(xy) for xy in list(set([x.wkb for x in self._junctions]))
+            # calculate line intersections between all linestrings
+            idx_combs, _ = select_unique_combs(data["linestrings"])
+            geom_combs = [
+                (data["linestrings"][idx_comb[0]], data["linestrings"][idx_comb[1]])
+                for idx_comb in idx_combs
             ]
+            # we don't want junctions for equal linestrings, so filter them out
+            geom_combs = [
+                geoms for geoms in geom_combs if not geoms[0].equals(geoms[1])
+            ]
+
+            # calculate line intersections between linestrings
+            intersect_lines = [
+                linemerge_ext(geom1.intersection(geom2))
+                for geom1, geom2 in geom_combs
+            ]
+            intersect_lines = [line for line in intersect_lines if not line.is_empty]
+            intersect_lines = explode(intersect_lines)
+
+            # the start and end points of the intersect_lines are the junctions
+            junctions = [
+                junction for line in intersect_lines
+                for junction in (line.coords[0], line.coords[-1])
+            ]
+            # keep unique junctions
+            self._junctions = list(map(geometry.Point, set(junctions)))
 
         # prepare to return object
         data["junctions"] = self._junctions
