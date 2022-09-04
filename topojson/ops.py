@@ -138,7 +138,7 @@ def extract_lines(geom: geometry.base.BaseGeometry) -> geometry.base.BaseGeometr
         ]
         if len(geoms) == 0:
             return geometry.LineString()
-        elif len(geoms) == 0:
+        elif len(geoms) == 1:
             return geoms[0]
         else:
             return geometry.MultiLineString(geoms)
