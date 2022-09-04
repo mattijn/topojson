@@ -488,3 +488,21 @@ def test_extract_read_multiple_gdf_object_name():
     ).to_dict()
 
     assert len(topo["objects"]) == len(world) + len(continents)
+
+def test_extract_read_multiple_gjson_object_name():
+
+    with open('tests/files_geojson/geojson_1.json', 'r') as gj_1:
+        geojson_1 = json.load(gj_1)
+        
+    with open('tests/files_geojson/geojson_2.json', 'r') as gj_2:
+        geojson_2 = json.load(gj_2)
+        
+    topo = Extract(
+        data=[geojson_1, geojson_2], 
+        options={"object_name": ['gjson_1', 'gjson_2']}
+    ).to_dict()
+
+    assert len(topo["objects"]) == (
+        len(geojson_1['features']) + len(geojson_2['features'])
+    )
+

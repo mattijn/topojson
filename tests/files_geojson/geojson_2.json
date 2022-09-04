@@ -1,0 +1,1 @@
+{"type": "FeatureCollection", "features": [{"id": "0", "type": "Feature", "properties": {"shrd_name": "rect", "uniq_name": "abc", "__geom_name": "gjson_2"}, "geometry": {"type": "Polygon", "coordinates": [[[0.0, 1.0], [0.0, 2.0], [1.0, 2.0], [2.0, 2.0], [2.0, 1.0], [1.0, 1.0], [0.0, 1.0]]]}, "bbox": [0.0, 1.0, 2.0, 2.0]}], "bbox": [0.0, 1.0, 2.0, 2.0]}
