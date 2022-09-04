@@ -525,8 +525,7 @@ class Extract(object):
         """
         try:
             import geojson
-        except ImportError as error:
-            print(error)
+        except ImportError:
             raise ImportError(
                 "To parse a `fiona.Collection`, you'll need the python package `geojson`"
             )
@@ -585,18 +584,39 @@ class Extract(object):
                 raise LookupError(
                     "the number of data objects does not match the number of object_name"
                 )
-            geom_offset = np.cumsum([len(gdf) for gdf in geom]).tolist()
+
+            geom = [
+                subgeom["features"] if "features" in subgeom else subgeom
+                for subgeom in geom
+            ]
+            geom_offset = np.cumsum([len(subgeom) for subgeom in geom]).tolist()
             geom_offset.pop()
             geom_offset.insert(0, 0)
             self._geom_offset = geom_offset
-            for ix, gdf in enumerate(geom):
-                gdf = gdf.copy()
+            for ix, subgeom in enumerate(geom):
+                subgeom = subgeom.copy()
                 start = geom_offset[ix]
-                gdf["__geom_name"] = self.options.object_name[ix]
-                geom[ix] = dict(enumerate(gdf.to_dict(orient="records"), start))
+                if instance(subgeom) == "list":
+                    # geojson feature collection
+                    for feat in subgeom:
+                        if "properties" in feat:
+                            feat["properties"].update(
+                                {"__geom_name": self.options.object_name[ix]}
+                            )
+                        else:
+                            feat.setdefault(
+                                "properties",
+                                {"__geom_name": self.options.object_name[ix]},
+                            )
+                    geom[ix] = dict(enumerate(subgeom, start))
+                else:
+                    # geopandas geodataframe
+                    subgeom["__geom_name"] = self.options.object_name[ix]
+                    geom[ix] = dict(enumerate(subgeom.to_dict(orient="records"), start))
 
             for ix in range(1, len(geom)):
                 geom[0].update(geom.pop(ix))
+
             data = geom[0]
             self._is_multi_geom = True
         else:
