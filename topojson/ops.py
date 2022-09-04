@@ -7,9 +7,9 @@ from typing import List
 import numpy as np
 from shapely import geometry
 from shapely import wkt
+from shapely.errors import ShapelyDeprecationWarning
 from shapely.ops import linemerge
 from shapely.strtree import STRtree
-
 
 try:
     from shapely.ops import orient
@@ -596,7 +596,9 @@ def select_unique_combs(linestrings):
     """
 
     # create spatial index
-    tree_idx = STRtree(linestrings)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=ShapelyDeprecationWarning)
+        tree_idx = STRtree(linestrings)
 
     # get index of linestrings intersecting each linestring
     idx_match = get_matches(linestrings, tree_idx)
