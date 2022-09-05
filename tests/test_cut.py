@@ -1,6 +1,7 @@
 import geopandas
 import geopandas.datasets
-from shapely import geometry
+import pytest
+from shapely import geometry, wkt
 
 from topojson.core.cut import Cut
 
@@ -364,3 +365,41 @@ def test_cut_low_prequantize():
     topo = Cut(data, options={"prequantize": 75}).to_dict()
 
     assert len(topo["bookkeeping_duplicates"]) == 163
+
+
+# test added for issue regarding dedup of +- equal linestrings not happening
+@pytest.mark.parametrize("shared_coords, junctions", [(True, 2), (False, 0)])
+def test_cut_extra_points_no_cuts(shared_coords, junctions):
+    """
+    Tests if 2 linestrings are correctly treated as duplicate if they follow the same
+    path, but one of them has extra point(s) that disappear with simplify(0).
+    No junctions for shared_coords=False, 2 for shared_coords=True.
+    """
+    g0 = wkt.loads("LineString (0 0, 1 0, 2 0)")
+    g1 = wkt.loads("LineString (0 0, 2 0)")
+    data = geopandas.GeoDataFrame({"name": ["a", "b"], "geometry": [g0, g1]})
+    topo = Cut(
+        data, options={"prequantize": False, "shared_coords": shared_coords}
+    ).to_dict()
+
+    assert len(topo["junctions"]) == junctions
+    assert len(topo["bookkeeping_duplicates"]) == 1
+
+
+# test added for issue regarding dedup of +- equal linestrings not happening
+@pytest.mark.parametrize("shared_coords", [(True), (False)])
+def test_cut_extra_points_cut(shared_coords):
+    """
+    Tests is 2 linestrings are correctly treated as duplicate if they follow the same
+    path, but one of them has extra point(s) that disappear with simplify(0).
+    No junctions.
+    """
+    g0 = wkt.loads("LineString (0 0, 1 0, 2 0, 3 0)")
+    g1 = wkt.loads("LineString (0 0, 2 0)")
+    data = geopandas.GeoDataFrame({"name": ["a", "b"], "geometry": [g0, g1]})
+    topo = Cut(
+        data, options={"prequantize": False, "shared_coords": shared_coords}
+    ).to_dict()
+
+    assert len(topo["junctions"]) == 2
+    assert len(topo["bookkeeping_duplicates"]) == 1
