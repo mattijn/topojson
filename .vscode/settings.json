@@ -1,5 +1,4 @@
 {
-  "python.formatting.blackArgs": ["--line-length", "88", "--py36"],
   "editor.formatOnSave": true,
   "[markdown]": {
     "editor.formatOnSave": false
