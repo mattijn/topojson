@@ -1038,3 +1038,25 @@ def map_values(arr, search_vals, replace_vals):
 
     arr_upd = maparr[arr]
     return arr_upd
+
+
+def remove_collinear_points(line: np.ndarray, tolerance=0) -> np.ndarray:
+    def points_collinear(p1, p2, p3) -> bool:
+        dx1 = p2[0] - p1[0]
+        dy1 = p2[1] - p1[1]
+        dx2 = p3[0] - p1[0]
+        dy2 = p3[1] - p1[1]
+        return abs((dx1) * (dy2) - (dx2) * (dy1)) <= tolerance
+
+    # If only 2 points, no use checking
+    if len(line) <= 2:
+        return line
+    # Check for all point except first and last if they are collinear
+    collinear_mask = [
+        points_collinear(line[index - 1], line[index], line[index + 1])
+        for index in range(1, len(line) - 1)
+    ]
+    # First and last point are by definition not collinear
+    collinear_mask = [False] + collinear_mask + [False]
+    # Mask away the collinear points
+    return line[~np.array(collinear_mask)]

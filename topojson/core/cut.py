@@ -12,6 +12,7 @@ from ..ops import np_array_bbox_points_line
 from ..ops import fast_split
 from ..ops import find_duplicates
 from ..ops import np_array_from_lists
+from ..ops import remove_collinear_points
 from ..utils import serialize_as_svg
 
 
@@ -138,16 +139,15 @@ class Cut(Join):
                     line_split = fast_split(line, splitter, is_ring)
                     if isinstance(line_split, list):
                         line_split = [
-                            np.array(geometry.LineString(line).simplify(0).coords)
-                            for line in line_split
+                            remove_collinear_points(line) for line in line_split
                         ]
                     else:
-                        line_split = np.array(
-                            [geometry.LineString(line).simplify(0).coords]
-                        )
+                        line_split = remove_collinear_points(line_split)
                     lines_split.append(line_split)
                 else:
-                    lines_split.append(np.array([linestring.simplify(0).coords]))
+                    lines_split.append(
+                        remove_collinear_points(np.array([linestring.coords]))
+                    )
 
             # flatten the splitted linestrings, create bookkeeping_geoms array
             # and find duplicates
@@ -161,14 +161,16 @@ class Cut(Join):
                 bk_array[~np.isnan(bk_array)].astype(np.int64), axis=1
             )
             self._segments_list = [
-                np.array(ls.simplify(0).coords) for ls in data["linestrings"]
+                remove_collinear_points(np.array(ls.coords))
+                for ls in data["linestrings"]
             ]
             self._duplicates = find_duplicates(self._segments_list)
             self._bookkeeping_linestrings = bk_array
 
         else:
             self._segments_list = [
-                np.array(ls.simplify(0).coords) for ls in data["linestrings"]
+                remove_collinear_points(np.array(ls.coords))
+                for ls in data["linestrings"]
             ]
 
         # prepare to return object
