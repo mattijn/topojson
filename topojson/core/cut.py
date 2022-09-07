@@ -138,19 +138,21 @@ class Cut(Join):
                     line_split = fast_split(line, splitter, is_ring)
                     if isinstance(line_split, list):
                         line_split = [
-                            geometry.LineString(line).simplify(0)
+                            np.array(geometry.LineString(line).simplify(0).coords)
                             for line in line_split
                         ]
                     else:
-                        line_split = [geometry.LineString(line).simplify(0)]
+                        line_split = np.array(
+                            [geometry.LineString(line).simplify(0).coords]
+                        )
                     lines_split.append(line_split)
                 else:
-                    lines_split.append([linestring.simplify(0)])
+                    lines_split.append(np.array([linestring.simplify(0).coords]))
 
             # flatten the splitted linestrings, create bookkeeping_geoms array
             # and find duplicates
             self._segments_list, bk_array = self._flatten_and_index(lines_split)
-            self._duplicates = find_duplicates(self._segments_list, type="linestring")
+            self._duplicates = find_duplicates(self._segments_list)
             self._bookkeeping_linestrings = bk_array.astype(float)
 
         elif data["bookkeeping_geoms"]:
@@ -159,13 +161,15 @@ class Cut(Join):
                 bk_array[~np.isnan(bk_array)].astype(np.int64), axis=1
             )
             self._segments_list = [
-                ls.simplify(0) for ls in data["linestrings"]
+                np.array(ls.simplify(0).coords) for ls in data["linestrings"]
             ]
-            self._duplicates = find_duplicates(self._segments_list, type="linestring")
+            self._duplicates = find_duplicates(self._segments_list)
             self._bookkeeping_linestrings = bk_array
 
         else:
-            self._segments_list = [ls.simplify(0) for ls in data["linestrings"]]
+            self._segments_list = [
+                np.array(ls.simplify(0).coords) for ls in data["linestrings"]
+            ]
 
         # prepare to return object
         data["linestrings"] = self._segments_list

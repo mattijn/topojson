@@ -87,9 +87,6 @@ class Hashmap(Dedup):
 
         # make data available within class
         self._data = data
-        self._data["linestrings"] = [
-            np.array(list(line.coords)) for line in self._data["linestrings"]
-        ]
 
         # resolve bookkeeping to arcs in objects, including backward check of arcs
         # resolve bookkeeping of coordinates in objects, including delta-encoding
