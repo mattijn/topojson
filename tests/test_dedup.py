@@ -63,6 +63,8 @@ def test_dedup_duplicate_polygon_no_junctions():
 
 
 def test_dedup_shared_line_ABCDBE_and_FBCG():
+    # This is a weird test case. The first linestring doubles back on itself, so
+    # self-intersects?
     data = {
         "abcdbe": {
             "type": "LineString",
@@ -73,8 +75,9 @@ def test_dedup_shared_line_ABCDBE_and_FBCG():
     topo = Dedup(data).to_dict()
 
     assert len(topo["bookkeeping_duplicates"]) == 0
-    assert topo["bookkeeping_shared_arcs"] == [4]
-    assert topo["bookkeeping_arcs"] == [[0, 4, 1, 2], [3, 4, 5]]
+    assert len(topo["bookkeeping_shared_arcs"]) == 1
+    assert len(topo["bookkeeping_arcs"]) == 2
+    assert topo["bookkeeping_geoms"] == [[0], [1]]
 
 
 # this test was added since the shared_arcs bookkeeping is not doing well. Next runs
