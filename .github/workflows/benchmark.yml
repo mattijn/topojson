@@ -41,21 +41,12 @@ jobs:
       - name: Benchmark this PR!
         run: python tests/benchmark_compute.py --version=PR
 
-      - name: List files in the tests repository
-        run: |
-          ls "${{ github.workspace }}/tests"
-
-      - run: echo "$(cat ${{ github.workspace }}/tests/timings_lastrelease.json)"
-      - run: echo "$(cat ${{ github.workspace }}/tests/timings_master.json)"
-      - run: echo "$(cat ${{ github.workspace }}/tests/timings_PR.json)"
-
       - name: Create visz from benchmark results!
         run: python tests/benchmark_visz.py
 
-      # - name: Commit benchmark png
-      #   uses: EndBug/add-and-commit@v9
-      #   with:
-      #     default_author: github_actions
-      #     message: "generate benchmark chart"
-      #     add: "benchmark_chart.png --force"
-      #     cwd: "./tests/"
+      - name: Commit benchmark png
+        uses: EndBug/add-and-commit@v9
+        with:
+          default_author: github_actions
+          message: "generate benchmark chart"
+          add: "tests/benchmark_chart.png --force"

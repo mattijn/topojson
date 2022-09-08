@@ -11,7 +11,6 @@ def stats_to_visz():
     for version in versions:
         fp_version = Path(f'tests/timings_{version}.json').resolve()
         fp_version = fp_version.as_posix()
-        print(fp_version)
         df_version = pd.read_json(fp_version, orient='records')
         df_list.append(df_version)
     df = pd.concat(df_list)
