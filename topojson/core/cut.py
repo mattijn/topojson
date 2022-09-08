@@ -12,6 +12,7 @@ from ..ops import np_array_bbox_points_line
 from ..ops import fast_split
 from ..ops import find_duplicates
 from ..ops import np_array_from_lists
+from ..ops import remove_collinear_points
 from ..utils import serialize_as_svg
 
 
@@ -114,45 +115,43 @@ class Cut(Join):
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=ShapelyDeprecationWarning)
                 tree_splitter = STRtree(mp)
-            slist = []
+            lines_split = []
 
             # create dict with original geometry type per linestring
-            linestring_object_types = self._get_linestring_types(
-                objects=data["objects"], bookkeeping_geoms=data["bookkeeping_geoms"],
+            lines_object_types = self._get_linestring_types(
+                objects=data["objects"],
+                bookkeeping_geoms=data["bookkeeping_geoms"],
             )
 
             # junctions are only existing in coordinates of linestring
-            if self.options.shared_coords:
-                for index, ls in enumerate(data["linestrings"]):
-                    line, splitter = np_array_bbox_points_line(ls, tree_splitter)
-                    # prev function returns None for splitter if nothing to split
-                    if splitter is not None:
-                        is_ring = False
-                        if linestring_object_types[index] in ["Polygon", "MultiPolygon"]:
-                            is_ring = True
-                        slines = fast_split(line, splitter, is_ring)
-                        slist.append(slines)
+            for index, linestring in enumerate(data["linestrings"]):
+                if self.options.shared_coords:
+                    line, splitter = np_array_bbox_points_line(
+                        linestring, tree_splitter
+                    )
+                else:
+                    line, splitter = insert_coords_in_line(linestring, tree_splitter)
+                # prev function returns None for splitter if nothing to split
+                if splitter is not None:
+                    is_ring = False
+                    if lines_object_types[index] in ["Polygon", "MultiPolygon"]:
+                        is_ring = True
+                    line_split = fast_split(line, splitter, is_ring)
+                    if isinstance(line_split, list):
+                        line_split = [
+                            remove_collinear_points(line) for line in line_split
+                        ]
                     else:
-                        slist.append(np.array([ls.coords]))
-
-            # junctions can exist between existing coords of linestring
-            else:
-                for index, ls in enumerate(data["linestrings"]):
-                    # slines = split(ls, mp)
-                    line, splitter = insert_coords_in_line(ls, tree_splitter)
-                    # prev function returns None for splitter if nothing to split
-                    if splitter is not None:
-                        is_ring = False
-                        if linestring_object_types[index] in ["Polygon", "MultiPolygon"]:
-                            is_ring = True
-                        slines = fast_split(line, splitter, is_ring)
-                        slist.append(slines)
-                    else:
-                        slist.append(np.array([ls.coords]))
+                        line_split = remove_collinear_points(line_split)
+                    lines_split.append(line_split)
+                else:
+                    lines_split.append(
+                        remove_collinear_points(np.array([linestring.coords]))
+                    )
 
             # flatten the splitted linestrings, create bookkeeping_geoms array
             # and find duplicates
-            self._segments_list, bk_array = self._flatten_and_index(slist)
+            self._segments_list, bk_array = self._flatten_and_index(lines_split)
             self._duplicates = find_duplicates(self._segments_list)
             self._bookkeeping_linestrings = bk_array.astype(float)
 
@@ -161,12 +160,18 @@ class Cut(Join):
             bk_array = np.expand_dims(
                 bk_array[~np.isnan(bk_array)].astype(np.int64), axis=1
             )
-            self._segments_list = [np.array(ls.coords) for ls in data["linestrings"]]
-            self._duplicates = find_duplicates(data["linestrings"], type="linestring")
+            self._segments_list = [
+                remove_collinear_points(np.array(ls.coords))
+                for ls in data["linestrings"]
+            ]
+            self._duplicates = find_duplicates(self._segments_list)
             self._bookkeeping_linestrings = bk_array
 
         else:
-            self._segments_list = [np.array(ls.coords) for ls in data["linestrings"]]
+            self._segments_list = [
+                remove_collinear_points(np.array(ls.coords))
+                for ls in data["linestrings"]
+            ]
 
         # prepare to return object
         data["linestrings"] = self._segments_list
@@ -209,7 +214,7 @@ class Cut(Join):
                 if "geometries" in object_child:
                     geometries = object_child["geometries"]
                     recurse_geometries(geometries)
-                elif object_child['type'] != "Point":
+                elif object_child["type"] != "Point":
                     # For non-Point geometries, loop over arcs
                     for arc_id in object_child["arcs"]:
                         # Find the linestrings for the arc via bookkeeping_geoms
@@ -220,9 +225,9 @@ class Cut(Join):
                                 arc_lines = bookkeeping_linestrings[arc_line_id]
                             for linestring_id in arc_lines:
                                 if linestring_id >= 0:
-                                    linestring_object_types[linestring_id] = (
-                                        object_child["type"]
-                                    )
+                                    linestring_object_types[
+                                        linestring_id
+                                    ] = object_child["type"]
 
         linestring_object_types = {}
         for object_key in objects:

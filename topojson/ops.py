@@ -2,7 +2,6 @@ import copy
 import itertools
 import logging
 import pprint
-from typing import List
 
 import numpy as np
 from shapely import geometry
@@ -46,7 +45,6 @@ if shapely_warning is not None and not SHAPELY_GE_20:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=shapely_warning)
             yield
-
 
 else:
 
@@ -134,7 +132,8 @@ def extract_lines(geom: geometry.base.BaseGeometry) -> geometry.base.BaseGeometr
         return geom
     elif isinstance(geom, geometry.GeometryCollection):
         geoms = [
-            geom for geom in geom.geoms
+            geom
+            for geom in geom.geoms
             if (
                 not geom.is_empty
                 and (
@@ -726,9 +725,11 @@ def simplify(
 
     Returns
     -------
-    list of shapely.geometry.LineStrings
+    list of shapely.geometry.LineStrings or ndarrays, depending on the type of the input
         LineStrings that are simplified
     """
+    list_arcs = None
+
     if package == "shapely":
         if algorithm == "vw":
             msg = (
@@ -1038,3 +1039,22 @@ def map_values(arr, search_vals, replace_vals):
 
     arr_upd = maparr[arr]
     return arr_upd
+
+
+def remove_collinear_points(line: np.ndarray) -> np.ndarray:
+    # If only 2 points, no use checking
+    if len(line) <= 2:
+        return line
+
+    # Prepare "points"
+    p1_x = line[:-2, 0]
+    p1_y = line[:-2, 1]
+    p2_x = line[1:-1, 0]
+    p2_y = line[1:-1, 1]
+    p3_x = line[2:, 0]
+    p3_y = line[2:, 1]
+
+    # Calculate
+    collinear_mask = (p2_x - p1_x) * (p3_y - p1_y) == (p3_x - p1_x) * (p2_y - p1_y)  # type: ignore
+    collinear_mask = np.concatenate([[False], collinear_mask, [False]])
+    return line[~np.array(collinear_mask)]
