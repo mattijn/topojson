@@ -14,6 +14,16 @@ jobs:
     steps:
       - name: Checkout folder to get test files
         uses: actions/checkout@v3
+        if: github.event_name == 'pull_request'
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - uses: actions/checkout@v3
+        if: github.event_name == 'push'
+        with:
+          fetch-depth: 0
+
       - name: Rename checked out topojson package
         run: mv topojson do_later_topojson
 
