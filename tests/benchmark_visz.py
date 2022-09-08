@@ -6,7 +6,7 @@ from okab.saver import OkabSaver
 
 def stats_to_visz():
 
-    versions = ['lastrelease', 'master', 'PR']
+    versions = ['lastreleased', 'master', 'PR']
     df_list = []
     for version in versions:
         fp_version = Path(f'tests/timings_{version}.json').resolve()
