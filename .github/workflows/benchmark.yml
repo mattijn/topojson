@@ -39,7 +39,7 @@ jobs:
       - name: Install latest topojson version from pypi
         run: python -m pip install topojson
       - name: Benchmark last released version!
-        run: python tests/benchmark_compute.py --version=lastreleased
+        run: python tests/benchmark_compute.py --version=last-released
 
       - name: Install master repo topojson from git
         run: python -m pip install git+https://github.com/mattijn/topojson.git --upgrade
