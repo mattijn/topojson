@@ -9,7 +9,7 @@ on:
 
 jobs:
   do-benchmark:
-    name: Benchmark runner last released
+    name: Benchmark runner
     runs-on: ubuntu-latest
     steps:
       - name: Checkout folder to get test files
@@ -40,6 +40,10 @@ jobs:
         run: mv do_later_topojson topojson
       - name: Benchmark this PR!
         run: python tests/benchmark_compute.py --version=PR
+
+      - name: List files in the tests repository
+        run: |
+          ls "${{ github.workspace }}/tests"
 
       - name: Create visz from benchmark results!
         run: python tests/benchmark_visz.py
