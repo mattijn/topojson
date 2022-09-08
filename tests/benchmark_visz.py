@@ -1,4 +1,5 @@
 import fire
+from pathlib import Path
 import altair as alt
 import pandas as pd
 from okab.saver import OkabSaver
@@ -8,7 +9,8 @@ def stats_to_visz():
     versions = ['lastrelease', 'master', 'PR']
     df_list = []
     for version in versions:
-        df_version = pd.read_json(f'timings_{version}.json')
+        fp_version = Path(f'tests/timings_{version}.json').resolve()
+        df_version = pd.read_json(fp_version)
         df_list.append(df_version)
     df = pd.concat(df_list)
 
