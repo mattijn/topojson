@@ -10,6 +10,7 @@ on:
 
 jobs:
   do-benchmark:
+    if: github.event.pull_request.merged == false
     name: Benchmark runner
     runs-on: ubuntu-latest
     steps:
