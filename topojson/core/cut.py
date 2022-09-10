@@ -5,8 +5,8 @@ import warnings
 import numpy as np
 from shapely import geometry
 from shapely.strtree import STRtree
-from shapely.errors import ShapelyDeprecationWarning
 from .join import Join
+from ..ops import ignore_shapely2_warnings
 from ..ops import insert_coords_in_line
 from ..ops import np_array_bbox_points_line
 from ..ops import fast_split
@@ -110,10 +110,8 @@ class Cut(Join):
             mp = data["junctions"]
             if isinstance(mp, geometry.Point):
                 mp = geometry.MultiPoint([mp])
-
             # create spatial index on junctions
-            with warnings.catch_warnings():
-                warnings.filterwarnings("ignore", category=ShapelyDeprecationWarning)
+            with ignore_shapely2_warnings():
                 tree_splitter = STRtree(mp)
             lines_split = []
 
@@ -148,13 +146,11 @@ class Cut(Join):
                     lines_split.append(
                         remove_collinear_points(np.array([linestring.coords]))
                     )
-
             # flatten the splitted linestrings, create bookkeeping_geoms array
             # and find duplicates
             self._segments_list, bk_array = self._flatten_and_index(lines_split)
             self._duplicates = find_duplicates(self._segments_list)
             self._bookkeeping_linestrings = bk_array.astype(float)
-
         elif data["bookkeeping_geoms"]:
             bk_array = np_array_from_lists(data["bookkeeping_geoms"]).ravel()
             bk_array = np.expand_dims(
@@ -166,13 +162,11 @@ class Cut(Join):
             ]
             self._duplicates = find_duplicates(self._segments_list)
             self._bookkeeping_linestrings = bk_array
-
         else:
             self._segments_list = [
                 remove_collinear_points(np.array(ls.coords))
                 for ls in data["linestrings"]
             ]
-
         # prepare to return object
         data["linestrings"] = self._segments_list
         data["bookkeeping_duplicates"] = self._duplicates
@@ -207,7 +201,6 @@ class Cut(Join):
             # If object is not a list, make it a list to be able to loop
             if not isinstance(object, list):
                 object = [object]
-
             # Loop over children of object
             for object_child in object:
                 # Depending on input format there is one or more geometry in an object
@@ -232,7 +225,6 @@ class Cut(Join):
         linestring_object_types = {}
         for object_key in objects:
             recurse_geometries(objects[object_key])
-
         return linestring_object_types
 
     def _flatten_and_index(self, slist):
