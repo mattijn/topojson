@@ -37,7 +37,6 @@ try:
     from shapely.errors import ShapelyDeprecationWarning as shapely_warning
 except ImportError:
     shapely_warning = None
-
 if shapely_warning is not None and not SHAPELY_GE_20:
 
     @contextlib.contextmanager
@@ -95,7 +94,7 @@ def strtree_query_geoms(tree, arc):
     return tree_geom  # pts_within_bbox
 
 
-def strtree_query_index(tree, arc):
+def strtree_query_index(tree, arc, geoms):
     if hasattr(tree, "geometries"):
         # shapely version >= 1.8.3
         tree_index = tree.query(arc)
@@ -104,7 +103,12 @@ def strtree_query_index(tree, arc):
         tree_index = tree.query_items(arc)
     else:
         # shapely version < 1.8.0
-        raise AttributeError("This version is not supported within topojson")
+        tree_geom = tree.query(arc)
+        if isinstance(tree_geom, shapely.geometry.base.BaseGeometry):
+            tree_geom = [tree_geom]
+        tree_index = [geoms.index(tree_g) for tree_g in tree_geom]
+        return tree_index
+        # raise AttributeError("This version is not supported within topojson")
     return tree_index
 
 
@@ -148,7 +152,6 @@ def extract_lines(geom: geometry.base.BaseGeometry) -> geometry.base.BaseGeometr
             return geoms[0]
         else:
             return geometry.MultiLineString(geoms)
-
     return geometry.LineString()
 
 
@@ -177,7 +180,6 @@ def np_array_bbox_points_line(line, tree_splitter):
     if len(pts_within_bbox) == 0:
         # no point near bbox, nothing to insert, nothing to split
         return None, None
-
     # convert shapely linestring and multipoint to np.array if there are points on line
     ls_xy = np.array(line.coords)
     pts_xy_bbox = np.array([x for pt in pts_within_bbox for x in pt.coords])
@@ -219,7 +221,6 @@ def insert_coords_in_line(line, tree_splitter):
     if len(pts_on_line) == 0:
         # no point on line, nothing to insert, nothing to split
         return None, None
-
     # convert shapely linestring and multipoint to np.array if there are points on line
     ls_xy = np.array(line.coords)
     pts_xy_on_line = np.array([x for pt in pts_on_line for x in pt.coords])
@@ -234,7 +235,6 @@ def insert_coords_in_line(line, tree_splitter):
     ]
     if pts_xy_nonexst.size == 0:
         return ls_xy, pts_xy_on_line
-
     # compute the distance from the beginning of the linestring for each junction on line
     splitter_dist = np.array(
         [line.project(pt) for pt in geometry.MultiPoint(pts_xy_nonexst).geoms]
@@ -309,7 +309,6 @@ def fast_split(line, splitter, is_ring):
         line = np.append(line, [line[0]], axis=0)
         splitter_indices = splitter_indices[1:]
         splitter_indices = splitter_indices - first_index
-
     # compute the indices on which to split the line
     # cannot split on first or last index of linestring
     splitter_indices = splitter_indices[
@@ -407,10 +406,8 @@ def properties_foreign(objects):
             if not reserved_keys_used or k in reserved_keys:
                 obj[k] = v
                 obj["properties"].pop(k, None)
-
         if not reserved_keys_used:
             obj.pop("properties", None)
-
     return objects
 
 
@@ -474,7 +471,6 @@ def compare_bounds(b0, b1):
         bounds = b1
     else:
         bounds = []
-
     return bounds
 
 
@@ -545,10 +541,9 @@ def get_matches(geoms, tree_idx):
     # find near linestrings by querying tree and use query items to collect indices.
     matches = []
     for idx_ls, obj in enumerate(geoms):
-        intersect_ls = strtree_query_index(tree_idx, obj)
+        intersect_ls = strtree_query_index(tree_idx, obj, geoms)
         if len(intersect_ls):
             matches.extend([[[idx_ls], intersect_ls]])
-
     return matches
 
 
@@ -596,7 +591,6 @@ def select_unique_combs(linestrings):
     # create spatial index
     with ignore_shapely2_warnings():
         tree_idx = STRtree(linestrings)
-
     # get index of linestrings intersecting each linestring
     idx_match = get_matches(linestrings, tree_idx)
 
@@ -604,7 +598,6 @@ def select_unique_combs(linestrings):
     combs = []
     for idx_comb in idx_match:
         combs.extend(list(itertools.product(*idx_comb)))
-
     combs = np.array(combs)
     combs.sort(axis=1)
     combs = select_unique(combs)
@@ -642,7 +635,6 @@ def quantize(linestrings, bbox, quant_factor=1e5):
         ky = 1 if (y1 - y0) == 0 else (y1 - y0) / (quant_factor - 1)
     except ZeroDivisionError:
         kx, ky = 1, 1
-
     for idx, ls in enumerate(linestrings):
         if hasattr(ls, "coords"):
             ls_xy = np.array(ls.coords).T
@@ -671,7 +663,6 @@ def quantize(linestrings, bbox, quant_factor=1e5):
                 linestrings[idx] = geometry.LineString(ls_xy)
             else:
                 linestrings[idx] = ls_xy.tolist()
-
     transform_ = {"scale": [kx, ky], "translate": [x0, y0]}
 
     return linestrings, transform_
@@ -739,7 +730,6 @@ def simplify(
                 "Continue with Douglas-Peucker (`dp`) algorithm instead.",
             )
             logging.warning("".join(msg))
-
         if input_as == "array":
             list_arcs = []
             for ls in linestrings:
@@ -755,7 +745,6 @@ def simplify(
                     epsilon, preserve_topology=prevent_oversimplify
                 )
             list_arcs = linestrings
-
     elif package == "simplification":
         from simplification import cutil
 
@@ -776,7 +765,6 @@ def simplify(
             alg = cutil.simplify_coords
         else:
             alg = cutil.simplify_coords
-
         if input_as == "array":
             list_arcs = []
             for ls in linestrings:
@@ -844,7 +832,6 @@ def winding_order(geom, order="CW_CCW"):
         geom = orient(geom, sign=1.0)
     else:
         raise NameError("parameter {} was not recognized".format(order))
-
     return geom
 
 
@@ -933,7 +920,6 @@ def delta_encoding(linestrings):
         ls -= np.roll(ls, 1, axis=0)
         ls[0] = ls_p1
         linestrings[idx] = ls.tolist()
-
     return linestrings
 
 
@@ -969,7 +955,6 @@ def find_duplicates(segments_list, type="array"):
         segments_list = [
             np.array(list(linestring.coords)) for linestring in segments_list
         ]
-
     for coordinates in segments_list:
         # If start and end points are the same, remove end point before sorting
         # Rmark: check if it was originally a ring is not relevant, because lines with
@@ -980,9 +965,7 @@ def find_duplicates(segments_list, type="array"):
             coordinates = np.append(coordinates[0:2], coordinates)
         else:
             coordinates = np.sort(coordinates, axis=0)
-
         hash_segments.append(hash(bytes(coordinates)))
-
     hash_segments = np.array(hash_segments, dtype=np.int64)
 
     # get split locations of dups
@@ -1045,7 +1028,6 @@ def remove_collinear_points(line: np.ndarray) -> np.ndarray:
     # If only 2 points, no use checking
     if len(line) <= 2:
         return line
-
     # Prepare "points"
     p1_x = line[:-2, 0]
     p1_y = line[:-2, 1]
