@@ -25,10 +25,10 @@ The package can be used in multiple different ways, with the main purpose to cre
 See the Python [Topojson Documentation Site](https://mattijn.github.io/topojson) for all info or [this Notebook](https://nbviewer.jupyter.org/github/mattijn/topojson/blob/master/notebooks/topojson.ipynb) with some examples, such as the following:
 
 <p align="center">
-<img src="docs/images/africa_simplify.jpeg" alt="simplifying with and without topology" width="600px">
+<a href="https://nbviewer.jupyter.org/github/mattijn/topojson/blob/master/notebooks/topojson.ipynb" target="_blank" rel="noopener noreferrer"><img src="docs/images/africa_simplify.png" alt="click to open notebook" width="600px"></a>
 </p>
 
-_Top row (right) presents linestring simplification on a computed Topology and (left) on the geographical object directly. Bottom row presents visual impact on file size reduction between (left) Raw GeoJSON and (right) Topological optimized TopoJSON._ 
+_Click on the image to go the Notebook Viewer with code-snippets how these images are created or visit the [Topojson Documentation Site](https://mattijn.github.io/topojson)._ 
 
 ## Installation
 
