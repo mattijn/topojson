@@ -18,6 +18,9 @@ With topojson it is possible to reduce the size of your spatial data. Mostly by 
 
 - [Installation](installation)
 - [Example usage](example-usage)
+    - [Types of input data](example/input-types.html)
+    - [Settings and tuning](example/settings-tuning.html)
+    - [Retrieval data types](example/output-types.html)
 
 ## User Guide
 
@@ -28,4 +31,4 @@ With topojson it is possible to reduce the size of your spatial data. Mostly by 
 
 - [Contributing](contributing)
 
-Topojson is BSD-licensed and the source is available on GitHub. If any questions or issues come up as you use topojson, please get in touch via Git Issues.
+Topojson is BSD-licensed and the source is available on GitHub. If any questions or issues come up as you use topojson, please get in touch via Github Issues: [Python TopoJSON on GitHub](https://github.com/mattijn/topojson).
