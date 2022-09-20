@@ -40,10 +40,10 @@ jobs:
       - name: Benchmark last released version!
         run: python tests/benchmark_compute.py --version=last-released
 
-      - name: Install master repo topojson from git
+      - name: Install main repo topojson from git
         run: python -m pip install git+https://github.com/mattijn/topojson.git --upgrade
-      - name: Benchmark version in github master!
-        run: python tests/benchmark_compute.py --version=master
+      - name: Benchmark version in github main!
+        run: python tests/benchmark_compute.py --version=main
 
       - name: Rename moved topojson package
         run: mv do_later_topojson topojson
