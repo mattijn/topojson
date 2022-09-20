@@ -27,7 +27,7 @@ For contributions, use the following guidelines:
 
 3. Once satisfied, push your changes as a new branch to your fork and create a Pull Request to the original repository.
 
-4. A Pull Request triggers the Continuous Integration tests on the main GitHub repository and only after passing these tests a PR can be merged into master by the maintainer.
+4. A Pull Request triggers the Continuous Integration tests on the main GitHub repository and only after passing these tests a PR can be merged into main by the maintainer.
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
