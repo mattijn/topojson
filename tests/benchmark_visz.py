@@ -7,7 +7,7 @@ from okab.saver import OkabSaver
 
 def stats_to_visz():
     # the following 3 versions are compared, namely the last released version on pypi
-    # the version that is currently on master in github and the version in the PR being
+    # the version that is currently on main in github and the version in the PR being
     # processed.
     versions = ["last-released", "main", "PR"]
 
