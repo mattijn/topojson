@@ -23,10 +23,10 @@ See [Topojson Documentation Site](https://mattijn.github.io/topojson) for all in
 
 The package can be used in multiple different ways, with the main purpose to create a TopoJSON topology. 
 
-See the Python [Topojson Documentation Site](https://mattijn.github.io/topojson) for all info or [this Notebook](https://nbviewer.jupyter.org/github/mattijn/topojson/blob/master/notebooks/topojson.ipynb) with some examples, such as the following:
+See the Python [Topojson Documentation Site](https://mattijn.github.io/topojson) for all info or [this Notebook](https://nbviewer.jupyter.org/github/mattijn/topojson/blob/main/notebooks/topojson.ipynb) with some examples, such as the following:
 
 <p align="center">
-<a href="https://nbviewer.jupyter.org/github/mattijn/topojson/blob/master/notebooks/topojson.ipynb" target="_blank" rel="noopener noreferrer"><img src="docs/images/africa_simplify.png" alt="click to open notebook" width="600px"></a>
+<a href="https://nbviewer.jupyter.org/github/mattijn/topojson/blob/main/notebooks/topojson.ipynb" target="_blank" rel="noopener noreferrer"><img src="docs/images/africa_simplify.png" alt="click to open notebook" width="600px"></a>
 </p>
 
 _Click on the image to go the Notebook Viewer with code-snippets how these images are created or visit the [Topojson Documentation Site](https://mattijn.github.io/topojson)._ 
