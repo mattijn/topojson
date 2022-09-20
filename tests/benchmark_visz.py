@@ -9,7 +9,7 @@ def stats_to_visz():
     # the following 3 versions are compared, namely the last released version on pypi
     # the version that is currently on master in github and the version in the PR being
     # processed.
-    versions = ["last-released", "master", "PR"]
+    versions = ["last-released", "main", "PR"]
 
     # collect all timings and create a pandas dataframe
     list_df = []
