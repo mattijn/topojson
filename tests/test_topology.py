@@ -22,7 +22,7 @@ def test_topology_linestrings_parsed_to_gdf():
     topo = topojson.Topology(data).to_gdf()
 
     assert topo["geometry"][0].wkt != "GEOMETRYCOLLECTION EMPTY"
-    assert topo["geometry"][0].type == "LineString"
+    assert topo["geometry"][0].geom_type == "LineString"
 
 
 def test_topology_naturalearth_lowres_defaults():
