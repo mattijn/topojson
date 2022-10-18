@@ -389,7 +389,7 @@ def test_extract_list_org_data_untouched():
     data_0 = data[0]
 
     assert "arcs" in topo_0.keys()
-    assert data_0.type == "Polygon"
+    assert data_0.geom_type == "Polygon"
 
 
 # test to check if original data is not modified
@@ -402,7 +402,7 @@ def test_extract_gdf_org_data_untouched():
     data_0 = data.iloc[0]
 
     assert "arcs" in topo_0.keys()
-    assert data_0.geometry.type == "Polygon"
+    assert data_0.geometry.geom_type == "Polygon"
 
 
 # test to check if original data is not modified
@@ -412,7 +412,7 @@ def test_extract_shapely_org_data_untouched():
     topo_0 = topo["objects"][0]
 
     assert "arcs" in topo_0.keys()
-    assert data.type == "LineString"
+    assert data.geom_type == "LineString"
 
 
 # test to check if original data is not modified
