@@ -65,7 +65,7 @@ class Topology(Hashmap):
         shared when coordinates are the same path (`path-connected`). The path-connected
         strategy is more 'correct', but slightly slower. When set to `True` a path is
         considered shared when all coordinates appear in both paths
-        (`coords-connected`). 
+        (`coords-connected`).
         Default is `False`.
     prevent_oversimplify: boolean
         If this setting is set to `True`, the simplification is slower, but the
