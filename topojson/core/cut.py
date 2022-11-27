@@ -1,7 +1,6 @@
 import itertools
 import pprint
 import copy
-import warnings
 import numpy as np
 from shapely import geometry
 from shapely.strtree import STRtree

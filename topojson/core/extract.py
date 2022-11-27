@@ -12,7 +12,7 @@ from ..ops import ignore_shapely2_warnings
 
 try:
     from shapely.errors import GeometryTypeError
-except:
+except ImportError:
     GeometryTypeError = ValueError
 
 
