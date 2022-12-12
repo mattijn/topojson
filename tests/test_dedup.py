@@ -248,7 +248,7 @@ def test_dedup_topology_false():
     data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
     topo = Dedup(data, options={"topology": False}).to_dict()
 
-    assert len(topo["linestrings"]) == 288
+    assert len(topo["linestrings"]) == 287
     assert len(topo["junctions"]) == 0
 
 
