@@ -29,9 +29,8 @@ except ImportError:
 import contextlib
 import shapely
 import warnings
-from distutils.version import LooseVersion
 
-SHAPELY_GE_20 = str(shapely.__version__) >= LooseVersion("2.0")
+SHAPELY_GE_20 = int(shapely.__version__.split(".")[0]) >= 2
 
 try:
     from shapely.errors import ShapelyDeprecationWarning as shapely_warning
