@@ -4,6 +4,7 @@ from shapely import geometry
 from topojson.core.hashmap import Hashmap
 import pytest
 
+
 # duplicate rotated geometry bar with hole interior in geometry foo
 def test_hashmap_geomcol_multipolygon_polygon():
     data = {
@@ -55,8 +56,8 @@ def test_hashmap_backward_polygon():
 # this test should catch a shared boundary and a hashed multipolygon
 # related to https://github.com/Toblerity/Shapely/issues/535
 def test_hashmap_albania_greece():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    data = data[(data.name == "Albania") | (data.name == "Greece")]
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    data = data[(data.ADMIN == "Albania") | (data.ADMIN == "Greece")]
     topo = Hashmap(data).to_dict()
 
     assert len(topo["linestrings"]) == 4
@@ -64,9 +65,11 @@ def test_hashmap_albania_greece():
 
 # something is wrong with hashmapping in the example of benin
 def test_hashmap_benin_surrounding_countries():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     data = data[
-        (data.name == "Togo") | (data.name == "Benin") | (data.name == "Burkina Faso")
+        (data.ADMIN == "Togo")
+        | (data.ADMIN == "Benin")
+        | (data.ADMIN == "Burkina Faso")
     ]
     topo = Hashmap(data).to_dict()
 
@@ -75,13 +78,13 @@ def test_hashmap_benin_surrounding_countries():
 
 # something is wrong with hashmapping once a geometry has only shared arcs
 def test_hashmap_geom_surrounding_many_geometries():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     data = data[
-        (data.name == "Botswana")
-        | (data.name == "South Africa")
-        | (data.name == "Zimbabwe")
-        | (data.name == "Namibia")
-        | (data.name == "Zambia")
+        (data.ADMIN == "Botswana")
+        | (data.ADMIN == "South Africa")
+        | (data.ADMIN == "Zimbabwe")
+        | (data.ADMIN == "Namibia")
+        | (data.ADMIN == "Zambia")
     ]
     topo = Hashmap(data).to_dict()
 
@@ -91,13 +94,13 @@ def test_hashmap_geom_surrounding_many_geometries():
 # this test was added since the shared_arcs bookkeeping is doing well, but the
 # wrong arc got deleted. How come?
 def test_hashmap_shared_arcs_ordering_issues():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     data = data[
-        (data.name == "Botswana")
-        | (data.name == "South Africa")
-        | (data.name == "Zimbabwe")
-        | (data.name == "Mozambique")
-        | (data.name == "Zambia")
+        (data.ADMIN == "Botswana")
+        | (data.ADMIN == "South Africa")
+        | (data.ADMIN == "Zimbabwe")
+        | (data.ADMIN == "Mozambique")
+        | (data.ADMIN == "Zambia")
     ]
     topo = Hashmap(data).to_dict()
     assert len(topo["linestrings"]) == 16
@@ -147,9 +150,11 @@ def test_hashmap_of_nested_geometrycollection():
 # this test was added because the winding order is still giving issues.
 # see related issue: https://github.com/mattijn/topojson/issues/30
 def test_hashmap_winding_order_geom_solely_shared_arcs():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     data = data[
-        (data.name == "Jordan") | (data.name == "Palestine") | (data.name == "Israel")
+        (data.ADMIN == "Jordan")
+        | (data.ADMIN == "Palestine")
+        | (data.ADMIN == "Israel")
     ]
     topo = Hashmap(data).to_dict()
 
@@ -300,9 +305,9 @@ def test_hashmap_serializing_holes():
 
 
 def test_hashmap_read_multiple_gdf_object_name():
-    world = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    world = world[["continent", "geometry", "pop_est"]]
-    continents = world.dissolve(by="continent", aggfunc="sum")
+    world = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    world = world[["CONTINENT", "geometry", "POP_EST"]]
+    continents = world.dissolve(by="CONTINENT", aggfunc="sum")
 
     topo = Hashmap(
         data=[world, continents], options={"object_name": ["world", "continents"]}

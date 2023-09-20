@@ -4,6 +4,7 @@ from shapely import geometry, wkt
 
 from topojson.core.join import Join
 
+
 # the returned hashmap has undefined for non-junction points
 def test_join_undefined_for_non_junction_points():
     data = {
@@ -105,9 +106,11 @@ def test_join_line_BC_start_middle_reversed_line_CBA():
 # this test was added since the a shared path of ABC and another shared path of ABD
 # only kept the junctions at A, C and D, but not at B.
 def test_join_shared_junctions_in_shared_paths():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     data = data[
-        (data.name == "Togo") | (data.name == "Benin") | (data.name == "Burkina Faso")
+        (data.ADMIN == "Togo")
+        | (data.ADMIN == "Benin")
+        | (data.ADMIN == "Burkina Faso")
     ]
     topo = Join(data).to_dict()
 
@@ -121,9 +124,9 @@ def test_join_shared_junctions_in_shared_paths():
 # another problem since this coordinates may not be unique anymore, and this can be
 # skipped as a junction..
 def test_join_shared_segment_partly_start_partly_end_segment():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     data = data[
-        (data.name == "Eritrea") | (data.name == "Ethiopia") | (data.name == "Sudan")
+        (data.ADMIN == "Eritrea") | (data.ADMIN == "Ethiopia") | (data.ADMIN == "Sudan")
     ]
     topo = Join(data).to_dict()
 
@@ -610,7 +613,7 @@ def test_join_coincident_ring_ABCA_and_line_DBE_share_B():
 
 
 def test_join_non_noded_intersection():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     topo = Join(data).to_dict()
 
     assert len(topo["junctions"]) == 321
@@ -1031,7 +1034,7 @@ def test_join_shared_paths_coincident_ring_ABCA_and_line_DBE_share_B():
 
 
 def test_join_shared_paths_non_noded_intersection():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     topo = Join(data, options={"shared_coords": False}).to_dict()
 
     assert len(topo["junctions"]) == 321
@@ -1046,55 +1049,40 @@ def test_join_polygons_shared_path():
     )
     p1 = wkt.loads(
         "Polygon((529 1099, 522 1107, 522 1108, 523 1108, 523 1110, 524 1110, "
-        "529 1105, 529 1103, 530 1103, 530 1099, 529 1099))")
-    data = geopandas.GeoDataFrame(
-        {"name": ["abc", "def"], "geometry": [p0, p1]}
+        "529 1105, 529 1103, 530 1103, 530 1099, 529 1099))"
     )
+    data = geopandas.GeoDataFrame({"name": ["abc", "def"], "geometry": [p0, p1]})
     topo = Join(data, options={"shared_coords": False}).to_dict()
 
     assert len(topo["junctions"]) == 2
 
 
 def test_join_multi_shared_paths_are_connected():
-    """ 
+    """
     Tests nb junction when one polygon has a shared path with 2 other polygons
     and the shared paths with those are connected as well.
     So 2 shared paths gives 4 junctions, but one junction is the same, so 3.
     """
 
-    p0 = wkt.loads(
-        "Polygon ((0 0, 1 0, 1 1, 2 1, 2 2, 3 2, 3 3, 6 3, 6 4, 0 4, 0 0))"
-    )
-    p1 = wkt.loads(
-        "Polygon ((1 0, 1 1, 2 1, 2 0, 1 0))"
-    )
-    p2 = wkt.loads(
-        "Polygon ((2 1, 2 2, 3 2, 3 1, 2 1))"
-    )
+    p0 = wkt.loads("Polygon ((0 0, 1 0, 1 1, 2 1, 2 2, 3 2, 3 3, 6 3, 6 4, 0 4, 0 0))")
+    p1 = wkt.loads("Polygon ((1 0, 1 1, 2 1, 2 0, 1 0))")
+    p2 = wkt.loads("Polygon ((2 1, 2 2, 3 2, 3 1, 2 1))")
 
-    data = geopandas.GeoDataFrame(
-        {"name": ["a", "b", "c"], "geometry": [p0, p1, p2]}
-    )
+    data = geopandas.GeoDataFrame({"name": ["a", "b", "c"], "geometry": [p0, p1, p2]})
     topo = Join(data, options={"prequantize": False, "shared_coords": False}).to_dict()
 
     assert len(topo["junctions"]) == 3
 
 
 def test_join_multi_shared_paths_form_geometrycollection():
-    """ 
-    Tests junction determination when the intersection between two polygons is a 
+    """
+    Tests junction determination when the intersection between two polygons is a
     geometrycollection (lines and points) and the line part has several contact points.
     """
-    p0 = wkt.loads(
-        "Polygon ((0 0, 1 0, 1 1, 2 1, 2 2, 3 2, 3 3, 6 3, 6 4, 0 4, 0 0))"
-    )
-    p1 = wkt.loads(
-        "Polygon ((1 0, 1 1, 2 1, 2 2, 3 2, 4 2, 5 3, 6 -1, 1 -1, 1 0))"
-    )
+    p0 = wkt.loads("Polygon ((0 0, 1 0, 1 1, 2 1, 2 2, 3 2, 3 3, 6 3, 6 4, 0 4, 0 0))")
+    p1 = wkt.loads("Polygon ((1 0, 1 1, 2 1, 2 2, 3 2, 4 2, 5 3, 6 -1, 1 -1, 1 0))")
 
-    data = geopandas.GeoDataFrame(
-        {"name": ["a", "b"], "geometry": [p0, p1]}
-    )
+    data = geopandas.GeoDataFrame({"name": ["a", "b"], "geometry": [p0, p1]})
     topo = Join(data, options={"prequantize": False, "shared_coords": False}).to_dict()
 
     assert len(topo["junctions"]) == 2
