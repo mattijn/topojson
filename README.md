@@ -3,7 +3,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/topojson.svg)](https://pypi.org/project/topojson)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![github actions](https://github.com/mattijn/topojson/workflows/test/badge.svg)](https://github.com/mattijn/topojson/actions?query=workflow%3Atest)
-[![Conda version](https://anaconda.org/conda-forge/topojson/badges/installer/conda.svg)](https://anaconda.org/conda-forge/topojson)
+[![Conda version](https://anaconda.org/conda-forge/topojson/badges/version.svg)](https://anaconda.org/conda-forge/topojson)
 ![shapely 2.0 compliant](https://img.shields.io/badge/shapely%201%20%26%202-compliant-brightgreen)
 
 
