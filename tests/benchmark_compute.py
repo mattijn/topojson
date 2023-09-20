@@ -22,8 +22,8 @@ def time_version(version):
     - mesh2d: many very short linestrings
     """
     files_to_time = [
-        geopandas.datasets.get_path("nybb"),
-        geopandas.datasets.get_path("naturalearth_lowres"),
+        "tests/files_shapefile/static_nybb.gpkg",
+        "tests/files_shapefile/static_natural_earth.gpkg",
         "tests/files_geojson/mesh2d.geojson",
     ]
 
@@ -48,5 +48,4 @@ def time_version(version):
 
 
 if __name__ == "__main__":
-
     fire.Fire(time_version)

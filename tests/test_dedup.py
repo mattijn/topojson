@@ -83,9 +83,11 @@ def test_dedup_shared_line_ABCDBE_and_FBCG():
 # this test was added since the shared_arcs bookkeeping is not doing well. Next runs
 # can affect previous runs where dup_pair_list should update properly.
 def test_dedup_shared_junctions_in_shared_paths():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     data = data[
-        (data.name == "Togo") | (data.name == "Benin") | (data.name == "Burkina Faso")
+        (data.ADMIN == "Togo")
+        | (data.ADMIN == "Benin")
+        | (data.ADMIN == "Burkina Faso")
     ]
     topo = Dedup(data).to_dict()
 
@@ -98,25 +100,25 @@ def test_dedup_shared_junctions_in_shared_paths():
 # the problem arose in wrongly line-merging of contiguous line-elements
 # merged linestring is not always placed upfront.
 def test_dedup_arc_not_shared_arcs_got_deleted():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     data = data[
-        (data.name == "Botswana")
-        | (data.name == "South Africa")
-        | (data.name == "Zimbabwe")
-        | (data.name == "Mozambique")
-        | (data.name == "Zambia")
+        (data.ADMIN == "Botswana")
+        | (data.ADMIN == "South Africa")
+        | (data.ADMIN == "Zimbabwe")
+        | (data.ADMIN == "Mozambique")
+        | (data.ADMIN == "Zambia")
     ]
     topo = Dedup(data).to_dict()
 
-    assert len(topo["bookkeeping_shared_arcs"]) == 10
+    assert len(topo["bookkeeping_shared_arcs"]) == 9
     assert len(topo["bookkeeping_duplicates"]) == 0
 
 
 # this test was added since there is no test for non-intersecting geometries.
 # as was raised in https://github.com/mattijn/topojson/issues/1
 def test_dedup_no_shared_paths_in_geoms():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    data = data[(data.name == "Togo") | (data.name == "Liberia")]
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    data = data[(data.ADMIN == "Togo") | (data.ADMIN == "Liberia")]
     topo = Dedup(data).to_dict()
 
     assert len(topo["bookkeeping_shared_arcs"]) == 0
@@ -245,7 +247,7 @@ def test_dedup_shared_paths_linemerge_multilinestring():
 
 
 def test_dedup_topology_false():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     topo = Dedup(data, options={"topology": False}).to_dict()
 
     assert len(topo["linestrings"]) == 288

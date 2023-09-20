@@ -26,14 +26,14 @@ def test_topology_linestrings_parsed_to_gdf():
 
 
 def test_topology_naturalearth_lowres_defaults():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     topo = topojson.Topology(data).to_dict()
 
     assert len(topo["objects"]) == 1
 
 
-# Test created for following issue: 
-#     Creating a topology for data without junctions and shared_coords=False, 
+# Test created for following issue:
+#     Creating a topology for data without junctions and shared_coords=False,
 #     prequantize=False gives error (https://github.com/mattijn/topojson/issues/181)
 # Test updated to also cover this issue:
 #     Polygons that entirely fill islands in another polygon are often not dedupped
@@ -45,11 +45,11 @@ def test_topology_polygon_filled_island_no_junctions(prequantize):
             "name": ["abcde_fghij", "jihgf"],
             "geometry": [
                 geometry.Polygon(
-                    shell=[[0, 0], [3, 0], [3, 3], [0, 3], [0, 0]], 
+                    shell=[[0, 0], [3, 0], [3, 3], [0, 3], [0, 0]],
                     holes=[[[1, 1], [1, 2], [2, 2], [2, 1], [1, 1]]],
                 ),
                 geometry.Polygon([[2, 1], [2, 2], [1, 2], [1, 1], [2, 1]]),
-            ]
+            ],
         }
     )
     topo = topojson.Topology(data, prequantize=prequantize, shared_coords=False)
@@ -57,11 +57,12 @@ def test_topology_polygon_filled_island_no_junctions(prequantize):
 
     assert len(topo.output["arcs"]) == 2
     for index in range(len(topo_gdf)):
-        assert topo_gdf.geometry[index].equals(data["geometry"][index]), (
-            f"{topo_gdf.geometry[index].wkt} != {data['geometry'][index]}"
-        )
+        assert topo_gdf.geometry[index].equals(
+            data["geometry"][index]
+        ), f"{topo_gdf.geometry[index].wkt} != {data['geometry'][index]}"
 
-# Test created for following issue: 
+
+# Test created for following issue:
 #     Polygons that entirely fill islands in another polygon are often not dedupped
 #     (https://github.com/mattijn/topojson/issues/183)
 def test_topology_polygon_filled_island_with_junctions():
@@ -70,12 +71,12 @@ def test_topology_polygon_filled_island_with_junctions():
             "name": ["abcda_efghie", "fghief", "b__cb"],
             "geometry": [
                 geometry.Polygon(
-                    shell=[[0, 0], [3, 0], [3, 3], [0, 3], [0, 0]], 
+                    shell=[[0, 0], [3, 0], [3, 3], [0, 3], [0, 0]],
                     holes=[[[1, 1], [1, 2], [2, 2], [2, 1], [1, 1]]],
                 ),
                 geometry.Polygon([[2, 1], [2, 2], [1, 2], [1, 1], [2, 1]]),
                 geometry.Polygon([[3, 0], [4, 0], [4, 3], [3, 3], [3, 0]]),
-            ]
+            ],
         }
     )
     topo = topojson.Topology(data, prequantize=False, shared_coords=False)
@@ -83,15 +84,15 @@ def test_topology_polygon_filled_island_with_junctions():
 
     assert len(topo.output["arcs"]) == 4
     for index in range(len(topo_gdf)):
-        assert topo_gdf.geometry[index].equals(data["geometry"][index]), (
-            f"{topo_gdf.geometry[index].wkt} != {data['geometry'][index]}"
-        )
+        assert topo_gdf.geometry[index].equals(
+            data["geometry"][index]
+        ), f"{topo_gdf.geometry[index].wkt} != {data['geometry'][index]}"
 
 
 # test winding order using TopoOptions object
 def test_topology_winding_order_TopoOptions():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    data = data[(data.name == "South Africa")]
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    data = data[(data.ADMIN == "South Africa")]
     topo = topojson.Topology(data, winding_order="CW_CCW").to_dict(options=True)
 
     assert len(topo["objects"]) == 1
@@ -100,9 +101,8 @@ def test_topology_winding_order_TopoOptions():
 
 # test winding order using kwarg variables
 def test_topology_winding_order_kwarg_vars():
-
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    data = data[(data.name == "South Africa")]
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    data = data[(data.ADMIN == "South Africa")]
     topo = topojson.Topology(data, winding_order="CW_CCW").to_dict(options=True)
 
     assert len(topo["objects"]) == 1
@@ -123,14 +123,13 @@ def test_topology_computing_topology():
 
 # test prequantization without computing topology
 def test_topology_prequantization():
-
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     data = data[
-        (data.name == "Botswana")
-        | (data.name == "South Africa")
-        | (data.name == "Zimbabwe")
-        | (data.name == "Mozambique")
-        | (data.name == "Zambia")
+        (data.ADMIN == "Botswana")
+        | (data.ADMIN == "South Africa")
+        | (data.ADMIN == "Zimbabwe")
+        | (data.ADMIN == "Mozambique")
+        | (data.ADMIN == "Zambia")
     ]
     topo = topojson.Topology(data, topology=False, prequantize=1e4).to_dict()
 
@@ -139,14 +138,13 @@ def test_topology_prequantization():
 
 # test prequantization without computing topology
 def test_topology_prequantization_including_delta_encoding():
-
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     data = data[
-        (data.name == "Botswana")
-        | (data.name == "South Africa")
-        | (data.name == "Zimbabwe")
-        | (data.name == "Mozambique")
-        | (data.name == "Zambia")
+        (data.ADMIN == "Botswana")
+        | (data.ADMIN == "South Africa")
+        | (data.ADMIN == "Zimbabwe")
+        | (data.ADMIN == "Mozambique")
+        | (data.ADMIN == "Zambia")
     ]
     topo = topojson.Topology(data, topology=False, prequantize=1e4).to_dict()
 
@@ -154,8 +152,8 @@ def test_topology_prequantization_including_delta_encoding():
 
 
 def test_topology_toposimplify_set_in_options():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    data = data[(data.name == "Antarctica")]
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    data = data[(data.ADMIN == "Antarctica")]
     topo = topojson.Topology(
         data, prequantize=True, simplify_with="shapely", toposimplify=4
     ).to_dict()
@@ -164,8 +162,8 @@ def test_topology_toposimplify_set_in_options():
 
 
 def test_topology_toposimplify_as_chaining():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    data = data[(data.name == "Antarctica")]
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    data = data[(data.ADMIN == "Antarctica")]
     topo = topojson.Topology(data, prequantize=True, simplify_with="shapely")
     topos = topo.toposimplify(2).to_dict()
 
@@ -173,8 +171,8 @@ def test_topology_toposimplify_as_chaining():
 
 
 def test_topology_topoquantize_as_chaining():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    data = data[(data.name == "Antarctica")]
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    data = data[(data.ADMIN == "Antarctica")]
     topo = topojson.Topology(data, prequantize=False, simplify_with="shapely")
     topos = topo.topoquantize(1e2).to_dict()
 
@@ -182,8 +180,8 @@ def test_topology_topoquantize_as_chaining():
 
 
 def test_topology_prequantize_topoquantize_as_chaining():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    data = data[(data.name == "Antarctica")]
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    data = data[(data.ADMIN == "Antarctica")]
     topo = topojson.Topology(data, prequantize=1e6, topology=True)
     topos = topo.topoquantize(1e5).to_dict()
 
@@ -191,8 +189,8 @@ def test_topology_prequantize_topoquantize_as_chaining():
 
 
 def test_topology_to_svg():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    data = data[(data.name == "Antarctica")]
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    data = data[(data.ADMIN == "Antarctica")]
     topo = topojson.Topology(data, prequantize=1e6, presimplify=50, topology=True)
 
     assert topo.to_svg() == None
@@ -209,8 +207,8 @@ def test_topology_with_arcs_without_linestrings():
 
 
 def test_topology_widget():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    data = data[(data.continent == "Africa")]
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    data = data[(data.CONTINENT == "Africa")]
     topo = topojson.Topology(data, prequantize=1e6, topology=True)
     widget = topo.to_widget()
 
@@ -218,8 +216,8 @@ def test_topology_widget():
 
 
 def test_topology_simplification_vw():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    data = data[(data.continent == "South America")]
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    data = data[(data.CONTINENT == "South America")]
     topo = topojson.Topology(
         data,
         prequantize=False,
@@ -233,8 +231,8 @@ def test_topology_simplification_vw():
 
 
 def test_topology_simplification_dp():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    data = data[(data.continent == "South America")]
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    data = data[(data.CONTINENT == "South America")]
     topo = topojson.Topology(
         data,
         prequantize=False,
@@ -496,11 +494,11 @@ def test_topology_geojson_winding_order():
     topo = topojson.Topology(data, prequantize=False)
     gj = topo.to_geojson()
 
-    assert gj
+    assert isinstance(gj, str)
 
 
 def test_topology_geodataframe_valid():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     topo = topojson.Topology(data)
     gdf = topo.toposimplify(10, prevent_oversimplify=False).to_gdf()
 
@@ -508,7 +506,6 @@ def test_topology_geodataframe_valid():
 
 
 def test_topology_geojson_duplicates():
-
     p0 = wkt.loads("POLYGON ((0 0, 0 1, 1 1, 2 1, 2 0, 1 0, 0 0))")
     p1 = wkt.loads("POLYGON ((0 1, 0 2, 1 2, 1 1, 0 1))")
     p2 = wkt.loads("POLYGON ((1 0, 2 0, 2 -1, 1 -1, 1 0))")
@@ -523,9 +520,9 @@ def test_topology_geojson_duplicates():
 
 # test for https://github.com/mattijn/topojson/issues/110
 def test_topology_topoquantization_dups():
-    gdf = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    gdf = gdf[gdf.name.isin(["France", "Belgium", "Netherlands"])]
-    topo = topojson.Topology(data=gdf, prequantize=False).toposimplify(4)
+    gdf = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    data = gdf[gdf.ADMIN.isin(["France", "Belgium", "Netherlands"])]
+    topo = topojson.Topology(data=data, prequantize=False).toposimplify(4)
     topo = topo.topoquantize(50).to_dict()
 
     assert topo["arcs"][6] == [[47, 48], [-3, 1]]
@@ -672,21 +669,21 @@ def test_topology_topoquantize():
 
 # test for https://github.com/mattijn/topojson/issues/164
 def test_topology_gdf_keep_index():
-    gdf = (
-        geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-        .query('continent == "Africa"')
+    data = (
+        geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+        .query('CONTINENT == "Africa"')
         .head()
     )
-    topo = topojson.Topology(data=gdf)
+    topo = topojson.Topology(data=data)
     gdf_idx = topo.to_gdf().index.to_list()
 
     assert gdf_idx == [1, 2, 11, 12, 13]
 
 
 def test_topology_write_multiple_object_json_dict():
-    world = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    world = world[["continent", "geometry", "pop_est"]]
-    continents = world.dissolve(by="continent", aggfunc="sum")
+    world = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    world = world[["CONTINENT", "geometry", "POP_EST"]]
+    continents = world.dissolve(by="CONTINENT", aggfunc="sum")
 
     topo = topojson.Topology(
         data=[world, continents], object_name=["world", "continents"]

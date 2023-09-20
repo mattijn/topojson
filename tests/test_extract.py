@@ -479,9 +479,9 @@ def test_extract_read_geojson_from_json_dict():
 
 
 def test_extract_read_multiple_gdf_object_name():
-    world = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    world = world[["continent", "geometry", "pop_est"]]
-    continents = world.dissolve(by="continent", aggfunc="sum")
+    world = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    world = world[["CONTINENT", "geometry", "POP_EST"]]
+    continents = world.dissolve(by="CONTINENT", aggfunc="sum")
 
     topo = Extract(
         data=[world, continents], options={"object_name": ["world", "continents"]}
@@ -489,20 +489,18 @@ def test_extract_read_multiple_gdf_object_name():
 
     assert len(topo["objects"]) == len(world) + len(continents)
 
-def test_extract_read_multiple_gjson_object_name():
 
-    with open('tests/files_geojson/geojson_1.json', 'r') as gj_1:
+def test_extract_read_multiple_gjson_object_name():
+    with open("tests/files_geojson/geojson_1.json", "r") as gj_1:
         geojson_1 = json.load(gj_1)
-        
-    with open('tests/files_geojson/geojson_2.json', 'r') as gj_2:
+
+    with open("tests/files_geojson/geojson_2.json", "r") as gj_2:
         geojson_2 = json.load(gj_2)
-        
+
     topo = Extract(
-        data=[geojson_1, geojson_2], 
-        options={"object_name": ['gjson_1', 'gjson_2']}
+        data=[geojson_1, geojson_2], options={"object_name": ["gjson_1", "gjson_2"]}
     ).to_dict()
 
     assert len(topo["objects"]) == (
-        len(geojson_1['features']) + len(geojson_2['features'])
+        len(geojson_1["features"]) + len(geojson_2["features"])
     )
-

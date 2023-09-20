@@ -200,7 +200,7 @@ class Dedup(Cut):
         arr_new -= 1
 
         # collect new indices of shared arcs
-        u, c = np.unique(arr_new, return_counts=True)
+        u, c = np.unique(arr_new[~np.isnan(arr_new)], return_counts=True)
         arr_bk_sarcs = u[c > 1]
 
         return arr_new, arr_bk_sarcs

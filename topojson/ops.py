@@ -29,9 +29,13 @@ except ImportError:
 import contextlib
 import shapely
 import warnings
-from distutils.version import LooseVersion
 
-SHAPELY_GE_20 = str(shapely.__version__) >= LooseVersion("2.0")
+from packaging.version import Version
+from importlib.metadata import version as importlib_version
+
+shapely_version = importlib_version("shapely")
+
+SHAPELY_GE_20 = Version(shapely_version) >= Version("2.0")
 
 try:
     from shapely.errors import ShapelyDeprecationWarning as shapely_warning
@@ -402,7 +406,6 @@ def properties_foreign(objects):
     for obj in objects:
         reserved_keys = False
         for k, v in list(obj["properties"].items()):
-
             if not reserved_keys_used or k in reserved_keys:
                 obj[k] = v
                 obj["properties"].pop(k, None)

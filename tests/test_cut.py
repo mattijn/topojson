@@ -5,6 +5,7 @@ from shapely import geometry, wkt
 
 from topojson.core.cut import Cut
 
+
 # cut exact duplicate lines ABC & ABC have no cuts
 def test_cut_exact_duplicate_lines_ABC_ABC_no_cuts():
     data = {
@@ -50,16 +51,15 @@ def test_cut_overlapping_rings_are_cut():
 # currently the border between Sudan and Egypt is not recognized as duplicate
 # because of floating-precision. Should be solved by a "snap_to_grid" option.
 def test_cut_border_egypt_sudan():
-    data = geopandas.read_file(geopandas.datasets.get_path("naturalearth_lowres"))
-    data = data[(data.name == "Egypt") | (data.name == "Sudan")]
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    data = data[(data.ADMIN == "Egypt") | (data.ADMIN == "Sudan")]
     topo = Cut(data).to_dict()
 
     assert len(topo["bookkeeping_duplicates"].tolist()) == 1
 
 
 def test_cut_nybb_fast_split():
-    nybb_path = geopandas.datasets.get_path("nybb")
-    data = geopandas.read_file(nybb_path)
+    data = geopandas.read_file("tests/files_shapefile/static_nybb.gpkg")
     data.set_index("BoroCode", inplace=True)
     topo = Cut(data).to_dict()
 
