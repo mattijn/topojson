@@ -2,7 +2,6 @@ import fire
 from pathlib import Path
 import altair as alt
 import pandas as pd
-from okab.saver import OkabSaver
 
 
 def stats_to_visz():
@@ -34,9 +33,8 @@ def stats_to_visz():
     )
 
     # save chart as png using okab as save method
-    chart.save("tests/benchmark_chart.png", method=OkabSaver, scale_factor=2)
+    chart.save("tests/benchmark_chart.png", scale_factor=2)
 
 
 if __name__ == "__main__":
-
     fire.Fire(stats_to_visz)
