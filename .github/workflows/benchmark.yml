@@ -54,13 +54,13 @@ jobs:
         run: python tests/benchmark_visz.py
 
       - uses: iterative/setup-cml@v2
-      - name: Generate benchmart as report
+      - name: Include benchmark-image as comment to PR
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cat <<EOF > benchmark.md
           #### Benchmark result
-          ![benchmark](./tests/benchmark_chart.svg)
-          The changes in this PR are timed against 3 files and are compared to the latest released version on PyPi and the main branch of the repository.  
+          ![benchmark](./tests/benchmark_chart.svg)  
+          These PR changes are benchmarked against three files, compared with PyPi's latest release and the repository's main branch.
           EOF
           cml comment create --publish --pr=false benchmark.md
