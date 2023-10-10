@@ -60,7 +60,7 @@ jobs:
         run: |
           cat <<EOF > benchmark.md
           #### Benchmark result
-          ![benchmark](./tests/benchmark_chart.png)
+          ![benchmark](./tests/benchmark_chart.svg)
           The changes in this PR are timed against 3 files and are compared to the latest released version on PyPi and the main branch of the repository.  
           EOF
           cml comment create --publish --pr=false benchmark.md
