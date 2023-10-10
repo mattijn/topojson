@@ -33,7 +33,7 @@ def stats_to_visz():
     )
 
     # save chart as png using okab as save method
-    chart.save("tests/benchmark_chart.png", scale_factor=2)
+    chart.save("tests/benchmark_chart.svg", scale_factor=1)
 
 
 if __name__ == "__main__":
