@@ -10,6 +10,7 @@ jobs:
     if: github.event.pull_request.merged == false
     name: Benchmark runner
     runs-on: ubuntu-latest
+    container: docker://dvcorg/cml-py3:latest
     steps:
       - name: Checkout folder to get test files
         uses: actions/checkout@v3
@@ -54,14 +55,16 @@ jobs:
       - name: Create visz from benchmark results!
         run: python tests/benchmark_visz.py
 
+      - name: Generate benchmart as report
+        env:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "## Benchmark result" > benchmark.md
+          cml-publish tests/benchmark_chart.png --md >> benchmark.md
+          cml-send-comment benchmark.md
+
       - name: Upload benchmark png as artifact
         uses: actions/upload-artifact@v3
         with:
           name: benchmark-artifact
           path: tests/benchmark_chart.png
-      
-      - name: Mention artifact in pull request
-        run: |
-          echo "You can download the benchmark chart artifact from this workflow run: [Artifact Link](<artifact-url>)"
-        env:
-          ARTIFACT_URL: ${{ steps.upload_artifact.outputs.artifact_url }}
