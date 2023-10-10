@@ -33,7 +33,6 @@ jobs:
           python-version: "3.10"
       - name: Install test dependencies
         run: |
-          python -m pip install --upgrade pip
           python -m pip install geopandas numpy fire altair vl-convert-python
 
       - name: Install latest topojson version from pypi
@@ -54,9 +53,14 @@ jobs:
       - name: Create visz from benchmark results!
         run: python tests/benchmark_visz.py
 
-      - name: Commit benchmark png
-        uses: EndBug/add-and-commit@v9
-        with:
-          default_author: github_actions
-          message: "generate benchmark chart"
-          add: "tests/benchmark_chart.png --force"
+      - uses: iterative/setup-cml@v2
+      - name: Include benchmark-image as comment to PR
+        env:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat <<EOF > benchmark.md
+          #### Benchmark result
+          ![benchmark](./tests/benchmark_chart.svg)  
+          These PR changes are benchmarked against three files, compared with PyPi's latest release and the repository's main branch.
+          EOF
+          cml comment create --publish --pr=false benchmark.md
