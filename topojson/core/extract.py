@@ -594,7 +594,7 @@ class Extract(object):
                     subgeom["__geom_name"] = self.options.object_name[ix]
                     geom[ix] = dict(enumerate(subgeom.to_dict(orient="records"), start))
             for ix in range(1, len(geom)):
-                geom[0].update(geom.pop(ix))
+                geom[0].update(geom[ix])
             data = geom[0]
             self._is_multi_geom = True
         else:

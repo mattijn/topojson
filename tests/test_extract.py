@@ -481,13 +481,17 @@ def test_extract_read_geojson_from_json_dict():
 def test_extract_read_multiple_gdf_object_name():
     world = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     world = world[["CONTINENT", "geometry", "POP_EST"]]
-    continents = world.dissolve(by="CONTINENT", aggfunc="sum")
+    continents_sum = world.dissolve(by="CONTINENT", aggfunc="sum")
+    continents_mean = world.dissolve(by="CONTINENT", aggfunc="mean")
 
     topo = Extract(
-        data=[world, continents], options={"object_name": ["world", "continents"]}
+        data=[world, continents_sum, continents_mean],
+        options={"object_name": ["world", "continents_sum", "continents_mean"]},
     ).to_dict()
 
-    assert len(topo["objects"]) == len(world) + len(continents)
+    assert len(topo["objects"]) == (
+        len(world) + len(continents_sum) + len(continents_mean)
+    )
 
 
 def test_extract_read_multiple_gjson_object_name():
