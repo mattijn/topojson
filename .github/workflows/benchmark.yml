@@ -11,7 +11,6 @@ jobs:
     name: Benchmark runner
     runs-on: ubuntu-latest
     steps:
-      - uses: iterative/setup-cml@v2
       - name: Checkout folder to get test files
         uses: actions/checkout@v3
         if: github.event_name == 'pull_request'
@@ -54,19 +53,14 @@ jobs:
       - name: Create visz from benchmark results!
         run: python tests/benchmark_visz.py
 
+      - uses: iterative/setup-cml@v2
       - name: Generate benchmart as report
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cat <<EOF > benchmark.md
-          ## Benchmark result
+          #### Benchmark result
           ![benchmark](./tests/benchmark_chart.png)
+          The changes in this PR are timed against 3 files and are compared to the latest released version on PyPi and the main branch of the repository.  
           EOF
-          
           cml comment create --publish --pr=false benchmark.md
-
-      - name: Upload benchmark png as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: benchmark-artifact
-          path: tests/benchmark_chart.png
