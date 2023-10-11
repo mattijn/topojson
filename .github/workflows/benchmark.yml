@@ -54,12 +54,9 @@ jobs:
         run: python tests/benchmark_visz.py
 
       - uses: iterative/setup-cml@v2
-      - uses: actions/checkout@v3
-        with:
-          repository: ${{ github.repository }}
       - name: Include benchmark-image as comment to PR
         env:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
           cat <<EOF > benchmark.md
           #### Benchmark result
