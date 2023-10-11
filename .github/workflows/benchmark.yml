@@ -56,7 +56,7 @@ jobs:
       - uses: iterative/setup-cml@v2
       - name: Include benchmark-image as comment to PR
         env:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
           cat <<EOF > benchmark.md
           #### Benchmark result
