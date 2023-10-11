@@ -7,7 +7,7 @@ on:
 
 jobs:
   do-benchmark:
-    if: github.event.pull_request.merged == false
+    if: github.event.pull_request.merged == false && github.event.pull_request.head.repo.fork == false
     name: Benchmark runner
     runs-on: ubuntu-latest
     steps:
@@ -56,7 +56,7 @@ jobs:
       - uses: iterative/setup-cml@v2
       - name: Include benchmark-image as comment to PR
         env:
-          repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cat <<EOF > benchmark.md
           #### Benchmark result
