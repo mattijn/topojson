@@ -49,6 +49,7 @@ This package `topojson` has the following hard dependencies:
 
 - `numpy`
 - `shapely`
+- `packaging`
 
 Further, optional soft dependencies are:
 
