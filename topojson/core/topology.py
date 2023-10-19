@@ -115,7 +115,6 @@ class Topology(Hashmap):
         winding_order="CW_CCW",
         object_name="data",
     ):
-
         options = TopoOptions(locals())
 
         # shortcut when dealing with topojson data
@@ -496,7 +495,7 @@ class Topology(Hashmap):
             # dequantize if transform exist
             if transform is not None:
                 power_estimate = len(str(int(np_arcs[:, 0].max())))
-                quant_factor_estimate = 10 ** power_estimate
+                quant_factor_estimate = 10**power_estimate
                 np_arcs = dequantize(np_arcs, scale, translate)
 
             # apply simplify
@@ -547,9 +546,7 @@ class Topology(Hashmap):
             return result
 
     def _resolve_coords(self, data):
-
         for objectname in self.options.object_name:
-
             if objectname not in data["objects"]:
                 raise SystemExit(
                     f"'{objectname}' is not an object name in your topojson file"
@@ -557,7 +554,6 @@ class Topology(Hashmap):
             geoms = data["objects"][objectname]["geometries"]
             for idx, feat in enumerate(geoms):
                 if feat["type"] in ["Point", "MultiPoint"]:
-
                     lofl = feat["coordinates"]
                     repeat = 1 if feat["type"] == "Point" else 2
 
@@ -568,7 +564,7 @@ class Topology(Hashmap):
                         coord = data["coordinates"][val][0]
                         lofl[idx] = np.asarray(coord).tolist()
 
-                    feat["coordinates"] = lofl[0] if len(lofl) == 1 else lofl
+                    feat["coordinates"] = lofl[0] if feat["type"] == "Point" else lofl
                     feat.pop("reset_coords", None)
             data.pop("coordinates", None)
         return data
