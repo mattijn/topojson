@@ -4,9 +4,13 @@
     "editor.formatOnSave": false
   },
   "[python]": {
-    "editor.rulers": [88, 120]
+    "editor.rulers": [
+      88,
+      120
+    ],
+    "editor.defaultFormatter": "ms-python.black-formatter"
   },
-  "python.formatting.provider": "black",
+  "python.formatting.provider": "none",
   "python.testing.pytestArgs": [
     "tests"
   ],
