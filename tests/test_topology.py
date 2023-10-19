@@ -378,6 +378,14 @@ def test_topology_to_geojson_polygon_point():
     assert "]}}]}" in topo  # feat 2
 
 
+# test for https://github.com/mattijn/topojson/issues/209
+def test_topology_to_geojson_singepoint_in_multipoint():
+    data = [{"type": "MultiPoint", "coordinates": [[0.5, 0.5]]}]
+    geo = topojson.Topology(data).to_geojson()
+
+    assert "]]}}]}" in geo
+
+
 def test_topology_to_geojson_quantized_points_only():
     data = [{"type": "MultiPoint", "coordinates": [[0.5, 0.5], [1.0, 1.0]]}]
     geo = topojson.Topology(data, prequantize=False).to_geojson()
