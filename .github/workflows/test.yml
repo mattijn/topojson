@@ -29,8 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
-        shapely-version: ["1.8.0", "1.8.4", "2.0"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        shapely-version: ["1.8.5", "2.0"]
       fail-fast: false
     steps:
       - uses: actions/checkout@v3
@@ -40,12 +40,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install test dependencies
         run: |
-          python -m pip install --upgrade pip
           python -m pip install flit codecov pytest flake8
+      - name: Install shapely version from matrix
+        run: python -m pip install "shapely==${{ matrix.shapely-version }}"
       - name: Install package dependencies
         run: flit install --deps develop
-      - name: Overrule shapely version from matrix
-        run: python -m pip install "shapely==${{ matrix.shapely-version }}"
       - name: Lint with flake8
         run: flake8 topojson
         continue-on-error: true
