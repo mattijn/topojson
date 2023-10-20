@@ -390,9 +390,8 @@ def test_cut_extra_points_no_cuts(shared_coords, junctions):
 @pytest.mark.parametrize("shared_coords", [(True), (False)])
 def test_cut_extra_points_cut(shared_coords):
     """
-    Tests is 2 linestrings are correctly treated as duplicate if they follow the same
+    Tests if 2 linestrings are correctly treated as duplicate if they follow the same
     path, but one of them has extra point(s) that disappear with simplify(0).
-    No junctions.
     """
     g0 = wkt.loads("LineString (0 0, 1 0, 2 0, 3 0)")
     g1 = wkt.loads("LineString (0 0, 2 0)")
@@ -403,3 +402,30 @@ def test_cut_extra_points_cut(shared_coords):
 
     assert len(topo["junctions"]) == 2
     assert len(topo["bookkeeping_duplicates"]) == 1
+
+
+@pytest.mark.parametrize("shared_coords, junctions", [(True, 4), (False, 2)])
+def test_cut_extra_points_other_line_cut(shared_coords, junctions):
+    """
+    Tests if 2 linestrings are correctly treated as duplicate if they follow the same
+    path, but:
+      - one of them has extra point(s) that disappear with simplify(0).
+      - there is another line combination in the dataset that creates junctions for
+        shared_coords=False.
+    """
+    l1 = wkt.loads("LineString (0 0, 2 0)")
+    l2_l1_extra_colinear = wkt.loads("LineString (0 0, 1 0, 2 0)")
+    l3 = wkt.loads("LineString (0 1, 2 1, 3 1)")
+    l4_cuts_l3 = wkt.loads("LineString (0 1, 2 1)")
+    data = geopandas.GeoDataFrame(
+        {
+            "name": ["l1", "l2", "l3", "l4"],
+            "geometry": [l1, l2_l1_extra_colinear, l3, l4_cuts_l3],
+        }
+    )
+    topo = Cut(
+        data, options={"prequantize": False, "shared_coords": shared_coords}
+    ).to_dict()
+
+    assert len(topo["junctions"]) == junctions
+    assert len(topo["bookkeeping_duplicates"]) == 2

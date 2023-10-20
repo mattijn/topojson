@@ -143,7 +143,7 @@ class Cut(Join):
                     lines_split.append(line_split)
                 else:
                     lines_split.append(
-                        remove_collinear_points(np.array([linestring.coords]))
+                        [remove_collinear_points(np.array(linestring.coords))]
                     )
             # flatten the splitted linestrings, create bookkeeping_geoms array
             # and find duplicates
