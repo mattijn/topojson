@@ -473,7 +473,7 @@ class Topology(Hashmap):
         result = copy.deepcopy(self)
 
         # set settings in options to override
-        if type(prevent_oversimplify) == bool:
+        if isinstance(type(prevent_oversimplify), bool):
             result.options.prevent_oversimplify = prevent_oversimplify
         if simplify_with in ["shapely", "simplification"]:
             result.options.simplify_with = simplify_with
@@ -517,13 +517,13 @@ class Topology(Hashmap):
                 quant_factor = None
                 if result.options.topoquantize > 0:
                     # set default if not specifically given in the options
-                    if type(result.options.topoquantize) == bool:
+                    if isinstance(result.options.topoquantize, bool):
                         quant_factor = 1e5
                     else:
                         quant_factor = result.options.topoquantize
                 elif result.options.prequantize > 0:
                     # set default if not specifically given in the options
-                    if type(result.options.prequantize) == bool:
+                    if isinstance(result.options.prequantize, bool):
                         quant_factor = 1e5
                     else:
                         quant_factor = result.options.prequantize
@@ -602,7 +602,7 @@ class Topology(Hashmap):
         # toposimplify linestrings if required
         if self.options.toposimplify > 0:
             # set default if not specifically given in the options
-            if type(self.options.toposimplify) == bool:
+            if isinstance(self.options.toposimplify, bool):
                 simplify_factor = 0.0001
             else:
                 simplify_factor = self.options.toposimplify
@@ -612,7 +612,7 @@ class Topology(Hashmap):
         # topoquantize linestrings if required
         if self.options.topoquantize > 0:
             # set default if not specifically given in the options
-            if type(self.options.topoquantize) == bool:
+            if isinstance(self.options.topoquantize, bool):
                 quant_factor = 1e5
             else:
                 quant_factor = self.options.topoquantize
