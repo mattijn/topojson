@@ -129,7 +129,7 @@ class Join(Extract):
         # presimplify linestrings if required
         if self.options.presimplify > 0:
             # set default if not specifically given in the options
-            if type(self.options.presimplify) == bool:
+            if isinstance(type(self.options.presimplify), bool):
                 simplify_factor = 2
             else:
                 simplify_factor = self.options.presimplify
@@ -155,7 +155,7 @@ class Join(Extract):
         # prequantize linestrings if required
         if self.options.prequantize > 0:
             # set default if not specifically given in the options
-            if type(self.options.prequantize) == bool:
+            if isinstance(self.options.prequantize, bool):
                 quant_factor = 1e5
             else:
                 quant_factor = self.options.prequantize
@@ -208,15 +208,15 @@ class Join(Extract):
 
             # calculate line intersections between linestrings
             intersect_lines = [
-                linemerge_ext(geom1.intersection(geom2))
-                for geom1, geom2 in geom_combs
+                linemerge_ext(geom1.intersection(geom2)) for geom1, geom2 in geom_combs
             ]
             intersect_lines = [line for line in intersect_lines if not line.is_empty]
             intersect_lines = explode(intersect_lines)
 
             # the start and end points of the intersect_lines are the junctions
             junctions = [
-                junction for line in intersect_lines
+                junction
+                for line in intersect_lines
                 for junction in (line.coords[0], line.coords[-1])
             ]
             # keep unique junctions
