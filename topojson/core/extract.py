@@ -464,6 +464,10 @@ class Extract(object):
             data[
                 feature.get("id") or "feature_{}".format(str(idx).zfill(zfill_value))
             ] = feature_dict  # feature
+        # check for overwritten duplicate keys
+        if len(data) < len(obj["features"]):
+            # slight problem here is it doesn't say which one/ones were duplicated
+            raise ValueError("id in geojson data duplicated")
         # new data dictionary is created, throw the geometries back to main()
         self._is_single = False
         self._extractor(data)
