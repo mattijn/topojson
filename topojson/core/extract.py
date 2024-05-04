@@ -460,8 +460,9 @@ class Extract(object):
 
             if feature["type"] == "GeometryCollection":
                 feature_dict["geometries"] = feature["geometry"]["geometries"]
+            # if feature has an id use that
             data[
-                "feature_{}".format(str(idx).zfill(zfill_value))
+                feature.get("id") or "feature_{}".format(str(idx).zfill(zfill_value))
             ] = feature_dict  # feature
         # new data dictionary is created, throw the geometries back to main()
         self._is_single = False
