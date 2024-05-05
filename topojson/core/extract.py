@@ -460,14 +460,19 @@ class Extract(object):
 
             if feature["type"] == "GeometryCollection":
                 feature_dict["geometries"] = feature["geometry"]["geometries"]
-            # if feature has an id use that
-            data[
-                feature.get("id") or "feature_{}".format(str(idx).zfill(zfill_value))
-            ] = feature_dict  # feature
+
+            if self.options.ignore_index or not feature.get("id"):
+                data[
+                    "feature_{}".format(str(idx).zfill(zfill_value))
+                ] = feature_dict
+            else:
+                data[feature.get("id")] = feature_dict  # feature
+
         # check for overwritten duplicate keys
         if len(data) < len(obj["features"]):
             # slight problem here is it doesn't say which one/ones were duplicated
-            raise ValueError("id in geojson data duplicated")
+            raise IndexError("id in geojson data duplicated")
+
         # new data dictionary is created, throw the geometries back to main()
         self._is_single = False
         self._extractor(data)
