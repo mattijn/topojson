@@ -98,6 +98,11 @@ class Topology(Hashmap):
         case it is required to provide a list of the referenced `object_name` in
         combination with an equal length list of `data` objects.
         Default is a single object named `data`.
+    ignore_index : bool
+        If set to true existing ids/indexes will be ignored and overwritten otherwise
+        they will be passed through into the output.
+        If indexes are not ignored and a duplicate id exists an exception will be raised.
+        Default is false.
     """
 
     def __init__(
@@ -114,6 +119,7 @@ class Topology(Hashmap):
         simplify_algorithm="dp",
         winding_order="CW_CCW",
         object_name="data",
+        ignore_index=False,
     ):
         options = TopoOptions(locals())
 

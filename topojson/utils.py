@@ -27,6 +27,7 @@ class TopoOptions(object):
         simplify_algorithm="dp",
         winding_order=None,
         object_name="data",
+        ignore_index=False,
     ):
         # get all arguments
         arguments = locals()
@@ -90,6 +91,11 @@ class TopoOptions(object):
                 self.object_name = arguments["object_name"]
         else:
             self.object_name = ["data"]
+
+        if "ignore_index" in arguments:
+            self.ignore_index = arguments["ignore_index"]
+        else:
+            self.ignore_index = False
 
     def __repr__(self):
         return "TopoOptions(\n  {}\n)".format(pprint.pformat(self.__dict__))
