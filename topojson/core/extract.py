@@ -460,9 +460,19 @@ class Extract(object):
 
             if feature["type"] == "GeometryCollection":
                 feature_dict["geometries"] = feature["geometry"]["geometries"]
-            data[
-                "feature_{}".format(str(idx).zfill(zfill_value))
-            ] = feature_dict  # feature
+
+            if self.options.ignore_index or not feature.get("id"):
+                data[
+                    "feature_{}".format(str(idx).zfill(zfill_value))
+                ] = feature_dict
+            else:
+                data[feature.get("id")] = feature_dict  # feature
+
+        # check for overwritten duplicate keys
+        if len(data) < len(obj["features"]):
+            msg = "index in data duplicated, use `ignore_index=True` to overwrite index"
+            raise IndexError(msg)
+
         # new data dictionary is created, throw the geometries back to main()
         self._is_single = False
         self._extractor(data)
