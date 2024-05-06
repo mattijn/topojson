@@ -699,3 +699,23 @@ def test_topology_write_multiple_object_json_dict():
     topo_dict = topo.to_dict()
 
     assert len(topo_dict["objects"]) == 2
+
+def test_topology_ignore_index_true_geojson():
+    
+    from geojson import Feature, FeatureCollection, Polygon
+    feat_1 = Feature(
+        id="duplicate_id",
+        geometry=Polygon([[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]),
+    )
+    feat_2 = Feature(
+        id="duplicate_id",
+        geometry=Polygon([[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]),
+    )
+    fc = FeatureCollection([feat_1,feat_2])
+
+    # Using ignore_index to use default feature ids.
+    topo = topojson.Topology(fc, ignore_index=True).to_dict(options=True)
+    geom = topo["objects"]["data"]["geometries"]
+
+    index = [obj["id"] for obj in geom]
+    assert index == ["feature_0","feature_1"]
