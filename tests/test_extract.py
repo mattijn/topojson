@@ -1,4 +1,5 @@
 import json
+import pytest
 from topojson.core.extract import Extract
 from shapely import geometry
 import geopandas
@@ -468,6 +469,36 @@ def test_extract_keep_properties():
     assert topo["objects"]["feature_0"]["properties"]["name"] == "abc"
     assert topo["objects"]["feature_1"]["properties"]["name"]["def"] == "ghi"
 
+
+def test_extract_geojson_keep_index():
+    feat_1 = Feature(
+        id="custom_index",
+        geometry=Polygon([[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]),
+    )
+    feat_2 = Feature(
+        geometry=Polygon([[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]),
+    )
+    data = FeatureCollection([feat_1, feat_2])
+    topo = Extract(data).to_dict()
+    objects = topo["objects"]
+
+    assert bool(objects.get("custom_index")) == True
+    assert bool(objects.get("feature_1")) == True
+
+
+def test_extract_geojson_keep_index_duplicates():
+    feat_1 = Feature(
+        id="duplicate_id",
+        geometry=Polygon([[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]),
+    )
+    feat_2 = Feature(
+        id="duplicate_id",
+        geometry=Polygon([[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]),
+    )
+    data = FeatureCollection([feat_1,feat_2])
+    with pytest.raises(IndexError):
+        Extract(data)
+        
 
 # why cannot load geojson file using json module?
 def test_extract_read_geojson_from_json_dict():
