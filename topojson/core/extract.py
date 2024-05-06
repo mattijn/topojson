@@ -470,8 +470,8 @@ class Extract(object):
 
         # check for overwritten duplicate keys
         if len(data) < len(obj["features"]):
-            # slight problem here is it doesn't say which one/ones were duplicated
-            raise IndexError("id in geojson data duplicated")
+            msg = "index in data duplicated, use `ignore_index=True` to overwrite index"
+            raise IndexError(msg)
 
         # new data dictionary is created, throw the geometries back to main()
         self._is_single = False

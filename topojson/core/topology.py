@@ -99,8 +99,8 @@ class Topology(Hashmap):
         combination with an equal length list of `data` objects.
         Default is a single object named `data`.
     ignore_index : bool
-        If set to true existing ids/indexes will be ignored and overwritten otherwise
-        they will be passed through into the output.
+        If set to true existing ids/indexes of geojson FeatureCollections will be
+        ignored and overwritten. Otherwise features with ids will use their existing one.
         If indexes are not ignored and a duplicate id exists an exception will be raised.
         Default is false.
     """
