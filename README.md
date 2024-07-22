@@ -60,7 +60,7 @@ Further, optional soft dependencies are:
 
 ## Other resources
 
-For a butter understanding how the different included simplification algorithms work
+For a better understanding how the different included simplification algorithms work
 
 - `rdp`: Ramer–Douglas–Peucker
 - `vw`: Visvalingam-Whyatt
