@@ -66,7 +66,11 @@ For a butter understanding how the different included simplification algorithms 
 - `rdp`: Ramer–Douglas–Peucker
 - `vw`: Visvalingam-Whyatt
 
-You can have a look to this blog post on [Line simplification algorithms](https://martinfleischmann.net/line-simplification-algorithms/) 
+You can have a look to this blog post on [Line simplification algorithms](https://martinfleischmann.net/line-simplification-algorithms/).
+There you can find out that the `epsilon` value for `vw` is area-based and that the `epsilon` value for `rdp` is distance-based.
+
+So if your source projection is in meters, than it is very likely that your `epsilon` value should be magnitudes larger than the examples on this page where the source projection is in degrees.
+
 
 ## Get in touch
 
