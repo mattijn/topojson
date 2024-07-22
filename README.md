@@ -59,6 +59,15 @@ Further, optional soft dependencies are:
 - `geopandas` - parse your TopoJSON output directly into a GeoDataFrame
 - `ipywidgets` + (lab)extension - make your life complete with the interactive experience
 
+## Other resources
+
+For a butter understanding how the different included simplification algorithms work
+
+- `rdp`: Ramer–Douglas–Peucker
+- `vw`: Visvalingam-Whyatt
+
+You can have a look to this blog post on [Line simplification algorithms](https://martinfleischmann.net/line-simplification-algorithms/) 
+
 ## Get in touch
 
 For now, just use the Github issues. That can be:
