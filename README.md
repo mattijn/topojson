@@ -74,8 +74,6 @@ There is a [section](https://py.geocompx.org/04-geometry-operations#sec-simplifi
 
 > _The main advantage of `.toposimplify` is that it is topologically “aware”: it simplifies the combined borders of the polygons (rather than each polygon on its own), thus ensuring that the overlap is maintained._
 
-
-
 ## Get in touch
 
 For now, just use the Github issues. That can be:
