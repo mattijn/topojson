@@ -70,7 +70,7 @@ There you can find out that the `epsilon` value for `vw` is area-based and that 
 
 Also, if your source projection is in meters, than it is very likely that your `epsilon` value should be magnitudes larger than the examples on this page where the source projection is in degrees.
 
-There is a [section](https://py.geocompx.org/04-geometry-operations#sec-simplification) on simplification in the book-in-progress on '[Geocomputation with Python](https://py.geocompx.org/)' that describes toposimplification as follow:
+There is a [section](https://py.geocompx.org/04-geometry-operations#sec-simplification) on simplification in the book on '[Geocomputation with Python](https://py.geocompx.org/)' that describes toposimplification as follow:
 
 > _The main advanatage of `.toposimplify` is that it is topologically “aware”: it simplifies the combined borders of the polygons (rather than each polygon on its own), thus ensuring that the overlap is maintained._
 
