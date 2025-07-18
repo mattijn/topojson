@@ -132,9 +132,9 @@ class Dedup(Cut):
         """
 
         for segment_idx in range(no_ndp_arcs):
-            # use in1d function as proxy for contains
+            # use isin function as proxy for contains
             merged_arcs_bool = [
-                np.in1d(
+                np.isin(
                     asvoid(data["linestrings"][i]),
                     asvoid(ndp_arcs.geoms[segment_idx].coords),
                 ).any()

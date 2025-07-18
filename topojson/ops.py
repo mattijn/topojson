@@ -232,9 +232,9 @@ def insert_coords_in_line(line, tree_splitter):
     # select junctions having non existing vertices in linestring
     tol_float_prc = 1e8
     pts_xy_nonexst = pts_xy_on_line[
-        ~np.in1d(
-            asvoid(np.around(pts_xy_on_line * tol_float_prc).astype(np.int64)),
-            asvoid(np.around(ls_xy * tol_float_prc).astype(np.int64)),
+        ~np.isin(
+            asvoid(np.around(pts_xy_on_line * tol_float_prc).astype(np.int64))[:,0],
+            asvoid(np.around(ls_xy * tol_float_prc).astype(np.int64))[:,0],
         )
     ]
     if pts_xy_nonexst.size == 0:
@@ -298,9 +298,9 @@ def fast_split(line, splitter, is_ring):
     # locate index of splitter coordinates in linestring
     tol = 1e8
     splitter_indices = np.flatnonzero(
-        np.in1d(
-            asvoid(np.around(line * tol).astype(np.int64)),
-            asvoid(np.around(splitter * tol).astype(np.int64)),
+        np.isin(
+            asvoid(np.around(line * tol).astype(np.int64))[:,0],
+            asvoid(np.around(splitter * tol).astype(np.int64))[:,0],
         )
     )
 
