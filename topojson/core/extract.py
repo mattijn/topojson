@@ -195,7 +195,10 @@ class Extract(object):
         elif instance(geom) == "FeatureCollection":
             self._extract_featurecollection(geom)
         elif instance(geom) == "Feature":
-            self._extract_feature(geom)
+            if type(geom).__module__ == "fiona.model":
+                self._extract_fiona_feature(geom)
+            else:
+                self._extract_feature(geom)
         elif instance(geom) == "Collection":
             self._extract_fiona_collection(geom)
         elif instance(geom) == "GeoDataFrame":
@@ -451,16 +454,14 @@ class Extract(object):
         for idx, feature in enumerate(obj["features"]):
             # A GeoJSON Feature is mapped to a GeometryCollection
             # => directly mapped to specific geometry, so that to save the attributes
-            # Create a copy to avoid modifying the original fiona object
-            feature_copy = dict(feature)
-            feature_copy["type"] = feature["geometry"]["type"]
+            feature["type"] = feature["geometry"]["type"]
 
             feature_dict = {
                 **(feature.get("properties") if feature.get("properties") else {}),
                 **{"geometry": geometry.shape(feature["geometry"])},
             }
 
-            if feature_copy["type"] == "GeometryCollection":
+            if feature["type"] == "GeometryCollection":
                 feature_dict["geometries"] = feature["geometry"]["geometries"]
 
             if self.options.ignore_index or not feature.get("id"):
@@ -522,10 +523,40 @@ class Extract(object):
                 "To parse a `fiona.Collection`, you'll need the python package `geojson`"
             )
         # convert Fiona Collection into a GeoJSON Feature Collection
-        geom = geojson.FeatureCollection(list(geom))
+        # Use geojson.Feature to properly convert Fiona features to GeoJSON format
+        features = [
+            geojson.Feature(
+                geometry=feat["geometry"], properties=dict(feat["properties"])
+            )
+            for feat in geom
+        ]
+        geom = geojson.FeatureCollection(features)
         # re-parse feat_col in _extractor()
         self._is_single = False
         self._extractor(geom)
+
+    def _extract_fiona_feature(self, geom):
+        """
+        This function extracts a Fiona Feature.
+
+        Parameters
+        ----------
+        geom : fiona.model.Feature
+            Feature instance
+        """
+        try:
+            import geojson
+        except ImportError:
+            raise ImportError(
+                "To parse a `fiona.model.Feature`, you'll need the python package `geojson`"
+            )
+        # convert Fiona Feature into a GeoJSON Feature
+        geojson_feat = geojson.Feature(
+            geometry=geom["geometry"], properties=dict(geom["properties"])
+        )
+        # re-parse feature in _extractor()
+        self._is_single = False
+        self._extractor(geojson_feat)
 
     def _extract_geopandas_geodataframe(self, geom):
         """*geom* type is GeoDataFrame instance.
@@ -610,6 +641,7 @@ class Extract(object):
         else:
             # list consist of features
             # convert list to indexed-dictionary
+            # Each feature will be processed individually by _serialize_geom_type
             data = dict(enumerate(geom))
         # new data dictionary is created, throw the geometries back to main()
         self._is_single = False
@@ -694,8 +726,27 @@ class Extract(object):
                 else:
                     # detect if the object contains a __geo_interface__.
                     if hasattr(self._obj, "__geo_interface__"):
-                        self._obj = self._obj.__geo_interface__
-                        self._data[self._key] = self._obj
+                        # Check if this is a Fiona feature by checking the module name
+                        if type(self._obj).__module__ == "fiona.model":
+                            # Convert Fiona feature to GeoJSON format with list coordinates
+                            import geojson
+                            import json
+
+                            # Get the __geo_interface__ and convert tuples to lists
+                            geo_interface = self._obj.__geo_interface__
+                            # Convert to JSON and back to convert tuples to lists
+                            geo_interface_json = json.dumps(geo_interface)
+                            geo_interface_dict = json.loads(geo_interface_json)
+
+                            geojson_feat = geojson.Feature(
+                                geometry=geo_interface_dict["geometry"],
+                                properties=dict(self._obj["properties"]),
+                            )
+                            self._obj = geojson_feat
+                            self._data[self._key] = self._obj
+                        else:
+                            self._obj = self._obj.__geo_interface__
+                            self._data[self._key] = self._obj
                     # try parsing the object into a shapely geometry. If this not succeeds
                     # then the object might be a GeoJSON Feature or FeatureCollection. If
                     # this fails as well then the object is not recognized and removed.

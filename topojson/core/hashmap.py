@@ -338,6 +338,9 @@ class Hashmap(Dedup):
             bk_element = "bookkeeping_arcs"
         elif key == "coordinates":
             bk_objects = bk_element = "bookkeeping_coords"
+            # If bookkeeping_coords is empty, there are no Point geometries to resolve
+            if not self._data[bk_objects]:
+                return geoms
 
         arcs = []
         for geom in geoms:

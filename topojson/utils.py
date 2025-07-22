@@ -139,6 +139,10 @@ def geometry(obj, tp_arcs, transform=None):
 
     The topology object is a dict with 'type' and 'arcs' items.
     """
+    if obj["type"] == "Feature":
+        # Extract geometry from Feature object
+        return geometry(obj["geometry"], tp_arcs, transform)
+
     if obj["type"] == "GeometryCollection":
         geometries = [geometry(feat, tp_arcs) for feat in obj["geometries"]]
         return {"type": obj["type"], "geometries": geometries}
@@ -164,10 +168,17 @@ def geometry(obj, tp_arcs, transform=None):
         return {"type": obj["type"], "coordinates": point_coord[0]}
 
     else:
-        return {
-            "type": obj["type"],
-            "coordinates": coordinates(obj["arcs"], tp_arcs, obj["type"]),
-        }
+        # Check if this is a topology object (has arcs) or a regular geometry object (has coordinates)
+        if "arcs" in obj:
+            return {
+                "type": obj["type"],
+                "coordinates": coordinates(obj["arcs"], tp_arcs, obj["type"]),
+            }
+        elif "coordinates" in obj:
+            # This is a regular geometry object, return it as-is
+            return obj
+        else:
+            raise ValueError(f"Object must have either 'arcs' or 'coordinates': {obj}")
 
 
 def prettyjson(obj, indent=2, maxlinelength=80):
@@ -222,7 +233,7 @@ def getsubitems(obj, itemkey, islast, maxlinelength, level):  # noqa: C901
         subitems = []
 
         # get the list of inner tokens
-        for (i, k) in enumerate(keys):
+        for i, k in enumerate(keys):
             islast_ = i == len(obj) - 1
             itemkey_ = ""
             if isdict:
@@ -255,7 +266,7 @@ def getsubitems(obj, itemkey, islast, maxlinelength, level):  # noqa: C901
                 lines = []
                 current_line = ""
 
-                for (i, item) in enumerate(subitems):
+                for i, item in enumerate(subitems):
                     item_text = item
                     if i < len(inner) - 1:
                         item_text = item + ","
@@ -331,7 +342,7 @@ def indentitems(items, indent, level):
     """Recursively traverses the list of json lines, adds indentation based on the current depth"""
     res = ""
     indentstr = " " * (indent * level)
-    for (i, item) in enumerate(items):
+    for i, item in enumerate(items):
         if isinstance(item, list):
             res += indentitems(item, indent, level + 1)
         else:
