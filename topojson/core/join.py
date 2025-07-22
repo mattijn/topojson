@@ -147,6 +147,9 @@ class Join(Extract):
         lsbs = bounds(data["linestrings"])
         ptbs = bounds(data["coordinates"])
         data["bbox"] = compare_bounds(lsbs, ptbs)
+        # Ensure bbox is always a tuple of plain Python floats
+        if "bbox" in data:
+            data["bbox"] = tuple(float(x) for x in data["bbox"])
 
         if not data["linestrings"] and not data["coordinates"]:
             data["junctions"] = self._junctions

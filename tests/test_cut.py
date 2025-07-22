@@ -70,7 +70,7 @@ def test_cut_nybb_fast_split():
 # when there are many junctions in the geometry. During debugging this test ran
 # eventually 8x more quick.
 def test_cut_many_junctions():
-    data = geopandas.read_file("tests/files_geojson/mesh2d.geojson", driver="GeoJSON")
+    data = geopandas.read_file("tests/files_geojson/mesh2d.geojson")
     # previous test ran in 8.798s (best of 3)
     # current test ran in 8.182s (best of 3)
     topo = Cut(data).to_dict()

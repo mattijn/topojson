@@ -195,7 +195,10 @@ class Extract(object):
         elif instance(geom) == "FeatureCollection":
             self._extract_featurecollection(geom)
         elif instance(geom) == "Feature":
-            self._extract_feature(geom)
+            if type(geom).__module__ == "fiona.model":
+                self._extract_fiona_feature(geom)
+            else:
+                self._extract_feature(geom)
         elif instance(geom) == "Collection":
             self._extract_fiona_collection(geom)
         elif instance(geom) == "GeoDataFrame":
@@ -462,9 +465,7 @@ class Extract(object):
                 feature_dict["geometries"] = feature["geometry"]["geometries"]
 
             if self.options.ignore_index or not feature.get("id"):
-                data[
-                    "feature_{}".format(str(idx).zfill(zfill_value))
-                ] = feature_dict
+                data["feature_{}".format(str(idx).zfill(zfill_value))] = feature_dict
             else:
                 data[feature.get("id")] = feature_dict  # feature
 
@@ -522,10 +523,40 @@ class Extract(object):
                 "To parse a `fiona.Collection`, you'll need the python package `geojson`"
             )
         # convert Fiona Collection into a GeoJSON Feature Collection
-        geom = geojson.FeatureCollection(list(geom))
+        # Use geojson.Feature to properly convert Fiona features to GeoJSON format
+        features = [
+            geojson.Feature(
+                geometry=feat["geometry"], properties=dict(feat["properties"])
+            )
+            for feat in geom
+        ]
+        geom = geojson.FeatureCollection(features)
         # re-parse feat_col in _extractor()
         self._is_single = False
         self._extractor(geom)
+
+    def _extract_fiona_feature(self, geom):
+        """
+        This function extracts a Fiona Feature.
+
+        Parameters
+        ----------
+        geom : fiona.model.Feature
+            Feature instance
+        """
+        try:
+            import geojson
+        except ImportError:
+            raise ImportError(
+                "To parse a `fiona.model.Feature`, you'll need the python package `geojson`"
+            )
+        # convert Fiona Feature into a GeoJSON Feature
+        geojson_feat = geojson.Feature(
+            geometry=geom["geometry"], properties=dict(geom["properties"])
+        )
+        # re-parse feature in _extractor()
+        self._is_single = False
+        self._extractor(geojson_feat)
 
     def _extract_geopandas_geodataframe(self, geom):
         """*geom* type is GeoDataFrame instance.
@@ -610,6 +641,7 @@ class Extract(object):
         else:
             # list consist of features
             # convert list to indexed-dictionary
+            # Each feature will be processed individually by _serialize_geom_type
             data = dict(enumerate(geom))
         # new data dictionary is created, throw the geometries back to main()
         self._is_single = False
