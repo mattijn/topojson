@@ -726,27 +726,8 @@ class Extract(object):
                 else:
                     # detect if the object contains a __geo_interface__.
                     if hasattr(self._obj, "__geo_interface__"):
-                        # Check if this is a Fiona feature by checking the module name
-                        if type(self._obj).__module__ == "fiona.model":
-                            # Convert Fiona feature to GeoJSON format with list coordinates
-                            import geojson
-                            import json
-
-                            # Get the __geo_interface__ and convert tuples to lists
-                            geo_interface = self._obj.__geo_interface__
-                            # Convert to JSON and back to convert tuples to lists
-                            geo_interface_json = json.dumps(geo_interface)
-                            geo_interface_dict = json.loads(geo_interface_json)
-
-                            geojson_feat = geojson.Feature(
-                                geometry=geo_interface_dict["geometry"],
-                                properties=dict(self._obj["properties"]),
-                            )
-                            self._obj = geojson_feat
-                            self._data[self._key] = self._obj
-                        else:
-                            self._obj = self._obj.__geo_interface__
-                            self._data[self._key] = self._obj
+                        self._obj = self._obj.__geo_interface__
+                        self._data[self._key] = self._obj
                     # try parsing the object into a shapely geometry. If this not succeeds
                     # then the object might be a GeoJSON Feature or FeatureCollection. If
                     # this fails as well then the object is not recognized and removed.
