@@ -21,6 +21,6 @@ Main Features
     and toposimplify interactively if ipywidgets is installed.
 """
 
-__version__ = "1.9"
+__version__ = "1.10"
 
 from .core.topology import Topology  # noqa
