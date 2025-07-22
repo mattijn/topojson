@@ -233,8 +233,8 @@ def insert_coords_in_line(line, tree_splitter):
     tol_float_prc = 1e8
     pts_xy_nonexst = pts_xy_on_line[
         ~np.isin(
-            asvoid(np.around(pts_xy_on_line * tol_float_prc).astype(np.int64))[:,0],
-            asvoid(np.around(ls_xy * tol_float_prc).astype(np.int64))[:,0],
+            asvoid(np.around(pts_xy_on_line * tol_float_prc).astype(np.int64))[:, 0],
+            asvoid(np.around(ls_xy * tol_float_prc).astype(np.int64))[:, 0],
         )
     ]
     if pts_xy_nonexst.size == 0:
@@ -299,8 +299,8 @@ def fast_split(line, splitter, is_ring):
     tol = 1e8
     splitter_indices = np.flatnonzero(
         np.isin(
-            asvoid(np.around(line * tol).astype(np.int64))[:,0],
-            asvoid(np.around(splitter * tol).astype(np.int64))[:,0],
+            asvoid(np.around(line * tol).astype(np.int64))[:, 0],
+            asvoid(np.around(splitter * tol).astype(np.int64))[:, 0],
         )
     )
 
