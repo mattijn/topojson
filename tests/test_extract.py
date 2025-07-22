@@ -328,7 +328,7 @@ def test_extract_single_multilinestring_list():
 
 def test_extract_geopandas_geodataframe():
     data = geopandas.read_file(
-        "tests/files_geojson/naturalearth_alb_grc.geojson", driver="GeoJSON"
+        "tests/files_geojson/naturalearth_alb_grc.geojson"
     )
     topo = Extract(data).to_dict()
 
@@ -396,7 +396,7 @@ def test_extract_list_org_data_untouched():
 # test to check if original data is not modified
 def test_extract_gdf_org_data_untouched():
     data = geopandas.read_file(
-        "tests/files_geojson/naturalearth_alb_grc.geojson", driver="GeoJSON"
+        "tests/files_geojson/naturalearth_alb_grc.geojson"
     )
     topo = Extract(data).to_dict()
     topo_0 = topo["objects"][0]
