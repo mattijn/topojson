@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.12"]
+        python-version: ["3.10", "3.13"]
         shapely-version: ["1.8", "2.0"]
         exclude:
-          - python-version: "3.12"
+          - python-version: "3.13"
             shapely-version: "1.8"
       fail-fast: false
     steps:
