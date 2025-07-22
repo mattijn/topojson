@@ -451,20 +451,20 @@ class Extract(object):
         for idx, feature in enumerate(obj["features"]):
             # A GeoJSON Feature is mapped to a GeometryCollection
             # => directly mapped to specific geometry, so that to save the attributes
-            feature["type"] = feature["geometry"]["type"]
+            # Create a copy to avoid modifying the original fiona object
+            feature_copy = dict(feature)
+            feature_copy["type"] = feature["geometry"]["type"]
 
             feature_dict = {
                 **(feature.get("properties") if feature.get("properties") else {}),
                 **{"geometry": geometry.shape(feature["geometry"])},
             }
 
-            if feature["type"] == "GeometryCollection":
+            if feature_copy["type"] == "GeometryCollection":
                 feature_dict["geometries"] = feature["geometry"]["geometries"]
 
             if self.options.ignore_index or not feature.get("id"):
-                data[
-                    "feature_{}".format(str(idx).zfill(zfill_value))
-                ] = feature_dict
+                data["feature_{}".format(str(idx).zfill(zfill_value))] = feature_dict
             else:
                 data[feature.get("id")] = feature_dict  # feature
 
