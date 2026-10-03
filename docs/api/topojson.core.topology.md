@@ -24,14 +24,20 @@ coordinates but foremost the computation of a topology.
 > + ###### `topology` : boolean
     Specify if the topology should be computed for deriving the TopoJSON.
     Default is `True`.
-> + ###### `prequantize` : boolean, int
+> + ###### `prequantize` : boolean, int, dict
     If the prequantization parameter is specified, the input geometry is
     quantized prior to computing the topology, the returned topology is
     quantized, and its arcs are delta-encoded. Quantization is recommended to
     improve the quality of the topology if the input geometry is messy (i.e.,
     small floating point error means that adjacent boundaries do not have
     identical values); typical values are powers of ten, such as `1e4`, `1e5` or
-    `1e5`. Default is `True` (which correspond to a quantize factor of `1e5`).
+    `1e6`. The grid is then derived from the bounding box of the input.
+    Alternatively, provide a fixed TopoJSON transform as a dict
+    (`{"scale": [kx, ky], "translate": [x0, y0]}`) to quantize on a grid that
+    does not depend on the input, for example the `transform` of a previously
+    computed Topology (`topo.output["transform"]`). The grid then stays the same
+    when features are added or removed.
+    Default is `True` (which correspond to a quantize factor of `1e5`).
 > + ###### `topoquantize` : boolean or int
     If the topoquantization parameter is specified, the input geometry is quantized
     after the topology is constructed. If the topology is already quantized this
