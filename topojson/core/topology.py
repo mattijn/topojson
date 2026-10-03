@@ -778,26 +778,31 @@ class Topology(Hashmap):
         return object_name
 
     def _resolve_coords(self, data):
+        def resolve(feat):
+            if feat["type"] == "GeometryCollection":
+                for geom in feat.get("geometries", []):
+                    resolve(geom)
+            elif feat["type"] in ["Point", "MultiPoint"]:
+                lofl = feat["coordinates"]
+                repeat = 1 if feat["type"] == "Point" else 2
+
+                for _ in range(repeat):
+                    lofl = list(itertools.chain(*lofl))
+
+                for idx, val in enumerate(lofl):
+                    coord = data["coordinates"][val][0]
+                    lofl[idx] = np.asarray(coord).tolist()
+
+                feat["coordinates"] = lofl[0] if feat["type"] == "Point" else lofl
+                feat.pop("reset_coords", None)
+
         for objectname in self.options.object_name:
             if objectname not in data["objects"]:
                 raise SystemExit(
                     f"'{objectname}' is not an object name in your topojson file"
                 )
-            geoms = data["objects"][objectname]["geometries"]
-            for idx, feat in enumerate(geoms):
-                if feat["type"] in ["Point", "MultiPoint"]:
-                    lofl = feat["coordinates"]
-                    repeat = 1 if feat["type"] == "Point" else 2
-
-                    for _ in range(repeat):
-                        lofl = list(itertools.chain(*lofl))
-
-                    for idx, val in enumerate(lofl):
-                        coord = data["coordinates"][val][0]
-                        lofl[idx] = np.asarray(coord).tolist()
-
-                    feat["coordinates"] = lofl[0] if feat["type"] == "Point" else lofl
-                    feat.pop("reset_coords", None)
+            for feat in data["objects"][objectname]["geometries"]:
+                resolve(feat)
             data.pop("coordinates", None)
         return data
 

@@ -185,9 +185,9 @@ class Cut(Join):
                 if "geometries" in object_child:
                     geometries = object_child["geometries"]
                     recurse_geometries(geometries)
-                elif object_child["type"] != "Point":
-                    # For non-Point geometries, loop over arcs
-                    for arc_id in object_child["arcs"]:
+                else:
+                    # points have no arcs, empty lines have arcs None
+                    for arc_id in object_child.get("arcs") or []:
                         # Find the linestrings for the arc via bookkeeping_geoms
                         for arc_line_id in bookkeeping_geoms[arc_id]:
                             if bookkeeping_linestrings is None:
