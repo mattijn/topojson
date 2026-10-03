@@ -712,8 +712,11 @@ class Extract(object):
                     self._obj.pop("geometry", None)
 
                     if geom.geom_type == "GeometryCollection":
-                        geometries = self._obj["geometries"]
-                        self._obj.pop("geometries", None)
+                        # a GeoJSON Feature brings its own geometries, a row of a
+                        # GeoDataFrame or GeoSeries only has the shapely geometry
+                        geometries = self._obj.pop("geometries", None)
+                        if geometries is None:
+                            geometries = geom.__geo_interface__["geometries"]
                         self._obj = {
                             "properties": self._obj,
                             "type": geom.geom_type,

@@ -780,3 +780,31 @@ def test_topology_prequantize_invalid_transform(transform):
     data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     with pytest.raises(ValueError):
         topojson.Topology(data, prequantize=transform)
+
+
+def mixed_collections():
+    square = geometry.Polygon([(0, 0), (2, 0), (2, 2), (0, 2)])
+    return geopandas.GeoDataFrame(
+        {"name": ["a", "b", "c", "d"]},
+        geometry=[
+            square,
+            geometry.GeometryCollection(
+                [square.buffer(1), geometry.LineString([(0, 0), (5, 5)])]
+                + [geometry.Point(5, 1)]
+            ),
+            geometry.GeometryCollection(
+                [geometry.MultiPoint([(7, 7), (6, 6)])]
+                + [geometry.GeometryCollection([geometry.Point(8, 8)])]
+            ),
+            geometry.MultiPoint([(1, 4), (4, 1), (3, 3)]),
+        ],
+    )
+
+
+@pytest.mark.parametrize("prequantize", [False, True])
+def test_topology_gdf_geometrycollection_roundtrip(prequantize):
+    data = mixed_collections()
+    for source in [data, data.geometry, json.loads(data.to_json())]:
+        out = topojson.Topology(source, prequantize=prequantize).to_gdf()
+        for a, b in zip(out.geometry, data.geometry):
+            assert a.hausdorff_distance(b) < 1e-4

@@ -302,6 +302,15 @@ def _new_junctions(lines, arcs):
     return {tuple(map(int, p)) for p in shared_path_ends(pairs)}, near
 
 
+def _leaves(objects):
+    """The geometries of extracted objects, with geometry collections flattened."""
+    for o in objects:
+        if o["type"] == "GeometryCollection":
+            yield from _leaves(o["geometries"])
+        else:
+            yield o
+
+
 def _resolve_arcs(obj, bookkeeping, refs):
     """Nested arc references of an extracted object, as the Hashmap builds them."""
     lines = [bookkeeping[b] for b in obj["arcs"]]
@@ -318,8 +327,6 @@ def _resolve_arcs(obj, bookkeeping, refs):
 def add_features(output, arcs, extracted, object_name):
     """Add the features of an `Extract` result, in place."""
     objects = extracted["objects"]
-    if any(o["type"] == "GeometryCollection" for o in objects.values()):
-        raise NotImplementedError("adding a GeometryCollection is not supported")
     transform = output["transform"]
     sequences = _all_sequences(output)
 
@@ -329,7 +336,7 @@ def add_features(output, arcs, extracted, object_name):
 
     # new lines on the grid of the topology; rings are the lines of (multi)polygons
     is_ring = np.zeros(len(extracted["linestrings"]), dtype=bool)
-    for o in objects.values():
+    for o in _leaves(objects.values()):
         if o["type"] in ("Polygon", "MultiPolygon"):
             for b in o["arcs"]:
                 is_ring[extracted["bookkeeping_geoms"][b]] = True
@@ -393,13 +400,17 @@ def add_features(output, arcs, extracted, object_name):
     offset = len(output["coordinates"])
     output["coordinates"].extend(points)
     point_index = [[offset + i for i in b] for b in extracted["bookkeeping_coords"]]
+
+    def build(o):
+        t = o["type"]
+        if t == "GeometryCollection":
+            return {"type": t, "geometries": [build(g) for g in o["geometries"]]}
+        if t in ("Point", "MultiPoint"):
+            nested = [[point_index[b]] for b in o["coordinates"]]
+            coords = nested if t == "MultiPoint" else nested[0]
+            return {"type": t, "coordinates": coords, "reset_coords": True}
+        return {"type": t, "arcs": _resolve_arcs(o, extracted["bookkeeping_geoms"], refs)}
+
     geoms = output["objects"][object_name]["geometries"]
     for fid, o in objects.items():
-        geom = {"properties": o.get("properties", {}), "type": o["type"], "id": fid}
-        if o["type"] in ("Point", "MultiPoint"):
-            nested = [[point_index[b]] for b in o["coordinates"]]
-            geom["coordinates"] = nested if o["type"] == "MultiPoint" else nested[0]
-            geom["reset_coords"] = True
-        else:
-            geom["arcs"] = _resolve_arcs(o, extracted["bookkeeping_geoms"], refs)
-        geoms.append(geom)
+        geoms.append({"properties": o.get("properties", {}), **build(o), "id": fid})

@@ -147,28 +147,16 @@ def geometry(obj, tp_arcs, transform=None):
         return geometry(obj["geometry"], tp_arcs, transform)
 
     if obj["type"] == "GeometryCollection":
-        geometries = [geometry(feat, tp_arcs) for feat in obj["geometries"]]
+        geometries = [geometry(feat, tp_arcs, transform) for feat in obj["geometries"]]
         return {"type": obj["type"], "geometries": geometries}
 
-    if obj["type"] == "MultiPoint":
+    if obj["type"] in ("Point", "MultiPoint"):
+        # positions of points are quantized, but not delta-encoded
+        coords = obj["coordinates"]
         if transform is not None:
-            scale = transform["scale"]
-            translate = transform["translate"]
-            coords = obj["coordinates"]
-            point_coords = dequantize(np.array(coords).T, scale, translate).T.tolist()
-        else:
-            point_coords = obj["coordinates"]
-        return {"type": obj["type"], "coordinates": point_coords}
-
-    if obj["type"] == "Point":
-        if transform is not None:
-            scale = transform["scale"]
-            translate = transform["translate"]
-            coords = [obj["coordinates"]]
-            point_coord = dequantize(np.array(coords), scale, translate).tolist()
-        else:
-            point_coord = [obj["coordinates"]]
-        return {"type": obj["type"], "coordinates": point_coord[0]}
+            coords = np.asarray(coords) * transform["scale"] + transform["translate"]
+            coords = coords.tolist()
+        return {"type": obj["type"], "coordinates": coords}
 
     else:
         # Check if this is a topology object (has arcs) or a regular geometry object (has coordinates)

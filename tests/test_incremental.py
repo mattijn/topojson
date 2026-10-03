@@ -161,3 +161,31 @@ def test_incremental_toposimplify_option_is_recorded():
     topo = topojson.Topology(data)
     topo.toposimplify(1, inplace=True)
     assert topo.options.toposimplify == 1
+
+
+def test_incremental_add_and_remove_geometrycollection():
+    data = natural_earth()
+    line = geometry.LineString([(-9, 0), (9, 3)])
+    gcs = geopandas.GeoDataFrame(
+        {"NAME": ["gc", "nested"]},
+        geometry=[
+            geometry.GeometryCollection(
+                [data.geometry[3].buffer(1), geometry.LineString([(0, 0), (30, 30)])]
+                + [geometry.Point(5, 5)]
+            ),
+            geometry.GeometryCollection(
+                [geometry.MultiPoint([(7, 7), (6, 6)])]
+                + [geometry.GeometryCollection([line])]
+            ),
+        ],
+        index=[900, 901],
+        crs=data.crs,
+    )
+    full = geopandas.pd.concat([data, gcs])
+    topo = topojson.Topology(data)
+    transform = topo.output["transform"]
+    assert_same_topology(topo.add(gcs), topojson.Topology(full, prequantize=transform))
+    assert_same_topology(
+        topo.remove([900, 3]),
+        topojson.Topology(full.drop(index=[900, 3]), prequantize=transform),
+    )
