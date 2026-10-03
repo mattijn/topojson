@@ -1,8 +1,12 @@
 import pprint
 import copy
+import hashlib
+import json
 import numpy as np
 import itertools
+from .extract import Extract
 from .hashmap import Hashmap
+from . import incremental
 from ..ops import np_array_from_arcs
 from ..ops import dequantize
 from ..ops import quantize
@@ -144,6 +148,9 @@ class Topology(Hashmap):
         # execute main function of Topology
         self.output = self._topo(self.output)
 
+        # per feature a hash of its input geometry, used by sync()
+        self._source_hashes = _source_hashes(data)
+
     def __repr__(self):
         return "Topology(\n{}\n)".format(pprint.pformat(self.output))
 
@@ -153,7 +160,7 @@ class Topology(Hashmap):
         objectname = self._resolve_object_name(0)
         return serialize_as_geojson(topo_object, validate=False, objectname=objectname)
 
-    def to_dict(self, options=False):
+    def to_dict(self, options=False, state=False):
         """
         Convert the Topology to a dictionary.
 
@@ -162,13 +169,21 @@ class Topology(Hashmap):
         options : boolean
             If `True`, the options also will be included.
             Default is `False`
+        state : boolean
+            If `True`, the options and a hash of the input geometry of each feature
+            (`source_hashes`) are included, so that `Topology.read_json` and `sync`
+            can continue from it.
+            Default is `False`
         """
         topo_object = copy.deepcopy(self.output)
         topo_object = self._resolve_coords(topo_object)
-        if options:
+        if options or state:
             topo_object["options"] = vars(self.options)
         else:
             topo_object.pop("options", None)
+        if state:
+            # as pairs, so that ids keep their type in JSON
+            topo_object["source_hashes"] = [list(i) for i in self._source_hashes.items()]
         return topo_object
 
     def to_svg(self, separate=False):
@@ -183,7 +198,15 @@ class Topology(Hashmap):
         """
         serialize_as_svg(self.output, separate, include_junctions=False)
 
-    def to_json(self, fp=None, options=False, pretty=False, indent=4, maxlinelength=88):
+    def to_json(
+        self,
+        fp=None,
+        options=False,
+        pretty=False,
+        indent=4,
+        maxlinelength=88,
+        state=False,
+    ):
         """
         Convert the Topology to a JSON object.
 
@@ -206,14 +229,13 @@ class Topology(Hashmap):
         maxlinelength : int
             If `style='pretty'`, declares the maximum length of each line.
             Default is `88`.
+        state : boolean
+            If `True`, the options and a hash of the input geometry of each feature
+            (`source_hashes`) are included, so that `Topology.read_json` and `sync`
+            can continue from it in a next run.
+            Default is `False`.
         """
-        topo_object = copy.deepcopy(self.output)
-        topo_object = self._resolve_coords(topo_object)
-
-        if options is True:
-            topo_object["options"] = vars(self.options)
-        else:
-            topo_object.pop("options", None)
+        topo_object = self.to_dict(options=options is True, state=state)
         return serialize_as_json(
             topo_object, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
         )
@@ -482,6 +504,8 @@ class Topology(Hashmap):
             Topology object with simplified linestrings if `inplace` is `False`.
         """
         result = copy.deepcopy(self)
+        if not result.options.toposimplify:
+            result.options.toposimplify = epsilon
 
         # set settings in options to override
         if isinstance(type(prevent_oversimplify), bool):
@@ -560,8 +584,198 @@ class Topology(Hashmap):
             self.output["arcs"] = result.output["arcs"]
             if "transform" in result.output.keys():
                 self.output["transform"] = result.output["transform"]
+            self.options.toposimplify = result.options.toposimplify
         else:
             return result
+
+    @classmethod
+    def read_json(cls, fp):
+        """
+        Read a Topology from a TopoJSON file. If the file was written with
+        `to_json(..., state=True)`, the options and source hashes are restored, so that
+        `add`, `remove` and `sync` can continue from it.
+
+        Parameters
+        ----------
+        fp : str, path or file-like object
+            TopoJSON file to read.
+
+        Returns
+        -------
+        Topology
+        """
+        if hasattr(fp, "read"):
+            data = json.load(fp)
+        else:
+            with open(fp) as f:
+                data = json.load(f)
+        options = data.pop("options", None)
+        hashes = data.pop("source_hashes", None)
+        topo = cls(data)
+        if options is not None:
+            topo.options = TopoOptions(options)
+        if hashes is not None:
+            topo._source_hashes = {fid: h for fid, h in hashes}
+        return topo
+
+    def add(self, data, object_name=None):
+        """
+        Add features to the Topology without recomputing it. Existing arcs are cut
+        where the new features share a path with them; the result is the same as a
+        full build on the same quantization grid.
+
+        Parameters
+        ----------
+        data : geopandas.GeoDataFrame or geopandas.GeoSeries
+            Features to add. The index is used as feature id and must not exist yet.
+        object_name : str, optional
+            Object to add the features to. Only needed if the Topology has more than
+            one object.
+
+        Returns
+        -------
+        Topology
+            `self`, so that calls can be chained.
+        """
+        return self._update(object_name, add=data)
+
+    def remove(self, ids, object_name=None):
+        """
+        Remove features from the Topology without recomputing it. Arcs that are no
+        longer used are dropped and arcs are merged where a point is no longer a
+        junction. Compared to a full build, a ring that is no longer cut can start at
+        another vertex, and the bbox (recomputed from the quantized data) can differ
+        by at most half a grid cell.
+
+        Parameters
+        ----------
+        ids : iterable
+            Ids of the features to remove.
+        object_name : str, optional
+            Object to remove the features from. Only needed if the Topology has more
+            than one object.
+
+        Returns
+        -------
+        Topology
+            `self`, so that calls can be chained.
+        """
+        return self._update(object_name, remove=ids)
+
+    def sync(self, data, object_name=None):
+        """
+        Make the Topology equal to `data`: features that are new are added, features
+        that are gone are removed and features with a changed geometry are replaced.
+        Unchanged features are left as they are. What happened is stored in
+        `self.last_sync`.
+
+        Comparing uses a hash of the input geometry of each feature. These hashes are
+        kept on the Topology and written with `to_json(..., state=True)`.
+
+        Parameters
+        ----------
+        data : geopandas.GeoDataFrame or geopandas.GeoSeries
+            The complete set of features; the index is the feature id.
+        object_name : str, optional
+            Object to synchronise. Only needed if the Topology has more than one
+            object.
+
+        Returns
+        -------
+        Topology
+            `self`, so that calls can be chained.
+        """
+        new_hashes = _source_hashes(data)
+        if not new_hashes and len(data):
+            raise TypeError("sync() needs a GeoDataFrame or GeoSeries")
+        if not self._source_hashes and self._ids(self._incremental_object_name(object_name)):
+            raise ValueError(
+                "sync() does not know the input geometry of the current features. "
+                "Write the Topology with to_json(fp, state=True) and read it with "
+                "Topology.read_json(fp)."
+            )
+        old = self._source_hashes
+        gone = [i for i in old if i not in new_hashes]
+        new = [i for i in new_hashes if i not in old]
+        changed = [i for i in new_hashes if i in old and old[i] != new_hashes[i]]
+        self._update(
+            object_name,
+            remove=gone + changed,
+            add=data.loc[new + changed] if new or changed else None,
+            ring_starts=incremental.ring_starts(data, self.output["transform"]),
+        )
+        self.last_sync = {
+            "added": len(new),
+            "removed": len(gone),
+            "changed": len(changed),
+            "unchanged": len(new_hashes) - len(new) - len(changed),
+        }
+        return self
+
+    def _update(self, object_name, remove=(), add=None, ring_starts=None):
+        """Remove and then add features, decoding and encoding the arcs once."""
+        name = self._incremental_object_name(object_name)
+        remove = list(remove)
+        missing = set(remove) - self._ids(name)
+        if missing:
+            raise KeyError(f"ids not in the topology: {sorted(missing)[:10]}")
+        extracted = None
+        if add is not None and len(add):
+            extracted = Extract(add, copy.deepcopy(self.options)).output
+            clash = (self._ids(name) - set(remove)) & set(extracted["objects"])
+            if clash:
+                raise ValueError(
+                    f"ids already in the topology: {sorted(clash)[:10]}. To replace "
+                    "features use topo.remove(ids).add(data) or topo.sync(data)."
+                )
+        if not remove and extracted is None:
+            return self
+
+        arcs = incremental.decode(self.output)
+        if remove:
+            incremental.remove_features(self.output, arcs, remove, name, ring_starts)
+            for i in remove:
+                self._source_hashes.pop(i, None)
+        if extracted is not None:
+            incremental.add_features(self.output, arcs, extracted, name)
+            self._source_hashes.update(_source_hashes(add))
+        incremental.encode(self.output, arcs)
+        return self
+
+    def _ids(self, object_name):
+        return {g.get("id") for g in self.output["objects"][object_name]["geometries"]}
+
+    def _incremental_object_name(self, object_name):
+        """Check that the Topology can be updated in place and resolve the object."""
+        options = self.options
+        if "transform" not in self.output or not options.topology:
+            raise ValueError(
+                "add, remove and sync need a quantized topology (prequantize, the "
+                "default)."
+            )
+        if options.shared_coords:
+            raise NotImplementedError(
+                "add, remove and sync do not support shared_coords=True yet."
+            )
+        if options.presimplify or options.toposimplify or options.topoquantize:
+            raise NotImplementedError(
+                "add, remove and sync work on the unsimplified arcs. Apply toposimplify "
+                "or topoquantize to the result instead, e.g. "
+                "topo.toposimplify(epsilon, inplace=False)."
+            )
+        if options.ignore_index:
+            raise NotImplementedError(
+                "add, remove and sync use the index as feature id and do not support "
+                "ignore_index=True."
+            )
+        names = list(self.output["objects"])
+        if object_name is None:
+            if len(names) != 1:
+                raise ValueError(f"specify object_name, one of {names}")
+            return names[0]
+        if object_name not in names:
+            raise KeyError(f"object_name {object_name!r} not in {names}")
+        return object_name
 
     def _resolve_coords(self, data):
         for objectname in self.options.object_name:
@@ -638,3 +852,13 @@ class Topology(Hashmap):
             self.topoquantize(quant_factor=quant_factor, inplace=True)
 
         return self.output
+
+
+def _source_hashes(data):
+    """Hash of the input geometry of each feature of a GeoDataFrame or GeoSeries."""
+    if instance(data) not in ("GeoDataFrame", "GeoSeries"):
+        return {}
+    return {
+        fid: hashlib.blake2b(b"" if g is None else g.wkb, digest_size=16).hexdigest()
+        for fid, g in data.geometry.items()
+    }

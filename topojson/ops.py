@@ -1,4 +1,3 @@
-import copy
 import itertools
 import logging
 import pprint
@@ -265,6 +264,57 @@ def insert_coords_in_line(line, tree_splitter):
     new_ls_xy = np.insert(ls_xy, insert_idx, pts_xy_nonexst, axis=0)
 
     return new_ls_xy, pts_xy_on_line
+
+
+def shared_path_ends(pairs):
+    """
+    Start and end points of the paths that each pair of lines shares. These are the
+    junctions of the topology. Lines that only touch or cross share no path, and equal
+    lines are skipped.
+
+    Parameters
+    ----------
+    pairs : iterable of (LineString, LineString)
+        Pairs of lines whose envelopes intersect
+
+    Returns
+    -------
+    set of tuple
+        Junction coordinates
+    """
+    paths = [linemerge_ext(a.intersection(b)) for a, b in pairs if not a.equals(b)]
+    paths = explode([path for path in paths if not path.is_empty])
+    return {xy for path in paths for xy in (path.coords[0], path.coords[-1])}
+
+
+def cut_line(line, tree_splitter, is_ring, shared_coords=False):
+    """
+    Cut a line at the junctions it passes through. A ring is first rotated to start
+    at a junction. Collinear points are removed from each part.
+
+    Parameters
+    ----------
+    line : shapely.geometry.LineString
+        Line to cut
+    tree_splitter : STRtree or None
+        Spatial index on the junction points; None if there are no junctions
+    is_ring : bool
+        True if the line is the ring of a polygon
+    shared_coords : bool
+        True to only cut at junctions that are vertices of the line
+
+    Returns
+    -------
+    list of numpy.ndarray
+        Coordinates of the parts
+    """
+    splitter = None
+    if tree_splitter is not None:
+        locate = np_array_bbox_points_line if shared_coords else insert_coords_in_line
+        coords, splitter = locate(line, tree_splitter)
+    if splitter is None:
+        return [remove_collinear_points(np.array(line.coords))]
+    return [remove_collinear_points(part) for part in fast_split(coords, splitter, is_ring)]
 
 
 def fast_split(line, splitter, is_ring):
@@ -666,7 +716,8 @@ def remove_spikes(line):
     """
     closed = len(line) > 3 and (line[0] == line[-1]).all()
     pts = line[:-1] if closed else line
-    while True:
+    # each round removes at least one point, so len(pts) rounds always suffice
+    for _ in range(len(pts)):
         d1 = pts - np.roll(pts, 1, axis=0)
         d2 = np.roll(d1, -1, axis=0)
         tip = (d1[:, 0] * d2[:, 1] == d1[:, 1] * d2[:, 0]) & ((d1 * d2).sum(1) < 0)
@@ -1022,29 +1073,59 @@ def properties_level(topojson_object, position="nested"):
 
 def delta_encoding(linestrings):
     """
-    Function to apply delta-encoding to linestrings.
+    Delta-encode linestrings: the first coordinate of each linestring is absolute,
+    every next coordinate is relative to the previous one. All linestrings are
+    encoded at once.
 
     Parameters
     ----------
-    linestrings : list of shapely.geometry.LineStrings
-        LineStrings that will be delta-encoded
+    linestrings : list of shapely.geometry.LineStrings, arrays or lists
+        Linestrings with integer coordinates
 
     Returns
     -------
-    list of shapely.geometry.LineStrings
-        LineStrings that are delta-encoded
+    list of lists
+        Delta-encoded linestrings
     """
+    if not len(linestrings):
+        return linestrings
+    if hasattr(linestrings[0], "coords"):
+        xy, idx = shapely.get_coordinates(linestrings, return_index=True)
+        lengths = np.bincount(idx, minlength=len(linestrings))
+    else:
+        xy = np.concatenate(linestrings)
+        lengths = np.fromiter(map(len, linestrings), dtype=np.int64)
+    xy = xy.astype(np.int64)
+    starts = np.cumsum(lengths) - lengths
+    delta = np.diff(xy, axis=0, prepend=xy[:1])
+    delta[starts] = xy[starts]
+    delta = delta.tolist()
+    return [delta[s : s + n] for s, n in zip(starts.tolist(), lengths.tolist())]
 
-    for idx, ls in enumerate(linestrings):
-        if hasattr(ls, "coords"):
-            ls = np.array(ls.coords).astype(np.int64)
-        else:
-            ls = np.array(ls).astype(np.int64)
-        ls_p1 = copy.copy(ls[0])
-        ls -= np.roll(ls, 1, axis=0)
-        ls[0] = ls_p1
-        linestrings[idx] = ls.tolist()
-    return linestrings
+
+def delta_decoding(arcs):
+    """
+    Decode delta-encoded arcs to absolute coordinates. All arcs are decoded at once.
+
+    Parameters
+    ----------
+    arcs : list of lists
+        Delta-encoded arcs
+
+    Returns
+    -------
+    list of numpy.ndarray
+        (n, 2) integer coordinates of each arc
+    """
+    if not len(arcs):
+        return []
+    lengths = np.fromiter(map(len, arcs), dtype=np.int64)
+    xy = np.concatenate(arcs).astype(np.int64).cumsum(axis=0)
+    starts = np.cumsum(lengths) - lengths
+    # restart the cumulative sum at the first coordinate of each arc
+    offset = np.zeros((len(arcs), 2), dtype=np.int64)
+    offset[1:] = xy[starts[1:] - 1]
+    return np.split(xy - np.repeat(offset, lengths, axis=0), starts[1:])
 
 
 def cart(arr):
@@ -1055,6 +1136,36 @@ def cart(arr):
     arr = -np.sort(-arr)
     arr = np.array(np.meshgrid(arr[0], arr[1:])).T.reshape(-1, 2)
     return arr
+
+
+def hash_paths(paths):
+    """
+    Hash of each path that is the same for duplicate paths: equal coordinates in any
+    direction and, for a closed path, from any start.
+
+    Parameters
+    ----------
+    paths : list of numpy.ndarray
+        Coordinates of each path
+
+    Returns
+    -------
+    numpy.ndarray
+        int64 hash of each path
+    """
+    hashes = []
+    for coordinates in paths:
+        # If start and end points are the same, remove end point before sorting
+        # Remark: check if it was originally a ring is not relevant, because lines with
+        # equal start and end point are no problem to be deduplicated with rings.
+        if np.array_equal(coordinates[0], coordinates[-1]):
+            coordinates = coordinates[0:-1]
+            coordinates = np.sort(coordinates, axis=0)
+            coordinates = np.append(coordinates[0:2], coordinates)
+        else:
+            coordinates = np.sort(coordinates, axis=0)
+        hashes.append(hash(bytes(coordinates)))
+    return np.array(hashes, dtype=np.int64)
 
 
 def find_duplicates(segments_list, type="array"):
@@ -1072,25 +1183,11 @@ def find_duplicates(segments_list, type="array"):
 
     """
 
-    # get hash of sorted linestring coordinates
-    hash_segments = []
-
     if type != "array":
         segments_list = [
             np.array(list(linestring.coords)) for linestring in segments_list
         ]
-    for coordinates in segments_list:
-        # If start and end points are the same, remove end point before sorting
-        # Rmark: check if it was originally a ring is not relevant, because lines with
-        # equal start and end point are no probem to be deduplicated with rings.
-        if np.array_equal(coordinates[0], coordinates[-1]):
-            coordinates = coordinates[0:-1]
-            coordinates = np.sort(coordinates, axis=0)
-            coordinates = np.append(coordinates[0:2], coordinates)
-        else:
-            coordinates = np.sort(coordinates, axis=0)
-        hash_segments.append(hash(bytes(coordinates)))
-    hash_segments = np.array(hash_segments, dtype=np.int64)
+    hash_segments = hash_paths(segments_list)
 
     # get split locations of dups
     idx_sort = np.argsort(hash_segments)

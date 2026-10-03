@@ -88,7 +88,7 @@ coordinates but foremost the computation of a topology.
 
 ### to_dict
 ```python
-Topology.to_dict(self, options=False)
+Topology.to_dict(self, options=False, state=False)
 ```
 
 Convert the Topology to a dictionary.
@@ -96,6 +96,11 @@ Convert the Topology to a dictionary.
 > #### Parameters
 > + ###### `options` : boolean
     If `True`, the options also will be included.
+    Default is `False`
+> + ###### `state` : boolean
+    If `True`, the options and a hash of the input geometry of each feature
+    (`source_hashes`) are included, so that `read_json` and `sync` can continue
+    from it.
     Default is `False`
 
 ### to_svg
@@ -115,7 +120,7 @@ Display the arcs and junctions as SVG.
 
 ### to_json
 ```python
-Topology.to_json(self, fp=None, options=False, pretty=False, indent=4, maxlinelength=88)
+Topology.to_json(self, fp=None, options=False, pretty=False, indent=4, maxlinelength=88, state=False)
 ```
 
 Convert the Topology to a JSON object.
@@ -137,6 +142,11 @@ Convert the Topology to a JSON object.
 > + ###### `maxlinelength` : int
     If `pretty=True`, declares the maximum length of each line.
     Default is `88`.
+> + ###### `state` : boolean
+    If `True`, the options and a hash of the input geometry of each feature
+    (`source_hashes`) are included, so that `read_json` and `sync` can continue
+    from it in a next run. The file stays a valid TopoJSON file.
+    Default is `False`
 
 ### to_geojson
 ```python
@@ -263,3 +273,103 @@ in the range of `0.0001` to `10`.
 > #### Returns
 > + ###### object or None
 Topology object with simplified linestrings if `inplace` is `False`.
+
+### add
+```python
+Topology.add(self, data, object_name=None)
+```
+
+Add features to the Topology without recomputing it. Existing arcs are cut where
+the new features share a path with them. The arcs and geometries are the same as
+those of a full build on the same quantization grid.
+
+> #### Parameters
+> + ###### `data` : geopandas.GeoDataFrame or geopandas.GeoSeries
+    Features to add. The index is used as feature id and must not exist yet.
+> + ###### `object_name` : str
+    Object to add the features to. Only needed if the Topology has more than one
+    object. Default is `None`
+
+> #### Returns
+> + ###### object
+The Topology itself, so that calls can be chained.
+
+### remove
+```python
+Topology.remove(self, ids, object_name=None)
+```
+
+Remove features from the Topology without recomputing it. Arcs that are no longer
+used are dropped and arcs are merged where a point is no longer a junction. Compared
+to a full build, a ring that is no longer cut can start at another vertex, and the
+bbox (recomputed from the quantized data) can differ by at most half a grid cell.
+
+> #### Parameters
+> + ###### `ids` : iterable
+    Ids of the features to remove.
+> + ###### `object_name` : str
+    Object to remove the features from. Only needed if the Topology has more than
+    one object. Default is `None`
+
+> #### Returns
+> + ###### object
+The Topology itself, so that calls can be chained.
+
+### sync
+```python
+Topology.sync(self, data, object_name=None)
+```
+
+Make the Topology equal to `data`: new features are added, features that are gone
+are removed and features with a changed geometry are replaced. Unchanged features
+are left as they are. What happened is stored in `last_sync`, e.g.
+`{'added': 80, 'removed': 80, 'changed': 31, 'unchanged': 1489}`.
+
+Features are compared by a hash of their input geometry. These hashes are kept on
+the Topology and written with `to_json(..., state=True)`.
+
+> #### Parameters
+> + ###### `data` : geopandas.GeoDataFrame or geopandas.GeoSeries
+    The complete set of features; the index is the feature id.
+> + ###### `object_name` : str
+    Object to synchronise. Only needed if the Topology has more than one object.
+    Default is `None`
+
+> #### Returns
+> + ###### object
+The Topology itself, so that calls can be chained.
+
+### read_json
+```python
+Topology.read_json(fp)
+```
+
+Read a Topology from a TopoJSON file. If the file was written with
+`to_json(..., state=True)`, the options and source hashes are restored, so that
+`add`, `remove` and `sync` can continue from it.
+
+> #### Parameters
+> + ###### `fp` : str, path or file-like object
+    TopoJSON file to read.
+
+> #### Returns
+> + ###### object
+Topology
+
+Example, a job that runs every few minutes on the complete set of features:
+```python
+from pathlib import Path
+import topojson
+
+if not Path("state.json").exists():
+    topo = topojson.Topology(gdf)
+else:
+    topo = topojson.Topology.read_json("state.json").sync(gdf)
+
+topo.to_json("state.json", state=True)
+topo.toposimplify(1, inplace=False).to_json("publish.json")
+```
+
+`add`, `remove` and `sync` need a quantized Topology (the default) with
+`shared_coords=False`, and work on the unsimplified arcs: apply `toposimplify` or
+`topoquantize` to the result, not to the Topology that is updated.
