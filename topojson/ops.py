@@ -648,6 +648,69 @@ def validate_transform(transform):
     return {"scale": [kx, ky], "translate": [x0, y0]}
 
 
+def remove_spikes(line):
+    """
+    Remove spikes from a quantized line: vertices where the line turns back over the
+    same segment. End points of open lines are kept and closed rings stay closed. A
+    line that would collapse is returned unchanged.
+
+    Parameters
+    ----------
+    line : numpy.ndarray
+        (n, 2) integer coordinates without consecutive duplicates
+
+    Returns
+    -------
+    numpy.ndarray
+        coordinates without spikes
+    """
+    closed = len(line) > 3 and (line[0] == line[-1]).all()
+    pts = line[:-1] if closed else line
+    while True:
+        d1 = pts - np.roll(pts, 1, axis=0)
+        d2 = np.roll(d1, -1, axis=0)
+        tip = (d1[:, 0] * d2[:, 1] == d1[:, 1] * d2[:, 0]) & ((d1 * d2).sum(1) < 0)
+        if not closed:
+            tip[[0, -1]] = False
+        # remove all tips at once, except a tip directly after another tip
+        tip &= ~np.roll(tip, 1)
+        if not tip.any():
+            break
+        pts = pts[~tip]
+        # removing a tip can leave two equal consecutive points
+        same = (pts == np.roll(pts, 1, axis=0)).all(axis=1)
+        if not closed:
+            same[0] = False
+        pts = pts[~same]
+        if len(pts) < (3 if closed else 2):
+            return line
+    return np.vstack([pts, pts[:1]]) if closed else pts
+
+
+def _lines_with_spikes(coords, starts, counts):
+    """
+    Indices of the lines that contain a spike, for all lines at once.
+
+    `coords` holds the vertices of all lines after each other; line `i` starts at
+    `starts[i]` and has `counts[i]` vertices.
+    """
+    d = np.diff(coords, axis=0)
+    ends = starts + counts - 1
+    # the turn at vertex v is made by segments v-1 and v; for each line, take the
+    # turns at its inner vertices and, for a closed ring, the one at its first vertex
+    inner = np.ones(len(coords), dtype=bool)
+    inner[starts[counts > 0]] = False
+    inner[ends[counts > 0]] = False
+    v = np.flatnonzero(inner)
+    ring = counts > 3
+    ring[ring] = (coords[starts[ring]] == coords[ends[ring]]).all(axis=1)
+    d1 = np.concatenate([d[v - 1], d[ends[ring] - 1]])
+    d2 = np.concatenate([d[v], d[starts[ring]]])
+    line = np.concatenate([np.repeat(np.arange(len(counts)), counts)[v], np.flatnonzero(ring)])
+    cross = d1[:, 0] * d2[:, 1] - d1[:, 1] * d2[:, 0]
+    return np.unique(line[(cross == 0) & (np.einsum("ij,ij->i", d1, d2) < 0)])
+
+
 def quantize(linestrings, bbox, quant_factor=1e5, transform=None):
     """
     Function that applies quantization. Quantization removes information by reducing
@@ -688,36 +751,44 @@ def quantize(linestrings, bbox, quant_factor=1e5, transform=None):
             ky = 1 if (y1 - y0) == 0 else (y1 - y0) / (quant_factor - 1)
         except ZeroDivisionError:
             kx, ky = 1, 1
-    for idx, ls in enumerate(linestrings):
-        if hasattr(ls, "coords"):
-            ls_xy = np.array(ls.coords).T
-        else:
-            ls_xy = np.asarray(ls).T
-        ls_xy = (
-            np.array([(ls_xy[0] - x0) / kx, (ls_xy[1] - y0) / ky])
-            .round()
-            .astype(np.int64)
-            .T
-        )
-        # get boolean slice where consecutive repeating coordinates are filtered
-        bool_slice = (
-            np.insert(np.absolute(np.diff(ls_xy, 1, axis=0)).sum(axis=1), 0, 1) != 0
-        )
-
-        # only remove repeating coordinates when possible
-        # linestring should not become a single point
-        if not bool_slice.sum() == 1 or len(ls_xy) == bool_slice.sum():
-            if hasattr(ls, "coords"):
-                linestrings[idx] = geometry.LineString(ls_xy[bool_slice])
-            else:
-                linestrings[idx] = ls_xy[bool_slice].tolist()
-        else:
-            if hasattr(ls, "coords"):
-                linestrings[idx] = geometry.LineString(ls_xy)
-            else:
-                linestrings[idx] = ls_xy.tolist()
     transform_ = {"scale": [kx, ky], "translate": [x0, y0]}
+    n = len(linestrings)
+    if n == 0:
+        return linestrings, transform_
 
+    # all vertices of all lines at once, with the index of their line
+    is_geom = hasattr(linestrings[0], "coords")
+    if is_geom:
+        xy, idx = shapely.get_coordinates(linestrings, return_index=True)
+    else:
+        arrays = [np.asarray(ls, dtype=float).reshape(-1, 2) for ls in linestrings]
+        xy = np.concatenate(arrays)
+        idx = np.repeat(np.arange(n), [len(a) for a in arrays])
+    coords = np.round((xy - [x0, y0]) / [kx, ky]).astype(np.int64)
+
+    # remove repeated coordinates, unless a line would become a single point
+    repeated = np.zeros(len(coords), dtype=bool)
+    repeated[1:] = (idx[1:] == idx[:-1]) & (coords[1:] == coords[:-1]).all(axis=1)
+    repeated &= (np.bincount(idx[~repeated], minlength=n) > 1)[idx]
+    coords, idx = coords[~repeated], idx[~repeated]
+    counts = np.bincount(idx, minlength=n)
+    starts = np.cumsum(counts) - counts
+    lines = np.split(coords, starts[1:])
+
+    # snapping to the grid can create spikes; only a few lines have them
+    spiky = _lines_with_spikes(coords, starts, counts)
+    for i in spiky:
+        lines[i] = remove_spikes(lines[i])
+    if len(spiky):
+        counts = np.array([len(line) for line in lines])
+        coords, idx = np.concatenate(lines), np.repeat(np.arange(n), counts)
+
+    if not is_geom:
+        linestrings = [line.tolist() for line in lines]
+    elif counts.min() > 1:
+        linestrings = list(shapely.linestrings(coords, indices=idx))
+    else:
+        linestrings = [geometry.LineString(line) for line in lines]
     return linestrings, transform_
 
 
