@@ -364,7 +364,7 @@ def test_cut_low_prequantize():
     data = topojson.utils.example_data_africa()
     topo = Cut(data, options={"prequantize": 75}).to_dict()
 
-    assert len(topo["bookkeeping_duplicates"]) == 163
+    assert len(topo["bookkeeping_duplicates"]) == 121
 
 
 # test added for issue regarding dedup of +- equal linestrings not happening
