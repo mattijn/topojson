@@ -88,6 +88,9 @@ class Hashmap(Dedup):
         # make data available within class
         self._data = data
 
+        # set for fast membership tests of shared arcs in _backward_arcs
+        self._shared_arcs = set(data["bookkeeping_shared_arcs"])
+
         # resolve bookkeeping to arcs in objects, including backward check of arcs
         # resolve bookkeeping of coordinates in objects, including delta-encoding
         list(self._resolve_objects(["arcs", "coordinates"], self._data["objects"]))
@@ -211,7 +214,11 @@ class Hashmap(Dedup):
             description of output
         """
 
-        shared_bool = np.isin(arc_ids, self._data["bookkeeping_shared_arcs"])
+        shared_bool = np.fromiter(
+            (arc_id in self._shared_arcs for arc_id in arc_ids),
+            dtype=bool,
+            count=len(arc_ids),
+        )
         order_of_arc, split_arc_ids = self._hash_order(arc_ids, shared_bool)
 
         for idx_outer, split_arc in enumerate(split_arc_ids):
