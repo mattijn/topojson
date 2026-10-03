@@ -21,6 +21,12 @@ def time_version(version):
     - naturalearth_lowres: similar alike linestrings, not too long
     - mesh2d: many very short linestrings
     """
+    # log which topojson is imported, to verify the intended version is benchmarked
+    print(
+        f"benchmarking {version}: topojson {topojson.__version__} "
+        f"from {topojson.__file__}"
+    )
+
     files_to_time = [
         "tests/files_shapefile/static_nybb.gpkg",
         "tests/files_shapefile/static_natural_earth.gpkg",
