@@ -719,3 +719,64 @@ def test_topology_ignore_index_true_geojson():
 
     index = [obj["id"] for obj in geom]
     assert index == ["feature_0","feature_1"]
+
+
+# prequantize can be a fixed TopoJSON transform, so the quantization grid does not
+# depend on the bbox of the input (https://github.com/mattijn/topojson/issues/225)
+def test_topology_prequantize_transform_is_used():
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    transform = {"scale": [0.01, 0.01], "translate": [-180, -90]}
+    topo = topojson.Topology(data, prequantize=transform).to_dict()
+
+    assert topo["transform"] == {"scale": [0.01, 0.01], "translate": [-180.0, -90.0]}
+    # bbox remains the extent of the data
+    assert topo["bbox"] == tuple(float(x) for x in data.total_bounds)
+
+
+def test_topology_prequantize_transform_reused_after_removing_feature():
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    # removing the feature that defines the bbox changes the bbox of the input
+    subset = data.drop(index=data.geometry.bounds["miny"].idxmin())
+
+    topo_full = topojson.Topology(data)
+    transform = topo_full.output["transform"]
+    topo_fixed = topojson.Topology(subset, prequantize=transform)
+    topo_default = topojson.Topology(subset)
+
+    gdf_full = topo_full.to_gdf().loc[subset.index]
+    gdf_fixed = topo_fixed.to_gdf()
+    gdf_default = topo_default.to_gdf()
+
+    # with a fixed grid, unchanged features decode to exactly the same geometry
+    assert topo_fixed.output["transform"] == transform
+    assert all(gdf_fixed.geometry.geom_equals_exact(gdf_full.geometry, tolerance=0))
+    # with the default grid they do not, since the grid follows the bbox
+    assert topo_default.output["transform"] != transform
+    assert not all(
+        gdf_default.geometry.geom_equals_exact(gdf_full.geometry, tolerance=0)
+    )
+
+
+def test_topology_prequantize_transform_toposimplify_keeps_grid():
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    transform = {"scale": [0.01, 0.01], "translate": [-180, -90]}
+    topo = topojson.Topology(data, prequantize=transform, toposimplify=1).to_dict()
+
+    assert topo["transform"] == {"scale": [0.01, 0.01], "translate": [-180.0, -90.0]}
+
+
+@pytest.mark.parametrize(
+    "transform",
+    [
+        {"scale": [0.01, 0.01]},
+        {"scale": [0, 0.01], "translate": [0, 0]},
+        {"scale": [-0.01, 0.01], "translate": [0, 0]},
+        {"scale": [0.01], "translate": [0, 0]},
+        {"scale": ["a", 0.01], "translate": [0, 0]},
+        {"scale": [0.01, float("nan")], "translate": [0, 0]},
+    ],
+)
+def test_topology_prequantize_invalid_transform(transform):
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    with pytest.raises(ValueError):
+        topojson.Topology(data, prequantize=transform)

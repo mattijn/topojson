@@ -156,19 +156,24 @@ class Join(Extract):
             return data
 
         # prequantize linestrings if required
-        if self.options.prequantize > 0:
+        if isinstance(self.options.prequantize, dict) or self.options.prequantize > 0:
+            # a fixed transform defines the grid, independent of the bbox
+            transform = None
+            quant_factor = None
+            if isinstance(self.options.prequantize, dict):
+                transform = self.options.prequantize
             # set default if not specifically given in the options
-            if isinstance(self.options.prequantize, bool):
+            elif isinstance(self.options.prequantize, bool):
                 quant_factor = 1e5
             else:
                 quant_factor = self.options.prequantize
 
             data["linestrings"], data["transform"] = quantize(
-                data["linestrings"], data["bbox"], quant_factor
+                data["linestrings"], data["bbox"], quant_factor, transform=transform
             )
 
             data["coordinates"], data["transform"] = quantize(
-                data["coordinates"], data["bbox"], quant_factor
+                data["coordinates"], data["bbox"], quant_factor, transform=transform
             )
 
         if not self.options.topology or not data["linestrings"]:

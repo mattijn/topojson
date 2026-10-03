@@ -5,6 +5,7 @@ from .ops import dequantize
 from .ops import bounds
 from .ops import np_array_from_arcs
 from .ops import winding_order
+from .ops import validate_transform
 
 
 def instance(obj):
@@ -41,6 +42,8 @@ class TopoOptions(object):
 
         if "prequantize" in arguments:
             self.prequantize = arguments["prequantize"]
+            if isinstance(self.prequantize, dict):
+                self.prequantize = validate_transform(self.prequantize)
         else:
             self.prequantize = False
 

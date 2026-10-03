@@ -610,7 +610,45 @@ def select_unique_combs(linestrings):
     return uniq_line_combs, tree_idx
 
 
-def quantize(linestrings, bbox, quant_factor=1e5):
+def validate_transform(transform):
+    """
+    Validate a TopoJSON transform and return it as a new dict with float values.
+
+    Parameters
+    ----------
+    transform : dict
+        TopoJSON transform with keys `scale` (`[kx, ky]`, both positive) and
+        `translate` (`[x0, y0]`).
+
+    Returns
+    -------
+    dict
+        `{"scale": [kx, ky], "translate": [x0, y0]}` with float values
+
+    Raises
+    ------
+    ValueError
+        If the transform is not valid.
+    """
+
+    try:
+        kx, ky = (float(v) for v in transform["scale"])
+        x0, y0 = (float(v) for v in transform["translate"])
+    except (KeyError, TypeError, ValueError):
+        raise ValueError(
+            "A transform should be a dict of the form "
+            "{'scale': [kx, ky], 'translate': [x0, y0]}, "
+            f"got: {transform!r}"
+        ) from None
+    if not all(np.isfinite([kx, ky, x0, y0])) or kx <= 0 or ky <= 0:
+        raise ValueError(
+            "The values of a transform should be finite and the scale values "
+            f"should be positive, got: {transform!r}"
+        )
+    return {"scale": [kx, ky], "translate": [x0, y0]}
+
+
+def quantize(linestrings, bbox, quant_factor=1e5, transform=None):
     """
     Function that applies quantization. Quantization removes information by reducing
     the precision of each coordinate, effectively snapping each point to a regular grid.
@@ -619,25 +657,37 @@ def quantize(linestrings, bbox, quant_factor=1e5):
     ----------
     linestrings : list of shapely.geometry.LineStrings
         LineStrings that will be quantized
+    bbox : tuple
+        Bounding box (`x0`, `y0`, `x1`, `y1`) used to derive the grid. Ignored when
+        `transform` is given.
     quant_factor : int
         Quantization factor. Normally this varies between 1e4, 1e5, 1e6. Where a
-        higher number means a bigger grid where the coordinates can snap to.
+        higher number means a bigger grid where the coordinates can snap to. Ignored
+        when `transform` is given.
+    transform : dict, optional
+        Fixed TopoJSON transform (`{"scale": [kx, ky], "translate": [x0, y0]}`) that
+        defines the grid. When given, the grid does not depend on `bbox`.
 
     Returns
     -------
+    list
+        quantized linestrings
     dict
         `transform`, scale (`kx`, `ky`) and translation (`x0`, `y0`) values
-    array
-        `bbox`, bounding box of all linestrings
     """
 
-    x0, y0, x1, y1 = bbox
+    if transform is not None:
+        transform = validate_transform(transform)
+        kx, ky = transform["scale"]
+        x0, y0 = transform["translate"]
+    else:
+        x0, y0, x1, y1 = bbox
 
-    try:
-        kx = 1 if (x1 - x0) == 0 else (x1 - x0) / (quant_factor - 1)
-        ky = 1 if (y1 - y0) == 0 else (y1 - y0) / (quant_factor - 1)
-    except ZeroDivisionError:
-        kx, ky = 1, 1
+        try:
+            kx = 1 if (x1 - x0) == 0 else (x1 - x0) / (quant_factor - 1)
+            ky = 1 if (y1 - y0) == 0 else (y1 - y0) / (quant_factor - 1)
+        except ZeroDivisionError:
+            kx, ky = 1, 1
     for idx, ls in enumerate(linestrings):
         if hasattr(ls, "coords"):
             ls_xy = np.array(ls.coords).T

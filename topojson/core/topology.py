@@ -35,14 +35,19 @@ class Topology(Hashmap):
     topology : boolean
         Specify if the topology should be computed for deriving the TopoJSON.
         Default is `True`.
-    prequantize : boolean, int
+    prequantize : boolean, int, dict
         If the prequantization parameter is specified, the input geometry is
         quantized prior to computing the topology, the returned topology is
         quantized, and its arcs are delta-encoded. Quantization is recommended to
         improve the quality of the topology if the input geometry is messy (i.e.,
         small floating point error means that adjacent boundaries do not have
         identical values); typical values are powers of ten, such as `1e4`, `1e5` or
-        `1e6`.
+        `1e6`. The grid is then derived from the bounding box of the input.
+        Alternatively, provide a fixed TopoJSON transform as a dict
+        (`{"scale": [kx, ky], "translate": [x0, y0]}`) to quantize on a grid that
+        does not depend on the input, for example the `transform` of a previously
+        computed Topology (`topo.output["transform"]`). The grid then stays the same
+        when features are added or removed.
         Default is `True` (which correspond to a quantize factor of `1e5`).
     topoquantize : boolean or int
         If the topoquantization parameter is specified, the input geometry is quantized
@@ -521,12 +526,16 @@ class Topology(Hashmap):
             # quantize again if quantization was applied
             if transform is not None:
                 quant_factor = None
+                fixed_transform = None
                 if result.options.topoquantize > 0:
                     # set default if not specifically given in the options
                     if isinstance(result.options.topoquantize, bool):
                         quant_factor = 1e5
                     else:
                         quant_factor = result.options.topoquantize
+                elif isinstance(result.options.prequantize, dict):
+                    # keep the fixed grid
+                    fixed_transform = result.options.prequantize
                 elif result.options.prequantize > 0:
                     # set default if not specifically given in the options
                     if isinstance(result.options.prequantize, bool):
@@ -539,7 +548,10 @@ class Topology(Hashmap):
 
                 # apply quantization and delta encode result.
                 result.output["arcs"], transform = quantize(
-                    result.output["arcs"], result.output["bbox"], quant_factor
+                    result.output["arcs"],
+                    result.output["bbox"],
+                    quant_factor,
+                    transform=fixed_transform,
                 )
                 result.output["arcs"] = delta_encoding(result.output["arcs"])
                 result.output["transform"] = transform
@@ -599,7 +611,7 @@ class Topology(Hashmap):
         del data["linestrings"]
 
         # apply delta-encoding if prequantization is applied
-        if self.options.prequantize > 0:
+        if isinstance(self.options.prequantize, dict) or self.options.prequantize > 0:
             self.output["arcs"] = delta_encoding(self.output["arcs"])
         else:
             for idx, ls in enumerate(self.output["arcs"]):
