@@ -82,8 +82,11 @@ class Dedup(Cut):
         mask = np.isin(array_bk, array_bk_sarcs)
         array_bk_ndp = copy.deepcopy(array_bk.astype(float))
 
-        # only do merging of arcs if there are contiguous arcs in geoms
-        if array_bk_ndp[mask].size != 0:
+        # only do merging of arcs if there are contiguous arcs in geoms. With
+        # path-connected junctions (shared_coords=False) every cut is at a junction and
+        # is kept, also between two unshared arcs: merging them would depend on where a
+        # ring starts.
+        if self.options.shared_coords and array_bk_ndp[mask].size != 0:
             # make sure the idx of shared arcs are set to np.nan
             array_bk_ndp[mask] = np.nan
 

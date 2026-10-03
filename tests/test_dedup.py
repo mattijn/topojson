@@ -290,3 +290,23 @@ def test_dedup_merge_continuous_shared_path():
 
     assert len(topo["linestrings"]) == 6
     assert len(topo["junctions"]) == 0
+
+
+# a ring that passes through a junction keeps that cut, wherever the ring starts
+# https://github.com/mattijn/topojson/issues/234
+def test_dedup_cut_does_not_depend_on_ring_start():
+    import geopandas
+    import topojson
+    from shapely.geometry import box
+
+    A, B = box(0, 0, 1, 1), box(1, 0, 2, 1)
+    C = geometry.Polygon([(0, 3), (2, 3), (2, 4), (0, 4)])
+    n_arcs = []
+    for R in [
+        geometry.Polygon([(1, 1), (2, 3), (0, 3)]),
+        geometry.Polygon([(2, 3), (0, 3), (1, 1)]),
+    ]:
+        data = geopandas.GeoDataFrame(geometry=[A, B, C, R])
+        topo = topojson.Topology(data, prequantize=False)
+        n_arcs.append(len(topo.output["objects"]["data"]["geometries"][3]["arcs"][0]))
+    assert n_arcs == [3, 3]
