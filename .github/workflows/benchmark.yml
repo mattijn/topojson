@@ -47,6 +47,8 @@ jobs:
 
       - name: Rename moved topojson package
         run: mv do_later_topojson topojson
+      - name: Install topojson from this PR
+        run: python -m pip install . --force-reinstall --no-deps
       - name: Benchmark this PR!
         run: python tests/benchmark_compute.py --version=PR
 
