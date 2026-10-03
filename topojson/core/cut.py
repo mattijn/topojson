@@ -6,9 +6,7 @@ from shapely import geometry
 from shapely.strtree import STRtree
 from .join import Join
 from ..ops import ignore_shapely2_warnings
-from ..ops import insert_coords_in_line
-from ..ops import np_array_bbox_points_line
-from ..ops import fast_split
+from ..ops import cut_line
 from ..ops import find_duplicates
 from ..ops import np_array_from_lists
 from ..ops import remove_collinear_points
@@ -122,29 +120,10 @@ class Cut(Join):
 
             # junctions are only existing in coordinates of linestring
             for index, linestring in enumerate(data["linestrings"]):
-                if self.options.shared_coords:
-                    line, splitter = np_array_bbox_points_line(
-                        linestring, tree_splitter
-                    )
-                else:
-                    line, splitter = insert_coords_in_line(linestring, tree_splitter)
-                # prev function returns None for splitter if nothing to split
-                if splitter is not None:
-                    is_ring = False
-                    if lines_object_types[index] in ["Polygon", "MultiPolygon"]:
-                        is_ring = True
-                    line_split = fast_split(line, splitter, is_ring)
-                    if isinstance(line_split, list):
-                        line_split = [
-                            remove_collinear_points(line) for line in line_split
-                        ]
-                    else:
-                        line_split = remove_collinear_points(line_split)
-                    lines_split.append(line_split)
-                else:
-                    lines_split.append(
-                        [remove_collinear_points(np.array(linestring.coords))]
-                    )
+                is_ring = lines_object_types[index] in ["Polygon", "MultiPolygon"]
+                lines_split.append(
+                    cut_line(linestring, tree_splitter, is_ring, self.options.shared_coords)
+                )
             # flatten the splitted linestrings, create bookkeeping_geoms array
             # and find duplicates
             self._segments_list, bk_array = self._flatten_and_index(lines_split)

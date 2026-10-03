@@ -9,10 +9,9 @@ from shapely.ops import shared_paths
 
 from ..ops import bounds
 from ..ops import compare_bounds
-from ..ops import explode
-from ..ops import linemerge_ext
 from ..ops import quantize
 from ..ops import select_unique_combs
+from ..ops import shared_path_ends
 from ..utils import serialize_as_svg
 from ..ops import simplify
 from .extract import Extract
@@ -203,32 +202,10 @@ class Join(Extract):
             self._junctions = [geometry.Point(xy) for xy in set(junctions)]
         else:
 
-            # calculate line intersections between all linestrings
+            # junctions are the ends of the paths shared by two linestrings
             idx_combs, _ = select_unique_combs(data["linestrings"])
-            geom_combs = [
-                (data["linestrings"][idx_comb[0]], data["linestrings"][idx_comb[1]])
-                for idx_comb in idx_combs
-            ]
-            # we don't want junctions for equal linestrings, so filter them out
-            geom_combs = [
-                geoms for geoms in geom_combs if not geoms[0].equals(geoms[1])
-            ]
-
-            # calculate line intersections between linestrings
-            intersect_lines = [
-                linemerge_ext(geom1.intersection(geom2)) for geom1, geom2 in geom_combs
-            ]
-            intersect_lines = [line for line in intersect_lines if not line.is_empty]
-            intersect_lines = explode(intersect_lines)
-
-            # the start and end points of the intersect_lines are the junctions
-            junctions = [
-                junction
-                for line in intersect_lines
-                for junction in (line.coords[0], line.coords[-1])
-            ]
-            # keep unique junctions
-            self._junctions = list(map(geometry.Point, set(junctions)))
+            pairs = [(data["linestrings"][i], data["linestrings"][j]) for i, j in idx_combs]
+            self._junctions = list(map(geometry.Point, shared_path_ends(pairs)))
 
         # prepare to return object
         data["junctions"] = self._junctions
