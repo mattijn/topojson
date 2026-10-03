@@ -7,6 +7,7 @@ from shapely.strtree import STRtree
 from .join import Join
 from ..ops import ignore_shapely2_warnings
 from ..ops import cut_line
+from ..ops import cut_lines_on_grid
 from ..ops import find_duplicates
 from ..ops import np_array_from_lists
 from ..ops import remove_collinear_points
@@ -111,6 +112,7 @@ class Cut(Join):
             with ignore_shapely2_warnings():
                 tree_splitter = STRtree(mp)
             lines_split = []
+            n = len(data["linestrings"])
 
             # create dict with original geometry type per linestring
             lines_object_types = self._get_linestring_types(
@@ -118,15 +120,25 @@ class Cut(Join):
                 bookkeeping_geoms=data["bookkeeping_geoms"],
             )
 
-            # junctions are only existing in coordinates of linestring
-            for index, linestring in enumerate(data["linestrings"]):
-                is_ring = lines_object_types[index] in ["Polygon", "MultiPolygon"]
-                lines_split.append(
-                    cut_line(linestring, tree_splitter, is_ring, self.options.shared_coords)
+            is_ring = np.array(
+                [lines_object_types[i] in ["Polygon", "MultiPolygon"] for i in range(n)]
+            )
+            if "transform" in data and not self.options.shared_coords:
+                # on the grid, all lines at once
+                self._segments_list, n_parts = cut_lines_on_grid(
+                    data["linestrings"], data["junctions"], is_ring
                 )
-            # flatten the splitted linestrings, create bookkeeping_geoms array
-            # and find duplicates
-            self._segments_list, bk_array = self._flatten_and_index(lines_split)
+                col = np.arange(n_parts.max())
+                bk_array = (np.cumsum(n_parts) - n_parts)[:, None] + col
+                bk_array = np.where(col < n_parts[:, None], bk_array, np.nan)
+            else:
+                # junctions are only existing in coordinates of linestring
+                for linestring, ring in zip(data["linestrings"], is_ring):
+                    lines_split.append(
+                        cut_line(linestring, tree_splitter, ring, self.options.shared_coords)
+                    )
+                # flatten the splitted linestrings, create bookkeeping_geoms array
+                self._segments_list, bk_array = self._flatten_and_index(lines_split)
             self._duplicates = find_duplicates(self._segments_list)
             self._bookkeeping_linestrings = bk_array.astype(float)
         elif data["bookkeeping_geoms"]:

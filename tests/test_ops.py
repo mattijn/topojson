@@ -93,3 +93,26 @@ def test_ops_shared_path_ends_on_grid_equals_pairwise(quant_factor):
     lines, _ = topojson.ops.quantize(linestrings, bbox, quant_factor)
     expected = pairwise_shared_path_ends(lines)
     assert topojson.ops.shared_path_ends_on_grid(lines) == expected
+
+
+@pytest.mark.parametrize("quant_factor", [50, 100, 1e5])
+def test_ops_cut_lines_on_grid_equals_cut_line(quant_factor):
+    data = topojson.utils.example_data_africa()
+    extracted = Extract(data).output
+    linestrings = extracted["linestrings"]
+    bbox = topojson.ops.bounds(linestrings)
+    lines, _ = topojson.ops.quantize(linestrings, bbox, quant_factor)
+    ends = sorted(topojson.ops.shared_path_ends_on_grid(lines))
+    junctions = [geometry.Point(p) for p in ends]
+    # a line through a junction that is not one of its vertices
+    (x, y) = ends[0]
+    lines.append(geometry.LineString([(x - 1, y - 1), (x + 1, y + 1)]))
+    is_ring = np.array([line.is_closed for line in lines])
+
+    parts, n_parts = topojson.ops.cut_lines_on_grid(lines, junctions, is_ring)
+    tree = topojson.ops.STRtree(junctions)
+    expected = [
+        topojson.ops.cut_line(line, tree, ring) for line, ring in zip(lines, is_ring)
+    ]
+    assert n_parts.tolist() == [len(p) for p in expected]
+    assert [p.tolist() for p in parts] == [p.tolist() for e in expected for p in e]

@@ -519,6 +519,73 @@ def cut_line(line, tree_splitter, is_ring, shared_coords=False):
     return [remove_collinear_points(part) for part in fast_split(coords, splitter, is_ring)]
 
 
+def cut_lines_on_grid(linestrings, junctions, is_ring):
+    """
+    Cut quantized lines at the junctions they pass through, as `cut_line` does for
+    one line, for all lines at once. A ring is first rotated to start at its first
+    junction; collinear points are removed from each part.
+
+    Parameters
+    ----------
+    linestrings : list of LineString
+        Lines with integer coordinates
+    junctions : list of Point
+        Junctions with integer coordinates
+    is_ring : numpy.ndarray of bool
+        True for the lines that are the ring of a polygon
+
+    Returns
+    -------
+    list of numpy.ndarray
+        Coordinates of the parts, line after line
+    numpy.ndarray
+        Number of parts of each line
+    """
+    lines = np.asarray(linestrings, dtype=object)
+    junctions = np.asarray(junctions, dtype=object)
+    xy, li = shapely.get_coordinates(lines, return_index=True)
+    jxy = shapely.get_coordinates(junctions)
+
+    # a junction on a line that is not one of its vertices is inserted first
+    tree = shapely.STRtree(junctions)
+    line, j = tree.query(lines, predicate="intersects")
+    on_vertex = np.isin(_hash(line, *jxy[j].T), _hash(li, *xy.T))
+    insert = np.unique(line[~on_vertex])
+    if len(insert):
+        coords = np.split(xy, np.flatnonzero(np.diff(li)) + 1)
+        for i in insert.tolist():
+            coords[i] = insert_coords_in_line(lines[i], tree)[0]
+        li = np.repeat(np.arange(len(lines)), [len(c) for c in coords])
+        xy = np.concatenate(coords)
+
+    # rotate a ring to start at its first junction
+    split = np.isin(_hash(*xy.T), _hash(*jxy.T))
+    count = np.bincount(li, minlength=len(lines))
+    pos = np.arange(len(xy)) - (np.cumsum(count) - count)[li]
+    first = np.zeros(len(lines), np.int64)
+    first[li[split][::-1]] = pos[split][::-1]
+    shift, n = (first * is_ring)[li], count[li] - 1
+    rotated = np.where(pos == n, shift, (pos + shift) % np.maximum(n, 1))
+    order = np.arange(len(xy)) + np.where(shift > 0, rotated - pos, 0)
+    xy, split = xy[order], split[order]
+
+    # split at the junctions inside each line: such a junction ends one part and
+    # starts the next
+    take = np.repeat(np.arange(len(xy)), 1 + (split & (pos > 0) & (pos < n)))
+    start = np.r_[True, take[1:] != take[:-1] + 1]
+    start |= np.r_[True, li[take][1:] != li[take][:-1]]
+    xy = xy[take]
+
+    # remove collinear points inside each part
+    mid = np.flatnonzero(~start[1:-1] & ~start[2:]) + 1
+    u, w = xy[mid] - xy[mid - 1], xy[mid + 1] - xy[mid - 1]
+    cross = u[:, 0] * w[:, 1] - w[:, 0] * u[:, 1]
+    keep = np.ones(len(xy), bool)
+    keep[mid[cross == 0]] = False
+    parts = np.split(xy[keep], np.flatnonzero(start[keep])[1:])
+    return parts, np.bincount(li[take][start], minlength=len(lines))
+
+
 def fast_split(line, splitter, is_ring):
     """
     Split a LineString (numpy.array) with a Point or MultiPoint.
