@@ -7,7 +7,6 @@ import shapely
 from shapely import geometry
 from shapely import wkt
 from shapely.ops import linemerge
-from shapely.ops import orient
 from shapely.strtree import STRtree
 
 
@@ -1129,20 +1128,20 @@ def simplify(
                 "Continue with Douglas-Peucker (`dp`) algorithm instead.",
             )
             logging.warning("".join(msg))
+        keep_valid = prevent_oversimplify
         if input_as == "array":
-            list_arcs = []
-            for ls in linestrings:
-                coords_to_simp = ls[~np.isnan(ls)[:, 0]]
-                simple_ls = geometry.LineString(coords_to_simp)
-                simple_ls = simple_ls.simplify(
-                    epsilon, preserve_topology=prevent_oversimplify
-                )
-                list_arcs.append(np.array(simple_ls.coords).tolist())
+            # all arcs at once; the arrays are padded with nan
+            valid = ~np.isnan(linestrings[:, :, 0])
+            index = np.nonzero(valid)[0]
+            lines = shapely.linestrings(linestrings[valid], indices=index)
+            lines = shapely.simplify(lines, epsilon, preserve_topology=keep_valid)
+            xy, index = shapely.get_coordinates(lines, return_index=True)
+            count = np.bincount(index, minlength=len(lines))
+            list_arcs = [a.tolist() for a in np.split(xy, np.cumsum(count)[:-1])]
         elif input_as == "linestring":
-            for idx, ls in enumerate(linestrings):
-                linestrings[idx] = ls.simplify(
-                    epsilon, preserve_topology=prevent_oversimplify
-                )
+            lines = np.asarray(linestrings, dtype=object)
+            lines = shapely.simplify(lines, epsilon, preserve_topology=keep_valid)
+            linestrings[:] = lines.tolist()
             list_arcs = linestrings
     elif package == "simplification":
         from simplification import cutil
@@ -1225,13 +1224,9 @@ def winding_order(geom, order="CW_CCW"):
     # CW_CWW will orient the outer polygon clockwise and the inner polygon counter-
     # clockwise to conform TopoJSON standard
 
-    if order == "CW_CCW":
-        geom = orient(geom, sign=-1.0)
-    elif order == "CCW_CW":
-        geom = orient(geom, sign=1.0)
-    else:
+    if order not in ("CW_CCW", "CCW_CW"):
         raise NameError("parameter {} was not recognized".format(order))
-    return geom
+    return shapely.orient_polygons(geom, exterior_cw=order == "CW_CCW")
 
 
 def round_coordinates(linestrings, rounding_precision):
