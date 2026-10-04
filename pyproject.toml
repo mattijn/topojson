@@ -58,3 +58,17 @@ ignore = [
 
 [tool.ruff.lint.mccabe]
 max-complexity = 20
+
+[tool.mypy]
+python_version = "3.11"
+# shapely, geopandas and the optional packages come without type information
+ignore_missing_imports = true
+# a needless "type: ignore" is an error, so tests/typing_api.py can mark wrong calls
+warn_unused_ignores = true
+
+# the public API is typed strictly, the other modules step by step
+
+[[tool.mypy.overrides]]
+module = ["topojson.core.topology", "topojson._types"]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true

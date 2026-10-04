@@ -429,7 +429,7 @@ the number of points by deleting some trivial points, but without destroying the
 essential shape of the lines in the process.
 
 One can choose between the Douglas-Peucker ["dp"] algorithm (which simplifies
-a line based upon vertical interval) and Visvalingam–Whyatt ["vw"] (which
+a line based upon vertical interval) and Visvalingam-Whyatt ["vw"] (which
 progressively removes points with the least-perceptible change).
 
 Docs
@@ -446,7 +446,7 @@ Docs
     Simplification factor. Normally this varies 1.0, 0.1 or 0.001 for "dp" and
     30-100 for "vw".
 > + ###### `algorithm` : str, optional
-    Choose between `dp` for Douglas-Peucker and `vw` for Visvalingam–Whyatt.
+    Choose between `dp` for Douglas-Peucker and `vw` for Visvalingam-Whyatt.
     Defaults to `dp`, as its evaluation maintains to be good (Shi, W. &
     Cheung, C., 2006).
 > + ###### `package` : str, optional

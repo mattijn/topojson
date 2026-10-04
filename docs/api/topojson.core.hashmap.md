@@ -10,7 +10,7 @@ nav_order: 6
 
 ## Hashmap
 ```python
-Hashmap(self, data, options={})
+Hashmap(self, data, options=None)
 ```
 
 hash arcs based on their type
