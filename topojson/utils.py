@@ -604,7 +604,8 @@ def serialize_as_ipywidgets(topo_object, toposimplify, topoquantize, keep):
         options=[
             ("Douglas-Peucker", "dp"),
             ("Visvalingam-Whyatt", "vw"),
-            ("Douglas-Peucker, share of vertices", "keep"),
+            ("Douglas-Peucker, share of vertices", "keep dp"),
+            ("Visvalingam-Whyatt, share of vertices", "keep vw"),
         ],
         value="vw",
         description="Simplify algorithm",
@@ -648,9 +649,9 @@ def serialize_as_ipywidgets(topo_object, toposimplify, topoquantize, keep):
 
 
 def toposimpquant(epsilon, quant, algo, topo, keep=1):
-    # "keep" simplifies with Douglas-Peucker to a share of the vertices
-    topo.options.simplify_algorithm = "dp" if algo == "keep" else algo
-    if algo == "keep":
+    # "keep dp" and "keep vw" simplify to a share of the vertices
+    topo.options.simplify_algorithm = algo.split()[-1]
+    if algo.startswith("keep"):
         simple = topo.toposimplify(keep=keep)
     else:
         simple = topo.toposimplify(epsilon)

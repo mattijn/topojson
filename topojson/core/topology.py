@@ -408,8 +408,8 @@ class Topology(Hashmap):
         """
         Create an interactive widget based on Altair. The widget includes sliders to
         interactively change the `toposimplify` and `topoquantize` settings. With
-        the algorithm "Douglas-Peucker, share of vertices", the `keep` slider sets
-        the share of the vertices to keep instead of the tolerance.
+        an algorithm "share of vertices", the `keep` slider sets the share of the
+        vertices to keep instead of the tolerance.
 
         Parameters
         ----------
@@ -532,10 +532,12 @@ class Topology(Hashmap):
             Default is `False`.
         keep : float, optional
             Instead of `epsilon`, the share of the vertices to keep, between `0` and
-            `1`: the inner vertices of the arcs that Douglas-Peucker removes last are
-            kept, the ends of the arcs always. Uses Douglas-Peucker, whatever
-            `simplify_with`; with `prevent_oversimplify` a ring stays at least a
-            triangle.
+            `1`: the inner vertices of the arcs that the algorithm removes last are
+            kept, the ends of the arcs always. The result is that of the matching
+            `epsilon`. Douglas-Peucker uses its own implementation, whatever
+            `simplify_with`; Visvalingam-Whyatt (`simplify_algorithm="vw"`) uses the
+            package simplification. With `prevent_oversimplify` a ring stays at least
+            a triangle.
 
         Returns
         -------
@@ -563,8 +565,6 @@ class Topology(Hashmap):
             )
         if simplify_algorithm in ["dp", "vw"]:
             result.options.simplify_algorithm = simplify_algorithm
-        if keep is not None and result.options.simplify_algorithm == "vw":
-            raise ValueError("keep uses Douglas-Peucker (simplify_algorithm='dp')")
 
         # get transform settings to dequantize if necessary
         transform = result.output.get("transform")
@@ -580,7 +580,9 @@ class Topology(Hashmap):
 
             # apply simplify
             if keep is not None:
-                result.output["arcs"], _ = simplify_keep(np_arcs, keep)
+                result.output["arcs"], _ = simplify_keep(
+                    np_arcs, keep, result.options.simplify_algorithm
+                )
             else:
                 result.output["arcs"] = simplify(
                     np_arcs,

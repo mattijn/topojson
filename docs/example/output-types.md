@@ -388,7 +388,7 @@ topo.to_gdf().plot()
 
 Serialize the Topology object into an interactive IPython Widget. This requires the optional packages simplification, altair and ipywidgets. These are not installed automatically.
 
-The sliders set the tolerance of `toposimplify` and the `topoquantize` factor. With the algorithm _Douglas-Peucker, share of vertices_, the slider _Keep share_ sets the share of the vertices to keep instead (`toposimplify(keep=...)`).
+The sliders set the tolerance of `toposimplify` and the `topoquantize` factor. With an algorithm _share of vertices_ (Douglas-Peucker or Visvalingam-Whyatt), the slider _Keep share_ sets the share of the vertices to keep instead (`toposimplify(keep=...)`).
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">

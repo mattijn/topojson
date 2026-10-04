@@ -490,19 +490,25 @@ Weight of each vertex; `inf` for the first and the last vertex of each line
 
 ## simplify_keep
 ```python
-simplify_keep(linestrings, keep)
+simplify_keep(linestrings, keep, algorithm='dp')
 ```
 
-Simplify lines with Douglas-Peucker to a share of their vertices: the share
-`keep` of the inner vertices with the largest weights (`dp_weights`) is kept, and
-the first and the last vertex of each line. Vertices with an equal weight are kept
-or removed together, so a little fewer vertices can be kept.
+Simplify lines to a share of their vertices: the share `keep` of the inner
+vertices that the algorithm removes last is kept, and the first and the last
+vertex of each line. The result is that of `simplify` with the tolerance that is
+returned. Vertices with an equal weight are kept or removed together, so the share
+can be a little off.
+
+Douglas-Peucker uses the weight of each vertex (`dp_weights`). Visvalingam-Whyatt
+searches the tolerance of the package simplification (`_vw_tolerance`).
 
 > #### Parameters
 > + ###### `linestrings` : list of numpy.ndarray
     Coordinates of the lines
 > + ###### `keep` : float
     Share of the inner vertices to keep, between 0 and 1
+> + ###### `algorithm` : str
+    `dp` for Douglas-Peucker or `vw` for Visvalingam-Whyatt
 
 > #### Returns
 > + ###### list of list

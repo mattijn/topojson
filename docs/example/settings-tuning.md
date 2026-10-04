@@ -344,6 +344,11 @@ Douglas-Peucker still keeps it. `keep` keeps the vertices with the largest weigh
 and the ends of the arcs always, so the result is the same as with the matching
 `epsilon`. As the arcs are shared, shared borders stay matched.
 
+With `simplify_algorithm="vw"`, `keep` searches the tolerance of Visvalingam-Whyatt
+(package simplification) that leaves the share asked for. VW is nested, so each step
+of the search continues from the result of the step before, and the result is again
+that of the matching `epsilon`.
+
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
 Example 🔧

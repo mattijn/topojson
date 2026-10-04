@@ -221,7 +221,7 @@ def test_topology_widget():
 def test_topology_widget_keep():
     data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     topo = topojson.Topology(data[(data.CONTINENT == "Africa")])
-    for algo in ["vw", "keep", "dp"]:
+    for algo in ["vw", "keep vw", "keep dp", "dp"]:
         chart = topojson.utils.toposimpquant(0.1, 1e4, algo, topo, keep=0.2)
         assert chart.to_dict()["mark"]["type"] == "geoshape"
 
@@ -929,7 +929,7 @@ def test_topology_toposimplify_keep_keeps_rings_a_triangle():
 
 @pytest.mark.parametrize(
     "kwargs",
-    [{}, {"epsilon": 1, "keep": 0.5}, {"keep": 1.5}, {"keep": 0.5, "simplify_algorithm": "vw"}],
+    [{}, {"epsilon": 1, "keep": 0.5}, {"keep": 1.5}],
 )
 def test_topology_toposimplify_keep_invalid(kwargs):
     data = geopandas.read_file("tests/files_shapefile/static_nybb.gpkg")
@@ -1061,3 +1061,16 @@ def test_topology_empty_polygon_to_geojson():
     )
     features = json.loads(topo.to_geojson())["features"]
     assert features[1]["geometry"] == {"type": "Polygon", "coordinates": []}
+
+
+def test_topology_toposimplify_keep_vw_as_epsilon():
+    data = geopandas.read_file("tests/files_shapefile/static_nybb.gpkg")
+    topo = topojson.Topology(data, simplify_algorithm="vw")
+    arcs = topojson.ops.arc_coordinates(topo.output["arcs"], topo.output["transform"])
+    _, epsilon = topojson.ops.simplify_keep(arcs, 0.1, "vw")
+
+    keep = topo.toposimplify(keep=0.1, prevent_oversimplify=False).to_dict()
+    tolerance = topo.toposimplify(
+        epsilon, simplify_with="simplification", prevent_oversimplify=False
+    ).to_dict()
+    assert keep["arcs"] == tolerance["arcs"]

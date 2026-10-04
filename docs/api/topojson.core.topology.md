@@ -305,8 +305,8 @@ Topology.to_widget(
 
 Create an interactive widget based on Altair. The widget includes sliders to
 interactively change the `toposimplify` and `topoquantize` settings. With
-the algorithm "Douglas-Peucker, share of vertices", the `keep` slider sets
-the share of the vertices to keep instead of the tolerance.
+an algorithm "share of vertices", the `keep` slider sets the share of the
+vertices to keep instead of the tolerance.
 
 > #### Parameters
 > + ###### `slider_toposimplify` : dict
@@ -388,10 +388,12 @@ in the range of `0.0001` to `10`.
     Default is `False`.
 > + ###### `keep` : float, optional
     Instead of `epsilon`, the share of the vertices to keep, between `0` and
-    `1`: the inner vertices of the arcs that Douglas-Peucker removes last are
-    kept, the ends of the arcs always. Uses Douglas-Peucker, whatever
-    `simplify_with`; with `prevent_oversimplify` a ring stays at least a
-    triangle.
+    `1`: the inner vertices of the arcs that the algorithm removes last are
+    kept, the ends of the arcs always. The result is that of the matching
+    `epsilon`. Douglas-Peucker uses its own implementation, whatever
+    `simplify_with`; Visvalingam-Whyatt (`simplify_algorithm="vw"`) uses the
+    package simplification. With `prevent_oversimplify` a ring stays at least
+    a triangle.
 
 > #### Returns
 > + ###### object or None
