@@ -12,6 +12,7 @@ from ..ops import compare_bounds
 from ..ops import quantize
 from ..ops import select_unique_combs
 from ..ops import shared_path_ends
+from ..ops import shared_path_ends_on_grid
 from ..utils import serialize_as_svg
 from ..ops import simplify
 from .extract import Extract
@@ -155,7 +156,10 @@ class Join(Extract):
             return data
 
         # prequantize linestrings if required
-        if isinstance(self.options.prequantize, dict) or self.options.prequantize > 0:
+        quantized = isinstance(self.options.prequantize, dict) or (
+            self.options.prequantize > 0
+        )
+        if quantized:
             # a fixed transform defines the grid, independent of the bbox
             transform = None
             quant_factor = None
@@ -203,9 +207,13 @@ class Join(Extract):
         else:
 
             # junctions are the ends of the paths shared by two linestrings
-            idx_combs, _ = select_unique_combs(data["linestrings"])
-            pairs = [(data["linestrings"][i], data["linestrings"][j]) for i, j in idx_combs]
-            self._junctions = list(map(geometry.Point, shared_path_ends(pairs)))
+            if quantized:
+                ends = shared_path_ends_on_grid(data["linestrings"])
+            else:
+                idx_combs, _ = select_unique_combs(data["linestrings"])
+                lines = data["linestrings"]
+                ends = shared_path_ends([(lines[i], lines[j]) for i, j in idx_combs])
+            self._junctions = list(map(geometry.Point, ends))
 
         # prepare to return object
         data["junctions"] = self._junctions

@@ -287,6 +287,208 @@ def shared_path_ends(pairs):
     return {xy for path in paths for xy in (path.coords[0], path.coords[-1])}
 
 
+def shared_path_ends_on_grid(linestrings):
+    """
+    Junctions of quantized lines: the start and end points of the paths that each
+    pair of lines shares, as `shared_path_ends` returns them for all pairs, but
+    computed for all lines at once on the integer grid.
+
+    On the grid, a shared path is a run of segments that both lines contain. A
+    vertex that lies inside a collinear segment of another line is first inserted
+    in that line. A vertex is then a junction when the other lines on its incoming
+    segment differ from those on its outgoing segment. Equal lines count once, as
+    equal pairs share no path. Lines that pass a vertex twice, or that are closed
+    and lie wholly on another line, are left to `shared_path_ends` together with
+    the lines they share segments with. Segments and sets of lines are compared by
+    64-bit hashes.
+
+    Parameters
+    ----------
+    linestrings : list of LineString
+        Lines with integer coordinates; a closed line continues from its end into
+        its start
+
+    Returns
+    -------
+    set of tuple
+        Junction coordinates
+    """
+    if len(linestrings) == 0:
+        return set()
+    xy, li = shapely.get_coordinates(linestrings, return_index=True)
+    xy = xy.astype(np.int64)
+    s, h, vertex = _grid_segments(xy, li)
+    at, pts = _t_vertices(xy, li, s, h)
+    if len(at):
+        o = np.lexsort([np.abs(pts - xy[at]).sum(1), at])
+        xy = np.insert(xy, at[o] + 1, pts[o], axis=0)
+        li = np.insert(li, at[o] + 1, li[at[o]])
+        s, h, vertex = _grid_segments(xy, li)
+    closed = shapely.is_closed(np.asarray(linestrings, dtype=object))
+    points, pairs = _junction_vertices(xy, li, s, h, vertex, closed)
+    ends = shared_path_ends([(linestrings[i], linestrings[j]) for i, j in pairs])
+    return ends | set(map(tuple, points.tolist()))
+
+
+def _mix(x):
+    """splitmix64 finalizer."""
+    x = (x ^ (x >> np.uint64(30))) * np.uint64(0xBF58476D1CE4E5B9)
+    x = (x ^ (x >> np.uint64(27))) * np.uint64(0x94D049BB133111EB)
+    return x ^ (x >> np.uint64(31))
+
+
+def _hash(*cols):
+    """64-bit hash of the rows of integer columns."""
+    h = np.full(len(cols[0]), 0x9E3779B97F4A7C15, np.uint64)
+    for col in cols:
+        h = _mix(h + np.asarray(col, np.int64).view(np.uint64))
+    return h.view(np.int64)
+
+
+def _repeated(h):
+    """True where a hash may occur more than once (bucket counts, no sort)."""
+    size = 1 << max(int(8 * len(h)).bit_length(), 4)
+    bucket = (h & (size - 1)).astype(np.intp)
+    return np.bincount(bucket, minlength=size)[bucket] > 1
+
+
+def _changes(*cols):
+    """True at the first row and where any column differs from the row before."""
+    new = np.ones(len(cols[0]), bool)
+    new[1:] = np.any([col[1:] != col[:-1] for col in cols], axis=0)
+    return new
+
+
+def _ranges(starts, counts):
+    """Concatenated ranges [starts[i], starts[i] + counts[i])."""
+    offset = np.repeat(starts - np.cumsum(counts) + counts, counts)
+    return offset + np.arange(counts.sum())
+
+
+def _grid_segments(xy, li):
+    """First vertex of each segment, a hash of the undirected segment, and a hash
+    of each vertex."""
+    vertex = _hash(*xy.T)
+    s = np.flatnonzero(li[1:] == li[:-1])
+    a, b = vertex[s], vertex[s + 1]
+    return s, _hash(a ^ b, a + b), vertex
+
+
+def _t_vertices(xy, li, s, h):
+    """Vertices that lie strictly inside a collinear segment: the first vertex of
+    each segment that holds one, and the point."""
+    a, b = xy[s], xy[s + 1]
+    d = b - a
+    d //= np.maximum(np.gcd(*d.T), 1)[:, None]
+    d[(d[:, 0] < 0) | ((d[:, 0] == 0) & (d[:, 1] < 0))] *= -1
+    c = d[:, 1] * a[:, 0] - d[:, 0] * a[:, 1]
+    lo, hi = np.sort(np.einsum("ij,kij->ki", d, np.stack([a, b])), 0)
+    carrier = _hash(*d.T, c)  # the line through the segment
+
+    # straight stretches of the lines, equal ones (shared borders) once; only
+    # carriers on which stretches overlap can hold such a vertex
+    r = np.flatnonzero(_changes(li[s], carrier))
+    key, start, end = carrier[r], np.minimum.reduceat(lo, r), np.maximum.reduceat(hi, r)
+    u = np.flatnonzero(_repeated(key))
+    stretch = _hash(key[u], start[u], end[u], np.bitwise_xor.reduceat(h, r)[u])
+    u = u[np.unique(stretch, return_index=True)[1]]
+    u = u[np.lexsort([start[u], key[u]])]
+    overlap = (key[u][1:] == key[u][:-1]) & (start[u][1:] < end[u][:-1])
+    k = np.flatnonzero(np.isin(carrier, key[u][1:][overlap]))
+
+    # rank the segment ends along their exact carrier; the ends ranked strictly
+    # between those of a segment lie inside it
+    cols = [np.tile(x[k], 2) for x in (d[:, 0], d[:, 1], c)] + [np.r_[lo[k], hi[k]]]
+    o = np.lexsort(cols[::-1])
+    new = _changes(*(col[o] for col in cols))
+    rank = np.empty(len(o), np.int64)
+    rank[o] = np.cumsum(new) - 1
+    count = np.maximum(rank[len(k) :] - rank[: len(k)] - 1, 0)
+    seg = np.repeat(k, count)
+    t = cols[3][o][new][_ranges(rank[: len(k)] + 1, count)]
+    ds, origin = d[seg], a[seg]
+    step = (t - np.einsum("ij,ij->i", ds, origin)) // np.einsum("ij,ij->i", ds, ds)
+    return s[seg], origin + ds * step[:, None]
+
+
+def _junction_vertices(xy, li, s, h, vertex, closed):
+    """Vertices where the other lines on the incoming segment differ from those on
+    the outgoing one, and the pairs of lines left to the pairwise method."""
+    n, sl = len(closed), li[s]
+    key = _hash(np.arange(n))
+    count = np.bincount(li, minlength=n)
+    last = np.cumsum(count) - 1
+    ring = np.flatnonzero(closed & (count > 1))
+
+    # shared segments, grouped with the lines in order; each line once
+    o = np.flatnonzero(_repeated(h))
+    o = o[np.argsort(h[o], kind="stable")]
+    group = np.cumsum(_changes(h[o])) - 1
+    shared = np.zeros(len(s), bool)
+    shared[o] = np.bincount(group)[group] > 1
+    o = o[shared[o]]
+    o = o[_changes(h[o], sl[o])]
+
+    # equal lines (the same segments, all shared) count once
+    only = np.bincount(sl, minlength=n) > 0
+    only[sl[~shared]] = False
+    m = o[only[sl[o]]]
+    m = m[np.argsort(sl[m], kind="stable")]
+    start = np.flatnonzero(_changes(sl[m]))
+    lines = key.copy()
+    lines[sl[m][start]] = np.bitwise_xor.reduceat(h[m], start)
+    keep = np.zeros(n, bool)
+    keep[np.unique(lines, return_index=True)[1]] = True
+    o = o[keep[sl[o]]]
+
+    # lines that pass a vertex twice, and closed lines that lie wholly on another
+    # line (a shared loop has no end), go to the pairwise method
+    visit = np.ones(len(xy), bool)
+    visit[last[ring]] = False
+    v = np.flatnonzero(visit)
+    at = vertex[v] ^ key[li[v]]
+    v, at = v[_repeated(at)], at[_repeated(at)]
+    _, inv, times = np.unique(at, return_inverse=True, return_counts=True)
+    odd = np.zeros(n, bool)
+    odd[li[v][times[inv.ravel()] > 1]] = True
+    group = np.cumsum(_changes(h[o])) - 1
+    a, b, times = _pairs(sl[o], group, keep & (odd | (only & closed)))
+    loop = only[a] & closed[a] & (times == np.bincount(sl[o], minlength=n)[a])
+    odd[a[loop]] = True
+    odd &= keep
+    a, b = a[odd[a]], b[odd[a]]
+    pairs = set(zip(np.minimum(a, b).tolist(), np.maximum(a, b).tolist()))
+
+    # the other lines on each segment of the remaining lines, in and out of each
+    # vertex; a closed line continues from its end into its start
+    regular = (keep & ~odd)[sl]
+    o = o[regular[o]]
+    group = np.cumsum(_changes(h[o])) - 1
+    other = np.zeros(len(s), np.int64)
+    first = np.flatnonzero(_changes(group))
+    other[o] = np.bitwise_xor.reduceat(key[sl[o]], first)[group] ^ key[sl[o]]
+    hin, hout = np.zeros(len(xy), np.int64), np.zeros(len(xy), np.int64)
+    hout[s[regular]], hin[s[regular] + 1] = other[regular], other[regular]
+    begin = last[ring] - count[ring] + 1
+    hin[begin], hout[last[ring]] = hin[last[ring]], hout[begin]
+    return xy[hin != hout], sorted(pairs)
+
+
+def _pairs(line, group, candidate):
+    """Pairs of lines on a common segment, the first a candidate, with the number of
+    segments they share. The rows are sorted by segment, `group` numbers them."""
+    first = np.flatnonzero(_changes(group))
+    size = np.diff(np.r_[first, len(group)])
+    rows = np.flatnonzero(candidate[line])
+    count = size[group[rows]] - 1
+    i = np.repeat(rows, count)
+    j = _ranges(first[group[rows]], count)
+    j += j >= i  # skip the row itself
+    n = len(candidate)
+    pair, times = np.unique(line[i] * n + line[j], return_counts=True)
+    return pair // n, pair % n, times
+
+
 def cut_line(line, tree_splitter, is_ring, shared_coords=False):
     """
     Cut a line at the junctions it passes through. A ring is first rotated to start
