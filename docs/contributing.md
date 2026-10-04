@@ -115,3 +115,9 @@ The lens on the overview page draws the arcs of Africa with the weight of each v
 ```bash
 python generate/make-docs-lens.py
 ```
+
+The figures of the steps on the page How it works draw what each step gives for the toy example, from `docs/json/steps.json`; to update it:
+
+```bash
+python generate/make-docs-steps.py
+```
