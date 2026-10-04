@@ -121,3 +121,9 @@ The figures of the steps on the page How it works draw what each step gives for 
 ```bash
 python generate/make-docs-steps.py
 ```
+
+The other figures drawn this way, on the pages Example usage, Types of input data, Settings and tuning and Retrieval data types, come from `docs/json/fig_*.json`; to update them:
+
+```bash
+python generate/make-docs-figures.py
+```
