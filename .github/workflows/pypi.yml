@@ -1,34 +1,24 @@
 name: pypi
 
-on: 
+on:
   workflow_dispatch:
-    inputs:
-      logLevel:
-        description: 'Log level'     
-        required: true
-        default: 'warning'
-      tags:
-        description: 'Test scenario tags' 
 
 jobs:
   deploy:
-
     runs-on: ubuntu-latest
+    permissions:
+      # trusted publishing: PyPI accepts a token from GitHub for this workflow
+      id-token: write
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
-    - name: Install dependencies
+    - name: Build
       run: |
-        python -m pip install --upgrade pip
-        pip install setuptools wheel flit
-    - name: Build and publish
-      env:
-        FLIT_USERNAME: ${{ secrets.FLIT_USERNAME }}
-        FLIT_PASSWORD: ${{ secrets.FLIT_PASSWORD }}
-      run: |
+        python -m pip install --upgrade pip flit
         flit build
-        flit publish
+    - name: Publish
+      uses: pypa/gh-action-pypi-publish@release/v1
