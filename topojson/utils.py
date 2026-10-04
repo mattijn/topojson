@@ -48,6 +48,8 @@ class TopoOptions(object):
 
         if "topoquantize" in arguments:
             self.topoquantize = arguments["topoquantize"]
+            if isinstance(self.topoquantize, dict):
+                self.topoquantize = validate_transform(self.topoquantize)
         else:
             self.topoquantize = False
 
