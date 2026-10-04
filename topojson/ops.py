@@ -1185,6 +1185,46 @@ def simplify(
     return list_arcs
 
 
+def restore_collapsed_rings(arcs, original, rings):
+    """
+    Put back vertices of the original arcs in rings that simplification reduced to
+    fewer than three distinct points, so that each ring stays at least a triangle. Each
+    time the original vertex farthest from the ring is put back in its arc; as arcs are
+    shared, the rings next to it stay matched.
+
+    Parameters
+    ----------
+    arcs : list of list
+        Coordinates of the simplified arcs
+    original : numpy.ndarray
+        Coordinates of the arcs before simplification, padded with nan
+    rings : list of list of int
+        Arc references (~index for an arc used backward) of each ring
+
+    Returns
+    -------
+    list of list
+        The arcs, with vertices put back where needed
+    """
+    points = np.fromiter((len(a) - 1 for a in arcs), np.int64, len(arcs))
+    for ring in rings:
+        ids = [r if r >= 0 else ~r for r in ring]
+        for _ in range(3 - points[ids].sum()):
+            line = shapely.linestrings(np.concatenate([arcs[i] for i in ids]))
+            xy = [original[i][~np.isnan(original[i][:, 0])] for i in ids]
+            far = shapely.distance(shapely.points(np.concatenate(xy)), line)
+            if far.max() == 0:
+                break
+            arc = np.repeat(ids, [len(c) for c in xy])[far.argmax()]
+            pos = np.concatenate([np.arange(len(c)) for c in xy])[far.argmax()]
+            vertices = original[arc][~np.isnan(original[arc][:, 0])]
+            keep = (vertices[:, None] == np.asarray(arcs[arc])[None]).all(-1).any(1)
+            keep[pos] = True
+            arcs[arc] = vertices[keep].tolist()
+            points[arc] += 1
+    return arcs
+
+
 def winding_order(geom, order="CW_CCW"):
     """
     Function that force a certain winding order on the resulting output geometries. One

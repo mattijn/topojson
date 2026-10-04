@@ -7,6 +7,7 @@ import geojson
 import geopandas
 import geopandas.datasets
 import pytest
+import shapely
 from shapely import geometry, wkt
 
 import topojson
@@ -534,7 +535,8 @@ def test_topology_topoquantization_dups():
     topo = topojson.Topology(data=data, prequantize=False).toposimplify(4)
     topo = topo.topoquantize(50).to_dict()
 
-    assert topo["arcs"][6] == [[47, 48], [-3, 1]]
+    # an island of the Netherlands stays a triangle, so the bbox and grid include it
+    assert topo["arcs"][6] == [[47, 46], [-3, 1]]
 
 
 # parse topojson from file
@@ -828,3 +830,17 @@ def test_topology_exports_and_simplify_leave_topology_unchanged():
     simplified.output["arcs"].append([[0, 0], [1, 1]])
     quantized.output["arcs"][0].append([0, 0])
     assert topo.output == before
+
+
+def test_topology_toposimplify_keeps_rings_a_triangle():
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+
+    def collapsed(topo):
+        reasons = shapely.is_valid_reason(topo.to_gdf().geometry.values)
+        return sum(r.startswith("Too few points") for r in reasons)
+
+    topo = topojson.Topology(data)
+    # an islet of North Korea collapses on the grid already (#243)
+    assert collapsed(topo.toposimplify(2)) == collapsed(topo) == 1
+    # without prevent_oversimplify, small islands collapse
+    assert collapsed(topo.toposimplify(2, prevent_oversimplify=False)) > 1
