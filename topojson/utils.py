@@ -1,9 +1,8 @@
 import numpy as np
 import pprint
 import json
-from .ops import dequantize
+from .ops import arc_coordinates
 from .ops import bounds
-from .ops import np_array_from_arcs
 from .ops import winding_order
 from .ops import validate_transform
 
@@ -118,7 +117,6 @@ def coordinates(arcs, tp_arcs, geom_type):
         coord_list = []
         for i, arc in enumerate(arcs):
             arc_coords = tp_arcs[arc if arc >= 0 else ~arc][:: arc >= 0 or -1]
-            arc_coords = arc_coords[~np.isnan(arc_coords).any(axis=1)]
             coord_list.append(arc_coords[i > 0 :])
         coords = np.concatenate(coord_list).tolist()
         if geom_type in ["Polygon", "MultiPolygon"]:
@@ -366,10 +364,7 @@ def serialize_as_topojson(data, options):
         if "bbox" in data.keys():
             parse_topo["bbox"] = data["bbox"]
         else:
-            scale = data["transform"]["scale"]
-            translate = data["transform"]["translate"]
-            dequ_arcs = dequantize(np_array_from_arcs(data["arcs"]), scale, translate)
-            parse_topo["bbox"] = bounds(dequ_arcs)
+            parse_topo["bbox"] = bounds(arc_coordinates(data["arcs"], data["transform"]))
     else:
         parse_topo["bbox"] = bounds(arcs_asarray)
 
@@ -410,20 +405,7 @@ def serialize_as_svg(topo_object, separate=False, include_junctions=False):
         arcs = topo_object["arcs"]
         if arcs:
             # dequantize if quantization is applied
-            if "transform" in topo_object:
-
-                np_arcs = np_array_from_arcs(arcs)
-
-                transform = topo_object["transform"]
-                scale = transform["scale"]
-                translate = transform["translate"]
-
-                np_arcs = dequantize(np_arcs, scale, translate)
-                l_arcs = []
-                for ls in np_arcs:
-                    l_arcs.append(ls[~np.isnan(ls)[:, 0]].tolist())
-                arcs = l_arcs
-
+            arcs = arc_coordinates(arcs, topo_object.get("transform"))
             arcs = [geometry.LineString(arc) for arc in arcs]
 
     else:
@@ -499,24 +481,14 @@ def serialize_as_geojson(
     from shapely.geometry import shape
 
     # prepare arcs from topology object
-    arcs = topo_object["arcs"]
-    transform = None
-    if "transform" in topo_object:
-        transform = topo_object["transform"]
-        scale = transform["scale"]
-        translate = transform["translate"]
+    transform = topo_object.get("transform")
 
-    if arcs:
-        np_arcs = np_array_from_arcs(arcs)
-        # dequantize if quantization is applied
-        if transform:
-            np_arcs = dequantize(np_arcs, scale, translate)
-    else:
-        np_arcs = None
+    # dequantize if quantization is applied
+    np_arcs = arc_coordinates(topo_object["arcs"], transform)
 
     # evenly round the coordinates to the given number of decimals
     if decimals is not None and isinstance(decimals, int):
-        np_arcs = np.around(np_arcs, decimals=decimals)
+        np_arcs = [np.around(arc, decimals=decimals) for arc in np_arcs]
 
     # select object member from topology object
     if objectname not in topo_object["objects"]:
