@@ -4,7 +4,6 @@
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![github actions](https://github.com/mattijn/topojson/workflows/test/badge.svg)](https://github.com/mattijn/topojson/actions?query=workflow%3Atest)
 [![Conda version](https://anaconda.org/conda-forge/topojson/badges/version.svg)](https://anaconda.org/conda-forge/topojson)
-![shapely, numpy 2.0 compliant](https://img.shields.io/badge/shapely,%20numpy%201%20%26%202-compliant-brightgreen)
 
 # Encode spatial data as topology in Python!
 
@@ -48,7 +47,6 @@ This package `topojson` has the following hard dependencies:
 
 - `numpy`
 - `shapely`
-- `packaging`
 
 Further, optional soft dependencies are:
 
@@ -62,11 +60,11 @@ Further, optional soft dependencies are:
 
 For a better understanding how the different included simplification algorithms work
 
-- `rdp`: Ramer–Douglas–Peucker
+- `dp`: Douglas–Peucker
 - `vw`: Visvalingam-Whyatt
 
 You can have a look to this blog post on [Line simplification algorithms](https://martinfleischmann.net/line-simplification-algorithms/).
-There you can find out that the `epsilon` value for `vw` is area-based and that the `epsilon` value for `rdp` is distance-based.
+There you can find out that the `epsilon` value for `vw` is area-based and that the `epsilon` value for `dp` is distance-based.
 
 Also, if your source projection is in meters, than it is very likely that your `epsilon` value should be magnitudes larger than the examples on this page where the source projection is in degrees.
 

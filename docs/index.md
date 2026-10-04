@@ -21,6 +21,7 @@ With topojson it is possible to reduce the size of your spatial data. Mostly by 
     - [Types of input data](example/input-types.html)
     - [Settings and tuning](example/settings-tuning.html)
     - [Retrieval data types](example/output-types.html)
+    - [Incremental updates](example/incremental-updates.html)
 
 ## User Guide
 

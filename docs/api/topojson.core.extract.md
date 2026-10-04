@@ -44,14 +44,14 @@ object created including the keys `type`, `linestrings`, `coordinates` `bookkeep
 
 ### to_dict
 ```python
-Extract.to_dict(self)
+Extract.to_dict()
 ```
 
 Convert the Extract object to a dictionary.
 
 ### to_svg
 ```python
-Extract.to_svg(self, separate=False)
+Extract.to_svg(separate=False)
 ```
 
 Display the linestrings as SVG.

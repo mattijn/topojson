@@ -63,9 +63,98 @@ Insert coordinates that are on the line, but where no vertices exists
 > + ###### segment
 (numpy.array)
 
+## shared_path_ends
+```python
+shared_path_ends(pairs)
+```
+
+Start and end points of the paths that each pair of lines shares. These are the
+junctions of the topology. Lines that only touch or cross share no path, and equal
+lines are skipped.
+
+> #### Parameters
+> + ###### `pairs` : iterable of (LineString, LineString)
+    Pairs of lines whose envelopes intersect
+
+> #### Returns
+> + ###### set of tuple
+Junction coordinates
+
+## shared_path_ends_on_grid
+```python
+shared_path_ends_on_grid(linestrings)
+```
+
+Junctions of quantized lines: the start and end points of the paths that each
+pair of lines shares, as `shared_path_ends` returns them for all pairs, but
+computed for all lines at once on the integer grid.
+
+On the grid, a shared path is a run of segments that both lines contain. A
+vertex that lies inside a collinear segment of another line is first inserted
+in that line. A vertex is then a junction when the other lines on its incoming
+segment differ from those on its outgoing segment. Equal lines count once, as
+equal pairs share no path. Lines that pass a vertex twice, or that are closed
+and lie wholly on another line, are left to `shared_path_ends` together with
+the lines they share segments with. Segments and sets of lines are compared by
+64-bit hashes.
+
+> #### Parameters
+> + ###### `linestrings` : list of LineString
+    Lines with integer coordinates; a closed line continues from its end into
+    its start
+
+> #### Returns
+> + ###### set of tuple
+Junction coordinates
+
+## cut_line
+```python
+cut_line(line, tree_splitter, is_ring, shared_coords=False)
+```
+
+Cut a line at the junctions it passes through. A ring is first rotated to start
+at a junction. Collinear points are removed from each part.
+
+> #### Parameters
+> + ###### `line` : shapely.geometry.LineString
+    Line to cut
+> + ###### `tree_splitter` : STRtree or None
+    Spatial index on the junction points; None if there are no junctions
+> + ###### `is_ring` : bool
+    True if the line is the ring of a polygon
+> + ###### `shared_coords` : bool
+    True to only cut at junctions that are vertices of the line
+
+> #### Returns
+> + ###### list of numpy.ndarray
+Coordinates of the parts
+
+## cut_lines_on_grid
+```python
+cut_lines_on_grid(linestrings, junctions, is_ring)
+```
+
+Cut quantized lines at the junctions they pass through, as `cut_line` does for
+one line, for all lines at once. A ring is first rotated to start at its first
+junction; collinear points are removed from each part.
+
+> #### Parameters
+> + ###### `linestrings` : list of LineString
+    Lines with integer coordinates
+> + ###### `junctions` : list of Point
+    Junctions with integer coordinates
+> + ###### `is_ring` : numpy.ndarray of bool
+    True for the lines that are the ring of a polygon
+
+> #### Returns
+> + ###### list of numpy.ndarray
+Coordinates of the parts, line after line
+numpy.ndarray
+    Number of parts of each line
+
 ## fast_split
 ```python
-fast_split(line, splitter)
+fast_split(line, splitter, is_ring)
 ```
 
 Split a LineString (numpy.array) with a Point or MultiPoint.
@@ -76,6 +165,10 @@ This function is a replacement for the shapely.ops.split function, but faster.
     numpy array with coordinates that you like to be split
 > + ###### `splitter` : numpy.array
     numpy array with coordinates on which the line should be tried splitting
+> + ###### `is_ring` : bool
+    True if the line represents a ring. In this case, for the first point found, the
+    linestring will be rotated rather than split. For consecutive points it will be
+    split.
 
 > #### Returns
 > + ###### list of numpy.array
@@ -188,6 +281,26 @@ lists_from_np_array(np_array)
 Function to convert numpy array to list, where elements set as np.nan
 are filtered
 
+## arc_coordinates
+```python
+arc_coordinates(arcs, transform=None)
+```
+
+Coordinates of each arc as an array of its own, so that memory follows the number
+of coordinates instead of the number of arcs times the longest arc. With a
+transform, the arcs are delta-encoded integers on its grid; they are decoded and
+scaled back.
+
+> #### Parameters
+> + ###### `arcs` : list of lists
+    Arcs of a topology
+> + ###### `transform` : dict, optional
+    TopoJSON transform (`scale` and `translate`) of the arcs
+
+> #### Returns
+> + ###### list of numpy.ndarray
+(n, 2) float coordinates of each arc
+
 ## get_matches
 ```python
 get_matches(geoms, tree_idx)
@@ -239,9 +352,43 @@ Linestrings with non-overlapping envelopes are not returned as combination.
 > + ###### numpy.array
 2 dimensional array, with on each row the index combination
 
+## validate_transform
+```python
+validate_transform(transform)
+```
+
+Validate a TopoJSON transform and return it as a new dict with float values. A
+transform that is not valid raises a `ValueError`.
+
+> #### Parameters
+> + ###### `transform` : dict
+    TopoJSON transform with keys `scale` (`[kx, ky]`, both positive) and
+    `translate` (`[x0, y0]`).
+
+> #### Returns
+> + ###### dict
+The transform with float values for `scale` and `translate`
+
+## remove_spikes
+```python
+remove_spikes(line)
+```
+
+Remove spikes from a quantized line: vertices where the line turns back over the
+same segment. End points of open lines are kept and closed rings stay closed. A
+line that would collapse is returned unchanged.
+
+> #### Parameters
+> + ###### `line` : numpy.ndarray
+    (n, 2) integer coordinates without consecutive duplicates
+
+> #### Returns
+> + ###### numpy.ndarray
+coordinates without spikes
+
 ## quantize
 ```python
-quantize(linestrings, bbox, quant_factor=1000000.0)
+quantize(linestrings, bbox, quant_factor=100000.0, transform=None)
 ```
 
 Function that applies quantization. Quantization removes information by reducing
@@ -250,19 +397,31 @@ the precision of each coordinate, effectively snapping each point to a regular g
 > #### Parameters
 > + ###### `linestrings` : list of shapely.geometry.LineStrings
     LineStrings that will be quantized
+> + ###### `bbox` : tuple
+    Bounding box (`x0`, `y0`, `x1`, `y1`) used to derive the grid. Ignored when
+    `transform` is given.
 > + ###### `quant_factor` : int
     Quantization factor. Normally this varies between 1e4, 1e5, 1e6. Where a
-    higher number means a bigger grid where the coordinates can snap to.
+    higher number means a bigger grid where the coordinates can snap to. Ignored
+    when `transform` is given.
+> + ###### `transform` : dict, optional
+    Fixed TopoJSON transform (`{"scale": [kx, ky], "translate": [x0, y0]}`) that
+    defines the grid. When given, the grid does not depend on `bbox`.
 
 > #### Returns
+> + ###### list
+quantized linestrings
 > + ###### dict
 `transform`, scale (`kx`, `ky`) and translation (`x0`, `y0`) values
-> + ###### array
-`bbox`, bounding box of all linestrings
 
 ## simplify
 ```python
-simplify(linestrings, epsilon, algorithm='dp', package='simplification', input_as='linestring', prevent_oversimplify=True)
+simplify(linestrings,
+         epsilon,
+         algorithm='dp',
+         package='simplification',
+         input_as='linestring',
+         prevent_oversimplify=True)
 ```
 
 Function that simplifies linestrings. The goal of line simplification is to reduce
@@ -272,7 +431,6 @@ essential shape of the lines in the process.
 One can choose between the Douglas-Peucker ["dp"] algorithm (which simplifies
 a line based upon vertical interval) and Visvalingam–Whyatt ["vw"] (which
 progressively removes points with the least-perceptible change).
-
 
 Docs
 * https://observablehq.com/@lemonnish/minify-topojson-in-the-browser
@@ -285,12 +443,12 @@ Docs
 > + ###### `linestrings` : list of shapely.geometry.LineStrings
     LineStrings that will be simplified
 > + ###### `epsilon` : int
-    Simplification factor. Normally this varies 1.0, 0.1 or 0.001 for "rdp" and
+    Simplification factor. Normally this varies 1.0, 0.1 or 0.001 for "dp" and
     30-100 for "vw".
 > + ###### `algorithm` : str, optional
     Choose between `dp` for Douglas-Peucker and `vw` for Visvalingam–Whyatt.
-    Defaults to `dp`, as its evaluation maintains to be good (Shi, W. & 
-    Cheung, C., 2006)
+    Defaults to `dp`, as its evaluation maintains to be good (Shi, W. &
+    Cheung, C., 2006).
 > + ###### `package` : str, optional
     Choose between `simplification` or `shapely`. Both packages contains
     simplification algorithms (`shapely` only `dp`, and `simplification` both `dp`
@@ -298,12 +456,59 @@ Docs
 > + ###### `input_as` : str, optional
     Choose between `linestring` or `array`. This function is being called from
     different locations with different input types. Choose `linestring` if the input
-    type are shapely.geometry.LineString or `array` if the input are numpy.array
-    coordinates
+    type are shapely.geometry.LineString or `array` if the input is a list of
+    coordinate arrays
 
 > #### Returns
-> + ###### list of shapely.geometry.LineStrings
+> + ###### list of shapely.geometry.LineStrings or ndarrays, depending on the type of the input
 LineStrings that are simplified
+
+## simplify_coverage
+```python
+simplify_coverage(linestrings, polygons, epsilon, exterior_cw=None)
+```
+
+Simplify the rings of polygons together as a coverage, with GEOS
+(`shapely.coverage_simplify`, Visvalingam-Whyatt): an edge shared by two polygons
+is simplified once, so that they stay matched, and each ring keeps at least three
+points. The polygons should form a valid coverage: no overlaps, and the vertices
+of shared edges equal.
+
+> #### Parameters
+> + ###### `linestrings` : list of LineString
+    Rings and lines; the rings of the polygons are replaced in place
+> + ###### `polygons` : list of list of int
+    Index into `linestrings` of the rings of each polygon, exterior first
+> + ###### `epsilon` : float
+    Tolerance of `shapely.coverage_simplify`
+> + ###### `exterior_cw` : bool, optional
+    Orientation of the exterior rings in the result; `None` keeps it as is
+
+> #### Returns
+> + ###### list of LineString
+The linestrings, with the rings simplified
+
+## restore_collapsed_rings
+```python
+restore_collapsed_rings(arcs, original, rings)
+```
+
+Put back vertices of the original arcs in rings that simplification reduced to
+fewer than three distinct points, so that each ring stays at least a triangle. Each
+time the original vertex farthest from the ring is put back in its arc; as arcs are
+shared, the rings next to it stay matched.
+
+> #### Parameters
+> + ###### `arcs` : list of list
+    Coordinates of the simplified arcs
+> + ###### `original` : list of numpy.ndarray
+    Coordinates of the arcs before simplification
+> + ###### `rings` : list of list of int
+    Arc references (~index for an arc used backward) of each ring
+
+> #### Returns
+> + ###### list of list
+The arcs, with vertices put back where needed
 
 ## winding_order
 ```python
@@ -395,15 +600,58 @@ within the "properties" dictionary, part of the geometry.
 delta_encoding(linestrings)
 ```
 
-Function to apply delta-encoding to linestrings.
+Delta-encode linestrings: the first coordinate of each linestring is absolute,
+every next coordinate is relative to the previous one. All linestrings are
+encoded at once.
 
 > #### Parameters
-> + ###### `linestrings` : list of shapely.geometry.LineStrings
-    LineStrings that will be delta-encoded
+> + ###### `linestrings` : list of shapely.geometry.LineStrings, arrays or lists
+    Linestrings with integer coordinates
 
 > #### Returns
-> + ###### list of shapely.geometry.LineStrings
-LineStrings that are delta-encoded
+> + ###### list of lists
+Delta-encoded linestrings
+
+## delta_decoding
+```python
+delta_decoding(arcs)
+```
+
+Decode delta-encoded arcs to absolute coordinates. All arcs are decoded at once.
+
+> #### Parameters
+> + ###### `arcs` : list of lists
+    Delta-encoded arcs
+
+> #### Returns
+> + ###### list of numpy.ndarray
+(n, 2) integer coordinates of each arc
+
+## cart
+```python
+cart(arr)
+```
+
+Function that returns all combinations as a 2D array
+[3, 152,  62, 52] is returned as [[152,  62], [152,  52], [152,   3]]
+
+## hash_paths
+```python
+hash_paths(paths)
+```
+
+Hash of each path that is the same for duplicate paths: equal coordinates in any
+direction and, for a closed path, from any start. The x and y values of a path are
+hashed as multisets (the closing point of a closed path left out), together with
+their number and whether the path is closed.
+
+> #### Parameters
+> + ###### `paths` : list of numpy.ndarray
+    Coordinates of each path
+
+> #### Returns
+> + ###### numpy.ndarray
+int64 hash of each path
 
 ## find_duplicates
 ```python
@@ -411,7 +659,7 @@ find_duplicates(segments_list, type='array')
 ```
 
 Function for solely detecting and recording duplicate LineStrings. The function
-converts sorts the coordinates of each linestring and gets the hash. Using the
+converts and sorts the coordinates of each linestring and gets the hash. Using the
 hashes it can quickly detect duplicates and return the indices.
 
 > #### Parameters
@@ -419,7 +667,6 @@ hashes it can quickly detect duplicates and return the indices.
     list of valid paths
 > + ###### `type` : str
     set if paths is `array` or `linestring`
-
 
 ## map_values
 ```python

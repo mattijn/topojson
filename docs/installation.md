@@ -39,7 +39,8 @@ Returns something as such:
     "objects": {
         "data": {
             "geometries": [
-                {"type": "Polygon", "arcs": [[-2, 0]]}, {"type": "Polygon", "arcs": [[1, 2]]}
+                {"type": "Polygon", "arcs": [[-2, 0]], "id": 0},
+                {"type": "Polygon", "arcs": [[1, 2]], "id": 1}
             ],
             "type": "GeometryCollection"
         }

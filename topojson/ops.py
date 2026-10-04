@@ -915,7 +915,8 @@ def select_unique_combs(linestrings):
 
 def validate_transform(transform):
     """
-    Validate a TopoJSON transform and return it as a new dict with float values.
+    Validate a TopoJSON transform and return it as a new dict with float values. A
+    transform that is not valid raises a `ValueError`.
 
     Parameters
     ----------
@@ -926,12 +927,7 @@ def validate_transform(transform):
     Returns
     -------
     dict
-        `{"scale": [kx, ky], "translate": [x0, y0]}` with float values
-
-    Raises
-    ------
-    ValueError
-        If the transform is not valid.
+        The transform with float values for `scale` and `translate`
     """
 
     try:
@@ -1126,7 +1122,7 @@ def simplify(
     linestrings : list of shapely.geometry.LineStrings
         LineStrings that will be simplified
     epsilon : int
-        Simplification factor. Normally this varies 1.0, 0.1 or 0.001 for "rdp" and
+        Simplification factor. Normally this varies 1.0, 0.1 or 0.001 for "dp" and
         30-100 for "vw".
     algorithm : str, optional
         Choose between `dp` for Douglas-Peucker and `vw` for Visvalingam–Whyatt.
