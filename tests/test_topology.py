@@ -6,6 +6,7 @@ import fiona
 import geojson
 import geopandas
 import geopandas.datasets
+import numpy as np
 import pytest
 import shapely
 from shapely import geometry, wkt
@@ -886,3 +887,20 @@ def test_topology_presimplify_true_uses_default_factor():
     default = topojson.Topology(data, presimplify=True).to_dict()
     assert default == topojson.Topology(data, presimplify=2).to_dict()
     assert default != topojson.Topology(data, presimplify=1).to_dict()
+
+
+# arcs are not padded to the longest arc (#213)
+def test_topology_memory_follows_coordinates_not_longest_arc():
+    import tracemalloc
+
+    squares = [geometry.box(i, 0, i + 1, 1) for i in range(300)]
+    t = np.linspace(0, 2 * np.pi, 10000)
+    ellipse = geometry.LineString(np.c_[150 + 100 * np.cos(t), 50 + 40 * np.sin(t)])
+    topo = topojson.Topology(squares + [ellipse])
+    for export in (lambda: topo.toposimplify(0.01), topo.to_geojson):
+        tracemalloc.start()
+        export()
+        peak = tracemalloc.get_traced_memory()[1]
+        tracemalloc.stop()
+        # padded to the longest arc, this took about 300 MB
+        assert peak < 50e6

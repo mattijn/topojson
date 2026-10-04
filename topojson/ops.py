@@ -537,7 +537,7 @@ def cut_lines_on_grid(linestrings, junctions, is_ring):
     cross = u[:, 0] * w[:, 1] - w[:, 0] * u[:, 1]
     keep = np.ones(len(xy), bool)
     keep[mid[cross == 0]] = False
-    parts = np.split(xy[keep], np.flatnonzero(start[keep])[1:])
+    parts = _split(xy[keep], np.flatnonzero(start[keep])[1:])
     return parts, np.bincount(li[take][start], minlength=len(lines))
 
 
@@ -790,6 +790,36 @@ def np_array_from_arcs(arcs):
     for idx in range(no_arcs):
         np_array[idx, 0 : len(arcs[idx])] = arcs[idx]
     return np_array
+
+
+def arc_coordinates(arcs, transform=None):
+    """
+    Coordinates of each arc as an array of its own, so that memory follows the number
+    of coordinates instead of the number of arcs times the longest arc. With a
+    transform, the arcs are delta-encoded integers on its grid; they are decoded and
+    scaled back.
+
+    Parameters
+    ----------
+    arcs : list of lists
+        Arcs of a topology
+    transform : dict, optional
+        TopoJSON transform (`scale` and `translate`) of the arcs
+
+    Returns
+    -------
+    list of numpy.ndarray
+        (n, 2) float coordinates of each arc
+    """
+    if not len(arcs):
+        return []
+    if transform is None:
+        xy = np.concatenate(arcs).astype(float)
+        lengths = np.fromiter(map(len, arcs), np.int64, len(arcs))
+    else:
+        xy, lengths = _decoded(arcs)
+        xy = xy * transform["scale"] + transform["translate"]
+    return _split(xy, np.cumsum(lengths)[:-1])
 
 
 def dequantize(np_arcs, scale, translate):
@@ -1047,7 +1077,7 @@ def quantize(linestrings, bbox, quant_factor=1e5, transform=None):
     coords, idx = coords[~repeated], idx[~repeated]
     counts = np.bincount(idx, minlength=n)
     starts = np.cumsum(counts) - counts
-    lines = np.split(coords, starts[1:])
+    lines = _split(coords, starts[1:])
 
     # snapping to the grid can create spikes; only a few lines have them
     spiky = _lines_with_spikes(coords, starts, counts)
@@ -1109,8 +1139,8 @@ def simplify(
     input_as : str, optional
         Choose between `linestring` or `array`. This function is being called from
         different locations with different input types. Choose `linestring` if the input
-        type are shapely.geometry.LineString or `array` if the input are numpy.array
-        coordinates
+        type are shapely.geometry.LineString or `array` if the input is a list of
+        coordinate arrays
 
     Returns
     -------
@@ -1130,14 +1160,14 @@ def simplify(
             logging.warning("".join(msg))
         keep_valid = prevent_oversimplify
         if input_as == "array":
-            # all arcs at once; the arrays are padded with nan
-            valid = ~np.isnan(linestrings[:, :, 0])
-            index = np.nonzero(valid)[0]
-            lines = shapely.linestrings(linestrings[valid], indices=index)
+            # all arcs at once
+            lengths = np.fromiter(map(len, linestrings), np.int64, len(linestrings))
+            index = np.repeat(np.arange(len(linestrings)), lengths)
+            lines = shapely.linestrings(np.concatenate(linestrings), indices=index)
             lines = shapely.simplify(lines, epsilon, preserve_topology=keep_valid)
             xy, index = shapely.get_coordinates(lines, return_index=True)
             count = np.bincount(index, minlength=len(lines))
-            list_arcs = [a.tolist() for a in np.split(xy, np.cumsum(count)[:-1])]
+            list_arcs = [a.tolist() for a in _split(xy, np.cumsum(count)[:-1])]
         elif input_as == "linestring":
             lines = np.asarray(linestrings, dtype=object)
             lines = shapely.simplify(lines, epsilon, preserve_topology=keep_valid)
@@ -1166,9 +1196,7 @@ def simplify(
         if input_as == "array":
             list_arcs = []
             for ls in linestrings:
-                coords_to_simp = ls[~np.isnan(ls)[:, 0]]
-                simple_ls = alg(coords_to_simp, epsilon)
-                list_arcs.append(simple_ls.tolist())
+                list_arcs.append(alg(np.asarray(ls, dtype=float), epsilon).tolist())
         elif input_as == "linestring":
             for idx, ls in enumerate(linestrings):
                 coords_to_simp = np.array(ls.coords)
@@ -1235,8 +1263,8 @@ def restore_collapsed_rings(arcs, original, rings):
     ----------
     arcs : list of list
         Coordinates of the simplified arcs
-    original : numpy.ndarray
-        Coordinates of the arcs before simplification, padded with nan
+    original : list of numpy.ndarray
+        Coordinates of the arcs before simplification
     rings : list of list of int
         Arc references (~index for an arc used backward) of each ring
 
@@ -1250,13 +1278,13 @@ def restore_collapsed_rings(arcs, original, rings):
         ids = [r if r >= 0 else ~r for r in ring]
         for _ in range(3 - points[ids].sum()):
             line = shapely.linestrings(np.concatenate([arcs[i] for i in ids]))
-            xy = [original[i][~np.isnan(original[i][:, 0])] for i in ids]
+            xy = [original[i] for i in ids]
             far = shapely.distance(shapely.points(np.concatenate(xy)), line)
             if far.max() == 0:
                 break
             arc = np.repeat(ids, [len(c) for c in xy])[far.argmax()]
             pos = np.concatenate([np.arange(len(c)) for c in xy])[far.argmax()]
-            vertices = original[arc][~np.isnan(original[arc][:, 0])]
+            vertices = original[arc]
             keep = (vertices[:, None] == np.asarray(arcs[arc])[None]).all(-1).any(1)
             keep[pos] = True
             arcs[arc] = vertices[keep].tolist()
@@ -1417,13 +1445,26 @@ def delta_decoding(arcs):
     """
     if not len(arcs):
         return []
-    lengths = np.fromiter(map(len, arcs), dtype=np.int64)
+    xy, lengths = _decoded(arcs)
+    return _split(xy, np.cumsum(lengths)[:-1])
+
+
+def _split(array, indices):
+    """As `np.split(array, indices)`, but quicker for many small parts."""
+    bounds = [0, *np.asarray(indices).tolist(), len(array)]
+    return [array[a:b] for a, b in zip(bounds[:-1], bounds[1:])]
+
+
+def _decoded(arcs):
+    """Absolute coordinates of delta-encoded arcs, all arcs in one array, and the
+    number of coordinates of each arc."""
+    lengths = np.fromiter(map(len, arcs), np.int64, len(arcs))
     xy = np.concatenate(arcs).astype(np.int64).cumsum(axis=0)
     starts = np.cumsum(lengths) - lengths
     # restart the cumulative sum at the first coordinate of each arc
     offset = np.zeros((len(arcs), 2), dtype=np.int64)
     offset[1:] = xy[starts[1:] - 1]
-    return np.split(xy - np.repeat(offset, lengths, axis=0), starts[1:])
+    return xy - np.repeat(offset, lengths, axis=0), lengths
 
 
 def cart(arr):

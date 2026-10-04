@@ -7,8 +7,7 @@ import itertools
 from .extract import Extract
 from .hashmap import Hashmap
 from . import incremental
-from ..ops import np_array_from_arcs
-from ..ops import dequantize
+from ..ops import arc_coordinates
 from ..ops import quantize
 from ..ops import simplify
 from ..ops import restore_collapsed_rings
@@ -446,21 +445,8 @@ class Topology(Hashmap):
             return result
 
         # dequantize if quantization is applied
-        if "transform" in result.output.keys():
-            np_arcs = np_array_from_arcs(arcs)
-
-            transform = result.output["transform"]
-            scale = transform["scale"]
-            translate = transform["translate"]
-
-            np_arcs = dequantize(np_arcs, scale, translate)
-            l_arcs = []
-            for ls in np_arcs:
-                l_arcs.append(ls[~np.isnan(ls)[:, 0]].tolist())
-            arcs = l_arcs
-            lsbs = bounds(arcs)
-        else:
-            lsbs = bounds(arcs)
+        arcs = arc_coordinates(arcs, result.output.get("transform"))
+        lsbs = bounds(arcs)
 
         arcs_qnt, transform = quantize(arcs, result.output["bbox"], quant_factor)
         ptbs = bounds(result.output["coordinates"])
@@ -541,23 +527,17 @@ class Topology(Hashmap):
         if simplify_algorithm in ["dp", "vw"]:
             result.options.simplify_algorithm = simplify_algorithm
 
-        transform = None
         # get transform settings to dequantize if necessary
-        if "transform" in result.output.keys():
-            transform = result.output["transform"]
-            scale = transform["scale"]
-            translate = transform["translate"]
+        transform = result.output.get("transform")
 
         # first do the arcs
         arcs = result.output["arcs"]
         if arcs:
-            np_arcs = np_array_from_arcs(arcs)
-
             # dequantize if transform exist
             if transform is not None:
-                power_estimate = len(str(int(np_arcs[:, 0].max())))
+                power_estimate = len(str(int(np.max([arc[0] for arc in arcs]))))
                 quant_factor_estimate = 10**power_estimate
-                np_arcs = dequantize(np_arcs, scale, translate)
+            np_arcs = arc_coordinates(arcs, transform)
 
             # apply simplify
             result.output["arcs"] = simplify(
