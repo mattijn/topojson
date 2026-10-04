@@ -9,6 +9,7 @@ from .hashmap import Hashmap
 from . import incremental
 from ..ops import arc_coordinates
 from ..ops import quantize
+from ..ops import validate_transform
 from ..ops import simplify
 from ..ops import restore_collapsed_rings
 from ..ops import delta_encoding
@@ -53,10 +54,11 @@ class Topology(Hashmap):
         computed Topology (`topo.output["transform"]`). The grid then stays the same
         when features are added or removed.
         Default is `True` (which correspond to a quantize factor of `1e5`).
-    topoquantize : boolean or int
+    topoquantize : boolean, int or dict
         If the topoquantization parameter is specified, the input geometry is quantized
         after the topology is constructed. If the topology is already quantized this
-        will be resolved first before the topoquantization is applied. See for more
+        will be resolved first before the topoquantization is applied. As for
+        `prequantize`, a fixed TopoJSON transform can be given as a dict. See for more
         details the `prequantize` parameter.
         Default is `False`.
     presimplify : boolean, float
@@ -431,8 +433,12 @@ class Topology(Hashmap):
 
         Parameters
         ----------
-        quant_factor : float
-            tolerance parameter
+        quant_factor : float or dict
+            Quantization factor: the number of steps on each axis of the bounding
+            box. Or a fixed TopoJSON transform as a dict
+            (`{"scale": [kx, ky], "translate": [x0, y0]}`), for example a grid with
+            cells that are a multiple of those of `prequantize`, so that each
+            quantized point is also a point of the finer grid.
         inplace : bool, optional
             If `True`, do operation inplace and return `None`.
             Default is `False`.
@@ -452,7 +458,11 @@ class Topology(Hashmap):
         arcs = arc_coordinates(arcs, result.output.get("transform"))
         lsbs = bounds(arcs)
 
-        arcs_qnt, transform = quantize(arcs, result.output["bbox"], quant_factor)
+        if isinstance(quant_factor, dict):
+            quant_factor = validate_transform(quant_factor)
+            arcs_qnt, transform = quantize(arcs, None, transform=quant_factor)
+        else:
+            arcs_qnt, transform = quantize(arcs, result.output["bbox"], quant_factor)
         ptbs = bounds(result.output["coordinates"])
         result.output["bbox"] = compare_bounds(lsbs, ptbs)
 
@@ -570,7 +580,10 @@ class Topology(Hashmap):
             if transform is not None:
                 quant_factor = None
                 fixed_transform = None
-                if result.options.topoquantize > 0:
+                if isinstance(result.options.topoquantize, dict):
+                    # keep the fixed grid
+                    fixed_transform = result.options.topoquantize
+                elif result.options.topoquantize > 0:
                     # set default if not specifically given in the options
                     if isinstance(result.options.topoquantize, bool):
                         quant_factor = 1e5
@@ -866,7 +879,9 @@ class Topology(Hashmap):
             self.toposimplify(epsilon=simplify_factor, inplace=True)
 
         # topoquantize linestrings if required
-        if self.options.topoquantize > 0:
+        if isinstance(self.options.topoquantize, dict):
+            self.topoquantize(quant_factor=self.options.topoquantize, inplace=True)
+        elif self.options.topoquantize > 0:
             # set default if not specifically given in the options
             if isinstance(self.options.topoquantize, bool):
                 quant_factor = 1e5

@@ -786,6 +786,50 @@ def test_topology_prequantize_invalid_transform(transform):
         topojson.Topology(data, prequantize=transform)
 
 
+# topoquantize can be a fixed TopoJSON transform as well, e.g. a grid of which the
+# cells are a multiple of those of prequantize
+def test_topology_topoquantize_transform_is_nested_in_prequantize_grid():
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    fine = {"scale": [0.01, 0.01], "translate": [-180, -90]}
+    coarse = {"scale": [0.04, 0.04], "translate": [-180, -90]}
+    topo = topojson.Topology(data, prequantize=fine).topoquantize(coarse)
+
+    assert topo.output["transform"] == {
+        "scale": [0.04, 0.04],
+        "translate": [-180.0, -90.0],
+    }
+    # each point on the coarse grid is a point of the fine grid as well
+    xy = shapely.get_coordinates(topo.to_gdf().geometry)
+    steps = (xy - [-180, -90]) / 0.01
+    np.testing.assert_allclose(steps, np.round(steps), atol=1e-6)
+
+
+def test_topology_topoquantize_transform_as_option():
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    coarse = {"scale": [0.04, 0.04], "translate": [-180, -90]}
+    as_option = topojson.Topology(data, topoquantize=coarse).to_dict()
+    as_method = topojson.Topology(data).topoquantize(coarse).to_dict()
+
+    assert as_option["arcs"] == as_method["arcs"]
+    assert as_option["transform"] == as_method["transform"]
+
+
+def test_topology_topoquantize_transform_toposimplify_keeps_grid():
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    coarse = {"scale": [0.04, 0.04], "translate": [-180, -90]}
+    topo = topojson.Topology(data, topoquantize=coarse, toposimplify=1).to_dict()
+
+    assert topo["transform"] == {"scale": [0.04, 0.04], "translate": [-180.0, -90.0]}
+
+
+def test_topology_topoquantize_invalid_transform():
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    with pytest.raises(ValueError):
+        topojson.Topology(data).topoquantize({"scale": [0, 0.04], "translate": [0, 0]})
+    with pytest.raises(ValueError):
+        topojson.Topology(data, topoquantize={"scale": [0.04, 0.04]})
+
+
 def mixed_collections():
     square = geometry.Polygon([(0, 0), (2, 0), (2, 2), (0, 2)])
     return geopandas.GeoDataFrame(
