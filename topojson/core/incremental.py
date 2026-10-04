@@ -289,7 +289,7 @@ def _new_junctions(lines, arcs):
     pairs, near = [], []
     if arcs:
         ids = list(arcs)
-        lengths = np.fromiter((len(arcs[i]) for i in ids), dtype=np.int64)
+        lengths = np.fromiter((len(arcs[i]) for i in ids), dtype=np.intp)
         xy = np.concatenate([arcs[i] for i in ids])
         starts = np.cumsum(lengths) - lengths
         lo, hi = np.minimum.reduceat(xy, starts), np.maximum.reduceat(xy, starts)

@@ -1,0 +1,30 @@
+name: pyodide
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  compare:
+    name: Compare Python and Pyodide (32-bit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install
+        run: |
+          python -m pip install .
+          npm install --no-save pyodide
+      - name: Compare the outputs
+        run: |
+          python tests/pyodide/check.py > python.txt
+          node tests/pyodide/check.mjs > pyodide.txt
+          diff python.txt pyodide.txt

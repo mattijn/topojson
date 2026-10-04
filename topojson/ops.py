@@ -356,7 +356,7 @@ def _t_vertices(xy, li, s, h):
     cols = [np.tile(x[k], 2) for x in (d[:, 0], d[:, 1], c)] + [np.r_[lo[k], hi[k]]]
     o = np.lexsort(cols[::-1])
     new = _changes(*(col[o] for col in cols))
-    rank = np.empty(len(o), np.int64)
+    rank = np.empty(len(o), np.intp)
     rank[o] = np.cumsum(new) - 1
     count = np.maximum(rank[len(k) :] - rank[: len(k)] - 1, 0)
     seg = np.repeat(k, count)
@@ -517,7 +517,7 @@ def cut_lines_on_grid(linestrings, junctions, is_ring):
     split = np.isin(_hash(*xy.T), _hash(*jxy.T))
     count = np.bincount(li, minlength=len(lines))
     pos = np.arange(len(xy)) - (np.cumsum(count) - count)[li]
-    first = np.zeros(len(lines), np.int64)
+    first = np.zeros(len(lines), np.intp)
     first[li[split][::-1]] = pos[split][::-1]
     shift, n = (first * is_ring)[li], count[li] - 1
     rotated = np.where(pos == n, shift, (pos + shift) % np.maximum(n, 1))
@@ -595,7 +595,7 @@ def fast_split(line, splitter, is_ring):
 
     # split the linestring where each sub-array includes the split-point
     # create a new array with the index elements repeated
-    tmp_indices = np.zeros(line.shape[0], dtype=np.int64)
+    tmp_indices = np.zeros(line.shape[0], dtype=np.intp)
     tmp_indices[splitter_indices] = 1
     tmp_indices += 1
     ls_xy = np.repeat(line, tmp_indices, axis=0)
@@ -815,7 +815,7 @@ def arc_coordinates(arcs, transform=None):
         return []
     if transform is None:
         xy = np.concatenate(arcs).astype(float)
-        lengths = np.fromiter(map(len, arcs), np.int64, len(arcs))
+        lengths = np.fromiter(map(len, arcs), np.intp, len(arcs))
     else:
         xy, lengths = _decoded(arcs)
         xy = xy * transform["scale"] + transform["translate"]
@@ -1157,7 +1157,7 @@ def simplify(
         keep_valid = prevent_oversimplify
         if input_as == "array":
             # all arcs at once
-            lengths = np.fromiter(map(len, linestrings), np.int64, len(linestrings))
+            lengths = np.fromiter(map(len, linestrings), np.intp, len(linestrings))
             index = np.repeat(np.arange(len(linestrings)), lengths)
             lines = shapely.linestrings(np.concatenate(linestrings), indices=index)
             lines = shapely.simplify(lines, epsilon, preserve_topology=keep_valid)
@@ -1269,7 +1269,7 @@ def restore_collapsed_rings(arcs, original, rings):
     list of list
         The arcs, with vertices put back where needed
     """
-    points = np.fromiter((len(a) - 1 for a in arcs), np.int64, len(arcs))
+    points = np.fromiter((len(a) - 1 for a in arcs), np.intp, len(arcs))
     for ring in rings:
         ids = [r if r >= 0 else ~r for r in ring]
         for _ in range(3 - points[ids].sum()):
@@ -1416,7 +1416,7 @@ def delta_encoding(linestrings):
         lengths = np.bincount(idx, minlength=len(linestrings))
     else:
         xy = np.concatenate(linestrings)
-        lengths = np.fromiter(map(len, linestrings), dtype=np.int64)
+        lengths = np.fromiter(map(len, linestrings), dtype=np.intp)
     xy = xy.astype(np.int64)
     starts = np.cumsum(lengths) - lengths
     delta = np.diff(xy, axis=0, prepend=xy[:1])
@@ -1454,7 +1454,7 @@ def _split(array, indices):
 def _decoded(arcs):
     """Absolute coordinates of delta-encoded arcs, all arcs in one array, and the
     number of coordinates of each arc."""
-    lengths = np.fromiter(map(len, arcs), np.int64, len(arcs))
+    lengths = np.fromiter(map(len, arcs), np.intp, len(arcs))
     xy = np.concatenate(arcs).astype(np.int64).cumsum(axis=0)
     starts = np.cumsum(lengths) - lengths
     # restart the cumulative sum at the first coordinate of each arc
@@ -1492,7 +1492,7 @@ def hash_paths(paths):
     """
     if len(paths) == 0:
         return np.empty(0, np.int64)
-    count = np.fromiter(map(len, paths), np.int64, len(paths))
+    count = np.fromiter(map(len, paths), np.intp, len(paths))
     xy = np.concatenate(paths).astype(float)
     last = np.cumsum(count) - 1
     closed = (count > 1) & (xy[last - count + 1] == xy[last]).all(axis=1)
@@ -1573,7 +1573,7 @@ def map_values(arr, search_vals, replace_vals):
         new array with replaced values
     """
     N = max(arr.max(), max(search_vals)) + 1
-    maparr = np.empty(N, dtype=np.int64)
+    maparr = np.empty(N, dtype=np.intp)
 
     maparr[arr] = arr
     maparr[search_vals] = replace_vals
