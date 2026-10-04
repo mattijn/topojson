@@ -49,7 +49,7 @@ gdf.head()
 | 1 | def | POLYGON ((1 0, 2 0, 2 1, 1 1, 1 0)) |
 
 
-<img src="{{site.baseurl}}/images/geodataframe_plot.png" alt="Plot GeoDataFrame">
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_input_geodataframe.json" data-label="The two squares abc and def"><svg></svg></figure>
 
 ```python
 tp.Topology(gdf, prequantize=False).to_json(pretty=True)
@@ -128,7 +128,7 @@ with open("tests/files_topojson/naturalearth_lowres_africa.topojson", 'r') as f:
 topo = tp.Topology(data, object_name="data")
 topo.toposimplify(4).to_svg()
 ```
-<img src="../images/africa_toposimp.svg">
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_input_topojson.json" data-label="The arcs of Africa, simplified"><svg></svg></figure>
 </div>
 </div>
 
@@ -208,7 +208,7 @@ with fiona.open('tests/files_geojson/mesh2d.geojson') as fio_col:
 
 topo.to_svg()
 ```
-<img src="../images/mesh2d.svg">
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_input_fiona.json" data-label="The arcs of a mesh of triangles"><svg></svg></figure>
 </div>
 </div>
 
@@ -235,7 +235,7 @@ data = geometry.MultiLineString([
 
 tp.Topology(data).to_svg()
 ```
-<img src="../images/shared_paths.svg">
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_input_shapely.json" data-label="The arcs of two lines that share paths"><svg></svg></figure>
 </div>
 </div>
 
@@ -259,7 +259,7 @@ data = shapefile.Reader("tests/files_shapefile/southamerica.shp")
 topo = tp.Topology(data)
 topo.toposimplify(4).to_svg()
 ```
-<img src="../images/southamerica_toposimp.svg">
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_input_geo_interface.json" data-label="The arcs of South America, simplified"><svg></svg></figure>
 </div>
 </div>
 
@@ -418,7 +418,7 @@ topo.to_dict()
 topo.to_gdf(object_name='geom_2').plot(column='shrd_name')
 topo.to_gdf(object_name='geom_1').plot(column='uniq_name')
 ```
-<img src="../images/multiple_objects.png" style="max-width: 375px;">
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_input_list_of_geodataframes.json" data-label="The objects geom_2 and geom_1"><svg></svg></figure>
 
 </div>
 </div>
@@ -531,3 +531,4 @@ window.addEventListener("DOMContentLoaded", event => {
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@6"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@6"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>
+<script src="{{site.baseurl}}/js/steps.js" defer></script>
