@@ -246,7 +246,7 @@ def nested_panel(topo, title):
     ok = on_fine(xy, fine)
     return {
         "title": title,
-        "subtitle": f"{int(ok.sum())} of {len(xy)} vertices on a point of the fine grid",
+        "subtitle": f"{int(ok.sum())} of {len(xy)} on the fine grid",
         "faint": source,
         "dashed": quantized,
         "grid": lattice(fine, *snap_window),

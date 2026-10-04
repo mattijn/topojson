@@ -183,9 +183,9 @@
       const tall = bh > bw * 1.4;
       const k = single ? Math.min(400 / bw, 280 / bh) : tall ? Math.min(120 / bw, 240 / bh) : Math.min(150 / bw, 110 / bh);
       const pad = single ? 22 : 12, head = list.some(p => p.subtitle) ? 30 : list.some(p => p.title) ? 18 : 0;
-      // a panel is at least as wide as its title, the drawing in its middle
-      const title = Math.max(0, ...list.map(p => (p.title || "").length)) * 6.6;
-      const w = Math.max(bw * k + 2 * pad, title + 8), h = bh * k + 2 * pad + head;
+      // a panel is at least as wide as its title or subtitle, the drawing in its middle
+      const label = Math.max(0, ...list.map(p => Math.max((p.title || "").length, (p.subtitle || "").length))) * 6.6;
+      const w = Math.max(bw * k + 2 * pad, label + 8), h = bh * k + 2 * pad + head;
       const box = { x0, y1, k, pad: pad + (w - bw * k - 2 * pad) / 2, top: pad, head, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 };
       let cols = 0;
       const layout = () => {
