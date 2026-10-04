@@ -60,9 +60,9 @@ def test_topology_polygon_filled_island_no_junctions(prequantize):
 
     assert len(topo.output["arcs"]) == 2
     for index in range(len(topo_gdf)):
-        assert topo_gdf.geometry[index].equals(
-            data["geometry"][index]
-        ), f"{topo_gdf.geometry[index].wkt} != {data['geometry'][index]}"
+        assert topo_gdf.geometry[index].equals(data["geometry"][index]), (
+            f"{topo_gdf.geometry[index].wkt} != {data['geometry'][index]}"
+        )
 
 
 # Test created for following issue:
@@ -87,9 +87,9 @@ def test_topology_polygon_filled_island_with_junctions():
 
     assert len(topo.output["arcs"]) == 4
     for index in range(len(topo_gdf)):
-        assert topo_gdf.geometry[index].equals(
-            data["geometry"][index]
-        ), f"{topo_gdf.geometry[index].wkt} != {data['geometry'][index]}"
+        assert topo_gdf.geometry[index].equals(data["geometry"][index]), (
+            f"{topo_gdf.geometry[index].wkt} != {data['geometry'][index]}"
+        )
 
 
 # test winding order using TopoOptions object
@@ -136,7 +136,7 @@ def test_topology_prequantization():
     ]
     topo = topojson.Topology(data, topology=False, prequantize=1e4).to_dict()
 
-    assert "transform" in topo.keys()
+    assert "transform" in topo
 
 
 # test prequantization without computing topology
@@ -151,7 +151,7 @@ def test_topology_prequantization_including_delta_encoding():
     ]
     topo = topojson.Topology(data, topology=False, prequantize=1e4).to_dict()
 
-    assert "transform" in topo.keys()
+    assert "transform" in topo
 
 
 def test_topology_toposimplify_set_in_options():
@@ -161,7 +161,7 @@ def test_topology_toposimplify_set_in_options():
         data, prequantize=True, simplify_with="shapely", toposimplify=4
     ).to_dict()
 
-    assert "transform" in topo.keys()
+    assert "transform" in topo
 
 
 def test_topology_toposimplify_as_chaining():
@@ -170,7 +170,7 @@ def test_topology_toposimplify_as_chaining():
     topo = topojson.Topology(data, prequantize=True, simplify_with="shapely")
     topos = topo.toposimplify(2).to_dict()
 
-    assert "transform" in topos.keys()
+    assert "transform" in topos
 
 
 def test_topology_topoquantize_as_chaining():
@@ -179,7 +179,7 @@ def test_topology_topoquantize_as_chaining():
     topo = topojson.Topology(data, prequantize=False, simplify_with="shapely")
     topos = topo.topoquantize(1e2).to_dict()
 
-    assert "transform" in topos.keys()
+    assert "transform" in topos
 
 
 def test_topology_prequantize_topoquantize_as_chaining():
@@ -188,7 +188,7 @@ def test_topology_prequantize_topoquantize_as_chaining():
     topo = topojson.Topology(data, prequantize=1e6, topology=True)
     topos = topo.topoquantize(1e5).to_dict()
 
-    assert "transform" in topos.keys()
+    assert "transform" in topos
 
 
 def test_topology_to_svg():
@@ -196,7 +196,7 @@ def test_topology_to_svg():
     data = data[(data.ADMIN == "Antarctica")]
     topo = topojson.Topology(data, prequantize=1e6, presimplify=50, topology=True)
 
-    assert topo.to_svg() == None
+    assert topo.to_svg() is None
 
 
 def test_topology_with_arcs_without_linestrings():
@@ -206,7 +206,7 @@ def test_topology_with_arcs_without_linestrings():
     ]
     topo = topojson.Topology(data, prequantize=False, topology=True).to_dict()
 
-    assert "linestrings" not in topo.keys()
+    assert "linestrings" not in topo
 
 
 def test_topology_widget():
@@ -463,7 +463,8 @@ def test_topology_topoquantize():
     topo = tp.topoquantize(1e4).to_dict()
 
     assert topo["transform"]["translate"] == [0.0, 0.0]
-    assert topo["arcs"][0] == [[9999, 0], [-4999, 9999]]
+    # the lines only touch in (2, 2), they share no path, so they are not cut there
+    assert topo["arcs"][0] == [[9999, 0], [-4999, 9999], [-5000, -9999]]
 
 
 def test_topology_fiona_gpkg_to_geojson():
@@ -550,7 +551,7 @@ def test_topology_topoquantization_dups():
 
 # parse topojson from file
 def test_topology_topojson_from_file():
-    with open("tests/files_topojson/naturalearth.topojson", "r") as f:
+    with open("tests/files_topojson/naturalearth.topojson") as f:
         data = json.load(f)
 
     topo = topojson.Topology(data).to_dict()
@@ -561,7 +562,7 @@ def test_topology_topojson_from_file():
 # parse topojson file and plot with altair
 def test_topology_topojson_to_alt():
     # load topojson file into dict
-    with open("tests/files_topojson/naturalearth_lowres_africa.topojson", "r") as f:
+    with open("tests/files_topojson/naturalearth_lowres_africa.topojson") as f:
         data = json.load(f)
 
     # parse topojson file using `object_name`
@@ -575,7 +576,7 @@ def test_topology_topojson_to_alt():
 # Object of type int64 is not JSON serializable
 def test_topology_topojson_to_alt_int64():
     # load topojson file into dict
-    with open("tests/files_topojson/mesh2d.topojson", "r") as f:
+    with open("tests/files_topojson/mesh2d.topojson") as f:
         data = json.load(f)
 
     # parse topojson file using `object_name`
@@ -587,7 +588,7 @@ def test_topology_topojson_to_alt_int64():
 
 
 def test_topology_nested_list_properties():
-    from geojson import Feature, Polygon, FeatureCollection
+    from geojson import Feature, FeatureCollection, Polygon
 
     feat_1 = Feature(
         geometry=Polygon([[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]),
@@ -652,7 +653,7 @@ def test_topology_bbox_no_delta_transform():
 # test for https://github.com/mattijn/topojson/issues/140
 def test_topology_toposimplify_on_topojson_data():
     # load topojson file into dict
-    with open("tests/files_topojson/gm.topo.json", "r") as f:
+    with open("tests/files_topojson/gm.topo.json") as f:
         data = json.load(f)
 
     # read as topojson and as geojson
@@ -678,7 +679,7 @@ def test_topology_round_coordinates_geojson():
     assert coord_0 == [35.85, -2.74]
 
 
-def test_topology_topoquantize():
+def test_topology_topoquantize_as_option():
     # load example data representing continental Africa
     data = topojson.utils.example_data_africa()
     # compute the topology
@@ -712,9 +713,11 @@ def test_topology_write_multiple_object_json_dict():
 
     assert len(topo_dict["objects"]) == 2
 
+
 def test_topology_ignore_index_true_geojson():
-    
+
     from geojson import Feature, FeatureCollection, Polygon
+
     feat_1 = Feature(
         id="duplicate_id",
         geometry=Polygon([[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]),
@@ -723,14 +726,14 @@ def test_topology_ignore_index_true_geojson():
         id="duplicate_id",
         geometry=Polygon([[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]),
     )
-    fc = FeatureCollection([feat_1,feat_2])
+    fc = FeatureCollection([feat_1, feat_2])
 
     # Using ignore_index to use default feature ids.
     topo = topojson.Topology(fc, ignore_index=True).to_dict(options=True)
     geom = topo["objects"]["data"]["geometries"]
 
     index = [obj["id"] for obj in geom]
-    assert index == ["feature_0","feature_1"]
+    assert index == ["feature_0", "feature_1"]
 
 
 # prequantize can be a fixed TopoJSON transform, so the quantization grid does not
@@ -845,12 +848,17 @@ def mixed_collections():
         geometry=[
             square,
             geometry.GeometryCollection(
-                [square.buffer(1), geometry.LineString([(0, 0), (5, 5)])]
-                + [geometry.Point(5, 1)]
+                [
+                    square.buffer(1),
+                    geometry.LineString([(0, 0), (5, 5)]),
+                    geometry.Point(5, 1),
+                ]
             ),
             geometry.GeometryCollection(
-                [geometry.MultiPoint([(7, 7), (6, 6)])]
-                + [geometry.GeometryCollection([geometry.Point(8, 8)])]
+                [
+                    geometry.MultiPoint([(7, 7), (6, 6)]),
+                    geometry.GeometryCollection([geometry.Point(8, 8)]),
+                ]
             ),
             geometry.MultiPoint([(1, 4), (4, 1), (3, 3)]),
         ],
@@ -873,7 +881,7 @@ def test_topology_exports_and_simplify_leave_topology_unchanged():
     topo.to_json()
     topo.to_geojson()
     topo.to_gdf()
-    topo.__geo_interface__
+    _ = topo.__geo_interface__
     simplified = topo.toposimplify(1)
     quantized = topo.topoquantize(1e4)
     assert topo.output == before
@@ -923,7 +931,9 @@ def test_topology_toposimplify_keep_as_epsilon():
 def test_topology_toposimplify_keep_keeps_rings_a_triangle():
     data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     topo = topojson.Topology(data)
-    reasons = shapely.is_valid_reason(topo.toposimplify(keep=0).to_gdf().geometry.values)
+    reasons = shapely.is_valid_reason(
+        topo.toposimplify(keep=0).to_gdf().geometry.values
+    )
     assert sum(r.startswith("Too few points") for r in reasons) == 0
 
 
@@ -986,7 +996,7 @@ def test_topology_memory_follows_coordinates_not_longest_arc():
     squares = [geometry.box(i, 0, i + 1, 1) for i in range(300)]
     t = np.linspace(0, 2 * np.pi, 10000)
     ellipse = geometry.LineString(np.c_[150 + 100 * np.cos(t), 50 + 40 * np.sin(t)])
-    topo = topojson.Topology(squares + [ellipse])
+    topo = topojson.Topology([*squares, ellipse])
     for export in (lambda: topo.toposimplify(0.01), topo.to_geojson):
         tracemalloc.start()
         export()

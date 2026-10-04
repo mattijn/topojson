@@ -8,6 +8,18 @@ on:
       - main
 
 jobs:
+  lint:
+    name: Lint and format with ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: check
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: format --check
+
   do-test:
     name: Test on Python
     runs-on: ubuntu-latest
@@ -23,11 +35,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install test dependencies
         run: |
-          python -m pip install flit codecov pytest flake8
+          python -m pip install flit codecov pytest
       - name: Install package dependencies
         run: flit install --deps develop
-      - name: Lint with flake8
-        run: flake8 topojson
-        continue-on-error: true
       - name: Test with pytest
         run: pytest tests

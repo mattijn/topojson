@@ -1,8 +1,10 @@
-import fire
 import json
-from time import process_time
 from pathlib import Path
+from time import process_time
+
+import fire
 import geopandas
+
 import topojson
 
 # The files differ in what drives the computation time: the number of lines, their

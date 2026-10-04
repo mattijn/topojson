@@ -1,8 +1,8 @@
-import geopandas
 import fiona
+import geopandas
 from shapely import geometry
+
 from topojson.core.hashmap import Hashmap
-import pytest
 
 
 # duplicate rotated geometry bar with hole interior in geometry foo

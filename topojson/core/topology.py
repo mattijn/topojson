@@ -1,28 +1,34 @@
-import pprint
 import copy
 import hashlib
-import json
-import numpy as np
 import itertools
+import json
+import pprint
+
+import numpy as np
+
+from ..ops import (
+    arc_areas,
+    arc_coordinates,
+    bounds,
+    compare_bounds,
+    delta_encoding,
+    quantize,
+    restore_collapsed_rings,
+    simplify,
+    simplify_keep,
+    validate_transform,
+)
+from ..utils import (
+    TopoOptions,
+    instance,
+    serialize_as_geojson,
+    serialize_as_json,
+    serialize_as_svg,
+    serialize_as_topojson,
+)
+from . import incremental
 from .extract import Extract
 from .hashmap import Hashmap
-from . import incremental
-from ..ops import arc_areas
-from ..ops import arc_coordinates
-from ..ops import quantize
-from ..ops import validate_transform
-from ..ops import simplify
-from ..ops import simplify_keep
-from ..ops import restore_collapsed_rings
-from ..ops import delta_encoding
-from ..ops import bounds
-from ..ops import compare_bounds
-from ..utils import TopoOptions
-from ..utils import instance
-from ..utils import serialize_as_svg
-from ..utils import serialize_as_json
-from ..utils import serialize_as_topojson
-from ..utils import serialize_as_geojson
 
 
 class Topology(Hashmap):
@@ -148,7 +154,7 @@ class Topology(Hashmap):
         # shortcut when dealing with topojson data
         if (
             instance(data) == "dict"
-            and "type" in data.keys()
+            and "type" in data
             and data["type"].casefold() == "Topology".casefold()
         ):
             self.output, self.options = serialize_as_topojson(data, options)
@@ -165,7 +171,7 @@ class Topology(Hashmap):
         self._source_hashes = _source_hashes(data)
 
     def __repr__(self):
-        return "Topology(\n{}\n)".format(pprint.pformat(self.output))
+        return f"Topology(\n{pprint.pformat(self.output)}\n)"
 
     def _copy_output(self):
         """
@@ -212,7 +218,9 @@ class Topology(Hashmap):
             topo_object.pop("options", None)
         if state:
             # as pairs, so that ids keep their type in JSON
-            topo_object["source_hashes"] = [list(i) for i in self._source_hashes.items()]
+            topo_object["source_hashes"] = [
+                list(i) for i in self._source_hashes.items()
+            ]
         return topo_object
 
     def to_svg(self, separate=False):
@@ -401,9 +409,9 @@ class Topology(Hashmap):
 
     def to_widget(
         self,
-        slider_toposimplify={"min": 0, "max": 10, "step": 0.01, "value": 0.01},
-        slider_topoquantize={"min": 1, "max": 6, "step": 1, "value": 1e5, "base": 10},
-        slider_keep={"min": 0, "max": 1, "step": 0.01, "value": 0.1},
+        slider_toposimplify=None,
+        slider_topoquantize=None,
+        slider_keep=None,
     ):
         """
         Create an interactive widget based on Altair. The widget includes sliders to
@@ -428,9 +436,11 @@ class Topology(Hashmap):
 
         return serialize_as_ipywidgets(
             topo_object=self,
-            toposimplify=slider_toposimplify,
-            topoquantize=slider_topoquantize,
-            keep=slider_keep,
+            toposimplify=slider_toposimplify
+            or {"min": 0, "max": 10, "step": 0.01, "value": 0.01},
+            topoquantize=slider_topoquantize
+            or {"min": 1, "max": 6, "step": 1, "value": 1e5, "base": 10},
+            keep=slider_keep or {"min": 0, "max": 1, "step": 0.01, "value": 0.1},
         )
 
     def topoquantize(self, quant_factor, inplace=False):
@@ -619,7 +629,7 @@ class Topology(Hashmap):
         if inplace:
             # update into self
             self.output["arcs"] = result.output["arcs"]
-            if "transform" in result.output.keys():
+            if "transform" in result.output:
                 self.output["transform"] = result.output["transform"]
             self.options.toposimplify = result.options.toposimplify
         else:
@@ -664,7 +674,7 @@ class Topology(Hashmap):
         if options is not None:
             topo.options = TopoOptions(options)
         if hashes is not None:
-            topo._source_hashes = {fid: h for fid, h in hashes}
+            topo._source_hashes = dict(hashes)
         return topo
 
     def add(self, data, object_name=None):
@@ -737,7 +747,9 @@ class Topology(Hashmap):
         new_hashes = _source_hashes(data)
         if not new_hashes and len(data):
             raise TypeError("sync() needs a GeoDataFrame or GeoSeries")
-        if not self._source_hashes and self._ids(self._incremental_object_name(object_name)):
+        if not self._source_hashes and self._ids(
+            self._incremental_object_name(object_name)
+        ):
             raise ValueError(
                 "sync() does not know the input geometry of the current features. "
                 "Write the Topology with to_json(fp, state=True) and read it with "

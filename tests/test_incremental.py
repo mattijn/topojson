@@ -1,5 +1,4 @@
 import geopandas
-import numpy as np
 import pytest
 import shapely
 from shapely import geometry
@@ -96,10 +95,13 @@ def test_incremental_add_and_remove_points():
     )
     topo = topojson.Topology(data.iloc[:1])
     topo.add(data.iloc[1:])
-    assert topo.to_dict()["objects"]["data"]["geometries"][2]["coordinates"] == (
-        topojson.Topology(data, prequantize=topo.output["transform"]).to_dict()[
-            "objects"
-        ]["data"]["geometries"][2]["coordinates"]
+    assert (
+        topo.to_dict()["objects"]["data"]["geometries"][2]["coordinates"]
+        == (
+            topojson.Topology(data, prequantize=topo.output["transform"]).to_dict()[
+                "objects"
+            ]["data"]["geometries"][2]["coordinates"]
+        )
     )
     topo.remove([1])
     gdf = topo.to_gdf()
@@ -170,12 +172,17 @@ def test_incremental_add_and_remove_geometrycollection():
         {"NAME": ["gc", "nested"]},
         geometry=[
             geometry.GeometryCollection(
-                [data.geometry[3].buffer(1), geometry.LineString([(0, 0), (30, 30)])]
-                + [geometry.Point(5, 5)]
+                [
+                    data.geometry[3].buffer(1),
+                    geometry.LineString([(0, 0), (30, 30)]),
+                    geometry.Point(5, 5),
+                ]
             ),
             geometry.GeometryCollection(
-                [geometry.MultiPoint([(7, 7), (6, 6)])]
-                + [geometry.GeometryCollection([line])]
+                [
+                    geometry.MultiPoint([(7, 7), (6, 6)]),
+                    geometry.GeometryCollection([line]),
+                ]
             ),
         ],
         index=[900, 901],

@@ -18,7 +18,6 @@ def test_ops_remove_colinear_points():
     assert result.tolist() == test.tolist()
 
 
-
 def test_ops_remove_spikes():
     # ring that turns back at (0, 0)
     ring = np.array([[3, 0], [0, 0], [2, 0], [2, 2], [3, 2], [3, 0]])

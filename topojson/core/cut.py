@@ -1,16 +1,20 @@
+import copy
 import itertools
 import pprint
-import copy
+
 import numpy as np
 from shapely import geometry
 from shapely.strtree import STRtree
-from .join import Join
-from ..ops import cut_line
-from ..ops import cut_lines_on_grid
-from ..ops import find_duplicates
-from ..ops import np_array_from_lists
-from ..ops import remove_collinear_points
+
+from ..ops import (
+    cut_line,
+    cut_lines_on_grid,
+    find_duplicates,
+    np_array_from_lists,
+    remove_collinear_points,
+)
 from ..utils import serialize_as_svg
+from .join import Join
 
 
 class Cut(Join):
@@ -34,7 +38,7 @@ class Cut(Join):
         `bookkeeping_duplicates` and `bookkeeping_linestrings`
     """
 
-    def __init__(self, data, options={}):
+    def __init__(self, data, options=None):
         # execute previous step
         super().__init__(data, options)
 
@@ -46,7 +50,7 @@ class Cut(Join):
         self.output = self._cutter(self.output)
 
     def __repr__(self):
-        return "Cut(\n{}\n)".format(pprint.pformat(self.output))
+        return f"Cut(\n{pprint.pformat(self.output)}\n)"
 
     def to_dict(self):
         """
@@ -131,7 +135,9 @@ class Cut(Join):
                 # junctions are only existing in coordinates of linestring
                 for linestring, ring in zip(data["linestrings"], is_ring):
                     lines_split.append(
-                        cut_line(linestring, tree_splitter, ring, self.options.shared_coords)
+                        cut_line(
+                            linestring, tree_splitter, ring, self.options.shared_coords
+                        )
                     )
                 # flatten the splitted linestrings, create bookkeeping_geoms array
                 self._segments_list, bk_array = self._flatten_and_index(lines_split)
@@ -182,6 +188,7 @@ class Cut(Join):
             dict with for each data["linestrings"] index the geometry type of
             the object the linestring originated from.
         """
+
         # create dict with original geometry type per linestring
         def recurse_geometries(object):
             # If object is not a list, make it a list to be able to loop
@@ -204,9 +211,9 @@ class Cut(Join):
                                 arc_lines = bookkeeping_linestrings[arc_line_id]
                             for linestring_id in arc_lines:
                                 if linestring_id >= 0:
-                                    linestring_object_types[
-                                        linestring_id
-                                    ] = object_child["type"]
+                                    linestring_object_types[linestring_id] = (
+                                        object_child["type"]
+                                    )
 
         linestring_object_types = {}
         for object_key in objects:
