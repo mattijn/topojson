@@ -1,14 +1,13 @@
 import copy
 import pprint
+
 import numpy as np
 from shapely import geometry
 from shapely.ops import linemerge
-from .cut import Cut
-from ..ops import asvoid
-from ..ops import map_values
-from ..ops import lists_from_np_array
-from ..ops import cart
+
+from ..ops import asvoid, cart, lists_from_np_array, map_values
 from ..utils import serialize_as_svg
+from .cut import Cut
 
 
 class Dedup(Cut):
@@ -16,7 +15,7 @@ class Dedup(Cut):
     Dedup duplicates and merge contiguous arcs
     """
 
-    def __init__(self, data, options={}):
+    def __init__(self, data, options=None):
         # execute previous step
         super().__init__(data, options)
 
@@ -27,7 +26,7 @@ class Dedup(Cut):
         self.output = self._deduper(self.output)
 
     def __repr__(self):
-        return "Dedup(\n{}\n)".format(pprint.pformat(self.output))
+        return f"Dedup(\n{pprint.pformat(self.output)}\n)"
 
     def to_dict(self):
         """

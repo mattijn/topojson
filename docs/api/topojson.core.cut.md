@@ -10,7 +10,7 @@ nav_order: 4
 
 ## Cut
 ```python
-Cut(self, data, options={})
+Cut(self, data, options=None)
 ```
 
 This class targets the following objectives:

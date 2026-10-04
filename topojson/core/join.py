@@ -3,21 +3,21 @@ import copy
 import pprint
 
 import numpy as np
-
 from shapely import geometry
 from shapely.errors import ShapelyError
-from shapely.ops import linemerge
-from shapely.ops import shared_paths
+from shapely.ops import linemerge, shared_paths
 
-from ..ops import bounds
-from ..ops import compare_bounds
-from ..ops import quantize
-from ..ops import select_unique_combs
-from ..ops import shared_path_ends
-from ..ops import shared_path_ends_on_grid
+from ..ops import (
+    bounds,
+    compare_bounds,
+    quantize,
+    select_unique_combs,
+    shared_path_ends,
+    shared_path_ends_on_grid,
+    simplify,
+    simplify_coverage,
+)
 from ..utils import serialize_as_svg
-from ..ops import simplify
-from ..ops import simplify_coverage
 from .extract import Extract
 
 
@@ -48,7 +48,7 @@ class Join(Extract):
         Output of `Extract` with the key `junctions`, and `transform` if quantized
     """
 
-    def __init__(self, data, options={}):
+    def __init__(self, data, options=None):
         # execute previous step
         super().__init__(data, options)
 
@@ -61,7 +61,7 @@ class Join(Extract):
         self.output = self._joiner(self.output)
 
     def __repr__(self):
-        return "Join(\n{}\n)".format(pprint.pformat(self.output))
+        return f"Join(\n{pprint.pformat(self.output)}\n)"
 
     def to_dict(self):
         """
@@ -205,7 +205,7 @@ class Join(Extract):
 
             def _get_verts(geom):
                 # get coords of each LineString
-                return [x for x in geom.coords]
+                return list(geom.coords)
 
             geoms = {}
             junctions = []
@@ -223,7 +223,6 @@ class Join(Extract):
 
             self._junctions = [geometry.Point(xy) for xy in set(junctions)]
         else:
-
             # junctions are the ends of the paths shared by two linestrings
             if quantized:
                 ends = shared_path_ends_on_grid(data["linestrings"])
@@ -245,7 +244,7 @@ class Join(Extract):
         """
 
         if not isinstance(merged_line, geometry.LineString):
-            merged_line = [ls for ls in merged_line.geoms]
+            merged_line = list(merged_line.geoms)
         else:
             merged_line = [merged_line]
         return merged_line
@@ -277,7 +276,6 @@ class Join(Extract):
 
         # continue if any shared path was detected
         if fw_bw and not fw_bw.is_empty:
-
             forward = fw_bw.geoms[0]
             backward = fw_bw.geoms[1]
 

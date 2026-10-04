@@ -39,8 +39,21 @@ From a clone of the repository, an environment with [uv](https://docs.astral.sh/
 
 ```bash
 uv venv --python 3.13
-uv pip install -e ".[dev]" pytest flake8
+uv pip install -e ".[dev]" pytest
 uv run pytest tests
+```
+
+The code is linted and formatted with [ruff](https://docs.astral.sh/ruff/), as configured in `pyproject.toml`; CI checks both:
+
+```bash
+uvx ruff check
+uvx ruff format
+```
+
+The public API (`Topology`) is typed, and CI checks the types with mypy, also from the side of a user (`tests/typing_api.py`):
+
+```bash
+uv run --with mypy mypy topojson tests/typing_api.py
 ```
 
 Or install the package including optional dependencies directly from the GitHub repository using:
@@ -53,7 +66,7 @@ Or partly using conda:
 ```bash
 conda create -n topo_dev
 conda activate topo_dev
-conda install flit codecov pytest flake8
+conda install flit codecov pytest ruff
 conda install numpy shapely geojson pyshp fiona geopandas altair ipywidgets
 pip install simplification
 ```
@@ -101,4 +114,16 @@ The lens on the overview page draws the arcs of Africa with the weight of each v
 
 ```bash
 python generate/make-docs-lens.py
+```
+
+The figures of the steps on the page How it works draw what each step gives for the toy example, from `docs/json/steps.json`; to update it:
+
+```bash
+python generate/make-docs-steps.py
+```
+
+The other figures drawn this way, on the pages Example usage, Types of input data, Settings and tuning, Retrieval data types and Quantization, come from `docs/json/fig_*.json`; to update them:
+
+```bash
+python generate/make-docs-figures.py
 ```

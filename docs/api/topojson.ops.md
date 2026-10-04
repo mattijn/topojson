@@ -429,7 +429,7 @@ the number of points by deleting some trivial points, but without destroying the
 essential shape of the lines in the process.
 
 One can choose between the Douglas-Peucker ["dp"] algorithm (which simplifies
-a line based upon vertical interval) and Visvalingam–Whyatt ["vw"] (which
+a line based upon vertical interval) and Visvalingam-Whyatt ["vw"] (which
 progressively removes points with the least-perceptible change).
 
 Docs
@@ -446,7 +446,7 @@ Docs
     Simplification factor. Normally this varies 1.0, 0.1 or 0.001 for "dp" and
     30-100 for "vw".
 > + ###### `algorithm` : str, optional
-    Choose between `dp` for Douglas-Peucker and `vw` for Visvalingam–Whyatt.
+    Choose between `dp` for Douglas-Peucker and `vw` for Visvalingam-Whyatt.
     Defaults to `dp`, as its evaluation maintains to be good (Shi, W. &
     Cheung, C., 2006).
 > + ###### `package` : str, optional
@@ -490,19 +490,25 @@ Weight of each vertex; `inf` for the first and the last vertex of each line
 
 ## simplify_keep
 ```python
-simplify_keep(linestrings, keep)
+simplify_keep(linestrings, keep, algorithm='dp')
 ```
 
-Simplify lines with Douglas-Peucker to a share of their vertices: the share
-`keep` of the inner vertices with the largest weights (`dp_weights`) is kept, and
-the first and the last vertex of each line. Vertices with an equal weight are kept
-or removed together, so a little fewer vertices can be kept.
+Simplify lines to a share of their vertices: the share `keep` of the inner
+vertices that the algorithm removes last is kept, and the first and the last
+vertex of each line. The result is that of `simplify` with the tolerance that is
+returned. Vertices with an equal weight are kept or removed together, so the share
+can be a little off.
+
+Douglas-Peucker uses the weight of each vertex (`dp_weights`). Visvalingam-Whyatt
+searches the tolerance of the package simplification (`_vw_tolerance`).
 
 > #### Parameters
 > + ###### `linestrings` : list of numpy.ndarray
     Coordinates of the lines
 > + ###### `keep` : float
     Share of the inner vertices to keep, between 0 and 1
+> + ###### `algorithm` : str
+    `dp` for Douglas-Peucker or `vw` for Visvalingam-Whyatt
 
 > #### Returns
 > + ###### list of list

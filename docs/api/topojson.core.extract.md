@@ -10,7 +10,7 @@ nav_order: 2
 
 ## Extract
 ```python
-Extract(self, data, options={})
+Extract(self, data, options=None)
 ```
 
 This class targets the following objectives:

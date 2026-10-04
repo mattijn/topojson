@@ -18,7 +18,6 @@ def test_ops_remove_colinear_points():
     assert result.tolist() == test.tolist()
 
 
-
 def test_ops_remove_spikes():
     # ring that turns back at (0, 0)
     ring = np.array([[3, 0], [0, 0], [2, 0], [2, 2], [3, 2], [3, 0]])
@@ -177,3 +176,28 @@ def test_ops_simplify_keep():
     assert half == topojson.ops.simplify(
         lines, epsilon, input_as="array", prevent_oversimplify=False
     )
+
+
+# Visvalingam-Whyatt: a search of the tolerance of the package simplification
+@pytest.mark.parametrize("keep", [0, 0.02, 0.1, 0.5, 1])
+def test_ops_simplify_keep_vw(keep):
+    import geopandas
+
+    import topojson
+
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    topo = topojson.Topology(data)
+    arcs = topojson.ops.arc_coordinates(topo.output["arcs"], topo.output["transform"])
+    inner = sum(len(a) - 2 for a in arcs)
+    simple, epsilon = topojson.ops.simplify_keep(arcs, keep, "vw")
+
+    # the result of the tolerance, with the share of vertices asked for
+    assert simple == topojson.ops.simplify(
+        arcs,
+        epsilon,
+        algorithm="vw",
+        package="simplification",
+        input_as="array",
+        prevent_oversimplify=False,
+    )
+    assert abs(sum(len(a) - 2 for a in simple) - keep * inner) <= 0.001 * inner

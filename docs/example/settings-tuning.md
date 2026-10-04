@@ -40,7 +40,7 @@ data = geometry.MultiLineString([
 ])
 data
 ```
-<img src="../images/two_polygon.svg">
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_topology_input.json" data-label="Two squares that share a side"><svg></svg></figure>
 
 By setting `topology=False` a TopoJSON structured file format is created without considering shared segments (the setting `prequantize=False` avoids computing the delta-encoding):
 ```python
@@ -129,7 +129,7 @@ data = geometry.MultiLineString([
 ])
 data
 ```
-<img src="../images/two_no_touching_polygon.svg">
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_prequantize_input.json" data-label="Two squares with a gap between them"><svg></svg></figure>
 
 The `prequantize` option is defined as an integer number. It can be best understand as a value that defines the size of a rectangular grid, with the bottom left coordinate at `(0,0)`. Next, the `x`-numbers and `y`-numbers of all coordinates are independency scaled and shifted on this rectangular grid (normalization on range). Here it is shown for the `x`-numbers only:
 ```python
@@ -198,7 +198,7 @@ So, to apply this `prequantize` value on the two no touching polygons, the polyg
 topo = tp.Topology(data, prequantize=33)
 topo.to_svg()
 ```
-<img src="../images/two_polygon.svg">
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_prequantize_33.json" data-label="The arcs after prequantize=33: the squares share a side"><svg></svg></figure>
 
 Two polygons of a different size, quantized on the same fixed grid of `0.01`:
 ```python
@@ -344,6 +344,11 @@ Douglas-Peucker still keeps it. `keep` keeps the vertices with the largest weigh
 and the ends of the arcs always, so the result is the same as with the matching
 `epsilon`. As the arcs are shared, shared borders stay matched.
 
+With `simplify_algorithm="vw"`, `keep` searches the tolerance of Visvalingam-Whyatt
+(package simplification) that leaves the share asked for. VW is nested, so each step
+of the search continues from the result of the step before, and the result is again
+that of the matching `epsilon`.
+
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
 Example 🔧
@@ -392,7 +397,7 @@ data = geometry.MultiLineString([
 ])
 data
 ```
-<img src="../images/two_linestring.svg">
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_shared_coords_input.json" data-label="Two lines that partly overlap"><svg></svg></figure>
 
 The setting `shared_coords=True` adopts a strategy of `coords-connected`, meaning it will split only when coordinates are detected in both linestrings. Here we show it as SVG, with each derived segment/arc plotted separately.
 
@@ -403,17 +408,8 @@ tp.Topology(
     prequantize=False
 ).to_svg(separate=True)
 ```
-<pre class="code_no_highlight">
-0 LINESTRING (0 0, 10 0, 10 5)
-<img src="../images/cc_ls_0.svg">
-1 LINESTRING (5 0, 20 0, 20 5)
-<img src="../images/cc_ls_1.svg">
-2 LINESTRING (20 5, 10 5)
-<img src="../images/cc_ls_2.svg">
-3 LINESTRING (10 5, 0 5)
-<img src="../images/cc_ls_3.svg">
-</pre>
-`LineString 2 (20 5, 10 5)` is the shared segment. 
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_shared_coords_true.json" data-label="The arcs with shared_coords=True"><svg></svg></figure>
+Arc 2 (20 5, 10 5) is the shared segment. 
 
 When using the setting `shared_coords=False` a `path-connected` strategy is adopted, meaning it will split also when paths are overlapping without having common coordinates.
 
@@ -424,21 +420,8 @@ tp.Topology(
     prequantize=False
 ).to_svg(separate=True)
 ```
-<pre class="code_no_highlight">
-0 LINESTRING (0 0, 5 0)
-<img src="../images/pc_ls_0.svg">
-1 LINESTRING (10 0, 10 5)
-<img src="../images/pc_ls_1.svg">
-2 LINESTRING (5 0, 10 0)
-<img src="../images/pc_ls_2.svg">
-3 LINESTRING (10 0, 20 0, 20 5)
-<img src="../images/pc_ls_3.svg">
-4 LINESTRING (20 5, 10 5)
-<img src="../images/pc_ls_4.svg">
-5 LINESTRING (10 5, 0 5)
-<img src="../images/pc_ls_5.svg">
-</pre>
-`LineString 2 (5 0, 10 0)` and `LineString 4 (20 5, 10 5)` are shared segments. 
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_shared_coords_false.json" data-label="The arcs with shared_coords=False"><svg></svg></figure>
+Arcs 2 (5 0, 10 0) and 4 (20 5, 10 5) are shared segments. 
 </div>
 </div>
 
@@ -471,7 +454,7 @@ from shapely import geometry
 circle = geometry.Point(0, 0).buffer(1)
 circle
 ```
-<img src="../images/circle.svg">
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_prevent_oversimplify_input.json" data-label="A circle"><svg></svg></figure>
 
 ```python
 # force simplification
@@ -490,7 +473,7 @@ tp.Topology(
     prevent_oversimplify=True
 ).to_svg()
 ```
-<img src="../images/prevent_oversimplify_True.svg">
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_prevent_oversimplify.json" data-label="The circle simplified without and with prevent_oversimplify"><svg></svg></figure>
 </div>
 </div>
 
@@ -621,7 +604,7 @@ data = geometry.shape({
 })
 data
 ```
-<img src="../images/one_polygon.svg">
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_winding_order_input.json" data-label="A square"><svg></svg></figure>
 
 Continue with defining two Topology objects, one with the outer rings clock wise and the inner rings counter clockwise (`CW_CCW`) and one with the outer rings counter clock wise and the inner rings clock wise (`CCW_CW`).
 
@@ -745,3 +728,4 @@ window.addEventListener("DOMContentLoaded", event => {
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@6"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@6"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>
+<script src="{{site.baseurl}}/js/steps.js" defer></script>

@@ -1,10 +1,9 @@
-import numpy as np
-import pprint
 import json
-from .ops import arc_coordinates
-from .ops import bounds
-from .ops import winding_order
-from .ops import validate_transform
+import pprint
+
+import numpy as np
+
+from .ops import arc_coordinates, bounds, validate_transform, winding_order
 
 
 def instance(obj):
@@ -12,7 +11,7 @@ def instance(obj):
 
 
 # ----------------- topology options object ------------------
-class TopoOptions(object):
+class TopoOptions:
     def __init__(
         self,
         object=None,
@@ -102,7 +101,7 @@ class TopoOptions(object):
             self.ignore_index = False
 
     def __repr__(self):
-        return "TopoOptions(\n  {}\n)".format(pprint.pformat(self.__dict__))
+        return f"TopoOptions(\n  {pprint.pformat(self.__dict__)}\n)"
 
 
 # --------- supportive functions for serialization -----------
@@ -121,17 +120,15 @@ def coordinates(arcs, tp_arcs, geom_type):
             arc_coords = tp_arcs[arc if arc >= 0 else ~arc][:: arc >= 0 or -1]
             coord_list.append(arc_coords[i > 0 :])
         coords = np.concatenate(coord_list).tolist()
-        if geom_type in ["Polygon", "MultiPolygon"]:
-            if len(coords) < 3:
-                # This may happen if an arc has only two points.
-                coords.extend([coords[0]])
-        elif geom_type in ["LineString", "MultiLineString"]:
-            if len(coords) < 2:
-                # This should never happen per the specification.
-                coords.extend([coords[0]])
+        if geom_type in ["Polygon", "MultiPolygon"] and len(coords) < 3:
+            # This may happen if an arc has only two points.
+            coords.extend([coords[0]])
+        elif geom_type in ["LineString", "MultiLineString"] and len(coords) < 2:
+            # This should never happen per the specification.
+            coords.extend([coords[0]])
         return coords
     elif isinstance(arcs[0], (list, tuple)):
-        return list(coordinates(arc, tp_arcs, geom_type) for arc in arcs)
+        return [coordinates(arc, tp_arcs, geom_type) for arc in arcs]
     else:
         raise ValueError("Invalid input %s", arcs)
 
@@ -213,12 +210,12 @@ def getsubitems(obj, itemkey, islast, maxlinelength, level):  # noqa: C901
         if isdict:
             opening, closing, keys = ("{", "}", iter(obj.keys()))
         elif islist:
-            opening, closing, keys = ("[", "]", range(0, len(obj)))
+            opening, closing, keys = ("[", "]", range(len(obj)))
         elif istuple:
             opening, closing, keys = (
                 "[",
                 "]",
-                range(0, len(obj)),
+                range(len(obj)),
             )  # tuples are converted into json arrays
 
         if itemkey != "":
@@ -367,12 +364,14 @@ def serialize_as_topojson(data, options):
         "options": options,
         "objects": data["objects"],
     }
-    if "transform" in data.keys():
+    if "transform" in data:
         parse_topo["transform"] = data["transform"]
-        if "bbox" in data.keys():
+        if "bbox" in data:
             parse_topo["bbox"] = data["bbox"]
         else:
-            parse_topo["bbox"] = bounds(arc_coordinates(data["arcs"], data["transform"]))
+            parse_topo["bbox"] = bounds(
+                arc_coordinates(data["arcs"], data["transform"])
+            )
     else:
         parse_topo["bbox"] = bounds(arcs_asarray)
 
@@ -456,7 +455,7 @@ def serialize_as_json(topo_object, fp, pretty=False, indent=4, maxlinelength=88)
                 return float(obj)
             if isinstance(obj, np.ndarray):
                 return obj.tolist()
-            return super(NpEncoder, self).default(obj)
+            return super().default(obj)
 
     if fp:
         with open(fp, "w") as f:
@@ -543,10 +542,7 @@ def serialize_as_altair(
 ):
     import altair as alt
 
-    if projection == "identity":
-        reflectY = True
-    else:
-        reflectY = False
+    reflectY = projection == "identity"
     # create a mesh visualization
     if geo_interface:
         # chart object
@@ -588,9 +584,8 @@ def serialize_as_altair(
 
 
 def serialize_as_ipywidgets(topo_object, toposimplify, topoquantize, keep):
-    from ipywidgets import interact
-    from ipywidgets import fixed
     import ipywidgets as widgets
+    from ipywidgets import fixed, interact
 
     style = {"description_width": "initial"}
     ts = toposimplify
@@ -604,7 +599,8 @@ def serialize_as_ipywidgets(topo_object, toposimplify, topoquantize, keep):
         options=[
             ("Douglas-Peucker", "dp"),
             ("Visvalingam-Whyatt", "vw"),
-            ("Douglas-Peucker, share of vertices", "keep"),
+            ("Douglas-Peucker, share of vertices", "keep dp"),
+            ("Visvalingam-Whyatt, share of vertices", "keep vw"),
         ],
         value="vw",
         description="Simplify algorithm",
@@ -648,9 +644,9 @@ def serialize_as_ipywidgets(topo_object, toposimplify, topoquantize, keep):
 
 
 def toposimpquant(epsilon, quant, algo, topo, keep=1):
-    # "keep" simplifies with Douglas-Peucker to a share of the vertices
-    topo.options.simplify_algorithm = "dp" if algo == "keep" else algo
-    if algo == "keep":
+    # "keep dp" and "keep vw" simplify to a share of the vertices
+    topo.options.simplify_algorithm = algo.split()[-1]
+    if algo.startswith("keep"):
         simple = topo.toposimplify(keep=keep)
     else:
         simple = topo.toposimplify(epsilon)

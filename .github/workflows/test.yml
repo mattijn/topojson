@@ -8,6 +8,31 @@ on:
       - main
 
 jobs:
+  lint:
+    name: Lint and format with ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: check
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: format --check
+
+  types:
+    name: Check types with mypy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install
+        run: python -m pip install . mypy
+      - name: Check the package and its public API
+        run: mypy topojson tests/typing_api.py
+
   do-test:
     name: Test on Python
     runs-on: ubuntu-latest
@@ -23,11 +48,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install test dependencies
         run: |
-          python -m pip install flit codecov pytest flake8
+          python -m pip install flit codecov pytest
       - name: Install package dependencies
         run: flit install --deps develop
-      - name: Lint with flake8
-        run: flake8 topojson
-        continue-on-error: true
       - name: Test with pytest
         run: pytest tests

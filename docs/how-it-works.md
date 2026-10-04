@@ -41,23 +41,17 @@ Example 🔧
 <div class="example-text" markdown="1">
 
 ```python
-from IPython.display import display, SVG
 from shapely import geometry
 import topojson as tp
 
 data = geometry.MultiLineString([
-    [(0, 0), (10, 0), (5, 5), (15, 5)], 
+    [(0, 0), (10, 0), (5, 5), (15, 5)],
     [(15, 0), (15, 5), (5, 5), (0, 5)]
 ])
-
-s = data._repr_svg_()
-s = s.replace('stroke="#66cc99"', 'stroke="#F37929"', 1)
-s = s.replace('stroke-width="0.324"', 'stroke-width="0.7"', 1)
-display(SVG(s))
 ```
-<img src="images/two_linestring_orange.svg">
+<figure class="parts" data-src="{{site.baseurl}}/json/steps.json" data-step="toy"><svg></svg></figure>
 
-The orange line starts bottom-left and goes with a zig-zag to top-right. The green line starts bottom-right and goes up and then leftwards. Resulting in a shared segment for the two linestrings in opposite directions.
+Line 0 starts bottom-left and goes with a zig-zag to top-right. Line 1 starts bottom-right and goes up and then leftwards. Resulting in a shared segment for the two linestrings in opposite directions.
 
 The steps below use each class on its own, with its own defaults: without quantization. `Topology` quantizes by default, see the last step.
 </div>
@@ -69,7 +63,7 @@ The steps below use each class on its own, with its own defaults: without quanti
 
 The first step is Extract. 
 
-<img src="images/extract.png" width="450px"/>
+<figure class="steps" data-src="{{site.baseurl}}/json/steps.json" data-step="extract"><svg></svg></figure>
 
 This class instance is determines the geometrical type of input data (eg. `dict`, `geojson.FeatureCollection`, `geopandas.GeoDataFrame`), and based on the type it extracts all geometric entities as `shapely.geometry.LineString`'s or `shapely.geometry.Point`'s and stores them in a top-level object with references in each geometric entity.
 
@@ -111,15 +105,9 @@ The Extract class creates an object with a few different keys. From top to botto
 
 The two referenced arcs `[0, 1]` refer to `0`-index and `1`-index entry in the `bookkeeping_geoms`. In this case `[0]` and `[1]` respectively.
 
-```python
-Extract(data).to_svg(separate=True)
-```
-<pre class="code_no_highlight">
-0 LINESTRING (0 0, 10 0, 5 5, 15 5)
-<img src="images/hiw_e_0.svg">
-1 LINESTRING (15 0, 15 5, 5 5, 0 5)
-<img src="images/hiw_e_1.svg">
-</pre>
+Each line on its own:
+
+<figure class="parts" data-src="{{site.baseurl}}/json/steps.json" data-step="extract"><svg></svg></figure>
 
 </div>
 </div>
@@ -130,7 +118,7 @@ Extract(data).to_svg(separate=True)
 
 The second step is Join. The Join class pass the data first _down_ towards the Extract class, before starting the Join phase. 
 
-<img src="images/join.png" width="450px"/>
+<figure class="steps" data-src="{{site.baseurl}}/json/steps.json" data-step="join"><svg></svg></figure>
 
    - Quantization of input linestrings if necessary
    - Identifies junctions of shared paths
@@ -174,15 +162,9 @@ The Join class creates an object based on the Extract object. From top to bottom
 
 The `junctions` is a new key that stores all junctions as a list of shapely Points.
 
-```python
-Join(data).to_svg(separate=True, include_junctions=True)
-```
-<pre class="code_no_highlight">
-0 LINESTRING (0 0, 10 0, 5 5, 15 5)
-<img src="images/hiw_j_0.svg">
-1 LINESTRING (15 0, 15 5, 5 5, 0 5)
-<img src="images/hiw_j_1.svg">
-</pre>
+Each line on its own, with the junctions:
+
+<figure class="parts" data-src="{{site.baseurl}}/json/steps.json" data-step="join"><svg></svg></figure>
 </div>
 </div>
 
@@ -192,7 +174,7 @@ Join(data).to_svg(separate=True, include_junctions=True)
 
 The third step is Cut. The Cut class passes the data first _down_ towards the Extract and subsequently Join class, before starting the Cut phase. 
 
-<img src="images/cut.png" width="450px"/>
+<figure class="steps" data-src="{{site.baseurl}}/json/steps.json" data-step="cut"><svg></svg></figure>
 
    - Split linestrings given the junctions of shared paths
    - Identifies indexes of linestrings that are duplicates
@@ -250,21 +232,9 @@ The Cut class creates an object based on the Join object. From top to bottom are
 
 The `bookkeeping_linestrings` is a new key.
 
-```python
-Cut(data).to_svg(separate=True, include_junctions=True)
-```
-<pre class="code_no_highlight">
-0 LINESTRING (0 0, 10 0, 5 5)
-<img src="images/hiw_c_0.svg">
-1 LINESTRING (5 5, 15 5)
-<img src="images/hiw_c_1.svg">
-2 LINESTRING (15 0, 15 5)
-<img src="images/hiw_c_2.svg">
-3 LINESTRING (15 5, 5 5)
-<img src="images/hiw_c_3.svg">
-4 LINESTRING (5 5, 0 5)
-<img src="images/hiw_c_4.svg">
-</pre>
+Each part on its own:
+
+<figure class="parts" data-src="{{site.baseurl}}/json/steps.json" data-step="cut"><svg></svg></figure>
 </div>
 </div>
 
@@ -274,7 +244,7 @@ Cut(data).to_svg(separate=True, include_junctions=True)
 
 The fourth step is Dedup. The Dedup class passes the data first _down_ towards the Extract and subsequently Join and Cut class, before starting the Dedup phase.
 
-<img src="images/dedup.png" width="450px"/>
+<figure class="steps" data-src="{{site.baseurl}}/json/steps.json" data-step="dedup"><svg></svg></figure>
 
    - Deduplication of linestrings that contain duplicates
    - Direction of each arc in each line (with `shared_coords=False`, the default)
@@ -330,19 +300,9 @@ The Dedup class creates an object based on the Cut object. From top to bottom ar
 
 The `bookkeeping_arcs` and `bookkeeping_shared_arcs` are new keys that stores all shared arcs and maintain bookkeeping.
 
-```python
-Dedup(data).to_svg(separate=True)
-```
-<pre class="code_no_highlight">
-0 LINESTRING (0 0, 10 0, 5 5)
-<img src="images/hiw_d_0.svg">
-1 LINESTRING (15 0, 15 5)
-<img src="images/hiw_d_1.svg">
-2 LINESTRING (15 5, 5 5)
-<img src="images/hiw_d_2.svg">
-3 LINESTRING (5 5, 0 5)
-<img src="images/hiw_d_3.svg">
-</pre>
+Each arc on its own; arc 2 is used by both lines:
+
+<figure class="parts" data-src="{{site.baseurl}}/json/steps.json" data-step="dedup"><svg></svg></figure>
 </div>
 </div>
 
@@ -352,7 +312,7 @@ Dedup(data).to_svg(separate=True)
 
 The fifth step is Hashmap. The Hashmap class passes the data first _down_ towards the Extract and subsequently Join, Cut and Dedup class, before starting the Hashmap phase.
 
-<img src="images/hashmap.png" width="450px"/>
+<figure class="steps" data-src="{{site.baseurl}}/json/steps.json" data-step="hashmap"><svg></svg></figure>
 
    - Resolves bookkeeping results to object arcs.
 
@@ -406,7 +366,7 @@ The `bookkeeping_*` keys are removed and the `arcs` for each geometry within `ob
 
 The sixth and last step is Topology. The Topology class passes the data first _down_ towards the Extract and subsequently Join, Cut, Dedup and Hashmap class, before starting the Topology phase.
 
-<img src="images/topology.png" width="450px"/>
+<figure class="steps" data-src="{{site.baseurl}}/json/steps.json" data-step="topology"><svg></svg></figure>
 
    - Applies all custom settings and output functions.
 
@@ -449,15 +409,14 @@ The Topology class creates an object based on the Hashmap object. From top to bo
 
 The `arcs` key is created storing the quantized linestrings, where shared arcs are referred from within each geometry.
 
-```python
-Topology(data).to_svg()
-```
-<pre class="code_no_highlight">
-<img src="images/hiw_t.svg">
-</pre>
+The arcs, by number:
+
+<figure class="parts" data-src="{{site.baseurl}}/json/steps.json" data-step="topology"><svg></svg></figure>
 
 </div>
 </div>
 
 * * * 
 The names are borrowed from the JavaScript variant of TopoJSON, to establish a certain synergy between the packages, even though the code differs significant (and sometimes even the TopoJSON output).
+
+<script src="{{site.baseurl}}/js/steps.js" defer></script>

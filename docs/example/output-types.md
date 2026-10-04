@@ -52,7 +52,7 @@ data = [
 ]
 geometry.GeometryCollection([geometry.shape(g) for g in data])
 ```
-<img src="../images/two_polygon.svg">
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_output_two_polygons.json" data-label="Two squares that share a side"><svg></svg></figure>
 
 The Topology can be computed
 
@@ -186,21 +186,14 @@ We use the data as is prepared in the [.to_json()](output-types.html#to_json) se
 ```python
 topo.to_svg()
 ```
-<img src="../images/two_polygon.svg">
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_output_to_svg.json" data-label="The arcs as a mesh"><svg></svg></figure>
 
 The output is a mesh and information of polygons are not included. To draw each captured linestring separate use `separate=True`.
 
 ```python
 topo.to_svg(separate=True)
 ```
-<pre class="code_no_highlight">
-0 LINESTRING (1.000010000100001 0, 0 0, 0 1, 1.000010000100001 1)
-<img src="../images/to_svg_0.svg">
-1 LINESTRING (1.000010000100001 0, 1.000010000100001 1)
-<img src="../images/to_svg_1.svg">
-2 LINESTRING (1.000010000100001 1, 2 1, 2 0, 1.000010000100001 0)
-<img src="../images/to_svg_2.svg">
-</pre>
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_output_to_svg_separate.json" data-label="Each arc on its own"><svg></svg></figure>
 </div>
 </div>
 
@@ -377,7 +370,7 @@ topo.to_gdf().plot()
 | 1 | POLYGON ((-8.665666773160552 27.65613579897171, ... | Africa | 906.5 | ESH | W. Sahara | 603253 |
 | 2 | POLYGON ((29.339827093193016 -4.499877032452222,... | Africa | 66010.0 | COD | Dem. Rep. Congo | 83301151 |
 
-<img src="{{site.baseurl}}/images/geodataframe_plot_africa.png" alt="Plot GeoDataFrame Africa">
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_output_to_gdf.json" data-label="The polygons of Africa as a GeoDataFrame"><svg></svg></figure>
 
 </div>
 </div>
@@ -388,7 +381,7 @@ topo.to_gdf().plot()
 
 Serialize the Topology object into an interactive IPython Widget. This requires the optional packages simplification, altair and ipywidgets. These are not installed automatically.
 
-The sliders set the tolerance of `toposimplify` and the `topoquantize` factor. With the algorithm _Douglas-Peucker, share of vertices_, the slider _Keep share_ sets the share of the vertices to keep instead (`toposimplify(keep=...)`).
+The sliders set the tolerance of `toposimplify` and the `topoquantize` factor. With an algorithm _share of vertices_ (Douglas-Peucker or Visvalingam-Whyatt), the slider _Keep share_ sets the share of the vertices to keep instead (`toposimplify(keep=...)`).
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
@@ -435,3 +428,4 @@ window.addEventListener("DOMContentLoaded", event => {
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@6"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@6"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>
+<script src="{{site.baseurl}}/js/steps.js" defer></script>

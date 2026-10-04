@@ -1,6 +1,7 @@
-import fire
 from pathlib import Path
+
 import altair as alt
+import fire
 import pandas as pd
 
 

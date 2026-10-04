@@ -4,10 +4,11 @@ import pprint
 
 import numpy as np
 import shapely
-from shapely import geometry
-from shapely import wkt
+from shapely import geometry, wkt
 from shapely.ops import linemerge
 from shapely.strtree import STRtree
+
+logger = logging.getLogger(__name__)
 
 
 def asvoid(arr):
@@ -88,9 +89,7 @@ def linemerge_ext(geom: geometry.base.BaseGeometry) -> geometry.base.BaseGeometr
 
 
 def extract_lines(geom: geometry.base.BaseGeometry) -> geometry.base.BaseGeometry:
-    if isinstance(geom, geometry.LineString):
-        return geom
-    elif isinstance(geom, geometry.MultiLineString):
+    if isinstance(geom, (geometry.LineString, geometry.MultiLineString)):
         return geom
     elif isinstance(geom, geometry.GeometryCollection):
         geoms = [
@@ -98,10 +97,7 @@ def extract_lines(geom: geometry.base.BaseGeometry) -> geometry.base.BaseGeometr
             for geom in geom.geoms
             if (
                 not geom.is_empty
-                and (
-                    isinstance(geom, geometry.LineString)
-                    or isinstance(geom, geometry.MultiLineString)
-                )
+                and isinstance(geom, (geometry.LineString, geometry.MultiLineString))
             )
         ]
         if len(geoms) == 0:
@@ -471,7 +467,9 @@ def cut_line(line, tree_splitter, is_ring, shared_coords=False):
         coords, splitter = locate(line, tree_splitter)
     if splitter is None:
         return [remove_collinear_points(np.array(line.coords))]
-    return [remove_collinear_points(part) for part in fast_split(coords, splitter, is_ring)]
+    return [
+        remove_collinear_points(part) for part in fast_split(coords, splitter, is_ring)
+    ]
 
 
 def cut_lines_on_grid(linestrings, junctions, is_ring):
@@ -1006,7 +1004,9 @@ def _lines_with_spikes(coords, starts, counts):
     ring[ring] = (coords[starts[ring]] == coords[ends[ring]]).all(axis=1)
     d1 = np.concatenate([d[v - 1], d[ends[ring] - 1]])
     d2 = np.concatenate([d[v], d[starts[ring]]])
-    line = np.concatenate([np.repeat(np.arange(len(counts)), counts)[v], np.flatnonzero(ring)])
+    line = np.concatenate(
+        [np.repeat(np.arange(len(counts)), counts)[v], np.flatnonzero(ring)]
+    )
     cross = d1[:, 0] * d2[:, 1] - d1[:, 1] * d2[:, 0]
     return np.unique(line[(cross == 0) & (np.einsum("ij,ij->i", d1, d2) < 0)])
 
@@ -1106,7 +1106,7 @@ def simplify(
     essential shape of the lines in the process.
 
     One can choose between the Douglas-Peucker ["dp"] algorithm (which simplifies
-    a line based upon vertical interval) and Visvalingam–Whyatt ["vw"] (which
+    a line based upon vertical interval) and Visvalingam-Whyatt ["vw"] (which
     progressively removes points with the least-perceptible change).
 
 
@@ -1125,7 +1125,7 @@ def simplify(
         Simplification factor. Normally this varies 1.0, 0.1 or 0.001 for "dp" and
         30-100 for "vw".
     algorithm : str, optional
-        Choose between `dp` for Douglas-Peucker and `vw` for Visvalingam–Whyatt.
+        Choose between `dp` for Douglas-Peucker and `vw` for Visvalingam-Whyatt.
         Defaults to `dp`, as its evaluation maintains to be good (Shi, W. &
         Cheung, C., 2006).
     package : str, optional
@@ -1149,11 +1149,11 @@ def simplify(
         if algorithm == "vw":
             msg = (
                 "You need to set `simplify_with='simplification'` to use the ",
-                "Visvalingam–Whyatt (`vw`) algorithm. This package is optional and ",
+                "Visvalingam-Whyatt (`vw`) algorithm. This package is optional and ",
                 "if not installed, install with `pip install simplification`. ",
                 "Continue with Douglas-Peucker (`dp`) algorithm instead.",
             )
-            logging.warning("".join(msg))
+            logger.warning("".join(msg))
         keep_valid = prevent_oversimplify
         if input_as == "array":
             # all arcs at once
@@ -1178,14 +1178,14 @@ def simplify(
             alg = cutil.simplify_coords_vw
         elif algorithm == "dp" and prevent_oversimplify:
             msg = (
-                "The Douglas–Peucker algorithm from the `simplification` package ",
-                "has no options to prevent oversimplification. Use Visvalingam–",
+                "The Douglas-Peucker algorithm from the `simplification` package ",
+                "has no options to prevent oversimplification. Use Visvalingam-",
                 "Whyatt (`vw`) algorithm when using the simplification package if ",
                 "oversimplification should be prevented or use the Douglas-Peucker ",
                 "algorithm from `shapely` package to prevent oversimplification. ",
                 "Continue without prevention of oversimplification.",
             )
-            logging.warning("".join(msg))
+            logger.warning("".join(msg))
             alg = cutil.simplify_coords
         else:
             alg = cutil.simplify_coords
@@ -1201,10 +1201,8 @@ def simplify(
             list_arcs = linestrings
     else:
         raise NameError(
-            "Could not recognize parameter for `simplify_with`. Choose between \
-                'shapely' or 'simplification'. '{}' was given".format(
-                package
-            )
+            f"Could not recognize parameter for `simplify_with`. Choose between \
+                'shapely' or 'simplification'. '{package}' was given"
         )
     return list_arcs
 
@@ -1267,12 +1265,16 @@ def _segment_distance(p, a, b):
     return np.where((len2 == 0) | (r <= 0), to_a, np.where(r >= 1, to_b, inside))
 
 
-def simplify_keep(linestrings, keep):
+def simplify_keep(linestrings, keep, algorithm="dp"):
     """
-    Simplify lines with Douglas-Peucker to a share of their vertices: the share
-    `keep` of the inner vertices with the largest weights (`dp_weights`) is kept, and
-    the first and the last vertex of each line. Vertices with an equal weight are kept
-    or removed together, so a little fewer vertices can be kept.
+    Simplify lines to a share of their vertices: the share `keep` of the inner
+    vertices that the algorithm removes last is kept, and the first and the last
+    vertex of each line. The result is that of `simplify` with the tolerance that is
+    returned. Vertices with an equal weight are kept or removed together, so the share
+    can be a little off.
+
+    Douglas-Peucker uses the weight of each vertex (`dp_weights`). Visvalingam-Whyatt
+    searches the tolerance of the package simplification (`_vw_tolerance`).
 
     Parameters
     ----------
@@ -1280,6 +1282,8 @@ def simplify_keep(linestrings, keep):
         Coordinates of the lines
     keep : float
         Share of the inner vertices to keep, between 0 and 1
+    algorithm : str
+        `dp` for Douglas-Peucker or `vw` for Visvalingam-Whyatt
 
     Returns
     -------
@@ -1289,15 +1293,97 @@ def simplify_keep(linestrings, keep):
         The tolerance that gives the same result with `simplify`
     """
     count = np.fromiter(map(len, linestrings), np.intp, len(linestrings))
+    inner = int(np.maximum(count - 2, 0).sum())
+    n = min(round(keep * inner), inner)
+    if algorithm == "vw":
+        epsilon = _vw_tolerance(linestrings, n)
+        simple = simplify(
+            linestrings,
+            epsilon,
+            algorithm="vw",
+            package="simplification",
+            input_as="array",
+            prevent_oversimplify=False,
+        )
+        return simple, epsilon
     xy = np.concatenate(linestrings)
     ends = np.cumsum(count) - 1
     weight = dp_weights(xy, ends - count + 1, ends)
-    inner = weight[np.isfinite(weight)]
-    n = min(int(round(keep * len(inner))), len(inner))
-    epsilon = -np.inf if n == len(inner) else np.partition(inner, -n - 1)[-n - 1]
+    finite = weight[np.isfinite(weight)]
+    epsilon = -np.inf if n == len(finite) else np.partition(finite, -n - 1)[-n - 1]
     kept = weight > epsilon
-    count = np.bincount(np.repeat(np.arange(len(count)), count)[kept], minlength=len(count))
+    count = np.bincount(
+        np.repeat(np.arange(len(count)), count)[kept], minlength=len(count)
+    )
     return [a.tolist() for a in _split(xy[kept], np.cumsum(count)[:-1])], epsilon
+
+
+def _vw_tolerance(linestrings, target):
+    """
+    The largest tolerance of Visvalingam-Whyatt (package simplification) at which at
+    least `target` inner vertices are left, so that a lower one keeps too many.
+
+    VW is nested: from the result of a tolerance, a larger one gives what it gives
+    from the input. So each step that keeps enough vertices continues from its
+    result, and VW stops at once on a line whose smallest triangle is larger than the
+    tolerance, so only the other lines are simplified. The search starts at a
+    quantile of the triangle areas and interpolates between its bounds in
+    log(tolerance) against log(vertices left), halving every other step.
+    """
+    from simplification.cutil import simplify_coords_vw_idx
+
+    lines = [np.ascontiguousarray(a, float) for a in linestrings if len(a) > 2]
+    left = sum(len(a) - 2 for a in lines)
+    if target >= left:
+        return -1.0  # below every area: all vertices stay
+
+    def smallest(lines):
+        """The smallest triangle area of each line, and all the areas."""
+        if not lines:
+            return np.zeros(0), np.zeros(0)
+        xy = np.concatenate(lines)
+        count = np.fromiter(map(len, lines), np.intp, len(lines))
+        start = np.cumsum(count) - count
+        a, b, c = xy[:-2], xy[1:-1], xy[2:]
+        area = (
+            np.abs(
+                (b[:, 0] - a[:, 0]) * (c[:, 1] - a[:, 1])
+                - (c[:, 0] - a[:, 0]) * (b[:, 1] - a[:, 1])
+            )
+            / 2
+        )
+        # triangles across two lines do not count
+        area[np.cumsum(count)[:-1] - 2] = area[np.cumsum(count)[:-1] - 1] = np.inf
+        return np.minimum.reduceat(area, start), area[np.isfinite(area)]
+
+    least, area = smallest(lines)
+    floor = area[area > 0].min(initial=1.0) / 2
+    lo, n_lo, hi, n_hi = 0.0, left, np.inf, 0
+    for step in range(64):
+        if n_lo == target or hi <= lo * (1 + 1e-6):
+            break
+        if step == 0:
+            tolerance = max(np.quantile(area, 1 - target / left), floor)
+        elif not np.isfinite(hi):
+            tolerance = max(lo, floor) * 4
+        elif step % 2 or lo <= 0 or n_hi <= 0:
+            tolerance = np.sqrt(max(lo, floor) * hi)
+        else:
+            f = np.log(n_lo / target) / np.log(n_lo / n_hi)
+            tolerance = lo * (hi / lo) ** min(max(f, 0.05), 0.95)
+        simple = list(lines)
+        for i in np.flatnonzero(least <= tolerance).tolist():
+            simple[i] = lines[i][
+                np.asarray(simplify_coords_vw_idx(lines[i], tolerance))
+            ]
+        n = sum(len(a) - 2 for a in simple)
+        if n >= target:
+            lo, n_lo = tolerance, n
+            lines = [a for a in simple if len(a) > 2]
+            least = smallest(lines)[0]
+        else:
+            hi, n_hi = tolerance, n
+    return lo
 
 
 def simplify_coverage(linestrings, polygons, epsilon, exterior_cw=None):
@@ -1327,7 +1413,9 @@ def simplify_coverage(linestrings, polygons, epsilon, exterior_cw=None):
     if not polygons:
         return linestrings
     rings = np.concatenate(polygons)
-    xy, ring = shapely.get_coordinates([linestrings[i] for i in rings], return_index=True)
+    xy, ring = shapely.get_coordinates(
+        [linestrings[i] for i in rings], return_index=True
+    )
     polygon = np.repeat(np.arange(len(polygons)), [len(p) for p in polygons])
     shapes = shapely.polygons(shapely.linearrings(xy, indices=ring), indices=polygon)
     shapes = shapely.coverage_simplify(shapes, epsilon)
@@ -1419,7 +1507,7 @@ def winding_order(geom, order="CW_CCW"):
     # clockwise to conform TopoJSON standard
 
     if order not in ("CW_CCW", "CCW_CW"):
-        raise NameError("parameter {} was not recognized".format(order))
+        raise NameError(f"parameter {order} was not recognized")
     return shapely.orient_polygons(geom, exterior_cw=order == "CW_CCW")
 
 
@@ -1539,7 +1627,7 @@ def delta_decoding(arcs):
 def _split(array, indices):
     """As `np.split(array, indices)`, but quicker for many small parts."""
     bounds = [0, *np.asarray(indices).tolist(), len(array)]
-    return [array[a:b] for a, b in zip(bounds[:-1], bounds[1:])]
+    return [array[a:b] for a, b in itertools.pairwise(bounds)]
 
 
 def arc_areas(arcs):
@@ -1711,6 +1799,6 @@ def remove_collinear_points(line: np.ndarray) -> np.ndarray:
     p3_y = line[2:, 1]
 
     # Calculate
-    collinear_mask = (p2_x - p1_x) * (p3_y - p1_y) == (p3_x - p1_x) * (p2_y - p1_y)  # type: ignore
+    collinear_mask = (p2_x - p1_x) * (p3_y - p1_y) == (p3_x - p1_x) * (p2_y - p1_y)
     collinear_mask = np.concatenate([[False], collinear_mask, [False]])
     return line[~np.array(collinear_mask)]

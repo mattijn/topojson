@@ -1,12 +1,13 @@
 import copy
 import pprint
 from itertools import chain
+
 import numpy as np
 from shapely import geometry
-from .dedup import Dedup
+
 from ..ops import is_ccw
-from ..utils import serialize_as_svg
-from ..utils import serialize_as_json
+from ..utils import serialize_as_json, serialize_as_svg
+from .dedup import Dedup
 
 
 class Hashmap(Dedup):
@@ -14,7 +15,7 @@ class Hashmap(Dedup):
     hash arcs based on their type
     """
 
-    def __init__(self, data, options={}):
+    def __init__(self, data, options=None):
         # execute previous step
         super().__init__(data, options)
 
@@ -22,7 +23,7 @@ class Hashmap(Dedup):
         self.output = self._hashmapper(self.output)
 
     def __repr__(self):
-        return "Hashmap(\n{}\n)".format(pprint.pformat(self.output))
+        return f"Hashmap(\n{pprint.pformat(self.output)}\n)"
 
     def to_dict(self):
         """
@@ -303,11 +304,12 @@ class Hashmap(Dedup):
         if order == 3:
             # since alignment is done based on the first two arcs, need a double-check
             # if it follows the required order of the ring
-            if self._inner and self.options.winding_order == "CCW_CW":
-                need_ccw = False
-            elif not self._inner and (
-                self.options.winding_order == "CW_CCW"
-                or self.options.winding_order is None
+            if (self._inner and self.options.winding_order == "CCW_CW") or (
+                not self._inner
+                and (
+                    self.options.winding_order == "CW_CCW"
+                    or self.options.winding_order is None
+                )
             ):
                 need_ccw = False
             else:
@@ -358,7 +360,7 @@ class Hashmap(Dedup):
                 # Dedup has set the direction already
                 merged = self.options.shared_coords
                 if len(arc_ids) > 1 and key != "coordinates" and merged:
-                    self._inner = True if idx_arc > 0 else False
+                    self._inner = idx_arc > 0
                     arc_ids = self._backward_arcs(arc_ids)
 
                 arcs_in_geom[idx_arc] = arc_ids

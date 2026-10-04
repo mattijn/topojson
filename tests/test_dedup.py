@@ -1,8 +1,7 @@
+import geojson
 import geopandas
 import geopandas.datasets
-import geojson
-from shapely import geometry
-from shapely import wkt
+from shapely import geometry, wkt
 
 from topojson.core.dedup import Dedup
 
@@ -297,8 +296,9 @@ def test_dedup_merge_continuous_shared_path():
 # https://github.com/mattijn/topojson/issues/234
 def test_dedup_cut_does_not_depend_on_ring_start():
     import geopandas
-    import topojson
     from shapely.geometry import box
+
+    import topojson
 
     A, B = box(0, 0, 1, 1), box(1, 0, 2, 1)
     C = geometry.Polygon([(0, 3), (2, 3), (2, 4), (0, 4)])

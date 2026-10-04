@@ -11,19 +11,21 @@ nav_order: 1
 ## Topology
 ```python
 Topology(self,
-         data,
-         topology=True,
-         prequantize=True,
-         topoquantize=False,
-         presimplify=False,
-         toposimplify=False,
-         shared_coords=False,
-         prevent_oversimplify=True,
-         simplify_with='shapely',
-         simplify_algorithm='dp',
-         winding_order='CW_CCW',
-         object_name='data',
-         ignore_index=False)
+         data: Any,
+         topology: bool = True,
+         prequantize: bool | float | topojson._types.Transform = True,
+         topoquantize: bool | float | topojson._types.Transform = False,
+         presimplify: bool | float = False,
+         toposimplify: bool | float = False,
+         shared_coords: bool = False,
+         prevent_oversimplify: bool = True,
+         simplify_with:
+         typing.Literal['shapely', 'simplification', 'geos'] = 'shapely',
+         simplify_algorithm: typing.Literal['dp', 'vw'] = 'dp',
+         winding_order:
+         typing.Optional[typing.Literal['CW_CCW', 'CCW_CW']] = 'CW_CCW',
+         object_name: str | list[str] = 'data',
+         ignore_index: bool = False)
 ```
 
 Returns a TopoJSON topology for the specified geometric object. TopoJSON is an
@@ -126,7 +128,7 @@ coordinates but foremost the computation of a topology.
 
 ### to_dict
 ```python
-Topology.to_dict(options=False, state=False)
+Topology.to_dict(options: bool = False, state: bool = False)
 ```
 
 Convert the Topology to a dictionary.
@@ -143,7 +145,7 @@ Convert the Topology to a dictionary.
 
 ### to_svg
 ```python
-Topology.to_svg(separate=False)
+Topology.to_svg(separate: bool = False)
 ```
 
 Display the arcs and junctions as SVG.
@@ -155,12 +157,12 @@ Display the arcs and junctions as SVG.
 
 ### to_json
 ```python
-Topology.to_json(fp=None,
-                 options=False,
-                 pretty=False,
-                 indent=4,
-                 maxlinelength=88,
-                 state=False)
+Topology.to_json(fp: str | os.PathLike[str] | None = None,
+                 options: bool = False,
+                 pretty: bool = False,
+                 indent: int = 4,
+                 maxlinelength: int = 88,
+                 state: bool = False)
 ```
 
 Convert the Topology to a JSON object.
@@ -191,14 +193,15 @@ Convert the Topology to a JSON object.
 
 ### to_geojson
 ```python
-Topology.to_geojson(fp=None,
-                    pretty=False,
-                    indent=4,
-                    maxlinelength=88,
-                    validate=False,
-                    winding_order='CCW_CW',
-                    decimals=None,
-                    object_name=0)
+Topology.to_geojson(
+  fp: str | os.PathLike[str] | None = None,
+  pretty: bool = False,
+  indent: int = 4,
+  maxlinelength: int = 88,
+  validate: bool = False,
+  winding_order: typing.Literal['CW_CCW', 'CCW_CW'] = 'CCW_CW',
+  decimals: int | None = None,
+  object_name: str | int = 0)
 ```
 
 Convert the Topology to a GeoJSON object. Remember that this will destroy the
@@ -238,10 +241,11 @@ computed Topology.
 
 ### to_gdf
 ```python
-Topology.to_gdf(crs=None,
-                validate=False,
-                winding_order='CCW_CW',
-                object_name=0)
+Topology.to_gdf(
+  crs: Any = None,
+  validate: bool = False,
+  winding_order: typing.Literal['CW_CCW', 'CCW_CW'] = 'CCW_CW',
+  object_name: str | int = 0)
 ```
 
 Convert the Topology to a GeoDataFrame. Remember that this will destroy the
@@ -270,10 +274,10 @@ implemented more robust variant. See for info the `to_geojson()` function.
 
 ### to_alt
 ```python
-Topology.to_alt(color=None,
-                tooltip=True,
-                projection='identity',
-                object_name=0)
+Topology.to_alt(color: str | None = None,
+                tooltip: bool = True,
+                projection: str = 'identity',
+                object_name: str | int = 0)
 ```
 
 Display as Altair visualization.
@@ -298,15 +302,15 @@ Display as Altair visualization.
 ### to_widget
 ```python
 Topology.to_widget(
-  slider_toposimplify={'min': 0, 'max': 10, 'step': 0.01, 'value': 0.01},
-  slider_topoquantize={'min': 1, 'max': 6, 'step': 1, 'value': 100000.0, 'base': 10},
-  slider_keep={'min': 0, 'max': 1, 'step': 0.01, 'value': 0.1})
+  slider_toposimplify: topojson._types.Slider | None = None,
+  slider_topoquantize: topojson._types.Slider | None = None,
+  slider_keep: topojson._types.Slider | None = None)
 ```
 
 Create an interactive widget based on Altair. The widget includes sliders to
 interactively change the `toposimplify` and `topoquantize` settings. With
-the algorithm "Douglas-Peucker, share of vertices", the `keep` slider sets
-the share of the vertices to keep instead of the tolerance.
+an algorithm "share of vertices", the `keep` slider sets the share of the
+vertices to keep instead of the tolerance.
 
 > #### Parameters
 > + ###### `slider_toposimplify` : dict
@@ -321,7 +325,8 @@ the share of the vertices to keep instead of the tolerance.
 
 ### topoquantize
 ```python
-Topology.topoquantize(quant_factor, inplace=False)
+Topology.topoquantize(quant_factor: float | topojson._types.Transform,
+                      inplace: bool = False)
 ```
 
 Quantization is recommended to improve the quality of the topology if the
@@ -346,12 +351,14 @@ Quantized coordinates and delta-encoded arcs if `inplace` is `False`.
 
 ### toposimplify
 ```python
-Topology.toposimplify(epsilon=None,
-                      simplify_algorithm=None,
-                      simplify_with=None,
-                      prevent_oversimplify=None,
-                      inplace=False,
-                      keep=None)
+Topology.toposimplify(
+  epsilon: float | None = None,
+  simplify_algorithm: typing.Optional[typing.Literal['dp', 'vw']] = None,
+  simplify_with:
+    typing.Optional[typing.Literal['shapely', 'simplification', 'geos']] = None,
+  prevent_oversimplify: bool | None = None,
+  inplace: bool = False,
+  keep: float | None = None)
 ```
 
 Apply toposimplify to remove unnecessary points from arcs after the topology
@@ -388,10 +395,12 @@ in the range of `0.0001` to `10`.
     Default is `False`.
 > + ###### `keep` : float, optional
     Instead of `epsilon`, the share of the vertices to keep, between `0` and
-    `1`: the inner vertices of the arcs that Douglas-Peucker removes last are
-    kept, the ends of the arcs always. Uses Douglas-Peucker, whatever
-    `simplify_with`; with `prevent_oversimplify` a ring stays at least a
-    triangle.
+    `1`: the inner vertices of the arcs that the algorithm removes last are
+    kept, the ends of the arcs always. The result is that of the matching
+    `epsilon`. Douglas-Peucker uses its own implementation, whatever
+    `simplify_with`; Visvalingam-Whyatt (`simplify_algorithm="vw"`) uses the
+    package simplification. With `prevent_oversimplify` a ring stays at least
+    a triangle.
 
 > #### Returns
 > + ###### object or None
@@ -399,7 +408,8 @@ Topology object with simplified linestrings if `inplace` is `False`.
 
 ### read_json
 ```python
-Topology.read_json(fp)
+Topology.read_json(
+  fp: typing.Union[str, os.PathLike[str], typing.IO[str]])
 ```
 
 Read a Topology from a TopoJSON file. If the file was written with
@@ -415,7 +425,7 @@ Topology
 
 ### add
 ```python
-Topology.add(data, object_name=None)
+Topology.add(data: Any, object_name: str | None = None)
 ```
 
 Add features to the Topology without recomputing it. Existing arcs are cut
@@ -435,7 +445,8 @@ full build on the same quantization grid.
 
 ### remove
 ```python
-Topology.remove(ids, object_name=None)
+Topology.remove(ids: collections.abc.Iterable[collections.abc.Hashable],
+                object_name: str | None = None)
 ```
 
 Remove features from the Topology without recomputing it. Arcs that are no
@@ -457,7 +468,7 @@ by at most half a grid cell.
 
 ### sync
 ```python
-Topology.sync(data, object_name=None)
+Topology.sync(data: Any, object_name: str | None = None)
 ```
 
 Make the Topology equal to `data`: features that are new are added, features
