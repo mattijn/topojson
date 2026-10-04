@@ -11,6 +11,7 @@ from ..ops import np_array_from_arcs
 from ..ops import dequantize
 from ..ops import quantize
 from ..ops import simplify
+from ..ops import restore_collapsed_rings
 from ..ops import delta_encoding
 from ..ops import bounds
 from ..ops import compare_bounds
@@ -522,7 +523,7 @@ class Topology(Hashmap):
             result.options.toposimplify = epsilon
 
         # set settings in options to override
-        if isinstance(type(prevent_oversimplify), bool):
+        if isinstance(prevent_oversimplify, bool):
             result.options.prevent_oversimplify = prevent_oversimplify
         if simplify_with in ["shapely", "simplification"]:
             result.options.simplify_with = simplify_with
@@ -556,6 +557,12 @@ class Topology(Hashmap):
                 input_as="array",
                 prevent_oversimplify=result.options.prevent_oversimplify,
             )
+            if result.options.prevent_oversimplify:
+                sequences = incremental._all_sequences(result.output)
+                rings = [s for s, ring in sequences if ring]
+                result.output["arcs"] = restore_collapsed_rings(
+                    result.output["arcs"], np_arcs, rings
+                )
 
             lsbs = bounds(result.output["arcs"])
             ptbs = bounds(result.output["coordinates"])
