@@ -108,6 +108,8 @@ Instead of a factor, a TopoJSON transform can be given as a dict,
 depend on the bounding box of the input, so topologies of different inputs (or of
 different runs) share the same grid. This is what
 [incremental updates](incremental-updates.html) build on.
+See [quantization](quantization.html) for how the grid follows the bounding box
+and how to choose it yourself.
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
