@@ -52,5 +52,9 @@ charts = {
     "color_mark": topo.to_alt(color="properties.name:N", projection="equalEarth"),
 }
 
+# transparent, so the charts follow the background of the page
 for name, chart in charts.items():
+    chart = chart.properties(background="transparent").configure_view(
+        fill="transparent", continuousWidth=400, continuousHeight=300
+    )
     chart.save(f"docs/json/example_{name}.vl.json")

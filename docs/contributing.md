@@ -35,19 +35,27 @@ Note to self 📝
 {: .label .label-blue-000 }
 </div>
 <div class="example-text" markdown="1">
-One can install the package including optional dependencies directly from the GitHub repository using:
-  
-```cmd
-python -m pip install "topojson[dev] @ git+https://github.com/mattijn/topojson.git"
+From a clone of the repository, an environment with [uv](https://docs.astral.sh/uv/) including the optional dependencies and the test tools:
+
+```bash
+uv venv --python 3.13
+uv pip install -e ".[dev]" pytest flake8
+uv run pytest tests
+```
+
+Or install the package including optional dependencies directly from the GitHub repository using:
+
+```bash
+pip install "topojson[dev] @ git+https://github.com/mattijn/topojson.git"
 ```
 
 Or partly using conda:
-```cmd
+```bash
 conda create -n topo_dev
 conda activate topo_dev
 conda install flit codecov pytest flake8
 conda install numpy shapely geojson pyshp fiona geopandas altair ipywidgets
-python -m pip install simplification
+pip install simplification
 ```
 
 </div>

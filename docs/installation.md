@@ -6,16 +6,22 @@ nav_order: 2
 
 # Installation
 
-Topojson can be installed through PyPI by the following command:
+Topojson is available on PyPI and conda-forge:
 
-```
-python -m pip install topojson
+```bash
+pip install topojson
 ```
 
-And through conda using the following command:
+In a project managed with [uv](https://docs.astral.sh/uv/):
 
+```bash
+uv add topojson
 ```
-conda install topojson -c conda-forge
+
+Or with conda:
+
+```bash
+conda install -c conda-forge topojson
 ```
 
 The library is installed successfully if the following code.
@@ -64,9 +70,11 @@ Topojson requires `numpy` and `shapely`. These are installed automatically if no
 
 #### Soft Dependencies
 
-To improve the speed of the `presimplify`/`toposimplify` parameter settings or if you want to use another simplification algorithm you can install (_optional_):
+For other simplification options in the `presimplify`/`toposimplify` parameter settings you can install (_optional_):
 
-- `simplification`
+- `simplification`: Visvalingam-Whyatt, and a Douglas-Peucker that is quicker on long lines but does not prevent oversimplification.
+
+For polygons, `presimplify` with `simplify_with="geos"` uses Visvalingam-Whyatt from shapely without this package, and keeps shared borders matched.
 
 To visualize the output as a mesh and/or return the output as geodataframe you will need (_optional_):
 
@@ -76,7 +84,6 @@ To visualize the output as a mesh and/or return the output as geodataframe you w
 To interactively analyze the effects of `toposimplify` and `topoquantize` as a widget, you also need (_optional_):
 
 - `ipywidgets`
-- `ipywidgets` JupyterLab extension
 
 
 ## Development Install
