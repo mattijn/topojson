@@ -1,8 +1,9 @@
 """
-Write the data of the figures on the pages Types of input data and Settings and
-tuning (docs/json/fig_*.json), by running the examples shown on the pages. Each
-figure is a list of panels with lines, filled rings, points and labels, drawn by
-docs/js/steps.js. Run from the root of the repository:
+Write the data of the figures on the pages Example usage, Types of input data,
+Settings and tuning and Retrieval data types (docs/json/fig_*.json), by running
+the examples shown on the pages. Each figure is a list of panels with lines,
+filled rings, points and labels, drawn by docs/js/steps.js. Run from the root of
+the repository:
 
     python generate/make-docs-figures.py
 """
@@ -153,6 +154,26 @@ square = geometry.shape(
     {"type": "Polygon", "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]]}
 )
 figures["settings_winding_order_input"] = [{"lines": coords(square), "arrows": True}]
+
+# example/example-usage.md
+africa = tp.Topology(tp.utils.example_data_africa())
+figures["usage_africa"] = [{"lines": arcs(africa.toposimplify(10))}]
+
+# example/output-types.md
+two = [
+    geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]),
+    geometry.Polygon([[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]),
+]
+figures["output_two_polygons"] = [{"fills": rings(two)}]
+topo_two = tp.Topology(
+    [
+        {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]},
+        {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]},
+    ]
+)
+figures["output_to_svg"] = [{"lines": arcs(topo_two), "ends": True}]
+figures["output_to_svg_separate"] = separate(topo_two)
+figures["output_to_gdf"] = [{"fills": rings(africa.to_gdf().geometry)}]
 
 
 def rounded(panels):

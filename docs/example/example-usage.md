@@ -30,7 +30,10 @@ topo = tp.Topology(data)
 # apply simplification on the topology and render as SVG
 topo.toposimplify(10).to_svg()
 ```
-<img src="./images/africa_toposimp.svg">
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_usage_africa.json" data-label="The arcs of Africa, simplified"><svg></svg></figure>
 
-This page is further subdivided in the following three sections for more detailed description and usages: 
+This page is further subdivided in the following three sections for more detailed description and usages:
+
+<script src="{{site.baseurl}}/js/steps.js" defer></script>
+
 
