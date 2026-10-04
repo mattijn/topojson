@@ -2,10 +2,14 @@ import copy
 import hashlib
 import itertools
 import json
+import os
 import pprint
+from collections.abc import Hashable, Iterable
+from typing import IO, TYPE_CHECKING, Any, Literal, Self, cast, overload
 
 import numpy as np
 
+from .._types import Algorithm, Package, Quantize, Slider, Transform, WindingOrder
 from ..ops import (
     arc_areas,
     arc_coordinates,
@@ -29,6 +33,10 @@ from ..utils import (
 from . import incremental
 from .extract import Extract
 from .hashmap import Hashmap
+
+if TYPE_CHECKING:
+    import altair
+    import geopandas
 
 
 class Topology(Hashmap):
@@ -135,20 +143,20 @@ class Topology(Hashmap):
 
     def __init__(
         self,
-        data,
-        topology=True,
-        prequantize=True,
-        topoquantize=False,
-        presimplify=False,
-        toposimplify=False,
-        shared_coords=False,
-        prevent_oversimplify=True,
-        simplify_with="shapely",
-        simplify_algorithm="dp",
-        winding_order="CW_CCW",
-        object_name="data",
-        ignore_index=False,
-    ):
+        data: Any,
+        topology: bool = True,
+        prequantize: Quantize = True,
+        topoquantize: Quantize = False,
+        presimplify: bool | float = False,
+        toposimplify: bool | float = False,
+        shared_coords: bool = False,
+        prevent_oversimplify: bool = True,
+        simplify_with: Package = "shapely",
+        simplify_algorithm: Algorithm = "dp",
+        winding_order: WindingOrder | None = "CW_CCW",
+        object_name: str | list[str] = "data",
+        ignore_index: bool = False,
+    ) -> None:
         options = TopoOptions(locals())
 
         # shortcut when dealing with topojson data
@@ -170,17 +178,17 @@ class Topology(Hashmap):
         # per feature a hash of its input geometry, used by sync()
         self._source_hashes = _source_hashes(data)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Topology(\n{pprint.pformat(self.output)}\n)"
 
-    def _copy_output(self):
+    def _copy_output(self) -> dict[str, Any]:
         """
         Copy of `output` that shares the arcs, for methods that only read them.
         """
         arcs = self.output["arcs"]
         return copy.deepcopy(self.output, {id(arcs): arcs})
 
-    def _copy(self):
+    def _copy(self) -> Self:
         """
         Copy of the Topology with a new list of arcs, for methods that replace them.
         """
@@ -188,12 +196,12 @@ class Topology(Hashmap):
         return copy.deepcopy(self, {id(arcs): list(arcs)})
 
     @property
-    def __geo_interface__(self):
+    def __geo_interface__(self) -> dict[str, Any]:
         topo_object = self._copy_output()
         objectname = self._resolve_object_name(0)
         return serialize_as_geojson(topo_object, validate=False, objectname=objectname)
 
-    def to_dict(self, options=False, state=False):
+    def to_dict(self, options: bool = False, state: bool = False) -> dict[str, Any]:
         """
         Convert the Topology to a dictionary.
 
@@ -210,7 +218,9 @@ class Topology(Hashmap):
         """
         return self._to_dict(copy.deepcopy(self.output), options, state)
 
-    def _to_dict(self, topo_object, options, state):
+    def _to_dict(
+        self, topo_object: dict[str, Any], options: bool, state: bool
+    ) -> dict[str, Any]:
         topo_object = self._resolve_coords(topo_object)
         if options or state:
             topo_object["options"] = vars(self.options)
@@ -223,7 +233,7 @@ class Topology(Hashmap):
             ]
         return topo_object
 
-    def to_svg(self, separate=False):
+    def to_svg(self, separate: bool = False) -> None:  # type: ignore[override]
         """
         Display the arcs and junctions as SVG.
 
@@ -237,13 +247,13 @@ class Topology(Hashmap):
 
     def to_json(
         self,
-        fp=None,
-        options=False,
-        pretty=False,
-        indent=4,
-        maxlinelength=88,
-        state=False,
-    ):
+        fp: str | os.PathLike[str] | None = None,
+        options: bool = False,
+        pretty: bool = False,
+        indent: int = 4,
+        maxlinelength: int = 88,
+        state: bool = False,
+    ) -> str | None:
         """
         Convert the Topology to a JSON object.
 
@@ -279,15 +289,15 @@ class Topology(Hashmap):
 
     def to_geojson(
         self,
-        fp=None,
-        pretty=False,
-        indent=4,
-        maxlinelength=88,
-        validate=False,
-        winding_order="CCW_CW",
-        decimals=None,
-        object_name=0,
-    ):
+        fp: str | os.PathLike[str] | None = None,
+        pretty: bool = False,
+        indent: int = 4,
+        maxlinelength: int = 88,
+        validate: bool = False,
+        winding_order: WindingOrder = "CCW_CW",
+        decimals: int | None = None,
+        object_name: str | int = 0,
+    ) -> str | None:
         """
         Convert the Topology to a GeoJSON object. Remember that this will destroy the
         computed Topology.
@@ -339,7 +349,13 @@ class Topology(Hashmap):
             fc, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
         )
 
-    def to_gdf(self, crs=None, validate=False, winding_order="CCW_CW", object_name=0):
+    def to_gdf(
+        self,
+        crs: Any = None,
+        validate: bool = False,
+        winding_order: WindingOrder = "CCW_CW",
+        object_name: str | int = 0,
+    ) -> "geopandas.GeoDataFrame":
         """
         Convert the Topology to a GeoDataFrame. Remember that this will destroy the
         computed Topology.
@@ -378,7 +394,13 @@ class Topology(Hashmap):
             crs = self._defined_crs_source
         return serialize_as_geodataframe(fc, crs=crs)
 
-    def to_alt(self, color=None, tooltip=True, projection="identity", object_name=0):
+    def to_alt(  # type: ignore[override]
+        self,
+        color: str | None = None,
+        tooltip: bool = True,
+        projection: str = "identity",
+        object_name: str | int = 0,
+    ) -> "altair.Chart":
         """
         Display as Altair visualization.
 
@@ -409,10 +431,10 @@ class Topology(Hashmap):
 
     def to_widget(
         self,
-        slider_toposimplify=None,
-        slider_topoquantize=None,
-        slider_keep=None,
-    ):
+        slider_toposimplify: Slider | None = None,
+        slider_topoquantize: Slider | None = None,
+        slider_keep: Slider | None = None,
+    ) -> Any:
         """
         Create an interactive widget based on Altair. The widget includes sliders to
         interactively change the `toposimplify` and `topoquantize` settings. With
@@ -443,7 +465,19 @@ class Topology(Hashmap):
             keep=slider_keep or {"min": 0, "max": 1, "step": 0.01, "value": 0.1},
         )
 
-    def topoquantize(self, quant_factor, inplace=False):
+    @overload
+    def topoquantize(
+        self, quant_factor: float | Transform, inplace: Literal[False] = False
+    ) -> Self: ...
+
+    @overload
+    def topoquantize(
+        self, quant_factor: float | Transform, inplace: Literal[True]
+    ) -> None: ...
+
+    def topoquantize(
+        self, quant_factor: float | Transform, inplace: bool = False
+    ) -> Self | None:
         """
         Quantization is recommended to improve the quality of the topology if the
         input geometry is messy (i.e., small floating point error means that
@@ -471,7 +505,7 @@ class Topology(Hashmap):
         arcs = result.output["arcs"]
 
         if not arcs:
-            return result
+            return None if inplace else result
 
         # dequantize if quantization is applied
         arcs = arc_coordinates(arcs, result.output.get("transform"))
@@ -489,23 +523,46 @@ class Topology(Hashmap):
         result.output["transform"] = transform
         result.options.topoquantize = quant_factor
 
-        if inplace:
-            # update into self
-            self.output["arcs"] = result.output["arcs"]
-            self.output["transform"] = result.output["transform"]
-            self.options.topoquantize = result.options.topoquantize
-        else:
+        if not inplace:
             return result
+        # update into self
+        self.output["arcs"] = result.output["arcs"]
+        self.output["transform"] = result.output["transform"]
+        self.options.topoquantize = result.options.topoquantize
+        return None
+
+    @overload
+    def toposimplify(
+        self,
+        epsilon: float | None = None,
+        simplify_algorithm: Algorithm | None = None,
+        simplify_with: Package | None = None,
+        prevent_oversimplify: bool | None = None,
+        inplace: Literal[False] = False,
+        keep: float | None = None,
+    ) -> Self: ...
+
+    @overload
+    def toposimplify(
+        self,
+        epsilon: float | None = None,
+        simplify_algorithm: Algorithm | None = None,
+        simplify_with: Package | None = None,
+        prevent_oversimplify: bool | None = None,
+        *,
+        inplace: Literal[True],
+        keep: float | None = None,
+    ) -> None: ...
 
     def toposimplify(
         self,
-        epsilon=None,
-        simplify_algorithm=None,
-        simplify_with=None,
-        prevent_oversimplify=None,
-        inplace=False,
-        keep=None,
-    ):
+        epsilon: float | None = None,
+        simplify_algorithm: Algorithm | None = None,
+        simplify_with: Package | None = None,
+        prevent_oversimplify: bool | None = None,
+        inplace: bool = False,
+        keep: float | None = None,
+    ) -> Self | None:
         """
         Apply toposimplify to remove unnecessary points from arcs after the topology
         is constructed. This will simplify the constructed arcs without altering the
@@ -626,16 +683,16 @@ class Topology(Hashmap):
                 )
                 result.output["arcs"] = delta_encoding(result.output["arcs"])
                 result.output["transform"] = transform
-        if inplace:
-            # update into self
-            self.output["arcs"] = result.output["arcs"]
-            if "transform" in result.output:
-                self.output["transform"] = result.output["transform"]
-            self.options.toposimplify = result.options.toposimplify
-        else:
+        if not inplace:
             return result
+        # update into self
+        self.output["arcs"] = result.output["arcs"]
+        if "transform" in result.output:
+            self.output["transform"] = result.output["transform"]
+        self.options.toposimplify = result.options.toposimplify
+        return None
 
-    def _grid(self):
+    def _grid(self) -> float | dict[str, Any] | None:
         """The grid of the options to quantize on again: a transform (dict), a
         quantize factor, or `None` when the options set no quantization."""
         for option in (self.options.topoquantize, self.options.prequantize):
@@ -648,7 +705,7 @@ class Topology(Hashmap):
         return None
 
     @classmethod
-    def read_json(cls, fp):
+    def read_json(cls, fp: str | os.PathLike[str] | IO[str]) -> Self:
         """
         Read a Topology from a TopoJSON file. If the file was written with
         `to_json(..., state=True)`, the options and source hashes are restored, so that
@@ -663,11 +720,11 @@ class Topology(Hashmap):
         -------
         Topology
         """
-        if hasattr(fp, "read"):
-            data = json.load(fp)
-        else:
+        if isinstance(fp, str | os.PathLike):
             with open(fp) as f:
                 data = json.load(f)
+        else:
+            data = json.load(fp)
         options = data.pop("options", None)
         hashes = data.pop("source_hashes", None)
         topo = cls(data)
@@ -677,7 +734,7 @@ class Topology(Hashmap):
             topo._source_hashes = dict(hashes)
         return topo
 
-    def add(self, data, object_name=None):
+    def add(self, data: Any, object_name: str | None = None) -> Self:
         """
         Add features to the Topology without recomputing it. Existing arcs are cut
         where the new features share a path with them; the result is the same as a
@@ -698,7 +755,7 @@ class Topology(Hashmap):
         """
         return self._update(object_name, add=data)
 
-    def remove(self, ids, object_name=None):
+    def remove(self, ids: Iterable[Hashable], object_name: str | None = None) -> Self:
         """
         Remove features from the Topology without recomputing it. Arcs that are no
         longer used are dropped and arcs are merged where a point is no longer a
@@ -721,7 +778,7 @@ class Topology(Hashmap):
         """
         return self._update(object_name, remove=ids)
 
-    def sync(self, data, object_name=None):
+    def sync(self, data: Any, object_name: str | None = None) -> Self:
         """
         Make the Topology equal to `data`: features that are new are added, features
         that are gone are removed and features with a changed geometry are replaced.
@@ -773,20 +830,26 @@ class Topology(Hashmap):
         }
         return self
 
-    def _update(self, object_name, remove=(), add=None, ring_starts=None):
+    def _update(
+        self,
+        object_name: str | None,
+        remove: Iterable[Hashable] = (),
+        add: Any = None,
+        ring_starts: dict[Hashable, Any] | None = None,
+    ) -> Self:
         """Remove and then add features, decoding and encoding the arcs once."""
         name = self._incremental_object_name(object_name)
         remove = list(remove)
         missing = set(remove) - self._ids(name)
         if missing:
-            raise KeyError(f"ids not in the topology: {sorted(missing)[:10]}")
+            raise KeyError(f"ids not in the topology: {sorted(missing, key=str)[:10]}")
         extracted = None
         if add is not None and len(add):
             extracted = Extract(add, copy.deepcopy(self.options)).output
             clash = (self._ids(name) - set(remove)) & set(extracted["objects"])
             if clash:
                 raise ValueError(
-                    f"ids already in the topology: {sorted(clash)[:10]}. To replace "
+                    f"ids already in the topology: {sorted(clash, key=str)[:10]}. To replace "
                     "features use topo.remove(ids).add(data) or topo.sync(data)."
                 )
         if not remove and extracted is None:
@@ -805,10 +868,10 @@ class Topology(Hashmap):
         incremental.drop_collapsed_rings(self.output, area)
         return self
 
-    def _ids(self, object_name):
+    def _ids(self, object_name: str) -> set[Hashable]:
         return {g.get("id") for g in self.output["objects"][object_name]["geometries"]}
 
-    def _incremental_object_name(self, object_name):
+    def _incremental_object_name(self, object_name: str | None) -> str:
         """Check that the Topology can be updated in place and resolve the object."""
         options = self.options
         if "transform" not in self.output or not options.topology:
@@ -840,8 +903,8 @@ class Topology(Hashmap):
             raise KeyError(f"object_name {object_name!r} not in {names}")
         return object_name
 
-    def _resolve_coords(self, data):
-        def resolve(feat):
+    def _resolve_coords(self, data: dict[str, Any]) -> dict[str, Any]:
+        def resolve(feat: dict[str, Any]) -> None:
             if feat["type"] == "GeometryCollection":
                 for geom in feat.get("geometries", []):
                     resolve(geom)
@@ -869,7 +932,7 @@ class Topology(Hashmap):
             data.pop("coordinates", None)
         return data
 
-    def _resolve_object_name(self, object_name):
+    def _resolve_object_name(self, object_name: str | int | None) -> str:
         # check if object_name as str or index is within self.options.object_name
         if type(object_name) is int:
             ix = object_name
@@ -888,7 +951,7 @@ class Topology(Hashmap):
                 )
         return objectname
 
-    def _topo(self, data):
+    def _topo(self, data: dict[str, Any]) -> dict[str, Any]:
         self.output["arcs"] = data["linestrings"]
         del data["linestrings"]
 
@@ -914,7 +977,8 @@ class Topology(Hashmap):
 
         # topoquantize linestrings if required
         if isinstance(self.options.topoquantize, dict):
-            self.topoquantize(quant_factor=self.options.topoquantize, inplace=True)
+            grid = cast(Transform, self.options.topoquantize)
+            self.topoquantize(quant_factor=grid, inplace=True)
         elif self.options.topoquantize > 0:
             # set default if not specifically given in the options
             if isinstance(self.options.topoquantize, bool):
@@ -927,7 +991,7 @@ class Topology(Hashmap):
         return self.output
 
 
-def _source_hashes(data):
+def _source_hashes(data: Any) -> dict[Hashable, str]:
     """Hash of the input geometry of each feature of a GeoDataFrame or GeoSeries."""
     if instance(data) not in ("GeoDataFrame", "GeoSeries"):
         return {}

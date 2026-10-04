@@ -215,7 +215,7 @@ class Cut(Join):
                                         object_child["type"]
                                     )
 
-        linestring_object_types = {}
+        linestring_object_types: dict[int, str] = {}
         for object_key in objects:
             recurse_geometries(objects[object_key])
         return linestring_object_types

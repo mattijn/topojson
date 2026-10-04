@@ -10,7 +10,7 @@ nav_order: 5
 
 ## Dedup
 ```python
-Dedup(self, data, options={})
+Dedup(self, data, options=None)
 ```
 
 Dedup duplicates and merge contiguous arcs

@@ -50,6 +50,12 @@ uvx ruff check
 uvx ruff format
 ```
 
+The public API (`Topology`) is typed, and CI checks the types with mypy, also from the side of a user (`tests/typing_api.py`):
+
+```bash
+uv run --with mypy mypy topojson tests/typing_api.py
+```
+
 Or install the package including optional dependencies directly from the GitHub repository using:
 
 ```bash

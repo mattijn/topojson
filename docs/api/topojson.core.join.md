@@ -10,7 +10,7 @@ nav_order: 3
 
 ## Join
 ```python
-Join(self, data, options={})
+Join(self, data, options=None)
 ```
 
 This class targets the following objectives:

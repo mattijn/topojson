@@ -1799,6 +1799,6 @@ def remove_collinear_points(line: np.ndarray) -> np.ndarray:
     p3_y = line[2:, 1]
 
     # Calculate
-    collinear_mask = (p2_x - p1_x) * (p3_y - p1_y) == (p3_x - p1_x) * (p2_y - p1_y)  # type: ignore
+    collinear_mask = (p2_x - p1_x) * (p3_y - p1_y) == (p3_x - p1_x) * (p2_y - p1_y)
     collinear_mask = np.concatenate([[False], collinear_mask, [False]])
     return line[~np.array(collinear_mask)]

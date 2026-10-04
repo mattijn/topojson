@@ -20,6 +20,19 @@ jobs:
         with:
           args: format --check
 
+  types:
+    name: Check types with mypy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install
+        run: python -m pip install . mypy
+      - name: Check the package and its public API
+        run: mypy topojson tests/typing_api.py
+
   do-test:
     name: Test on Python
     runs-on: ubuntu-latest
