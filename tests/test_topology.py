@@ -1,3 +1,4 @@
+import copy
 import json
 import os
 
@@ -808,3 +809,22 @@ def test_topology_gdf_geometrycollection_roundtrip(prequantize):
         out = topojson.Topology(source, prequantize=prequantize).to_gdf()
         for a, b in zip(out.geometry, data.geometry):
             assert a.hausdorff_distance(b) < 1e-4
+
+
+def test_topology_exports_and_simplify_leave_topology_unchanged():
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    topo = topojson.Topology(data)
+    before = copy.deepcopy(topo.output)
+    topo.to_json()
+    topo.to_geojson()
+    topo.to_gdf()
+    topo.__geo_interface__
+    simplified = topo.toposimplify(1)
+    quantized = topo.topoquantize(1e4)
+    assert topo.output == before
+
+    # what is returned does not share its arcs with the topology
+    topo.to_dict()["arcs"][0].append([0, 0])
+    simplified.output["arcs"].append([[0, 0], [1, 1]])
+    quantized.output["arcs"][0].append([0, 0])
+    assert topo.output == before

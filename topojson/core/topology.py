@@ -154,9 +154,23 @@ class Topology(Hashmap):
     def __repr__(self):
         return "Topology(\n{}\n)".format(pprint.pformat(self.output))
 
+    def _copy_output(self):
+        """
+        Copy of `output` that shares the arcs, for methods that only read them.
+        """
+        arcs = self.output["arcs"]
+        return copy.deepcopy(self.output, {id(arcs): arcs})
+
+    def _copy(self):
+        """
+        Copy of the Topology with a new list of arcs, for methods that replace them.
+        """
+        arcs = self.output["arcs"]
+        return copy.deepcopy(self, {id(arcs): list(arcs)})
+
     @property
     def __geo_interface__(self):
-        topo_object = copy.deepcopy(self.output)
+        topo_object = self._copy_output()
         objectname = self._resolve_object_name(0)
         return serialize_as_geojson(topo_object, validate=False, objectname=objectname)
 
@@ -175,7 +189,9 @@ class Topology(Hashmap):
             can continue from it.
             Default is `False`
         """
-        topo_object = copy.deepcopy(self.output)
+        return self._to_dict(copy.deepcopy(self.output), options, state)
+
+    def _to_dict(self, topo_object, options, state):
         topo_object = self._resolve_coords(topo_object)
         if options or state:
             topo_object["options"] = vars(self.options)
@@ -235,7 +251,7 @@ class Topology(Hashmap):
             can continue from it in a next run.
             Default is `False`.
         """
-        topo_object = self.to_dict(options=options is True, state=state)
+        topo_object = self._to_dict(self._copy_output(), options is True, state)
         return serialize_as_json(
             topo_object, fp, pretty=pretty, indent=indent, maxlinelength=maxlinelength
         )
@@ -288,8 +304,7 @@ class Topology(Hashmap):
             The name or the index of the object within the Topology to display.
             Default is index 0.
         """
-        topo_object = copy.deepcopy(self.output)
-        topo_object = self._resolve_coords(topo_object)
+        topo_object = self._resolve_coords(self._copy_output())
         objectname = self._resolve_object_name(object_name)
 
         fc = serialize_as_geojson(
@@ -332,8 +347,7 @@ class Topology(Hashmap):
         """
         from ..utils import serialize_as_geodataframe
 
-        topo_object = copy.deepcopy(self.output)
-        topo_object = self._resolve_coords(topo_object)
+        topo_object = self._resolve_coords(self._copy_output())
         objectname = self._resolve_object_name(object_name)
         fc = serialize_as_geojson(
             topo_object, validate=validate, objectname=objectname, order=winding_order
@@ -419,7 +433,7 @@ class Topology(Hashmap):
         object or None
             Quantized coordinates and delta-encoded arcs if `inplace` is `False`.
         """
-        result = copy.deepcopy(self)
+        result = self._copy()
         arcs = result.output["arcs"]
 
         if not arcs:
@@ -503,7 +517,7 @@ class Topology(Hashmap):
         object or None
             Topology object with simplified linestrings if `inplace` is `False`.
         """
-        result = copy.deepcopy(self)
+        result = self._copy()
         if not result.options.toposimplify:
             result.options.toposimplify = epsilon
 

@@ -9,7 +9,7 @@ dynamic = ["version", "description"]
 authors = [
     {name = "Mattijn van Hoek", email = "mattijn@gmail.com"},
 ]
-dependencies = ["numpy", "shapely>=2.0"]
+dependencies = ["numpy", "shapely>=2.1"]
 keywords = ["topojson", "python", "github", "topology", "geojson"]
 readme = "README.md"
 classifiers = ["License :: OSI Approved :: BSD License"]
