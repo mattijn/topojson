@@ -69,7 +69,7 @@ The steps below use each class on its own, with its own defaults: without quanti
 
 The first step is Extract. 
 
-<img src="images/extract.png" width="450px"/>
+<figure class="steps" data-src="{{site.baseurl}}/json/steps.json" data-step="extract"><svg></svg></figure>
 
 This class instance is determines the geometrical type of input data (eg. `dict`, `geojson.FeatureCollection`, `geopandas.GeoDataFrame`), and based on the type it extracts all geometric entities as `shapely.geometry.LineString`'s or `shapely.geometry.Point`'s and stores them in a top-level object with references in each geometric entity.
 
@@ -130,7 +130,7 @@ Extract(data).to_svg(separate=True)
 
 The second step is Join. The Join class pass the data first _down_ towards the Extract class, before starting the Join phase. 
 
-<img src="images/join.png" width="450px"/>
+<figure class="steps" data-src="{{site.baseurl}}/json/steps.json" data-step="join"><svg></svg></figure>
 
    - Quantization of input linestrings if necessary
    - Identifies junctions of shared paths
@@ -192,7 +192,7 @@ Join(data).to_svg(separate=True, include_junctions=True)
 
 The third step is Cut. The Cut class passes the data first _down_ towards the Extract and subsequently Join class, before starting the Cut phase. 
 
-<img src="images/cut.png" width="450px"/>
+<figure class="steps" data-src="{{site.baseurl}}/json/steps.json" data-step="cut"><svg></svg></figure>
 
    - Split linestrings given the junctions of shared paths
    - Identifies indexes of linestrings that are duplicates
@@ -274,7 +274,7 @@ Cut(data).to_svg(separate=True, include_junctions=True)
 
 The fourth step is Dedup. The Dedup class passes the data first _down_ towards the Extract and subsequently Join and Cut class, before starting the Dedup phase.
 
-<img src="images/dedup.png" width="450px"/>
+<figure class="steps" data-src="{{site.baseurl}}/json/steps.json" data-step="dedup"><svg></svg></figure>
 
    - Deduplication of linestrings that contain duplicates
    - Direction of each arc in each line (with `shared_coords=False`, the default)
@@ -352,7 +352,7 @@ Dedup(data).to_svg(separate=True)
 
 The fifth step is Hashmap. The Hashmap class passes the data first _down_ towards the Extract and subsequently Join, Cut and Dedup class, before starting the Hashmap phase.
 
-<img src="images/hashmap.png" width="450px"/>
+<figure class="steps" data-src="{{site.baseurl}}/json/steps.json" data-step="hashmap"><svg></svg></figure>
 
    - Resolves bookkeeping results to object arcs.
 
@@ -406,7 +406,7 @@ The `bookkeeping_*` keys are removed and the `arcs` for each geometry within `ob
 
 The sixth and last step is Topology. The Topology class passes the data first _down_ towards the Extract and subsequently Join, Cut, Dedup and Hashmap class, before starting the Topology phase.
 
-<img src="images/topology.png" width="450px"/>
+<figure class="steps" data-src="{{site.baseurl}}/json/steps.json" data-step="topology"><svg></svg></figure>
 
    - Applies all custom settings and output functions.
 
@@ -461,3 +461,5 @@ Topology(data).to_svg()
 
 * * * 
 The names are borrowed from the JavaScript variant of TopoJSON, to establish a certain synergy between the packages, even though the code differs significant (and sometimes even the TopoJSON output).
+
+<script src="{{site.baseurl}}/js/steps.js" defer></script>
