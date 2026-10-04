@@ -345,8 +345,9 @@ as floating point noise. To close gaps, clean the input first, for example with
 `shapely.snap`.
 
 **A small ring can collapse.** A ring smaller than a cell can end up as a single
-point. Such a ring stays in the topology, without area (see
-[#243](https://github.com/mattijn/topojson/issues/243)). Choose a grid that is fine
+point or a line, without area. Such a ring is dropped: a small island from its
+`MultiPolygon`, a small hole from its polygon. A feature of which nothing is left
+keeps its properties, with an empty (`null`) geometry. Choose a grid that is fine
 enough for the smallest features you want to keep.
 
 <script>
