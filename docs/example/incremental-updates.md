@@ -23,6 +23,9 @@ often on a set of features of which most stay the same.
 id (the index of a GeoDataFrame). Arcs that are no longer used are removed, arcs
 are cut where a new feature meets them, and shared borders stay shared.
 
+Below, a Topology of the squares A, B and C (5 arcs). After `add(D)` the shared
+sides are cut (8 arcs). After `remove(D)` they merge again:
+
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
 Example 🔧
@@ -31,18 +34,30 @@ Example 🔧
 <div class="example-text" markdown="1">
 
 ```python
+import geopandas as gpd
 import topojson as tp
+from shapely.geometry import box
 
-gdf = tp.Topology(tp.utils.example_data_africa(), prequantize=False).to_gdf()
-
-topo = tp.Topology(gdf.iloc[:40])
-topo.add(gdf.iloc[40:42])
-topo.remove([0, 1])
-len(topo.to_gdf())
+gdf = gpd.GeoDataFrame(
+    geometry=[
+        box(0, 1, 1, 2),
+        box(1, 1, 2, 2),
+        box(0, 0, 1, 1),
+        box(1, 0, 2, 1),
+    ],
+    index=list("ABCD"),
+)
+topo = tp.Topology(gdf.loc[["A", "B", "C"]])
+n0 = len(topo.output["arcs"])
+topo.add(gdf.loc[["D"]])
+n1 = len(topo.output["arcs"])
+topo.remove(["D"])
+n0, n1, len(topo.output["arcs"])
 ```
 <pre class="code_no_highlight">
-40
+(5, 8, 5)
 </pre>
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_incremental_add_remove.json" data-label="Add a square that shares two sides, then remove it"><svg></svg></figure>
 </div>
 </div>
 
@@ -67,16 +82,32 @@ Example 🔧
 </div>
 <div class="example-text" markdown="1">
 
-A first run on 40 features, a next run on a set where 5 features are gone, 5 are new
-and one has changed:
+Below, the next run drops A, changes C and adds E:
 ```python
-tp.Topology(gdf.iloc[:40]).to_json("state.json", state=True)
+tp.Topology(gdf).to_json("state.json", state=True)
 
-second = gdf.iloc[5:45].copy()
-second.loc[5, "geometry"] = second.loc[5, "geometry"].buffer(0.1)
+second = gdf.loc[["B", "C", "D"]].copy()
+second.loc["C", "geometry"] = second.loc["C", "geometry"].buffer(0.2)
+second.loc["E", "geometry"] = box(2, 1, 3, 2)
 
 topo = tp.Topology.read_json("state.json").sync(second)
 topo.last_sync
+```
+<pre class="code_no_highlight">
+{'added': 1, 'removed': 1, 'changed': 1, 'unchanged': 2}
+</pre>
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_incremental_sync.json" data-label="A next run that drops A, changes C and adds E"><svg></svg></figure>
+
+The same on a larger set, 40 features of which 5 are gone, 5 are new and one has
+changed:
+```python
+africa = tp.Topology(tp.utils.example_data_africa(), prequantize=False).to_gdf()
+tp.Topology(africa.iloc[:40]).to_json("state.json", state=True)
+
+more = africa.iloc[5:45].copy()
+more.loc[5, "geometry"] = more.loc[5, "geometry"].buffer(0.1)
+
+tp.Topology.read_json("state.json").sync(more).last_sync
 ```
 <pre class="code_no_highlight">
 {'added': 5, 'removed': 5, 'changed': 1, 'unchanged': 34}
@@ -87,9 +118,9 @@ A job that runs every few minutes on the complete set of features:
 from pathlib import Path
 
 if not Path("state.json").exists():
-    topo = tp.Topology(gdf)
+    topo = tp.Topology(africa)
 else:
-    topo = tp.Topology.read_json("state.json").sync(gdf)
+    topo = tp.Topology.read_json("state.json").sync(africa)
 
 topo.to_json("state.json", state=True)
 topo.toposimplify(1).to_json("publish.json")
@@ -111,3 +142,5 @@ topo.toposimplify(1).to_json("publish.json")
 - The result has the same features, arcs and junctions as a Topology computed from
   the start on the same grid. After `remove` on its own, a ring can start at
   another vertex, and the bbox can differ by up to half a grid cell.
+
+<script src="{{site.baseurl}}/js/steps.js" defer></script>
