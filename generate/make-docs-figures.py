@@ -1,9 +1,9 @@
 """
 Write the data of the figures on the pages Example usage, Types of input data,
-Settings and tuning and Retrieval data types (docs/json/fig_*.json), by running
-the examples shown on the pages. Each figure is a list of panels with lines,
-filled rings, points and labels, drawn by docs/js/steps.js. Run from the root of
-the repository:
+Settings and tuning, Retrieval data types and Quantization (docs/json/fig_*.json),
+by running the examples shown on the pages. Each figure is a list of panels with
+lines, filled rings, points and labels, drawn by docs/js/steps.js. Run from the
+root of the repository:
 
     python generate/make-docs-figures.py
 """
@@ -175,6 +175,161 @@ figures["output_to_svg"] = [{"lines": arcs(topo_two), "ends": True}]
 figures["output_to_svg_separate"] = separate(topo_two)
 figures["output_to_gdf"] = [{"fills": rings(africa.to_gdf().geometry)}]
 
+# example/quantization.md
+line = geometry.LineString(
+    [(0, 1), (2.6, 4.6), (5.3, 3.9), (7.1, 6), (9.6, 0), (12, 3.4)]
+)
+snap_window = [-0.5, 12.5, -0.5, 6.5]
+
+
+def lattice(transform, x0, x1, y0, y1):
+    """The points of a transform inside a window."""
+    (kx, ky), (tx, ty) = transform["scale"], transform["translate"]
+    xs = tx + kx * np.arange(np.ceil((x0 - tx) / kx - 1e-9), (x1 - tx) / kx + 1e-9)
+    ys = ty + ky * np.arange(np.ceil((y0 - ty) / ky - 1e-9), (y1 - ty) / ky + 1e-9)
+    return [[float(x), float(y)] for y in ys for x in xs]
+
+
+def grid_lines(transform, x0, x1, y0, y1):
+    """The lines of a transform through a window."""
+    (kx, ky), (tx, ty) = transform["scale"], transform["translate"]
+    xs = tx + kx * np.arange(np.ceil((x0 - tx) / kx - 1e-9), (x1 - tx) / kx + 1e-9)
+    ys = ty + ky * np.arange(np.ceil((y0 - ty) / ky - 1e-9), (y1 - ty) / ky + 1e-9)
+    return [[[float(x), y0], [float(x), y1]] for x in xs] + [
+        [[x0, float(y)], [x1, float(y)]] for y in ys
+    ]
+
+
+def on_fine(xy, transform):
+    """Vertices that lie on a point of the transform."""
+    (kx, ky), (tx, ty) = transform["scale"], transform["translate"]
+    steps = (np.asarray(xy) - [tx, ty]) / [kx, ky]
+    return np.isclose(steps, np.round(steps), atol=1e-6).all(1)
+
+
+def snap_panel(topo, title):
+    """The input line faint, the grid as dots, the quantized line dashed."""
+    t = topo.output["transform"]
+    quantized = arcs(topo)
+    xy = [p for a in quantized for p in a]
+    return {
+        "title": title,
+        "subtitle": f"cells of {t['scale'][0]:g} × {t['scale'][1]:g}",  # noqa: RUF001
+        "faint": coords(line),
+        "dashed": quantized,
+        "grid": lattice(t, *snap_window),
+        "filled": [p for p, ok in zip(xy, on_fine(xy, t)) if ok],
+        "dots": [p for p, ok in zip(xy, on_fine(xy, t)) if not ok],
+        "window": snap_window,
+    }
+
+
+figures["quantization_snap"] = [
+    snap_panel(tp.Topology(line, prequantize=5), "prequantize=5"),
+    snap_panel(
+        tp.Topology(line, prequantize={"scale": [2, 2], "translate": [0, 0]}),
+        "square cells",
+    ),
+]
+
+fine = {"scale": [1, 1], "translate": [0, 0]}
+on_grid = tp.Topology(line, prequantize=fine)
+source = [c for g in on_grid.to_gdf().geometry for c in coords(g)]
+
+
+def nested_panel(topo, title):
+    """The fine line faint, the coarse grid as lines, vertices filled when they
+    lie on the fine grid."""
+    t = topo.output["transform"]
+    quantized = arcs(topo)
+    xy = [p for a in quantized for p in a]
+    ok = on_fine(xy, fine)
+    return {
+        "title": title,
+        "subtitle": f"{int(ok.sum())} of {len(xy)} vertices on a point of the fine grid",
+        "faint": source,
+        "dashed": quantized,
+        "grid": lattice(fine, *snap_window),
+        "rules": grid_lines(t, *snap_window),
+        "filled": [p for p, hit in zip(xy, ok) if hit],
+        "dots": [p for p, hit in zip(xy, ok) if not hit],
+        "window": snap_window,
+    }
+
+
+figures["quantization_nested"] = [
+    nested_panel(on_grid.topoquantize(6), "topoquantize(6)"),
+    nested_panel(
+        on_grid.topoquantize({"scale": [3, 3], "translate": [0, 0]}),
+        "topoquantize with cells of 3",
+    ),
+]
+
+countries = gpd.read_file(
+    "https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/"
+    "ne_50m_admin_0_countries.geojson"
+)
+chile = countries.query("name == 'Chile'")[["name", "geometry"]]
+chile = chile.clip((-80, -60, -60, -15))
+x0, y0, x1, y1 = chile.total_bounds
+k_cell = 0.5
+square = {
+    "scale": [k_cell / np.cos(np.radians((y0 + y1) / 2)), k_cell],
+    "translate": [x0, y0],
+}
+
+
+def chile_panel(topo, title):
+    """Mainland Chile and the lines of its grid."""
+    t = topo.output["transform"]
+    bx0, by0, bx1, by1 = topo.output["bbox"]
+    return {
+        "title": title,
+        "fills": rings(topo.to_gdf().geometry),
+        "rules": grid_lines(t, bx0, bx1, by0, by1),
+    }
+
+
+figures["quantization_cells"] = [
+    chile_panel(tp.Topology(chile, prequantize=40), "prequantize=40"),
+    chile_panel(tp.Topology(chile, prequantize=square), "square cells of 0.5°"),
+]
+
+rectangles = gpd.GeoDataFrame(
+    {"name": ["a1", "a2", "b1", "b2"]},
+    geometry=[
+        geometry.box(0, 0, 1.0, 1),
+        geometry.box(1.04, 0, 2, 1),
+        geometry.box(0, 1.2, 1.04, 2.2),
+        geometry.box(1.06, 1.2, 2, 2.2),
+    ],
+)
+gap = tp.Topology(rectangles, prequantize=21)
+gap_xy = [p for a in arcs(gap) for p in a]
+gap_t = gap.output["transform"]
+
+
+def gap_panel(title, window):
+    """A zoom on the gap, with the input faint and the quantized rectangles filled."""
+    return {
+        "title": title,
+        "fills": rings(gap.to_gdf().geometry),
+        "faint": [c for g in rectangles.geometry for c in coords(g)],
+        "grid": lattice(gap_t, *window),
+        "filled": [p for p, ok in zip(gap_xy, on_fine(gap_xy, gap_t)) if ok],
+        "texts": [
+            [*g.centroid.coords[0], n]
+            for g, n in zip(rectangles.geometry, rectangles.name)
+        ],
+        "window": window,
+    }
+
+
+figures["quantization_gap"] = [
+    gap_panel("a gap of 0.04 closes", [0.55, 1.5, -0.12, 1.12]),
+    gap_panel("a gap of 0.02 stays open", [0.55, 1.5, 1.08, 2.32]),
+]
+
 
 def rounded(panels):
     """Round the coordinates to a ten-thousandth of the extent of the figure, far
@@ -187,7 +342,18 @@ def rounded(panels):
             for v in x:
                 yield from points(v)
 
-    keys = ("lines", "faint", "fills", "dots", "texts")
+    keys = (
+        "lines",
+        "faint",
+        "dashed",
+        "fills",
+        "dots",
+        "grid",
+        "filled",
+        "rules",
+        "texts",
+        "window",
+    )
     xy = np.array([q for p in panels for k in keys if p.get(k) for q in points(p[k])])
     decimals = max(0, int(np.ceil(-np.log10(np.ptp(xy, 0).max() / 1e4))))
 

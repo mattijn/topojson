@@ -59,7 +59,7 @@ topo.output["transform"]
 <pre class="code_no_highlight">
 {'scale': [3.0, 1.5], 'translate': [0.0, 0.0]}
 </pre>
-<div id="embed_quantization_snap"></div>
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_quantization_snap.json" data-label="A line snapped to prequantize=5 and to square cells of 2"><svg></svg></figure>
 </div>
 </div>
 
@@ -113,7 +113,7 @@ Example 🔧
 {: .label .label-blue-000 }
 </div>
 <div class="example-text" markdown="1">
-<div id="embed_quantization_cells"></div>
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_quantization_cells.json" data-label="Chile on the grid of its bounding box and on square cells"><svg></svg></figure>
 </div>
 </div>
 
@@ -292,7 +292,7 @@ left.output["transform"], right.output["transform"]
 ({'scale': [2.4, 1.2], 'translate': [0.0, 0.0]},
  {'scale': [3.0, 3.0], 'translate': [0.0, 0.0]})
 </pre>
-<div id="embed_quantization_nested"></div>
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_quantization_nested.json" data-label="The line on a coarse grid from the bounding box and on nested cells of 3"><svg></svg></figure>
 </div>
 </div>
 
@@ -336,7 +336,7 @@ topo = tp.Topology(rectangles, prequantize=21)
 
 `a1` and `a2` share arc `1` (`-2` is arc `1` reversed); `b1` and `b2` share nothing.
 
-<div id="embed_quantization_gap"></div>
+<figure class="parts" data-src="{{site.baseurl}}/json/fig_quantization_gap.json" data-label="A gap of 0.04 that closes and a gap of 0.02 that stays open"><svg></svg></figure>
 </div>
 </div>
 
@@ -350,27 +350,4 @@ point or a line, without area. Such a ring is dropped: a small island from its
 keeps its properties, with an empty (`null`) geometry. Choose a grid that is fine
 enough for the smallest features you want to keep.
 
-<script>
-window.addEventListener("DOMContentLoaded", event => {
-    var opt = {
-        mode: "vega-lite",
-        renderer: "svg",
-        actions: false
-    };
-
-    var spec_quantization_snap = "{{site.baseurl}}/json/example_quantization_snap.vl.json";
-    vegaEmbed("#embed_quantization_snap", spec_quantization_snap, opt).catch(console.err);
-
-    var spec_quantization_nested = "{{site.baseurl}}/json/example_quantization_nested.vl.json";
-    vegaEmbed("#embed_quantization_nested", spec_quantization_nested, opt).catch(console.err);
-
-    var spec_quantization_cells = "{{site.baseurl}}/json/example_quantization_cells.vl.json";
-    vegaEmbed("#embed_quantization_cells", spec_quantization_cells, opt).catch(console.err);
-
-    var spec_quantization_gap = "{{site.baseurl}}/json/example_quantization_gap.vl.json";
-    vegaEmbed("#embed_quantization_gap", spec_quantization_gap, opt).catch(console.err);
-});
-</script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@6"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@6"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>
+<script src="{{site.baseurl}}/js/steps.js" defer></script>

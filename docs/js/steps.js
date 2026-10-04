@@ -137,9 +137,10 @@
     });
   }
 
-  // Panels seen from above: lines (dark), the rest of the figure (faint), filled
-  // rings with a label, and points. With data-step, the output of a step of the toy
-  // example of How it works; else the panels of the file (generate/make-docs-figures.py).
+  // Panels seen from above: lines (dark), a dashed line, the rest of the figure
+  // (faint), filled rings with a label, a grid of dots or lines, and points. With
+  // data-step, the output of a step of the toy example of How it works; else the
+  // panels of the file (generate/make-docs-figures.py).
   //
   // <figure class="parts" data-src="steps.json" data-step="cut"><svg></svg></figure>
   // <figure class="parts" data-src="fig_input_shapely.json"><svg></svg></figure>
@@ -155,9 +156,10 @@
 
   // all points of a panel, to find the extent of a figure
   function* points(p) {
-    for (const l of [...(p.lines || []), ...(p.faint || [])]) yield* l;
+    if (p.window) { yield [p.window[0], p.window[2]]; yield [p.window[1], p.window[3]]; return; }
+    for (const l of [...(p.lines || []), ...(p.faint || []), ...(p.dashed || []), ...(p.rules || [])]) yield* l;
     for (const polygon of p.fills || []) for (const ring of polygon) yield* ring;
-    yield* p.dots || [];
+    for (const q of [...(p.dots || []), ...(p.grid || []), ...(p.filled || [])]) yield q;
     for (const [x, y] of p.texts || []) yield [x, y];
   }
 
@@ -167,12 +169,20 @@
       const list = figure.dataset.step ? panels(figure.dataset.step, d) : d.panels;
       const single = list.length === 1;
       let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
-      for (const p of list) for (const [x, y] of points(p)) {
-        x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+      if (list.every(p => p.window)) {
+        x0 = 0;
+        x1 = Math.max(...list.map(p => p.window[1] - p.window[0]));
+        y0 = 0;
+        y1 = Math.max(...list.map(p => p.window[3] - p.window[2]));
+      } else {
+        for (const p of list) for (const [x, y] of points(p)) {
+          x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+        }
       }
       const bw = Math.max(x1 - x0, 1e-9), bh = Math.max(y1 - y0, 1e-9);
-      const k = single ? Math.min(400 / bw, 280 / bh) : Math.min(150 / bw, 110 / bh);
-      const pad = single ? 22 : 12, head = list.some(p => p.title) ? 18 : 0;
+      const tall = bh > bw * 1.4;
+      const k = single ? Math.min(400 / bw, 280 / bh) : tall ? Math.min(120 / bw, 240 / bh) : Math.min(150 / bw, 110 / bh);
+      const pad = single ? 22 : 12, head = list.some(p => p.subtitle) ? 30 : list.some(p => p.title) ? 18 : 0;
       // a panel is at least as wide as its title, the drawing in its middle
       const title = Math.max(0, ...list.map(p => (p.title || "").length)) * 6.6;
       const w = Math.max(bw * k + 2 * pad, title + 8), h = bh * k + 2 * pad + head;
@@ -199,17 +209,28 @@
       svg.setAttribute("aria-label", figure.dataset.label || list.map(p => p.title).filter(Boolean).join(", ") || "A figure of the example");
       list.forEach((p, i) => {
         const g = el("g", { transform: `translate(${(i % cols) * (w + 12)},${Math.floor(i / cols) * (h + 12)})` }, svg);
-        const Q = ([x, y]) => [pad + (x - x0) * k, head + top + (y1 - y) * k];
+        const [wx0, wx1, wy0, wy1] = p.window || [x0, box.x0 + (w - 2 * pad) / k, y1 - (h - head - 2 * top) / k, y1];
+        const px0 = p.window ? wx0 : x0, py1 = p.window ? wy1 : y1;
+        const Q = ([x, y]) => [pad + (x - px0) * k, head + top + (py1 - y) * k];
         const line = l => l.map(q => Q(q).map(v => v.toFixed(1)).join(",")).join(" ");
         const ring = r => "M" + r.map(q => Q(q).map(v => v.toFixed(1)).join(",")).join("L") + "Z";
         if (p.title) el("text", { x: 0, y: 11, class: "steps-label", fill: "var(--steps-edge)" }, g).textContent = p.title;
+        if (p.subtitle) el("text", { x: 0, y: 24, class: "steps-label", fill: "var(--steps-lo)" }, g).textContent = p.subtitle;
         el("rect", { x: 0.5, y: head + 0.5, width: w - 1, height: h - head - 1, rx: 4, fill: "var(--steps-plate)", stroke: "var(--steps-lo)", "stroke-width": 0.9 }, g);
-        (p.fills || []).forEach((polygon, j) => el("path", { d: polygon.map(ring).join(""), "fill-rule": "evenodd", fill: j % 2 ? "var(--steps-fill-b)" : "var(--steps-fill-a)", stroke: "var(--steps-hi)", "stroke-width": 0.9, "stroke-linejoin": "round" }, g));
-        (p.faint || []).forEach(l => el("polyline", { points: line(l), fill: "none", stroke: "var(--steps-lo)", "stroke-width": 0.9, "stroke-linejoin": "round" }, g));
-        (p.lines || []).forEach(l => el("polyline", { points: line(l), fill: "none", stroke: "var(--steps-hi)", "stroke-width": p.thick ? 2.2 : 1.2, "stroke-linejoin": "round", "stroke-linecap": "round" }, g));
-        const dot = (q, r) => { const [x, y] = Q(q); el("circle", { cx: x, cy: y, r, fill: "var(--steps-plate)", stroke: "var(--steps-hi)", "stroke-width": 0.9 }, g); };
+        const cid = `clip-${(figure.dataset.src || "fig").replace(/\W+/g, "")}-${i}`;
+        const clip = el("clipPath", { id: cid }, g);
+        el("rect", { x: 1, y: head + 1, width: w - 2, height: h - head - 2, rx: 3 }, clip);
+        const ink = el("g", { "clip-path": `url(#${cid})` }, g);
+        (p.rules || []).forEach(l => el("polyline", { points: line(l), fill: "none", stroke: "var(--steps-lo)", "stroke-width": 0.6 }, ink));
+        (p.fills || []).forEach((polygon, j) => el("path", { d: polygon.map(ring).join(""), "fill-rule": "evenodd", fill: j % 2 ? "var(--steps-fill-b)" : "var(--steps-fill-a)", stroke: "var(--steps-hi)", "stroke-width": 0.9, "stroke-linejoin": "round" }, ink));
+        (p.faint || []).forEach(l => el("polyline", { points: line(l), fill: "none", stroke: "var(--steps-lo)", "stroke-width": 0.9, "stroke-linejoin": "round" }, ink));
+        (p.dashed || []).forEach(l => el("polyline", { points: line(l), fill: "none", stroke: "var(--steps-hi)", "stroke-width": 1.2, "stroke-dasharray": "4 3", "stroke-linejoin": "round", "stroke-linecap": "round" }, ink));
+        (p.lines || []).forEach(l => el("polyline", { points: line(l), fill: "none", stroke: "var(--steps-hi)", "stroke-width": p.thick ? 2.2 : 1.2, "stroke-linejoin": "round", "stroke-linecap": "round" }, ink));
+        const dot = (q, r, fill = "var(--steps-plate)") => { const [x, y] = Q(q); el("circle", { cx: x, cy: y, r, fill, stroke: "var(--steps-hi)", "stroke-width": 0.9 }, ink); };
+        (p.grid || []).forEach(q => { const [x, y] = Q(q); el("circle", { cx: x, cy: y, r: 1.1, fill: "var(--steps-lo)" }, ink); });
         if (p.ends) (p.lines || []).forEach(l => { dot(l[0], 2); dot(l[l.length - 1], 2); });
         (p.dots || []).forEach(q => dot(q, 3));
+        (p.filled || []).forEach(q => dot(q, 2.4, "var(--steps-hi)"));
         (p.texts || []).forEach(([x, y, s]) => { const [px, py] = Q([x, y]); el("text", { x: px, y: py, "text-anchor": "middle", "dominant-baseline": "central", class: "steps-label", fill: "var(--steps-hi)" }, g).textContent = s; });
         if (p.arrows) p.lines.forEach(l => {
           // an arrowhead at the end, along the last segment
