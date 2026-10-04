@@ -142,6 +142,10 @@ def geometry(obj, tp_arcs, transform=None):
 
     The topology object is a dict with 'type' and 'arcs' items.
     """
+    if obj["type"] is None:
+        # a null geometry, e.g. of a feature of which all rings collapsed
+        return None
+
     if obj["type"] == "Feature":
         # Extract geometry from Feature object
         return geometry(obj["geometry"], tp_arcs, transform)
@@ -160,6 +164,8 @@ def geometry(obj, tp_arcs, transform=None):
 
     else:
         # Check if this is a topology object (has arcs) or a regular geometry object (has coordinates)
+        if "arcs" in obj and not obj["arcs"]:
+            return {"type": obj["type"], "coordinates": []}
         if "arcs" in obj:
             return {
                 "type": obj["type"],
@@ -507,6 +513,10 @@ def serialize_as_geojson(
 
         # the transform is only used in cases of points or multipoints
         geom_map = geometry(feature, np_arcs, transform)
+        if geom_map is None:
+            f["geometry"] = None
+            fc["features"].append(f)
+            continue
 
         # enforce right-hand rule on geometry for GeoJSON
         geom_map = winding_order(geom=shape(geom_map), order=order)

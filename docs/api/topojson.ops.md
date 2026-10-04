@@ -674,6 +674,23 @@ Decode delta-encoded arcs to absolute coordinates. All arcs are decoded at once.
 > + ###### list of numpy.ndarray
 (n, 2) integer coordinates of each arc
 
+## arc_areas
+```python
+arc_areas(arcs)
+```
+
+Twice the signed area that each arc adds to a ring (shoelace formula), exact on
+the integer grid. The area of a ring is the sum over its arcs, with the sign
+flipped for an arc used backward.
+
+> #### Parameters
+> + ###### `arcs` : list of numpy.ndarray
+    Integer coordinates of the arcs
+
+> #### Returns
+> + ###### numpy.ndarray
+Twice the signed area of each arc, as integers
+
 ## cart
 ```python
 cart(arr)

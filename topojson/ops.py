@@ -1542,6 +1542,31 @@ def _split(array, indices):
     return [array[a:b] for a, b in zip(bounds[:-1], bounds[1:])]
 
 
+def arc_areas(arcs):
+    """
+    Twice the signed area that each arc adds to a ring (shoelace formula), exact on
+    the integer grid. The area of a ring is the sum over its arcs, with the sign
+    flipped for an arc used backward.
+
+    Parameters
+    ----------
+    arcs : list of numpy.ndarray
+        Integer coordinates of the arcs
+
+    Returns
+    -------
+    numpy.ndarray
+        Twice the signed area of each arc, as integers
+    """
+    if not len(arcs):
+        return np.zeros(0, np.int64)
+    lengths = np.fromiter(map(len, arcs), np.intp, len(arcs))
+    xy = np.concatenate(arcs).astype(np.int64)
+    cross = np.r_[0, np.cumsum(xy[:-1, 0] * xy[1:, 1] - xy[1:, 0] * xy[:-1, 1])]
+    ends = np.cumsum(lengths) - 1
+    return cross[ends] - cross[ends - lengths + 1]
+
+
 def _decoded(arcs):
     """Absolute coordinates of delta-encoded arcs, all arcs in one array, and the
     number of coordinates of each arc."""

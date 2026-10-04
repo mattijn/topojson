@@ -7,6 +7,7 @@ import itertools
 from .extract import Extract
 from .hashmap import Hashmap
 from . import incremental
+from ..ops import arc_areas
 from ..ops import arc_coordinates
 from ..ops import quantize
 from ..ops import validate_transform
@@ -785,7 +786,9 @@ class Topology(Hashmap):
         if extracted is not None:
             incremental.add_features(self.output, arcs, extracted, name)
             self._source_hashes.update(_source_hashes(add))
+        area = arc_areas([arcs[i] for i in sorted(arcs)])
         incremental.encode(self.output, arcs)
+        incremental.drop_collapsed_rings(self.output, area)
         return self
 
     def _ids(self, object_name):
@@ -877,7 +880,10 @@ class Topology(Hashmap):
 
         # apply delta-encoding if prequantization is applied
         if isinstance(self.options.prequantize, dict) or self.options.prequantize > 0:
+            area = arc_areas(self.output["arcs"])
             self.output["arcs"] = delta_encoding(self.output["arcs"])
+            # rings that collapsed on the grid have no area left
+            incremental.drop_collapsed_rings(self.output, area)
         else:
             for idx, ls in enumerate(self.output["arcs"]):
                 self.output["arcs"][idx] = ls.tolist()

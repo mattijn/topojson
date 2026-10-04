@@ -893,8 +893,7 @@ def test_topology_toposimplify_keeps_rings_a_triangle():
         return sum(r.startswith("Too few points") for r in reasons)
 
     topo = topojson.Topology(data)
-    # an islet of North Korea collapses on the grid already (#243)
-    assert collapsed(topo.toposimplify(2)) == collapsed(topo) == 1
+    assert collapsed(topo.toposimplify(2)) == collapsed(topo) == 0
     # without prevent_oversimplify, small islands collapse
     assert collapsed(topo.toposimplify(2, prevent_oversimplify=False)) > 1
 
@@ -925,8 +924,7 @@ def test_topology_toposimplify_keep_keeps_rings_a_triangle():
     data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
     topo = topojson.Topology(data)
     reasons = shapely.is_valid_reason(topo.toposimplify(keep=0).to_gdf().geometry.values)
-    # only the islet that collapses on the grid already (#243)
-    assert sum(r.startswith("Too few points") for r in reasons) == 1
+    assert sum(r.startswith("Too few points") for r in reasons) == 0
 
 
 @pytest.mark.parametrize(
@@ -996,3 +994,70 @@ def test_topology_memory_follows_coordinates_not_longest_arc():
         tracemalloc.stop()
         # padded to the longest arc, this took about 300 MB
         assert peak < 50e6
+
+
+# a ring without area on the grid is dropped, the feature stays (#243)
+def test_topology_collapsed_ring_is_dropped():
+    from topojson.core.incremental import _all_sequences
+
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    topo = topojson.Topology(data)
+    # an islet of North Korea collapses to one point on the grid
+    north_korea = topo.output["objects"]["data"]["geometries"][95]
+    assert north_korea["type"] == "MultiPolygon"
+    assert len(north_korea["arcs"]) == 1
+    assert north_korea["properties"]["NAME"] == "North Korea"
+    # no arc is left unused
+    used = {r if r >= 0 else ~r for seq, _ in _all_sequences(topo.output) for r in seq}
+    assert used == set(range(len(topo.output["arcs"])))
+
+
+def test_topology_collapsed_feature_keeps_its_properties():
+    data = geopandas.GeoDataFrame(
+        {"name": ["big", "tiny"]},
+        geometry=[
+            geometry.Polygon([(0, 0), (100, 0), (100, 100)]),
+            geometry.Polygon([(50, 200), (50.001, 200), (50, 200.001)]),
+        ],
+    )
+    topo = topojson.Topology(data, prequantize=100)
+    tiny = topo.output["objects"]["data"]["geometries"][1]
+    assert tiny == {"properties": {"name": "tiny"}, "type": None, "id": 1}
+    assert len(topo.output["arcs"]) == 1
+
+    gdf = topo.to_gdf()
+    assert gdf.name.tolist() == ["big", "tiny"]
+    assert gdf.geometry.iloc[1] is None
+    assert json.loads(topo.to_geojson())["features"][1]["geometry"] is None
+
+
+def test_topology_collapsed_hole_is_dropped():
+    shell = [(0, 0), (100, 0), (100, 100), (0, 100)]
+    hole = [(50, 50), (50.001, 50), (50, 50.001)]
+    data = geopandas.GeoDataFrame(geometry=[geometry.Polygon(shell, [hole])])
+    topo = topojson.Topology(data, prequantize=100)
+    assert topo.output["objects"]["data"]["geometries"][0]["arcs"] == [[0]]
+    assert topo.to_gdf().geometry.iloc[0].is_valid
+
+
+def test_topology_add_collapsed_feature_as_full_build():
+    data = geopandas.GeoDataFrame(
+        {"name": ["big", "tiny"]},
+        geometry=[
+            geometry.Polygon([(0, 0), (100, 0), (100, 100)]),
+            geometry.Polygon([(50, 50), (50.001, 50), (50, 50.001)]),
+        ],
+    )
+    full = topojson.Topology(data, prequantize=100)
+    grid = full.output["transform"]
+    added = topojson.Topology(data.iloc[:1], prequantize=grid).add(data.iloc[1:])
+    assert added.output["objects"] == full.output["objects"]
+    assert added.output["arcs"] == full.output["arcs"]
+
+
+def test_topology_empty_polygon_to_geojson():
+    topo = topojson.Topology(
+        [geometry.Polygon([(0, 0), (1, 0), (1, 1)]), geometry.Polygon()], prequantize=10
+    )
+    features = json.loads(topo.to_geojson())["features"]
+    assert features[1]["geometry"] == {"type": "Polygon", "coordinates": []}

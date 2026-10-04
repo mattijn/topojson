@@ -40,6 +40,58 @@ def encode(output, arcs):
     output["arcs"] = delta_encoding([arcs[i] for i in order])
 
 
+def drop_collapsed_rings(output, area):
+    """
+    Drop the rings without area on the grid (#243): a hole from its polygon, a
+    polygon whose exterior collapsed from its geometry. A geometry with nothing left
+    becomes a null geometry and keeps its properties. `area` is twice the signed area
+    of each arc (`ops.arc_areas`).
+    """
+    rings = [seq for seq, ring in _all_sequences(output) if ring]
+    if not rings:
+        return
+    refs = np.concatenate(rings)
+    signed = np.where(refs >= 0, area[refs], -area[~refs])
+    size = np.fromiter(map(len, rings), np.intp, len(rings))
+    zero = np.add.reduceat(signed, np.cumsum(size) - size) == 0
+    flat = {id(r) for r, z in zip(rings, zero) if z}
+    if not flat:
+        return
+
+    def drop(geom):
+        """Drop the collapsed rings of `geom`; True when nothing is left of it."""
+        t = geom.get("type")
+        if t == "Feature":
+            return drop(geom["geometry"])
+        if t == "GeometryCollection":
+            parts = geom["geometries"]
+            geom["geometries"] = left = [g for g in parts if not drop(g)]
+        elif t in ("Polygon", "MultiPolygon"):
+            parts = [geom["arcs"]] if t == "Polygon" else geom["arcs"]
+            left = [
+                [p[0], *(r for r in p[1:] if id(r) not in flat)]
+                for p in parts
+                if p and id(p[0]) not in flat
+            ]
+            geom["arcs"] = left if t == "MultiPolygon" else (left or [[]])[0]
+        else:
+            return False
+        if any(parts) and not left:
+            geom["type"] = None
+            geom.pop("arcs", None)
+            geom.pop("geometries", None)
+            return True
+        return False
+
+    for o in output["objects"].values():
+        for g in o["geometries"]:
+            drop(g)
+    # renumber the arcs that are still used
+    arcs = decode(output)
+    used = {_arc(r) for seq, _ in _all_sequences(output) for r in seq}
+    encode(output, {i: arcs[i] for i in used})
+
+
 # ---------------------------------------------------------------------------
 # geometries
 # ---------------------------------------------------------------------------
@@ -47,6 +99,8 @@ def _sequences(geom):
     """(arc references, is_ring) of each line and ring; the lists are the ones in the
     geometry, so they can be changed in place."""
     t, arcs = geom.get("type"), geom.get("arcs")
+    if t == "Feature":
+        return _sequences(geom["geometry"])
     if t == "GeometryCollection":
         return [s for g in geom.get("geometries", []) for s in _sequences(g)]
     if arcs is None:
