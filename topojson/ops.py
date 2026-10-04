@@ -3,56 +3,12 @@ import logging
 import pprint
 
 import numpy as np
+import shapely
 from shapely import geometry
 from shapely import wkt
 from shapely.ops import linemerge
+from shapely.ops import orient
 from shapely.strtree import STRtree
-
-try:
-    from shapely.ops import orient
-except ImportError:
-    from shapely.geometry.base import BaseMultipartGeometry
-    from shapely.geometry.polygon import orient as orient_
-    from shapely.geometry import Polygon
-
-    def orient(geom, sign=1.0):
-        if isinstance(geom, BaseMultipartGeometry):
-            return geom.__class__(
-                list(map(lambda geom: orient(geom, sign), geom.geoms))
-            )
-        if isinstance(geom, (Polygon,)):
-            return orient_(geom, sign)
-        return geom
-
-
-import contextlib
-import shapely
-import warnings
-
-from packaging.version import Version
-from importlib.metadata import version as importlib_version
-
-shapely_version = importlib_version("shapely")
-
-SHAPELY_GE_20 = Version(shapely_version) >= Version("2.0")
-
-try:
-    from shapely.errors import ShapelyDeprecationWarning as shapely_warning
-except ImportError:
-    shapely_warning = None
-if shapely_warning is not None and not SHAPELY_GE_20:
-
-    @contextlib.contextmanager
-    def ignore_shapely2_warnings():
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=shapely_warning)
-            yield
-
-else:
-
-    @contextlib.contextmanager
-    def ignore_shapely2_warnings():
-        yield
 
 
 def asvoid(arr):
@@ -911,8 +867,7 @@ def select_unique_combs(linestrings):
     """
 
     # create spatial index
-    with ignore_shapely2_warnings():
-        tree_idx = STRtree(linestrings)
+    tree_idx = STRtree(linestrings)
     # get index of linestrings intersecting each linestring
     idx_match = get_matches(linestrings, tree_idx)
 

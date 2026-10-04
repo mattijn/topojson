@@ -5,7 +5,6 @@ import numpy as np
 from shapely import geometry
 from shapely.strtree import STRtree
 from .join import Join
-from ..ops import ignore_shapely2_warnings
 from ..ops import cut_line
 from ..ops import cut_lines_on_grid
 from ..ops import find_duplicates
@@ -109,8 +108,7 @@ class Cut(Join):
             if isinstance(mp, geometry.Point):
                 mp = geometry.MultiPoint([mp])
             # create spatial index on junctions
-            with ignore_shapely2_warnings():
-                tree_splitter = STRtree(mp)
+            tree_splitter = STRtree(mp)
             lines_split = []
             n = len(data["linestrings"])
 
