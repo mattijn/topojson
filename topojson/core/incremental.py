@@ -8,23 +8,24 @@ end of a path shared by two lines, and every line through a junction is cut ther
 """
 
 import itertools
-from collections import Counter
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 import numpy as np
 import shapely
 from shapely import geometry
 from shapely.strtree import STRtree
 
-from ..ops import bounds
-from ..ops import compare_bounds
-from ..ops import cut_line
-from ..ops import delta_decoding
-from ..ops import delta_encoding
-from ..ops import hash_paths
-from ..ops import quantize
-from ..ops import remove_collinear_points
-from ..ops import shared_path_ends
+from ..ops import (
+    bounds,
+    compare_bounds,
+    cut_line,
+    delta_decoding,
+    delta_encoding,
+    hash_paths,
+    quantize,
+    remove_collinear_points,
+    shared_path_ends,
+)
 
 
 def decode(output):
@@ -146,7 +147,9 @@ def _junctions(arcs, sequences):
     points = set()
     for seq, is_ring in sequences:
         nxt = seq[1:] + seq[:1] if is_ring and len(seq) > 1 else seq[1:]
-        points.update(tuple(arcs[_arc(a)][-1 if a >= 0 else 0]) for a, _ in zip(seq, nxt))
+        points.update(
+            tuple(arcs[_arc(a)][-1 if a >= 0 else 0]) for a, _ in zip(seq, nxt)
+        )
     return points
 
 
@@ -162,7 +165,9 @@ def _quantized_bbox(output, arcs):
     if not len(bbox):
         return output.get("bbox")
     (kx, ky), (x0, y0) = output["transform"]["scale"], output["transform"]["translate"]
-    return tuple(float(v) for v in np.multiply(bbox, [kx, ky, kx, ky]) + [x0, y0, x0, y0])
+    return tuple(
+        float(v) for v in [*np.multiply(bbox, [kx, ky, kx, ky]), x0, y0, x0, y0]
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -289,9 +294,13 @@ def remove_features(output, arcs, ids, object_name, ring_starts=None):
             starts = ring_starts.get(g.get("id"), [])
             for seq, start in zip(rings, starts) if len(starts) == len(rings) else ():
                 i = _arc(seq[0])
-                if len(seq) == 1 and i >= first_merged and users[i] == 1:
-                    if tuple(arcs[i][0]) not in junctions:
-                        arcs[i] = _restart_ring(arcs[i], *np.asarray(start))
+                if (
+                    len(seq) == 1
+                    and i >= first_merged
+                    and users[i] == 1
+                    and tuple(arcs[i][0]) not in junctions
+                ):
+                    arcs[i] = _restart_ring(arcs[i], *np.asarray(start))
 
     # points: keep the used ones
     geoms = [g for o in output["objects"].values() for g in o["geometries"]]
@@ -311,7 +320,9 @@ def ring_starts(data, transform):
     rings, ring_idx = shapely.get_rings(parts, return_index=True)
     (kx, ky), (x0, y0) = transform["scale"], transform["translate"]
     xy = [
-        np.round((shapely.get_coordinates(shapely.get_point(rings, i)) - [x0, y0]) / [kx, ky])
+        np.round(
+            (shapely.get_coordinates(shapely.get_point(rings, i)) - [x0, y0]) / [kx, ky]
+        )
         .astype(np.int64)
         .tolist()
         for i in (0, 1)
@@ -332,7 +343,9 @@ def _ref(piece, arc, idx):
 
     def orientation(c):  # sign of the shoelace sum
         x, y = c[:, 0], c[:, 1]
-        return np.sign(np.einsum("i,i->", x[:-1], y[1:]) - np.einsum("i,i->", x[1:], y[:-1]))
+        return np.sign(
+            np.einsum("i,i->", x[:-1], y[1:]) - np.einsum("i,i->", x[1:], y[:-1])
+        )
 
     return idx if orientation(piece) == orientation(arc) else ~idx
 
@@ -347,7 +360,9 @@ def _new_junctions(lines, arcs):
         xy = np.concatenate([arcs[i] for i in ids])
         starts = np.cumsum(lengths) - lengths
         lo, hi = np.minimum.reduceat(xy, starts), np.maximum.reduceat(xy, starts)
-        li, ai = STRtree(shapely.box(lo[:, 0], lo[:, 1], hi[:, 0], hi[:, 1])).query(lines)
+        li, ai = STRtree(shapely.box(lo[:, 0], lo[:, 1], hi[:, 0], hi[:, 1])).query(
+            lines
+        )
         near = sorted({ids[a] for a in ai.tolist()})
         shapes = {i: geometry.LineString(arcs[i]) for i in near}
         pairs += [(lines[n], shapes[ids[a]]) for n, a in zip(li.tolist(), ai.tolist())]
@@ -385,8 +400,12 @@ def add_features(output, arcs, extracted, object_name):
     sequences = _all_sequences(output)
 
     # the bbox of a full build is the extent of the input
-    new = compare_bounds(bounds(extracted["linestrings"]), bounds(extracted["coordinates"]))
-    output["bbox"] = tuple(float(v) for v in compare_bounds(output.get("bbox") or [], new))
+    new = compare_bounds(
+        bounds(extracted["linestrings"]), bounds(extracted["coordinates"])
+    )
+    output["bbox"] = tuple(
+        float(v) for v in compare_bounds(output.get("bbox") or [], new)
+    )
 
     # new lines on the grid of the topology; rings are the lines of (multi)polygons
     is_ring = np.zeros(len(extracted["linestrings"]), dtype=bool)
@@ -447,7 +466,9 @@ def add_features(output, arcs, extracted, object_name):
             next_idx += 1
         first.setdefault(h, k)
     ks = iter(range(len(existing), len(candidates)))
-    refs = [[_ref(p, arcs[index[k]], index[k]) for p, k in zip(line, ks)] for line in parts]
+    refs = [
+        [_ref(p, arcs[index[k]], index[k]) for p, k in zip(line, ks)] for line in parts
+    ]
 
     # new geometries; points go into the shared coordinate list
     points, _ = quantize(list(extracted["coordinates"]), None, transform=transform)
@@ -463,7 +484,10 @@ def add_features(output, arcs, extracted, object_name):
             nested = [[point_index[b]] for b in o["coordinates"]]
             coords = nested if t == "MultiPoint" else nested[0]
             return {"type": t, "coordinates": coords, "reset_coords": True}
-        return {"type": t, "arcs": _resolve_arcs(o, extracted["bookkeeping_geoms"], refs)}
+        return {
+            "type": t,
+            "arcs": _resolve_arcs(o, extracted["bookkeeping_geoms"], refs),
+        }
 
     geoms = output["objects"][object_name]["geometries"]
     for fid, o in objects.items():

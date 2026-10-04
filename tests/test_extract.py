@@ -1,11 +1,13 @@
 import json
-import pytest
-from topojson.core.extract import Extract
-from shapely import geometry
-import geopandas
-import geojson
-from geojson import Feature, Polygon, FeatureCollection
+
 import fiona
+import geojson
+import geopandas
+import pytest
+from geojson import Feature, FeatureCollection, Polygon
+from shapely import geometry
+
+from topojson.core.extract import Extract
 
 
 # extract copies coordinates sequentially into a buffer
@@ -46,7 +48,7 @@ def test_extract_empty_linestring():
     data = {"empty_ls": {"type": "LineString", "coordinates": None}}
     topo = Extract(data).to_dict()
 
-    assert topo["objects"]["empty_ls"]["arcs"] == None
+    assert topo["objects"]["empty_ls"]["arcs"] is None
 
 
 # invalid polygon geometry
@@ -295,7 +297,7 @@ def test_extract_points():
     assert len(topo["bookkeeping_coords"]) == 1
     assert len(topo["bookkeeping_geoms"]) == 1
     assert topo["coordinates"][0].tolist() == [[0.5, 0.5]]
-    assert "coordinates" in topo["objects"][1].keys()
+    assert "coordinates" in topo["objects"][1]
 
 
 def test_extract_single_polygon():
@@ -327,9 +329,7 @@ def test_extract_single_multilinestring_list():
 
 
 def test_extract_geopandas_geodataframe():
-    data = geopandas.read_file(
-        "tests/files_geojson/naturalearth_alb_grc.geojson"
-    )
+    data = geopandas.read_file("tests/files_geojson/naturalearth_alb_grc.geojson")
     topo = Extract(data).to_dict()
 
     assert len(topo["bookkeeping_geoms"]) == 3
@@ -375,8 +375,8 @@ def test_extract_dict_org_data_untouched():
     topo_foo = topo["objects"]["foo"]
     data_foo = data["foo"]
 
-    assert "arcs" in topo_foo.keys()
-    assert "arcs" not in data_foo.keys()
+    assert "arcs" in topo_foo
+    assert "arcs" not in data_foo
 
 
 # test to check if original data is not modified
@@ -389,20 +389,18 @@ def test_extract_list_org_data_untouched():
     topo_0 = topo["objects"][0]
     data_0 = data[0]
 
-    assert "arcs" in topo_0.keys()
+    assert "arcs" in topo_0
     assert data_0.geom_type == "Polygon"
 
 
 # test to check if original data is not modified
 def test_extract_gdf_org_data_untouched():
-    data = geopandas.read_file(
-        "tests/files_geojson/naturalearth_alb_grc.geojson"
-    )
+    data = geopandas.read_file("tests/files_geojson/naturalearth_alb_grc.geojson")
     topo = Extract(data).to_dict()
     topo_0 = topo["objects"][0]
     data_0 = data.iloc[0]
 
-    assert "arcs" in topo_0.keys()
+    assert "arcs" in topo_0
     assert data_0.geometry.geom_type == "Polygon"
 
 
@@ -423,7 +421,7 @@ def test_extract_shapely_org_data_untouched():
     topo = Extract(data).to_dict()
     topo_0 = topo["objects"][0]
 
-    assert "arcs" in topo_0.keys()
+    assert "arcs" in topo_0
     assert data.geom_type == "LineString"
 
 
@@ -436,8 +434,8 @@ def test_extract_shapefile_org_data_untouched():
     topo_0 = topo["objects"]["feature_00"]
     data_0 = data.__geo_interface__["features"][0]["geometry"]
 
-    assert "arcs" in topo_0.keys()
-    assert "arcs" not in data_0.keys()
+    assert "arcs" in topo_0
+    assert "arcs" not in data_0
 
 
 # issue 137 do not modify source data
@@ -454,13 +452,13 @@ def test_extract_source_data_modify():
     data = FeatureCollection([feat_1, feat_2])
 
     # before Topology()
-    assert "geometry" in data["features"][0].keys()
+    assert "geometry" in data["features"][0]
 
     # apply Topology()
-    topo = Extract(data)
+    Extract(data)
 
     # after Topology()
-    assert "geometry" in data["features"][0].keys()
+    assert "geometry" in data["features"][0]
 
 
 # issue 151 properties are not kept in geojson data
@@ -493,8 +491,8 @@ def test_extract_geojson_keep_index():
     topo = Extract(data).to_dict()
     objects = topo["objects"]
 
-    assert bool(objects.get("custom_index")) == True
-    assert bool(objects.get("feature_1")) == True
+    assert objects.get("custom_index")
+    assert objects.get("feature_1")
 
 
 def test_extract_geojson_keep_index_duplicates():
@@ -506,10 +504,10 @@ def test_extract_geojson_keep_index_duplicates():
         id="duplicate_id",
         geometry=Polygon([[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]),
     )
-    data = FeatureCollection([feat_1,feat_2])
+    data = FeatureCollection([feat_1, feat_2])
     with pytest.raises(IndexError):
         Extract(data)
-        
+
 
 # why cannot load geojson file using json module?
 def test_extract_read_geojson_from_json_dict():
@@ -537,10 +535,10 @@ def test_extract_read_multiple_gdf_object_name():
 
 
 def test_extract_read_multiple_gjson_object_name():
-    with open("tests/files_geojson/geojson_1.json", "r") as gj_1:
+    with open("tests/files_geojson/geojson_1.json") as gj_1:
         geojson_1 = json.load(gj_1)
 
-    with open("tests/files_geojson/geojson_2.json", "r") as gj_2:
+    with open("tests/files_geojson/geojson_2.json") as gj_2:
         geojson_2 = json.load(gj_2)
 
     topo = Extract(

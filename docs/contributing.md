@@ -39,8 +39,15 @@ From a clone of the repository, an environment with [uv](https://docs.astral.sh/
 
 ```bash
 uv venv --python 3.13
-uv pip install -e ".[dev]" pytest flake8
+uv pip install -e ".[dev]" pytest
 uv run pytest tests
+```
+
+The code is linted and formatted with [ruff](https://docs.astral.sh/ruff/), as configured in `pyproject.toml`; CI checks both:
+
+```bash
+uvx ruff check
+uvx ruff format
 ```
 
 Or install the package including optional dependencies directly from the GitHub repository using:
@@ -53,7 +60,7 @@ Or partly using conda:
 ```bash
 conda create -n topo_dev
 conda activate topo_dev
-conda install flit codecov pytest flake8
+conda install flit codecov pytest ruff
 conda install numpy shapely geojson pyshp fiona geopandas altair ipywidgets
 pip install simplification
 ```

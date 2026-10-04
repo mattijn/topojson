@@ -7,6 +7,7 @@ arcs, the borders stay matched. Run from the root of the repository:
 
     python generate/make-docs-lens.py
 """
+
 import json
 
 import geopandas as gpd

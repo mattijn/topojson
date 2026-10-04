@@ -4,6 +4,7 @@ the examples shown on the pages. Run from the root of the repository:
 
     python generate/make-docs-charts.py
 """
+
 import altair as alt
 import geopandas as gpd
 import numpy as np
@@ -31,7 +32,9 @@ square = {
     "scale": [k / np.cos(np.radians((y0 + y1) / 2)), k],
     "translate": [x0, y0],
 }
-line = geometry.LineString([(0, 1), (2.6, 4.6), (5.3, 3.9), (7.1, 6), (9.6, 0), (12, 3.4)])
+line = geometry.LineString(
+    [(0, 1), (2.6, 4.6), (5.3, 3.9), (7.1, 6), (9.6, 0), (12, 3.4)]
+)
 rectangles = gpd.GeoDataFrame(
     {"name": ["a1", "a2", "b1", "b2"]},
     geometry=[
@@ -109,15 +112,23 @@ def panel(topo, source, title, window, fine=None, px=22):
     ]
     if fine:
         (cx, cy), (ox, oy) = transform.values()
-        lines = [{"x": v, "x2": v, "y": y0, "y2": y1}
-                 for v in ox + cx * np.arange(np.ceil((x0 - ox) / cx), (x1 - ox) / cx)]
-        lines += [{"x": x0, "x2": x1, "y": v, "y2": v}
-                  for v in oy + cy * np.arange(np.ceil((y0 - oy) / cy), (y1 - oy) / cy)]
-        layers.insert(0, base.mark_rule(color=AMBER, strokeWidth=0.5, opacity=0.6)
-                      .encode(x2="x2", y2="y2").properties(data=pd.DataFrame(lines)))
+        lines = [
+            {"x": v, "x2": v, "y": y0, "y2": y1}
+            for v in ox + cx * np.arange(np.ceil((x0 - ox) / cx), (x1 - ox) / cx)
+        ]
+        lines += [
+            {"x": x0, "x2": x1, "y": v, "y2": v}
+            for v in oy + cy * np.arange(np.ceil((y0 - oy) / cy), (y1 - oy) / cy)
+        ]
+        layers.insert(
+            0,
+            base.mark_rule(color=AMBER, strokeWidth=0.5, opacity=0.6)
+            .encode(x2="x2", y2="y2")
+            .properties(data=pd.DataFrame(lines)),
+        )
         subtitle = f"{on} of {n} vertices on a point of the fine grid"
     else:
-        subtitle = f"cells of {kx:g} × {ky:g}"
+        subtitle = f"cells of {kx:g} × {ky:g}"  # noqa: RUF001 a multiplication sign
     return alt.layer(*layers).properties(
         title=alt.Title(title, subtitle=subtitle),
         width=(x1 - x0) * px,
@@ -157,10 +168,12 @@ def kept(line, keep, px=22):
     inner = len(line) - 2
     return alt.layer(
         base.mark_line(color=BLUE, strokeWidth=1.5),
-        base.transform_filter("datum.kept")
-        .mark_line(color=AMBER, strokeWidth=2, strokeDash=[5, 3]),
-        base.mark_point(size=60, color=AMBER, strokeWidth=1.5, opacity=1)
-        .encode(fill=alt.condition("datum.kept", alt.value(AMBER), alt.value(None))),
+        base.transform_filter("datum.kept").mark_line(
+            color=AMBER, strokeWidth=2, strokeDash=[5, 3]
+        ),
+        base.mark_point(size=60, color=AMBER, strokeWidth=1.5, opacity=1).encode(
+            fill=alt.condition("datum.kept", alt.value(AMBER), alt.value(None))
+        ),
         base.mark_text(color=GREY).encode(x="lx:Q", y="ly:Q", text="label:N"),
     ).properties(
         title=alt.Title(
@@ -232,12 +245,14 @@ charts = {
         (-0.5, 12.5, -0.5, 6.5),
         fine=fine,
     ),
-    "quantization_cells": on_grid(
-        tp.Topology(chile, prequantize=40), "prequantize=40"
-    )
+    "quantization_cells": on_grid(tp.Topology(chile, prequantize=40), "prequantize=40")
     | on_grid(tp.Topology(chile, prequantize=square), "square cells of 0.5°"),
     "quantization_gap": panel(
-        gap, rectangles.geometry, "a gap of 0.04 closes", (0.55, 1.5, -0.12, 1.12), px=150
+        gap,
+        rectangles.geometry,
+        "a gap of 0.04 closes",
+        (0.55, 1.5, -0.12, 1.12),
+        px=150,
     )
     | panel(
         gap,

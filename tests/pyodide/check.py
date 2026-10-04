@@ -4,6 +4,7 @@ same script runs in Python and in Pyodide (WebAssembly, where numpy is 32-bit), 
 the outputs can be compared. Runs that depend on the GEOS version
 (`prequantize=False`) are left out, as Pyodide comes with another GEOS.
 """
+
 import hashlib
 import json
 
