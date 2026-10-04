@@ -17,14 +17,14 @@ Dedup duplicates and merge contiguous arcs
 
 ### to_dict
 ```python
-Dedup.to_dict(self)
+Dedup.to_dict()
 ```
 
 Convert the Dedup object to a dictionary.
 
 ### to_svg
 ```python
-Dedup.to_svg(self, separate=False, include_junctions=False)
+Dedup.to_svg(separate=False, include_junctions=False)
 ```
 
 Display the linestrings and junctions as SVG.

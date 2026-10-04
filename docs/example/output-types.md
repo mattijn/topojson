@@ -70,7 +70,7 @@ To inspect the JSON object first, leave out the filepath (`fp`) argument.
 print(topo.to_json())
 ```
 <pre class="code_no_highlight">
-{"type":"Topology","objects":{"data":{"geometries":[{"type":"Polygon","arcs":[[-2,0]]},{"type":"Polygon","arcs":[[1,2]]}],"type":"GeometryCollection"}},"bbox":[0.0,0.0,2.0,1.0],"transform":{"scale":[2.000002000002e-06,1.000001000001e-06],"translate":[0.0,0.0]},"arcs":[[[500000,0],[-500000,0],[0,999999],[500000,0]],[[500000,0],[0,999999]],[[500000,999999],[499999,0],[0,-999999],[-499999,0]]]}
+{"type":"Topology","objects":{"data":{"geometries":[{"type":"Polygon","arcs":[[-2,0]],"id":0},{"type":"Polygon","arcs":[[1,2]],"id":1}],"type":"GeometryCollection"}},"bbox":[0.0,0.0,2.0,1.0],"transform":{"scale":[2.000020000200002e-05,1.000010000100001e-05],"translate":[0.0,0.0]},"arcs":[[[50000,0],[-50000,0],[0,99999],[50000,0]],[[50000,0],[0,99999]],[[50000,99999],[49999,0],[0,-99999],[-49999,0]]]}
 </pre>
 Default is a compact form of JSON. If you like a more readable format, set `pretty=True`.
 ```python
@@ -82,18 +82,19 @@ print(topo.to_json(pretty=True))
     "objects": {
         "data": {
             "geometries": [
-                {"type": "Polygon", "arcs": [[-2, 0]]}, {"type": "Polygon", "arcs": [[1, 2]]}
+                {"type": "Polygon", "arcs": [[-2, 0]], "id": 0},
+                {"type": "Polygon", "arcs": [[1, 2]], "id": 1}
             ],
             "type": "GeometryCollection"
         }
     },
     "bbox": [0.0, 0.0, 2.0, 1.0],
     "transform": {
-        "scale": [2.000002000002e-06, 1.000001000001e-06], "translate": [0.0, 0.0]
+        "scale": [2.000020000200002e-05, 1.000010000100001e-05], "translate": [0.0, 0.0]
     },
     "arcs": [
-        [[500000, 0], [-500000, 0], [0, 999999], [500000, 0]], [[500000, 0], [0, 999999]],
-        [[500000, 999999], [499999, 0], [0, -999999], [-499999, 0]]
+        [[50000, 0], [-50000, 0], [0, 99999], [50000, 0]], [[50000, 0], [0, 99999]],
+        [[50000, 99999], [49999, 0], [0, -99999], [-49999, 0]]
     ]
 }
 </pre>
@@ -121,15 +122,17 @@ topo.to_dict()
 ```
 <pre class="code_no_highlight">
 {'type': 'Topology',
- 'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[-2, 0]]},
-    {'type': 'Polygon', 'arcs': [[1, 2]]}],
+ 'objects': {'data': {'geometries': [{'type': 'Polygon',
+     'arcs': [[-2, 0]],
+     'id': 0},
+    {'type': 'Polygon', 'arcs': [[1, 2]], 'id': 1}],
    'type': 'GeometryCollection'}},
  'bbox': (0.0, 0.0, 2.0, 1.0),
- 'transform': {'scale': [2.000002000002e-06, 1.000001000001e-06],
+ 'transform': {'scale': [2.000020000200002e-05, 1.000010000100001e-05],
   'translate': [0.0, 0.0]},
- 'arcs': [[[500000, 0], [-500000, 0], [0, 999999], [500000, 0]],
-  [[500000, 0], [0, 999999]],
-  [[500000, 999999], [499999, 0], [0, -999999], [-499999, 0]]]}
+ 'arcs': [[[50000, 0], [-50000, 0], [0, 99999], [50000, 0]],
+  [[50000, 0], [0, 99999]],
+  [[50000, 99999], [49999, 0], [0, -99999], [-49999, 0]]]}
 </pre>
 In the computation of the Topology object a few options are adopted. To include these options in the Python Dictionary use `options=True`.
 
@@ -138,26 +141,31 @@ topo.to_dict(options=True)
 ```
 <pre class="code_no_highlight">
 {'type': 'Topology',
- 'objects': {'data': {'geometries': [{'type': 'Polygon', 'arcs': [[-2, 0]]},
-    {'type': 'Polygon', 'arcs': [[1, 2]]}],
+ 'objects': {'data': {'geometries': [{'type': 'Polygon',
+     'arcs': [[-2, 0]],
+     'id': 0},
+    {'type': 'Polygon', 'arcs': [[1, 2]], 'id': 1}],
    'type': 'GeometryCollection'}},
  'bbox': (0.0, 0.0, 2.0, 1.0),
- 'transform': {'scale': [2.000002000002e-06, 1.000001000001e-06],
+ 'transform': {'scale': [2.000020000200002e-05, 1.000010000100001e-05],
   'translate': [0.0, 0.0]},
- 'arcs': [[[500000, 0], [-500000, 0], [0, 999999], [500000, 0]],
-  [[500000, 0], [0, 999999]],
-  [[500000, 999999], [499999, 0], [0, -999999], [-499999, 0]]],
+ 'arcs': [[[50000, 0], [-50000, 0], [0, 99999], [50000, 0]],
+  [[50000, 0], [0, 99999]],
+  [[50000, 99999], [49999, 0], [0, -99999], [-49999, 0]]],
  'options': {'topology': True,
   'prequantize': True,
   'topoquantize': False,
   'presimplify': False,
   'toposimplify': False,
-  'shared_coords': True,
+  'shared_coords': False,
   'prevent_oversimplify': True,
   'simplify_with': 'shapely',
   'simplify_algorithm': 'dp',
-  'winding_order': 'CW_CCW'}}
+  'winding_order': 'CW_CCW',
+  'object_name': ['data'],
+  'ignore_index': False}}
 </pre>  
+With `state=True`, also the hash of the input geometry of each feature (`source_hashes`) is included, so that the Topology can be read back with `Topology.read_json` and updated, see [incremental updates](incremental-updates.html). The same applies to `.to_json()`.
 </div>
 </div>
 
@@ -186,11 +194,11 @@ The output is a mesh and information of polygons are not included. To draw each 
 topo.to_svg(separate=True)
 ```
 <pre class="code_no_highlight">
-0 LINESTRING (1.000001000001 0, 0 0, 0 0.9999999999999999, 1.000001000001 0.9999999999999999)
+0 LINESTRING (1.000010000100001 0, 0 0, 0 1, 1.000010000100001 1)
 <img src="../images/to_svg_0.svg">
-1 LINESTRING (1.000001000001 0, 1.000001000001 0.9999999999999999)
+1 LINESTRING (1.000010000100001 0, 1.000010000100001 1)
 <img src="../images/to_svg_1.svg">
-2 LINESTRING (1.000001000001 0.9999999999999999, 2 0.9999999999999999, 2 0, 1.000001000001 0)
+2 LINESTRING (1.000010000100001 1, 2 1, 2 0, 1.000010000100001 0)
 <img src="../images/to_svg_2.svg">
 </pre>
 </div>
@@ -221,11 +229,11 @@ To inspect the JSON object first, leave out the filepath (`fp`) argument.
 print(topo.to_geojson())
 ```
 <pre class="code_no_highlight">
-{"type":"FeatureCollection","features":[{"id":0,"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[1.000001000001,0.9999999999999999],[0.0,0.9999999999999999],[0.0,0.0],[1.000001000001,0.0],[1.000001000001,0.9999999999999999]]]}},{"id":1,"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[1.000001000001,0.0],[1.9999999999999998,0.0],[1.9999999999999998,0.9999999999999999],[1.000001000001,0.9999999999999999],[1.000001000001,0.0]]]}}]}
+{"type":"FeatureCollection","features":[{"id":0,"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[1.000010000100001,1.0],[0.0,1.0],[0.0,0.0],[1.000010000100001,0.0],[1.000010000100001,1.0]]]}},{"id":1,"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[1.000010000100001,0.0],[2.0,0.0],[2.0,1.0],[1.000010000100001,1.0],[1.000010000100001,0.0]]]}}]}
 </pre>
 Default is a compact form of JSON. If you like a more readable format, set `pretty=True`.
 ```python
-print(topo.to_json(pretty=True))
+print(topo.to_geojson(pretty=True))
 ```
 <pre class="code_no_highlight">
 {
@@ -234,12 +242,13 @@ print(topo.to_json(pretty=True))
         {
             "id": 0,
             "type": "Feature",
+            "properties": {},
             "geometry": {
                 "type": "Polygon",
                 "coordinates": [
                     [
-                        [1.000001000001, 0.9999999999999999], [0.0, 0.9999999999999999], [0.0, 0.0],
-                        [1.000001000001, 0.0], [1.000001000001, 0.9999999999999999]
+                        [1.000010000100001, 1.0], [0.0, 1.0], [0.0, 0.0], [1.000010000100001, 0.0],
+                        [1.000010000100001, 1.0]
                     ]
                 ]
             }
@@ -247,13 +256,13 @@ print(topo.to_json(pretty=True))
         {
             "id": 1,
             "type": "Feature",
+            "properties": {},
             "geometry": {
                 "type": "Polygon",
                 "coordinates": [
                     [
-                        [1.000001000001, 0.0], [1.9999999999999998, 0.0],
-                        [1.9999999999999998, 0.9999999999999999], [1.000001000001, 0.9999999999999999],
-                        [1.000001000001, 0.0]
+                        [1.000010000100001, 0.0], [2.0, 0.0], [2.0, 1.0], [1.000010000100001, 1.0],
+                        [1.000010000100001, 0.0]
                     ]
                 ]
             }
@@ -284,8 +293,6 @@ Example 🔧
 Here we load continental Africa as data file and apply a simplification on the arcs after the topology is computed using `toposimplify`.
 ```python
 import topojson as tp
-
-import topojson as tp
 data = tp.utils.example_data_africa()
 
 topo = tp.Topology(data, toposimplify=4)
@@ -308,7 +315,7 @@ Per TopoJSON specification, information of individual features are stored as an 
 topo.to_dict()['objects']['data']['geometries'][0]
 ```
 <pre class="code_no_highlight">
-{'id': '1',
+{'id': 0,
  'type': 'Polygon',
  'properties': {'continent': 'Africa',
   'gdp_md_est': 150600.0,
@@ -364,11 +371,11 @@ topo.to_gdf().head(3)
 topo.to_gdf().plot()
 ```
 
-|   |                                          geometry | id | continent | gdp_md_est | iso_a3 |            name |  pop_est |
-|---|--------------------------------------------------:|---:|----------:|-----------:|-------:|----------------:|---------:|
-| 0 | POLYGON ((33.90369435653969 -0.950000999735223... |  1 |    Africa |   150600.0 |    TZA |        Tanzania | 53950935 |
-| 1 | POLYGON ((-8.665609889661543 27.65643955148528... |  2 |    Africa |      906.5 |    ESH |       W. Sahara |   603253 |
-| 2 | POLYGON ((29.34002323977533 -4.500005567863123... | 11 |    Africa |    66010.0 |    COD | Dem. Rep. Congo | 83301151 |
+|   | geometry | continent | gdp_md_est | iso_a3 | name | pop_est |
+|---|---:|---:|---:|---:|---:|---:|
+| 0 | POLYGON ((33.90340176420759 -0.9498405139637072,... | Africa | 150600.0 | TZA | Tanzania | 53950935 |
+| 1 | POLYGON ((-8.665666773160552 27.65613579897171, ... | Africa | 906.5 | ESH | W. Sahara | 603253 |
+| 2 | POLYGON ((29.339827093193016 -4.499877032452222,... | Africa | 66010.0 | COD | Dem. Rep. Congo | 83301151 |
 
 <img src="{{site.baseurl}}/images/geodataframe_plot_africa.png" alt="Plot GeoDataFrame Africa">
 
@@ -423,6 +430,6 @@ window.addEventListener("DOMContentLoaded", event => {
 
 });
 </script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@4"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@6"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@6"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>

@@ -58,6 +58,8 @@ display(SVG(s))
 <img src="images/two_linestring_orange.svg">
 
 The orange line starts bottom-left and goes with a zig-zag to top-right. The green line starts bottom-right and goes up and then leftwards. Resulting in a shared segment for the two linestrings in opposite directions.
+
+The steps below use each class on its own, with its own defaults: without quantization. `Topology` quantizes by default, see the last step.
 </div>
 </div>
 
@@ -94,8 +96,8 @@ Extract(
 {'bookkeeping_coords': [],
  'bookkeeping_geoms': [[0], [1]],
  'coordinates': [],
- 'linestrings': [<shapely.geometry.linestring.LineString object at 0x0000020C4B5B2E08>,
-                 <shapely.geometry.linestring.LineString object at 0x0000020C4B5B2AC8>],
+ 'linestrings': [<LINESTRING (0 0, 10 0, 5 5, 15 5)>,
+                 <LINESTRING (15 0, 15 5, 5 5, 0 5)>],
  'objects': {0: {'arcs': [0, 1], 'type': 'MultiLineString'}},
  'type': 'Topology'}
 )
@@ -133,6 +135,8 @@ The second step is Join. The Join class pass the data first _down_ towards the E
    - Quantization of input linestrings if necessary
    - Identifies junctions of shared paths
 
+How the junctions are found depends on the quantization. On a quantized grid (the default of `Topology`), a path shared by two lines is a run of segments that both lines contain, so the junctions of all lines are found at once (`ops.shared_path_ends_on_grid`). A vertex of a line that lies inside a collinear segment of another line is inserted first; a vertex is then a junction where the other lines on its incoming segment differ from those on its outgoing segment. Without quantization, as in this example, each pair of lines with overlapping bounding boxes is intersected (`ops.shared_path_ends`).
+
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
 Example 🔧
@@ -152,10 +156,9 @@ Join(
  'bookkeeping_coords': [],
  'bookkeeping_geoms': [[0], [1]],
  'coordinates': [],
- 'junctions': [<shapely.geometry.point.Point object at 0x0000020C8D94BC88>,
-               <shapely.geometry.point.Point object at 0x0000020C8D975348>],
- 'linestrings': [<shapely.geometry.linestring.LineString object at 0x0000020C8D94BE48>,
-                 <shapely.geometry.linestring.LineString object at 0x0000020C8D956F08>],
+ 'junctions': [<POINT (15 5)>, <POINT (5 5)>],
+ 'linestrings': [<LINESTRING (0 0, 10 0, 5 5, 15 5)>,
+                 <LINESTRING (15 0, 15 5, 5 5, 0 5)>],
  'objects': {0: {'arcs': [0, 1], 'type': 'MultiLineString'}},
  'type': 'Topology'}
 )
@@ -194,6 +197,8 @@ The third step is Cut. The Cut class passes the data first _down_ towards the Ex
    - Split linestrings given the junctions of shared paths
    - Identifies indexes of linestrings that are duplicates
 
+On a quantized grid all lines are cut at once (`ops.cut_lines_on_grid`): a ring is rotated to start at its first junction, the line is split at the other junctions and collinear points are removed from each part. Without quantization, as in this example, the lines are cut one by one.
+
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
 Example 🔧
@@ -211,13 +216,12 @@ Cut(data)
 Cut(
 {'bbox': (0.0, 0.0, 15.0, 5.0),
  'bookkeeping_coords': [],
- 'bookkeeping_duplicates': array([[3, 1]], dtype=int64),
+ 'bookkeeping_duplicates': array([[3, 1]]),
  'bookkeeping_geoms': [[0], [1]],
  'bookkeeping_linestrings': array([[ 0.,  1., nan],
        [ 2.,  3.,  4.]]),
  'coordinates': [],
- 'junctions': [<shapely.geometry.point.Point object at 0x0000020C8D937C48>,
-               <shapely.geometry.point.Point object at 0x0000020C8D937688>],
+ 'junctions': [<POINT (15 5)>, <POINT (5 5)>],
  'linestrings': [array([[ 0.,  0.],
        [10.,  0.],
        [ 5.,  5.]]),
@@ -273,7 +277,8 @@ The fourth step is Dedup. The Dedup class passes the data first _down_ towards t
 <img src="images/dedup.png" width="450px"/>
 
    - Deduplication of linestrings that contain duplicates
-   - Merge contiguous arcs
+   - Direction of each arc in each line (with `shared_coords=False`, the default)
+   - Merge contiguous arcs (with `shared_coords=True`)
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
@@ -291,14 +296,13 @@ Dedup(data)
 <pre class="code_no_highlight">
 Dedup(
 {'bbox': (0.0, 0.0, 15.0, 5.0),
- 'bookkeeping_arcs': [[0, 2], [1, 2, 3]],
+ 'bookkeeping_arcs': [[0, -3], [1, 2, 3]],
  'bookkeeping_coords': [],
  'bookkeeping_duplicates': [],
  'bookkeeping_geoms': [[0], [1]],
  'bookkeeping_shared_arcs': [2],
  'coordinates': [],
- 'junctions': [<shapely.geometry.point.Point object at 0x0000020C8D956848>,
-               <shapely.geometry.point.Point object at 0x0000020C8D956908>],
+ 'junctions': [<POINT (15 5)>, <POINT (5 5)>],
  'linestrings': [array([[ 0.,  0.],
        [10.,  0.],
        [ 5.,  5.]]),
@@ -314,7 +318,7 @@ Dedup(
 </pre>
 The Dedup class creates an object based on the Cut object. From top to bottom are these
 - `bbox`: see Join. Not changed.
-- `bookkeeping_arcs` this is the resolved version of `bookkeeping_linestrings`,  where the linestring indexed by `2` is referred in both arcs.
+- `bookkeeping_arcs` this is the resolved version of `bookkeeping_linestrings`, where the linestring indexed by `2` is referred in both lines. The first line uses it backward: `-3` is `~2`, since the part it replaces runs the other way.
 - `bookkeeping_coords` see Extract. Not changed.
 - `bookkeeping_duplicates` duplicates are resolved in the key `bookkeeping_arcs`.
 - `bookkeeping_geoms` see Extract. Not changed.
@@ -379,6 +383,7 @@ Hashmap(
                  array([[5., 5.],
        [0., 5.]])],
  'objects': {'data': {'geometries': [{'arcs': [[0, -3], [1, 2, 3]],
+                                      'id': 0,
                                       'type': 'MultiLineString'}],
                       'type': 'GeometryCollection'}},
  'type': 'Topology'}
@@ -388,7 +393,7 @@ The Hashmap class creates an object based on the Dedup object. From top to botto
 - `bbox`: see Join. Not changed.
 - `coordinates` see Extract. Not changed.
 - `linestrings` see Dedup. Not changed.
-- `objects` in the `arcs` object the geometries are resolved using `bookkeeping_geom` which uses the `bookkeeping_arcs`. In this process the shared arcs are analyzed if they should be reversed or not in the referred geometry. Observer `-3` and `2`.
+- `objects` in the `arcs` object the geometries are resolved using `bookkeeping_geom` which uses the `bookkeeping_arcs`. The direction of each arc comes from Dedup (observe `-3` and `2`); only with `shared_coords=True`, where Dedup merges arcs, the shared arcs are analyzed here if they should be reversed or not in the referred geometry.
 
 The `bookkeeping_*` keys are removed and the `arcs` for each geometry within `objects` is updated.
 
@@ -420,16 +425,17 @@ Topology(data)
 ```
 <pre class="code_no_highlight">
 Topology(
-{'arcs': [[[0, 0], [666666, 0], [-333333, 999999]],
-          [[999999, 0], [0, 999999]],
-          [[999999, 999999], [-666666, 0]],
-          [[333333, 999999], [-333333, 0]]],
+{'arcs': [[[0, 0], [66666, 0], [-33333, 99999]],
+          [[99999, 0], [0, 99999]],
+          [[99999, 99999], [-66666, 0]],
+          [[33333, 99999], [-33333, 0]]],
  'bbox': (0.0, 0.0, 15.0, 5.0),
  'coordinates': [],
  'objects': {'data': {'geometries': [{'arcs': [[0, -3], [1, 2, 3]],
+                                      'id': 0,
                                       'type': 'MultiLineString'}],
                       'type': 'GeometryCollection'}},
- 'transform': {'scale': [1.5000015000015e-05, 5.000005000005e-06],
+ 'transform': {'scale': [0.00015000150001500014, 5.000050000500005e-05],
                'translate': [0.0, 0.0]},
  'type': 'Topology'}
 )

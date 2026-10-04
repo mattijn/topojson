@@ -30,10 +30,8 @@ class Cut(Join):
     Returns
     -------
     dict
-        object updated and expanded with
-        - updated key: linestrings
-        - new key: bookkeeping_duplicates
-        - new key: bookkeeping_linestrings
+        Output of `Join` with the lines cut (`linestrings`) and the keys
+        `bookkeeping_duplicates` and `bookkeeping_linestrings`
     """
 
     def __init__(self, data, options={}):

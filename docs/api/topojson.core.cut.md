@@ -27,20 +27,18 @@ The following sequence is adopted:
 
 > #### Returns
 > + ###### dict
-object updated and expanded with
-> + ###### - updated key: linestrings
-- new key: bookkeeping_duplicates
+Output of `Join` with the lines cut (`linestrings`) and the keys
 
 ### to_dict
 ```python
-Cut.to_dict(self)
+Cut.to_dict()
 ```
 
 Convert the Cut object to a dictionary.
 
 ### to_svg
 ```python
-Cut.to_svg(self, separate=False, include_junctions=False)
+Cut.to_svg(separate=False, include_junctions=False)
 ```
 
 Display the linestrings and junctions as SVG.

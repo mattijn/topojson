@@ -90,7 +90,7 @@ Topology(
 
 ## prequantize
 
-boolean, int
+boolean, int, dict
 {: .text-delta}
 
 If the prequantization parameter is specified, the input geometry is 
@@ -102,6 +102,12 @@ improve the quality of the topology if the input geometry is messy (i.e.,
 small floating point error means that adjacent boundaries do not have 
 identical values); typical values are powers of ten, such as `1e4`, `1e5` or 
 `1e6`. Default is `True` (which correspond to a quantize factor of `1e5`).
+
+Instead of a factor, a TopoJSON transform can be given as a dict,
+`{"scale": [kx, ky], "translate": [x0, y0]}`. The grid is then fixed and does not
+depend on the bounding box of the input, so topologies of different inputs (or of
+different runs) share the same grid. This is what
+[incremental updates](incremental-updates.html) build on.
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
@@ -191,6 +197,20 @@ topo = tp.Topology(data, prequantize=33)
 topo.to_svg()
 ```
 <img src="../images/two_polygon.svg">
+
+Two polygons of a different size, quantized on the same fixed grid of `0.01`:
+```python
+grid = {"scale": [0.01, 0.01], "translate": [0, 0]}
+small = tp.Topology(geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1]]), prequantize=grid)
+large = tp.Topology(geometry.Polygon([[0, 0], [2, 0], [2, 2], [0, 2]]), prequantize=grid)
+small.to_dict()["arcs"], large.to_dict()["arcs"]
+```
+<pre class="code_no_highlight">
+([[[0, 0], [0, 100], [100, 0], [0, -100], [-100, 0]]],
+ [[[0, 0], [0, 200], [200, 0], [0, -200], [-200, 0]]])
+</pre>
+Both keep the transform `{'scale': [0.01, 0.01], 'translate': [0.0, 0.0]}`; with a
+quantize factor each would get a grid of its own bounding box.
 </div>
 </div>
 
@@ -245,8 +265,12 @@ boolean, float
 {: .text-delta}
 
 Apply presimplify to remove unnecessary points from linestrings before the 
-topology is constructed. This will simplify the input geometries. Use with care. 
-Default is `False`.
+topology is constructed. This will simplify the input geometries. `True` uses a
+tolerance of `2`. Default is `False`.
+
+The lines are simplified one by one, so the two sides of a shared border can be
+simplified apart. For polygons, `simplify_with="geos"` simplifies them together as
+a coverage instead, see [simplify_with](#simplify_with).
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
@@ -286,6 +310,8 @@ in the range of `0.0001` to `10`. Defaults to `False`.
 **Note 1:** The units of `toposimplify` are corresponding to the input space. The provided _sensible_ values are for degrees (eg. `epsg:4326`). When the projection of your data is in `meters` you might need to test which value should be adopted.
 
 **Note 2:** This is also supported by chaining. Meaning you could first compute the Topology (which can be cost-intensive) and afterwards apply the `toposimplify` on the computed Topology.
+
+**Note 3:** With `prevent_oversimplify` (the default), a ring that would be reduced to fewer than three points keeps the vertices to stay a triangle, so small islands do not collapse.
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
@@ -411,7 +437,7 @@ Example 🔧
 {: .label .label-blue-000 }
 </div>
 <div class="example-text" markdown="1">
-The example shows a circle that is two times simplified. The first time with `prevent_oversimplify=False` and the second time with `prevent_oversimplify=True`.
+The example shows a circle that is two times simplified. The first time with `prevent_oversimplify=False`, where the circle collapses to a single point, and the second time with `prevent_oversimplify=True`, where it keeps four points.
 
 ```python
 import topojson as tp
@@ -430,7 +456,6 @@ tp.Topology(
     prevent_oversimplify=False
 ).to_svg()
 ```
-<img src="../images/prevent_oversimplify_False.svg">
 
 ```python
 # avoid oversimplification
@@ -452,10 +477,18 @@ tp.Topology(
 str
 {: .text-delta}
 Sets the package to use for simplifying (both pre- and toposimplify). Choose 
-between `shapely` or `simplification`. Shapely adopts solely Douglas-Peucker 
+between `shapely`, `simplification` or `geos`. Shapely adopts solely Douglas-Peucker 
 and simplification both Douglas-Peucker and Visvalingam-Whyatt. The package 
 simplification is known to be quicker than shapely. 
 Default is `shapely`.
+
+`geos` applies to presimplify only. It simplifies the polygons together as a
+coverage (`shapely.coverage_simplify`, Visvalingam-Whyatt): a shared border is
+simplified once, so the neighbours stay matched, and each ring stays at least a
+triangle. Other lines are simplified with shapely. The polygons should form a valid
+coverage: no overlaps, and the vertices of shared borders equal
+(`shapely.coverage_is_valid`). Toposimplify simplifies arcs, to which this does not
+apply.
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
@@ -480,6 +513,16 @@ topo.toposimplify(
 ).to_alt().properties(title='Douglas-Peucker (package simplification)')
 ```
 <div id="embed_tuning_simplify_with"></div>
+
+With `presimplify`, shapely simplifies each line on its own, so neighbours drift
+apart (the double lines on the left); with `geos` the polygons are simplified as a
+coverage:
+```python
+presimplified = tp.Topology(data, presimplify=1).to_alt()
+coverage = tp.Topology(data, presimplify=1, simplify_with="geos").to_alt()
+presimplified | coverage
+```
+<div id="embed_tuning_simplify_with_geos"></div>
 </div>
 </div>
 
@@ -594,6 +637,55 @@ alt_top & alt_bottom
 </div>
 </div>
 
+* * * 
+
+## object_name
+
+str or list of str
+{: .text-delta}
+
+Name of the object in the TopoJSON. A list of GeoDataFrames can be given as data,
+with a list of names of the same length: each GeoDataFrame then becomes an object
+of its own, with the topology computed across all of them.
+Default is `data`.
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+
+```python
+import geopandas
+import topojson as tp
+from shapely import geometry
+
+left = geopandas.GeoDataFrame({"name": ["a"]}, geometry=[geometry.box(0, 0, 1, 1)])
+right = geopandas.GeoDataFrame({"name": ["b"]}, geometry=[geometry.box(1, 0, 2, 1)])
+
+topo = tp.Topology([left, right], object_name=["left", "right"])
+list(topo.to_dict()["objects"])
+```
+<pre class="code_no_highlight">
+['left', 'right']
+</pre>
+The shared border is one arc, used by a feature of each object.
+</div>
+</div>
+
+* * * 
+
+## ignore_index
+
+boolean
+{: .text-delta}
+
+If `True`, the ids of the features of a GeoJSON FeatureCollection are ignored and
+replaced by new ones. Otherwise features keep their id, and a duplicate id raises
+an error.
+Default is `False`.
+
 
 <script>
 window.addEventListener("DOMContentLoaded", event => {
@@ -612,6 +704,9 @@ window.addEventListener("DOMContentLoaded", event => {
     var spec_simplify_with = "{{site.baseurl}}/json/example_simplify_with.vl.json";
     vegaEmbed("#embed_tuning_simplify_with", spec_simplify_with, opt).catch(console.err);   
 
+    var spec_simplify_with_geos = "{{site.baseurl}}/json/example_simplify_with_geos.vl.json";
+    vegaEmbed("#embed_tuning_simplify_with_geos", spec_simplify_with_geos, opt).catch(console.err);
+
     var spec_simplify_alg = "{{site.baseurl}}/json/example_simplify_alg.vl.json";
     vegaEmbed("#embed_tuning_simplify_alg", spec_simplify_alg, opt).catch(console.err);   
 
@@ -619,6 +714,6 @@ window.addEventListener("DOMContentLoaded", event => {
     vegaEmbed("#embed_tuning_winding_order", spec_winding_order, opt).catch(console.err);     
 });
 </script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@4"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@6"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@6"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>

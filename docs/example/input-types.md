@@ -16,7 +16,8 @@ This library can be useful for you if you have if one of the following geographi
 * * * 
 
 ## GeoDataFrame or GeoSeries
-From the package `geopandas` (not a hard dependency)
+From the package `geopandas` (not a hard dependency). The index becomes the id of
+each feature. A row can hold any geometry type, also a `GeometryCollection`.
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
@@ -51,7 +52,7 @@ gdf.head()
 <img src="{{site.baseurl}}/images/geodataframe_plot.png" alt="Plot GeoDataFrame">
 
 ```python
-tp.Topology(gdf, prequantize=False).to_json()
+tp.Topology(gdf, prequantize=False).to_json(pretty=True)
 ```
 
 ```python
@@ -60,20 +61,8 @@ tp.Topology(gdf, prequantize=False).to_json()
     "objects": {
         "data": {
             "geometries": [
-                {
-                    "id": "0",
-                    "type": "Polygon",
-                    "properties": {"name": "abc"},
-                    "bbox": [0.0, 0.0, 1.0, 1.0],
-                    "arcs": [[-2, 0]]
-                },
-                {
-                    "id": "1",
-                    "type": "Polygon",
-                    "properties": {"name": "def"},
-                    "bbox": [1.0, 0.0, 2.0, 1.0],
-                    "arcs": [[1, 2]]
-                }
+                {"properties": {"name": "abc"}, "type": "Polygon", "arcs": [[-2, 0]], "id": 0},
+                {"properties": {"name": "def"}, "type": "Polygon", "arcs": [[1, 2]], "id": 1}
             ],
             "type": "GeometryCollection"
         }
@@ -104,11 +93,11 @@ Example 🔧
 import topojson as tp
 import json
 
-with open("tests/files_topojson/example_data_africa.geojson", 'r') as f:
+with open("tests/files_geojson/example_data_africa.geojson", 'r') as f:
     data = json.load(f)
 
 assert data['type'] == 'FeatureCollection'
-topo = topojson.Topology(data)
+topo = tp.Topology(data)
 
 # to visualize we use the (optional!) package Altair.
 topo.toposimplify(4).to_alt()
@@ -136,7 +125,7 @@ import json
 with open("tests/files_topojson/naturalearth_lowres_africa.topojson", 'r') as f:
     data = json.load(f)
 # parse topojson file using `object_name`
-topo = topojson.Topology(data, object_name="data")
+topo = tp.Topology(data, object_name="data")
 topo.toposimplify(4).to_svg()
 ```
 <img src="../images/africa_toposimp.svg">
@@ -171,7 +160,7 @@ feat_2 = Feature(
 )
 fc = FeatureCollection([feat_1, feat_2])
 
-tp.Topology(fc, prequantize=False).to_json()
+tp.Topology(fc, prequantize=False).to_json(pretty=True)
 ```
 
 ```python
@@ -180,8 +169,10 @@ tp.Topology(fc, prequantize=False).to_json()
     "objects": {
         "data": {
             "geometries": [
-                {"type": "Polygon", "properties": {"name": "abc"}, "arcs": [[-2, 0]]},
-                {"type": "Polygon", "properties": {"name": "def"}, "arcs": [[1, 2]]}
+                {
+                    "properties": {"name": "abc"}, "type": "Polygon", "arcs": [[-2, 0]], "id": "feature_0"
+                },
+                {"properties": {"name": "def"}, "type": "Polygon", "arcs": [[1, 2]], "id": "feature_1"}
             ],
             "type": "GeometryCollection"
         }
@@ -212,7 +203,7 @@ Example 🔧
 import topojson as tp
 import fiona
 
-with fiona.open('tests/files_shapefile/mesh2d.geojson') as fio_col:
+with fiona.open('tests/files_geojson/mesh2d.geojson') as fio_col:
     topo = tp.Topology(fio_col)
 
 topo.to_svg()
@@ -292,7 +283,7 @@ list_in = [
     {"type": "Polygon", "coordinates": [[[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]]}
 ]
 
-tp.Topology(list_in, prequantize=False).to_json()
+tp.Topology(list_in, prequantize=False).to_json(pretty=True)
 ```
 
 ```python
@@ -301,7 +292,8 @@ tp.Topology(list_in, prequantize=False).to_json()
     "objects": {
         "data": {
             "geometries": [
-                {"type": "Polygon", "arcs": [[-2, 0]]}, {"type": "Polygon", "arcs": [[1, 2]]}
+                {"type": "Polygon", "arcs": [[-2, 0]], "id": 0},
+                {"type": "Polygon", "arcs": [[1, 2]], "id": 1}
             ],
             "type": "GeometryCollection"
         }
@@ -342,7 +334,7 @@ dict_in = {
     }
 }
 
-tp.Topology(dict_in, prequantize=False).to_json()
+tp.Topology(dict_in, prequantize=False).to_json(pretty=True)
 ```
 
 ```python
@@ -351,7 +343,8 @@ tp.Topology(dict_in, prequantize=False).to_json()
     "objects": {
         "data": {
             "geometries": [
-                {"type": "Polygon", "arcs": [[-2, 0]]}, {"type": "Polygon", "arcs": [[1, 2]]}
+                {"type": "Polygon", "arcs": [[-2, 0]], "id": 0},
+                {"type": "Polygon", "arcs": [[1, 2]], "id": 1}
             ],
             "type": "GeometryCollection"
         }
@@ -380,7 +373,8 @@ Example 🔧
 
 ```python
 import topojson as tp
-import geopandas gpd
+import geopandas as gpd
+from shapely import geometry
 
 gdf_1 = gpd.GeoDataFrame({
     "uniq_name": ["abc", "def"],
@@ -402,24 +396,23 @@ topo.to_dict()
  'objects': {'geom_1': {'geometries': [{'properties': {'uniq_name': 'abc',
       'shrd_name': 'rect'},
      'type': 'Polygon',
-     'arcs': [[-1, 2]],
+     'arcs': [[-1, 1]],
      'id': 0},
     {'properties': {'uniq_name': 'def', 'shrd_name': 'rect'},
      'type': 'Polygon',
-     'arcs': [[1, 0, 3]],
+     'arcs': [[0, 2]],
      'id': 1}],
    'type': 'GeometryCollection'},
   'geom_2': {'geometries': [{'properties': {'shrd_name': 'rect',
       'uniq_name': 'abc'},
      'type': 'Polygon',
-     'arcs': [[1, 2, 3]],
+     'arcs': [[1, 2]],
      'id': 0}],
    'type': 'GeometryCollection'}},
  'bbox': (0.0, 1.0, 2.0, 2.0),
  'arcs': [[[1.0, 2.0], [1.0, 1.0]],
-  [[0.0, 1.0], [0.0, 2.0], [1.0, 2.0]],
   [[1.0, 2.0], [2.0, 2.0], [2.0, 1.0], [1.0, 1.0]],
-  [[1.0, 1.0], [0.0, 1.0]]]}
+  [[1.0, 1.0], [0.0, 1.0], [0.0, 2.0], [1.0, 2.0]]]}
 ```
 ```python
 topo.to_gdf(object_name='geom_2').plot(column='shrd_name')
@@ -467,17 +460,25 @@ print(topo.to_json(pretty=True))
             "geometries": [
                 {
                     "id": 0,
-                    "type": "Polygon",
+                    "type": "Feature",
                     "properties": {"shrd_name": "rect", "uniq_name": "abc"},
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[[1.0, 1.0], [2.0, 1.0], [2.0, 2.0], [1.0, 2.0], [1.0, 1.0]]]
+                    },
                     "bbox": [1.0, 1.0, 2.0, 2.0],
-                    "arcs": [[-1, 2]]
+                    "arcs": [[[-1, 2]]]
                 },
                 {
                     "id": 1,
-                    "type": "Polygon",
+                    "type": "Feature",
                     "properties": {"shrd_name": "rect", "uniq_name": "def"},
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[[0.0, 1.0], [1.0, 1.0], [1.0, 2.0], [0.0, 2.0], [0.0, 1.0]]]
+                    },
                     "bbox": [0.0, 1.0, 1.0, 2.0],
-                    "arcs": [[1, 0, 3]]
+                    "arcs": [[[1, 0, 3]]]
                 }
             ],
             "type": "GeometryCollection"
@@ -486,10 +487,16 @@ print(topo.to_json(pretty=True))
             "geometries": [
                 {
                     "id": 0,
-                    "type": "Polygon",
+                    "type": "Feature",
                     "properties": {"shrd_name": "rect", "uniq_name": "abc"},
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [
+                            [[0.0, 1.0], [0.0, 2.0], [1.0, 2.0], [2.0, 2.0], [2.0, 1.0], [1.0, 1.0], [0.0, 1.0]]
+                        ]
+                    },
                     "bbox": [0.0, 1.0, 2.0, 2.0],
-                    "arcs": [[1, 2, 3]]
+                    "arcs": [[[1, 2, 3]]]
                 }
             ],
             "type": "GeometryCollection"
@@ -497,11 +504,11 @@ print(topo.to_json(pretty=True))
     },
     "bbox": [0.0, 1.0, 2.0, 2.0],
     "transform": {
-        "scale": [2.000002000002e-06, 1.000001000001e-06], "translate": [0.0, 1.0]
+        "scale": [2.000020000200002e-05, 1.000010000100001e-05], "translate": [0.0, 1.0]
     },
     "arcs": [
-        [[500000, 999999], [0, -999999]], [[0, 0], [0, 999999], [500000, 0]],
-        [[500000, 999999], [499999, 0], [0, -999999], [-499999, 0]], [[500000, 0], [-500000, 0]]
+        [[50000, 99999], [0, -99999]], [[0, 0], [0, 99999], [50000, 0]],
+        [[50000, 99999], [49999, 0], [0, -99999], [-49999, 0]], [[50000, 0], [-50000, 0]]
     ]
 }
 ```
@@ -521,6 +528,6 @@ window.addEventListener("DOMContentLoaded", event => {
 
 });
 </script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@4"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@6"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@6"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>

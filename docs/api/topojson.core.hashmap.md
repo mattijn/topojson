@@ -17,14 +17,14 @@ hash arcs based on their type
 
 ### to_dict
 ```python
-Hashmap.to_dict(self)
+Hashmap.to_dict()
 ```
 
 Convert the Hashmap object to a dictionary.
 
 ### to_svg
 ```python
-Hashmap.to_svg(self, separate=False)
+Hashmap.to_svg(separate=False)
 ```
 
 Display the linestrings and junctions as SVG.
@@ -36,14 +36,14 @@ Display the linestrings and junctions as SVG.
 
 ### to_json
 ```python
-Hashmap.to_json(self)
+Hashmap.to_json()
 ```
 
 Convert the Hashmap object to a JSON object.
 
 ### to_alt
 ```python
-Hashmap.to_alt(self, projection='identity')
+Hashmap.to_alt(projection='identity')
 ```
 
 Display as Altair visualization.

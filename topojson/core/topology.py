@@ -61,7 +61,9 @@ class Topology(Hashmap):
         Default is `False`.
     presimplify : boolean, float
         Apply presimplify to remove unnecessary points from linestrings before the
-        topology is constructed. This will simplify the input geometries. Use with care.
+        topology is constructed. This will simplify the input geometries; lines are
+        simplified one by one, so shared borders can drift apart, unless
+        `simplify_with` is `geos`. `True` uses a tolerance of `2`.
         Default is `False`.
     toposimplify : boolean, float
         Apply toposimplify to remove unnecessary points from arcs after the topology
@@ -76,12 +78,14 @@ class Topology(Hashmap):
         considered shared when all coordinates appear in both paths
         (`coords-connected`).
         Default is `False`.
-    prevent_oversimplify: boolean
+    prevent_oversimplify : boolean
         If this setting is set to `True`, the simplification is slower, but the
         likelihood of producing valid geometries is higher as it prevents
         oversimplification. Simplification happens on paths separately, so this
         setting is especially relevant for rings with no partial shared paths. This
-        is also known as a topology-preserving variant of simplification.
+        is also known as a topology-preserving variant of simplification. With
+        toposimplify, a ring that would be reduced to fewer than three points keeps
+        the vertices to stay a triangle.
         Default is `True`.
     simplify_with : str
         Sets the package to use for simplifying (both pre- and toposimplify). Choose
@@ -491,14 +495,17 @@ class Topology(Hashmap):
             Sets the package to use for simplifying. Choose between `shapely` or
             `simplification`. Shapely adopts solely Douglas-Peucker and simplification
             both Douglas-Peucker and Visvalingam-Whyatt. The package simplification is
-            known to be quicker than shapely.
+            known to be quicker than shapely. `geos` applies to presimplify only and
+            raises a `ValueError` here.
             Default is `None`, meaning that the default (`shapely`) is not overwritten.
-        prevent_oversimplify: boolean, optional
+        prevent_oversimplify : boolean, optional
             If this setting is set to `True`, the simplification is slower, but the
             likelihood of producing valid geometries is higher as it prevents
             oversimplification. Simplification happens on paths separately, so this
             setting is especially relevant for rings with no partial shared paths. This
-            is also known as a topology-preserving variant of simplification.
+            is also known as a topology-preserving variant of simplification. With
+            toposimplify, a ring that would be reduced to fewer than three points keeps
+            the vertices to stay a triangle.
             Default is `None`, meaning that the default (`True`) is not overwritten.
         inplace : bool, optional
             If `True`, do operation inplace and return `None`.
