@@ -406,6 +406,17 @@ def test_extract_gdf_org_data_untouched():
     assert data_0.geometry.geom_type == "Polygon"
 
 
+# the GeoDataFrame is converted to new dictionaries, which are changed in place
+def test_extract_gdf_and_geoseries_org_data_untouched():
+    data = geopandas.read_file("tests/files_geojson/naturalearth_alb_grc.geojson")
+    data["parts"] = [[1, 2], [3]]
+    before = data.copy(deep=True)
+    Extract(data)
+    Extract(data.geometry)
+    assert data.equals(before)
+    assert data["parts"].tolist() == [[1, 2], [3]]
+
+
 # test to check if original data is not modified
 def test_extract_shapely_org_data_untouched():
     data = geometry.LineString([[0, 0], [1, 0], [1, 1], [0, 1]])

@@ -569,7 +569,7 @@ class Extract(object):
             self._data = geom.to_dict(orient="index")
         else:
             self._data = dict(enumerate(geom.to_dict(orient="records")))
-        self._extract_dictionary(self._data)
+        self._extract_records()
 
     def _extract_geopandas_geoseries(self, geom):
         """
@@ -582,7 +582,7 @@ class Extract(object):
         """
 
         self._data = geom.to_dict()
-        self._extract_dictionary(self._data)
+        self._extract_records()
 
     def _extract_list(self, geom):
         """
@@ -684,8 +684,18 @@ class Extract(object):
             and geom["type"].casefold() == "FeatureCollection".casefold()
         ):
             return self._extract_featurecollection(geom)
+        # the objects are changed in place, so work on a copy of the input
         self._data = copy.deepcopy(self._data)
+        self._extract_records()
 
+    def _extract_records(self):
+        """
+        This function extracts the objects of `self._data`, a dictionary of the
+        objects that is changed in place: a copy of the input or a new dictionary
+        made from it, such as `GeoDataFrame.to_dict()`.
+        """
+
+        self._is_single = False
         # iterate over the input dictionary or geographical object
         for key in list(self._data):
             # based on the geom type the right function is serialized
