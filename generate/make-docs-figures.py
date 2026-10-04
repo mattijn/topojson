@@ -1,6 +1,7 @@
 """
 Write the data of the figures on the pages Example usage, Types of input data,
-Settings and tuning, Retrieval data types and Quantization (docs/json/fig_*.json),
+Settings and tuning, Retrieval data types, Incremental updates and Quantization
+(docs/json/fig_*.json),
 by running the examples shown on the pages. Each figure is a list of panels with
 lines, filled rings, points and labels, drawn by docs/js/steps.js. Run from the
 root of the repository:
@@ -174,6 +175,71 @@ topo_two = tp.Topology(
 figures["output_to_svg"] = [{"lines": arcs(topo_two), "ends": True}]
 figures["output_to_svg_separate"] = separate(topo_two)
 figures["output_to_gdf"] = [{"fills": rings(africa.to_gdf().geometry)}]
+
+# example/incremental-updates.md
+cells = gpd.GeoDataFrame(
+    geometry=[
+        geometry.box(0, 1, 1, 2),
+        geometry.box(1, 1, 2, 2),
+        geometry.box(0, 0, 1, 1),
+        geometry.box(1, 0, 2, 1),
+        geometry.box(2, 1, 3, 2),
+    ],
+    index=list("ABCDE"),
+)
+added, window_add = cells.loc[["D"]], [-0.2, 2.2, -0.2, 2.2]
+base = tp.Topology(cells.loc[["A", "B", "C"]])
+grown = tp.Topology(cells.loc[["A", "B", "C"]]).add(added)
+back = tp.Topology(cells.loc[["A", "B", "C"]]).add(added).remove(["D"])
+
+
+def named(gdf):
+    """A label at the centroid of each feature."""
+    return [
+        [float(g.centroid.x), float(g.centroid.y), str(i)]
+        for i, g in gdf.geometry.items()
+    ]
+
+
+def mesh(topo, title, window, fill=None, names=None):
+    """The arcs of a Topology, with a filled feature when one was just added."""
+    panel = {"title": title, "lines": arcs(topo), "ends": True, "window": window}
+    if fill is not None:
+        panel["fills"] = rings(fill.geometry)
+    if names is not None:
+        panel["texts"] = named(names)
+    return panel
+
+
+figures["incremental_add_remove"] = [
+    mesh(base, "Topology(A, B, C)", window_add, names=cells.loc[["A", "B", "C"]]),
+    mesh(grown, "add(D)", window_add, added, cells.loc[["A", "B", "C", "D"]]),
+    mesh(back, "remove(D)", window_add, names=cells.loc[["A", "B", "C"]]),
+]
+
+first = cells.loc[["A", "B", "C", "D"]]
+second = cells.loc[["B", "C", "D", "E"]].copy()
+second.loc["C", "geometry"] = geometry.box(0, 0, 1, 1).buffer(0.2)
+synced = tp.Topology(first).sync(second)
+window_sync = [-0.35, 3.35, -0.35, 2.35]
+
+
+figures["incremental_sync"] = [
+    {
+        "title": "first run",
+        "fills": rings(first.geometry),
+        "texts": named(first),
+        "window": window_sync,
+    },
+    {
+        "title": "next run",
+        "fills": rings(second.geometry),
+        "faint": coords(cells.loc["A"].geometry),
+        "texts": [[*cells.loc["A"].geometry.centroid.coords[0], "A"], *named(second)],
+        "window": window_sync,
+    },
+    mesh(synced, "sync", window_sync),
+]
 
 # example/quantization.md
 line = geometry.LineString(
