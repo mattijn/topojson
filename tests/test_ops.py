@@ -116,3 +116,13 @@ def test_ops_cut_lines_on_grid_equals_cut_line(quant_factor):
     ]
     assert n_parts.tolist() == [len(p) for p in expected]
     assert [p.tolist() for p in parts] == [p.tolist() for e in expected for p in e]
+
+
+def test_ops_hash_paths():
+    line = np.array([[0, 0], [1, 0], [1, 1]])
+    ring = np.array([[0, 0], [1, 0], [1, 1], [0, 0]])
+    rotated = np.array([[1, 0], [1, 1], [0, 0], [1, 0]])
+    h = topojson.ops.hash_paths([line, line[::-1], ring, ring[::-1], rotated, line[:2]])
+    assert h[0] == h[1]
+    assert h[2] == h[3] == h[4]
+    assert len({h[0], h[2], h[5]}) == 3
