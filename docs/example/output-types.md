@@ -18,7 +18,7 @@ Multiple functions are available to serialize the Topology object. All of them a
 | topojson.Topology().to_geojson()    | Shapely, NumPy                                                          |
 | topojson.Topology().to_alt()    | Shapely, NumPy, _Altair\*_                                                |
 | topojson.Topology().to_gdf()    | Shapely, NumPy, _GeoPandas\*_                                             |
-| topojson.Topology().to_widget() | Shapely, NumPy, _Altair*_, _Simplification\*_, _ipywidgets* (+ labextension)_ |
+| topojson.Topology().to_widget() | Shapely, NumPy, _Altair*_, _Simplification\*_, _ipywidgets*_ |
 
 _\* optional dependencies_
 
@@ -386,7 +386,9 @@ topo.to_gdf().plot()
 
 ## .to_widget()
 
-Serialize the Topology object into an interactive IPython Widget. This requires the optional packages simplification, altair and ipywidget(+lab extension). These are not installed automatically.
+Serialize the Topology object into an interactive IPython Widget. This requires the optional packages simplification, altair and ipywidgets. These are not installed automatically.
+
+The sliders set the tolerance of `toposimplify` and the `topoquantize` factor. With the algorithm _Douglas-Peucker, share of vertices_, the slider _Keep share_ sets the share of the vertices to keep instead (`toposimplify(keep=...)`).
 
 <div class="code-example mx-1 bg-example">
 <div class="example-label" markdown="1">
@@ -403,7 +405,7 @@ data = tp.utils.example_data_africa()
 
 topo = tp.Topology(data, prevent_oversimplify=False)
 
-# this requires the (optional!) packages: simplification, altair & ipywidget(+labextension).
+# this requires the (optional!) packages: simplification, altair & ipywidgets.
 topo.to_widget()
 ```
 <img src="{{site.baseurl}}/images/africa_ipywidget.gif" alt="IPyWidget Africa">

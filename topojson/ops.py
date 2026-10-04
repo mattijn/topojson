@@ -1209,6 +1209,97 @@ def simplify(
     return list_arcs
 
 
+def dp_weights(xy, starts, ends):
+    """
+    Weight of each vertex of lines for Douglas-Peucker: simplifying with a tolerance
+    `epsilon` keeps exactly the vertices with a weight larger than `epsilon`, as
+    `shapely.simplify` with `preserve_topology=False` does.
+
+    Douglas-Peucker is nested: a vertex is kept when its distance to the segment of
+    its section is larger than `epsilon` and the vertex that split off its section is
+    kept as well. Its weight is therefore the smallest distance along its chain of
+    splits. The splits are found level by level, for all sections of all lines at
+    once.
+
+    Parameters
+    ----------
+    xy : numpy.ndarray
+        Coordinates of all lines after each other
+    starts, ends : numpy.ndarray
+        Index in `xy` of the first and the last vertex of each line
+
+    Returns
+    -------
+    numpy.ndarray
+        Weight of each vertex; `inf` for the first and the last vertex of each line
+    """
+    weight = np.full(len(xy), np.inf)
+    s, e = np.asarray(starts), np.asarray(ends)
+    cap = np.full(len(s), np.inf)
+    for _ in range(len(xy)):
+        n = e - s - 1
+        s, e, cap, n = s[n > 0], e[n > 0], cap[n > 0], n[n > 0]
+        if not len(s):
+            break
+        k = _ranges(s + 1, n)
+        section = np.repeat(np.arange(len(s)), n)
+        d = _segment_distance(xy[k], xy[s][section], xy[e][section])
+        # the first vertex at the largest distance in each section, as GEOS
+        dmax = np.maximum.reduceat(d, np.cumsum(n) - n)
+        at = np.flatnonzero(d == dmax[section])
+        m = k[at[_changes(section[at])]]
+        weight[m] = np.minimum(dmax, cap)
+        s, e, cap = np.r_[s, m], np.r_[m, e], np.r_[weight[m], weight[m]]
+    return weight
+
+
+def _segment_distance(p, a, b):
+    """Distance of points `p` to the segments `a`-`b`, in the same steps as GEOS
+    (`Distance::pointToSegment`), so that equal distances are decided the same way."""
+    (px, py), (ax, ay), (bx, by) = p.T, a.T, b.T
+    len2 = (bx - ax) * (bx - ax) + (by - ay) * (by - ay)
+    safe = np.where(len2 > 0, len2, 1)
+    r = ((px - ax) * (bx - ax) + (py - ay) * (by - ay)) / safe
+    s = ((ay - py) * (bx - ax) - (ax - px) * (by - ay)) / safe
+    to_a = np.sqrt((px - ax) * (px - ax) + (py - ay) * (py - ay))
+    to_b = np.sqrt((px - bx) * (px - bx) + (py - by) * (py - by))
+    inside = np.abs(s) * np.sqrt(len2)
+    return np.where((len2 == 0) | (r <= 0), to_a, np.where(r >= 1, to_b, inside))
+
+
+def simplify_keep(linestrings, keep):
+    """
+    Simplify lines with Douglas-Peucker to a share of their vertices: the share
+    `keep` of the inner vertices with the largest weights (`dp_weights`) is kept, and
+    the first and the last vertex of each line. Vertices with an equal weight are kept
+    or removed together, so a little fewer vertices can be kept.
+
+    Parameters
+    ----------
+    linestrings : list of numpy.ndarray
+        Coordinates of the lines
+    keep : float
+        Share of the inner vertices to keep, between 0 and 1
+
+    Returns
+    -------
+    list of list
+        Coordinates of the simplified lines
+    float
+        The tolerance that gives the same result with `simplify`
+    """
+    count = np.fromiter(map(len, linestrings), np.intp, len(linestrings))
+    xy = np.concatenate(linestrings)
+    ends = np.cumsum(count) - 1
+    weight = dp_weights(xy, ends - count + 1, ends)
+    inner = weight[np.isfinite(weight)]
+    n = min(int(round(keep * len(inner))), len(inner))
+    epsilon = -np.inf if n == len(inner) else np.partition(inner, -n - 1)[-n - 1]
+    kept = weight > epsilon
+    count = np.bincount(np.repeat(np.arange(len(count)), count)[kept], minlength=len(count))
+    return [a.tolist() for a in _split(xy[kept], np.cumsum(count)[:-1])], epsilon
+
+
 def simplify_coverage(linestrings, polygons, epsilon, exterior_cw=None):
     """
     Simplify the rings of polygons together as a coverage, with GEOS

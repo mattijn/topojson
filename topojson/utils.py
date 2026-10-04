@@ -577,7 +577,7 @@ def serialize_as_altair(
     return chart
 
 
-def serialize_as_ipywidgets(topo_object, toposimplify, topoquantize):
+def serialize_as_ipywidgets(topo_object, toposimplify, topoquantize, keep):
     from ipywidgets import interact
     from ipywidgets import fixed
     import ipywidgets as widgets
@@ -585,12 +585,17 @@ def serialize_as_ipywidgets(topo_object, toposimplify, topoquantize):
     style = {"description_width": "initial"}
     ts = toposimplify
     tq = topoquantize
+    tk = keep
 
     # set to simplification package for speed
     topo_object.options.simplify_with = "simplification"
 
     alg = widgets.RadioButtons(
-        options=[("Douglas-Peucker", "dp"), ("Visvalingam-Whyatt", "vw")],
+        options=[
+            ("Douglas-Peucker", "dp"),
+            ("Visvalingam-Whyatt", "vw"),
+            ("Douglas-Peucker, share of vertices", "keep"),
+        ],
         value="vw",
         description="Simplify algorithm",
         disabled=False,
@@ -604,6 +609,14 @@ def serialize_as_ipywidgets(topo_object, toposimplify, topoquantize):
         description="Toposimplify Factor",
         style=style,
     )
+    share = widgets.FloatSlider(
+        min=tk["min"],
+        max=tk["max"],
+        step=tk["step"],
+        value=tk["value"],
+        description="Keep share",
+        style=style,
+    )
     qnt = widgets.FloatLogSlider(
         min=tq["min"],
         max=tq["max"],
@@ -615,13 +628,23 @@ def serialize_as_ipywidgets(topo_object, toposimplify, topoquantize):
     )
 
     return interact(
-        toposimpquant, epsilon=eps, quant=qnt, algo=alg, topo=fixed(topo_object)
+        toposimpquant,
+        epsilon=eps,
+        quant=qnt,
+        algo=alg,
+        topo=fixed(topo_object),
+        keep=share,
     )
 
 
-def toposimpquant(epsilon, quant, algo, topo):
-    topo.options.simplify_algorithm = algo
-    return topo.toposimplify(epsilon).topoquantize(quant).to_alt()
+def toposimpquant(epsilon, quant, algo, topo, keep=1):
+    # "keep" simplifies with Douglas-Peucker to a share of the vertices
+    topo.options.simplify_algorithm = "dp" if algo == "keep" else algo
+    if algo == "keep":
+        simple = topo.toposimplify(keep=keep)
+    else:
+        simple = topo.toposimplify(epsilon)
+    return simple.topoquantize(quant).to_alt()
 
 
 def example_data_africa():

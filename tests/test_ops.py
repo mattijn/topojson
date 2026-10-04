@@ -126,3 +126,54 @@ def test_ops_hash_paths():
     assert h[0] == h[1]
     assert h[2] == h[3] == h[4]
     assert len({h[0], h[2], h[5]}) == 3
+
+
+# simplifying with epsilon keeps the vertices with a weight > epsilon (#223)
+def test_ops_dp_weights_reproduce_shapely_simplify():
+    import geopandas
+    import shapely
+
+    import topojson
+
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    topo = topojson.Topology(data)
+    arcs = topojson.ops.arc_coordinates(topo.output["arcs"], topo.output["transform"])
+    count = np.array([len(a) for a in arcs])
+    xy = np.concatenate(arcs)
+    ends = np.cumsum(count) - 1
+    weight = topojson.ops.dp_weights(xy, ends - count + 1, ends)
+    lines = shapely.linestrings(xy, indices=np.repeat(np.arange(len(arcs)), count))
+
+    inner = weight[np.isfinite(weight)]
+    # also exactly on a weight, where equal values decide
+    for epsilon in [*np.quantile(inner, [0.1, 0.5, 0.9]), *inner[::97]]:
+        simple = shapely.simplify(lines, epsilon, preserve_topology=False)
+        np.testing.assert_array_equal(
+            shapely.get_coordinates(simple), xy[weight > epsilon]
+        )
+
+
+def test_ops_dp_weights_are_nested():
+    xy = np.array([[0, 1], [2.6, 4.6], [5.3, 3.9], [7.1, 6], [9.6, 0], [12, 3.4]])
+    weight = topojson.ops.dp_weights(xy, [0], [5])
+    # (7.1, 6) splits first; (9.6, 0) is farther from its section, but is kept only
+    # as long as (7.1, 6) is kept
+    assert weight[3] == weight[4]
+    assert np.isinf(weight[[0, 5]]).all()
+
+
+def test_ops_simplify_keep():
+    lines = [
+        np.array([[0, 1], [2.6, 4.6], [5.3, 3.9], [7.1, 6], [9.6, 0], [12, 3.4]]),
+        np.array([[0, 0], [5, 0]]),
+    ]
+    none, _ = topojson.ops.simplify_keep(lines, 0)
+    assert none == [[[0, 1], [12, 3.4]], [[0, 0], [5, 0]]]
+    every, _ = topojson.ops.simplify_keep(lines, 1)
+    assert every == [line.tolist() for line in lines]
+    half, epsilon = topojson.ops.simplify_keep(lines, 0.5)
+    # 2 of the 4 inner vertices; (7.1, 6) and (9.6, 0) have the same weight
+    assert half[0] == [[0, 1], [7.1, 6], [9.6, 0], [12, 3.4]]
+    assert half == topojson.ops.simplify(
+        lines, epsilon, input_as="array", prevent_oversimplify=False
+    )

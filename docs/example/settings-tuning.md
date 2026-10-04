@@ -338,6 +338,29 @@ topo.to_alt().properties(title='toposimplify')
 </div>
 </div>
 
+Instead of a tolerance, `keep` gives the share of the vertices to keep, between `0` and
+`1`. Each inner vertex of an arc gets a weight: the largest `epsilon` at which
+Douglas-Peucker still keeps it. `keep` keeps the vertices with the largest weights,
+and the ends of the arcs always, so the result is the same as with the matching
+`epsilon`. As the arcs are shared, shared borders stay matched.
+
+<div class="code-example mx-1 bg-example">
+<div class="example-label" markdown="1">
+Example 🔧
+{: .label .label-blue-000 }
+</div>
+<div class="example-text" markdown="1">
+A line of 9 inner vertices (blue) with the weight of each vertex, simplified to a
+quarter and to half of its inner vertices (dashed); the kept vertices are filled.
+
+```python
+topo = tp.Topology(data)
+topo.toposimplify(keep=0.1)  # keep 10% of the vertices
+```
+<div id="embed_tuning_toposimplify_keep"></div>
+</div>
+</div>
+
 
 * * * 
 
@@ -702,6 +725,9 @@ window.addEventListener("DOMContentLoaded", event => {
 
     var spec_toposimplify = "{{site.baseurl}}/json/example_toposimplify.vl.json";
     vegaEmbed("#embed_tuning_toposimplify", spec_toposimplify, opt).catch(console.err);
+
+    var spec_toposimplify_keep = "{{site.baseurl}}/json/example_toposimplify_keep.vl.json";
+    vegaEmbed("#embed_tuning_toposimplify_keep", spec_toposimplify_keep, opt).catch(console.err);
 
     var spec_simplify_with = "{{site.baseurl}}/json/example_simplify_with.vl.json";
     vegaEmbed("#embed_tuning_simplify_with", spec_simplify_with, opt).catch(console.err);   

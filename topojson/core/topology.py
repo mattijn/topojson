@@ -11,6 +11,7 @@ from ..ops import arc_coordinates
 from ..ops import quantize
 from ..ops import validate_transform
 from ..ops import simplify
+from ..ops import simplify_keep
 from ..ops import restore_collapsed_rings
 from ..ops import delta_encoding
 from ..ops import bounds
@@ -401,10 +402,13 @@ class Topology(Hashmap):
         self,
         slider_toposimplify={"min": 0, "max": 10, "step": 0.01, "value": 0.01},
         slider_topoquantize={"min": 1, "max": 6, "step": 1, "value": 1e5, "base": 10},
+        slider_keep={"min": 0, "max": 1, "step": 0.01, "value": 0.1},
     ):
         """
         Create an interactive widget based on Altair. The widget includes sliders to
-        interactively change the `toposimplify` and `topoquantize` settings.
+        interactively change the `toposimplify` and `topoquantize` settings. With
+        the algorithm "Douglas-Peucker, share of vertices", the `keep` slider sets
+        the share of the vertices to keep instead of the tolerance.
 
         Parameters
         ----------
@@ -414,6 +418,9 @@ class Topology(Hashmap):
         slider_topoquantize : dict
             The dict should contain the following keys: `min`, `max`, `value`, `base`.
             Default is `{"min": 1, "max": 6, "step": 1, "value": 1e5, "base": 10}`.
+        slider_keep : dict
+            The dict should contain the following keys: `min`, `max`, `step`, `value`.
+            Default is `{"min": 0, "max": 1, "step": 0.01, "value": 0.1}`.
         """
 
         from ..utils import serialize_as_ipywidgets
@@ -422,6 +429,7 @@ class Topology(Hashmap):
             topo_object=self,
             toposimplify=slider_toposimplify,
             topoquantize=slider_topoquantize,
+            keep=slider_keep,
         )
 
     def topoquantize(self, quant_factor, inplace=False):
@@ -480,11 +488,12 @@ class Topology(Hashmap):
 
     def toposimplify(
         self,
-        epsilon,
+        epsilon=None,
         simplify_algorithm=None,
         simplify_with=None,
         prevent_oversimplify=None,
         inplace=False,
+        keep=None,
     ):
         """
         Apply toposimplify to remove unnecessary points from arcs after the topology
@@ -494,8 +503,8 @@ class Topology(Hashmap):
 
         Parameters
         ----------
-        epsilon : float
-            tolerance parameter.
+        epsilon : float, optional
+            tolerance parameter. Give either `epsilon` or `keep`.
         simplify_algorithm : str, optional
             Choose between `dp` and `vw`, for Douglas-Peucker or Visvalingam-Whyatt
             respectively. `vw` will only be selected if `simplify_with` is set to
@@ -520,12 +529,22 @@ class Topology(Hashmap):
         inplace : bool, optional
             If `True`, do operation inplace and return `None`.
             Default is `False`.
+        keep : float, optional
+            Instead of `epsilon`, the share of the vertices to keep, between `0` and
+            `1`: the inner vertices of the arcs that Douglas-Peucker removes last are
+            kept, the ends of the arcs always. Uses Douglas-Peucker, whatever
+            `simplify_with`; with `prevent_oversimplify` a ring stays at least a
+            triangle.
 
         Returns
         -------
         object or None
             Topology object with simplified linestrings if `inplace` is `False`.
         """
+        if (epsilon is None) == (keep is None):
+            raise ValueError("give either epsilon or keep")
+        if keep is not None and not 0 <= keep <= 1:
+            raise ValueError(f"keep is a share between 0 and 1, got: {keep!r}")
         result = self._copy()
         if not result.options.toposimplify:
             result.options.toposimplify = epsilon
@@ -543,6 +562,8 @@ class Topology(Hashmap):
             )
         if simplify_algorithm in ["dp", "vw"]:
             result.options.simplify_algorithm = simplify_algorithm
+        if keep is not None and result.options.simplify_algorithm == "vw":
+            raise ValueError("keep uses Douglas-Peucker (simplify_algorithm='dp')")
 
         # get transform settings to dequantize if necessary
         transform = result.output.get("transform")
@@ -557,14 +578,17 @@ class Topology(Hashmap):
             np_arcs = arc_coordinates(arcs, transform)
 
             # apply simplify
-            result.output["arcs"] = simplify(
-                np_arcs,
-                epsilon,
-                algorithm=result.options.simplify_algorithm,
-                package=result.options.simplify_with,
-                input_as="array",
-                prevent_oversimplify=result.options.prevent_oversimplify,
-            )
+            if keep is not None:
+                result.output["arcs"], _ = simplify_keep(np_arcs, keep)
+            else:
+                result.output["arcs"] = simplify(
+                    np_arcs,
+                    epsilon,
+                    algorithm=result.options.simplify_algorithm,
+                    package=result.options.simplify_with,
+                    input_as="array",
+                    prevent_oversimplify=result.options.prevent_oversimplify,
+                )
             if result.options.prevent_oversimplify:
                 sequences = incremental._all_sequences(result.output)
                 rings = [s for s, ring in sequences if ring]
@@ -578,36 +602,14 @@ class Topology(Hashmap):
 
             # quantize again if quantization was applied
             if transform is not None:
-                quant_factor = None
-                fixed_transform = None
-                if isinstance(result.options.topoquantize, dict):
-                    # keep the fixed grid
-                    fixed_transform = result.options.topoquantize
-                elif result.options.topoquantize > 0:
-                    # set default if not specifically given in the options
-                    if isinstance(result.options.topoquantize, bool):
-                        quant_factor = 1e5
-                    else:
-                        quant_factor = result.options.topoquantize
-                elif isinstance(result.options.prequantize, dict):
-                    # keep the fixed grid
-                    fixed_transform = result.options.prequantize
-                elif result.options.prequantize > 0:
-                    # set default if not specifically given in the options
-                    if isinstance(result.options.prequantize, bool):
-                        quant_factor = 1e5
-                    else:
-                        quant_factor = result.options.prequantize
-                else:
-                    # no options set, use the guessed estimate from input data
-                    quant_factor = quant_factor_estimate
-
+                grid = result._grid() or quant_factor_estimate
+                fixed = isinstance(grid, dict)
                 # apply quantization and delta encode result.
                 result.output["arcs"], transform = quantize(
                     result.output["arcs"],
                     result.output["bbox"],
-                    quant_factor,
-                    transform=fixed_transform,
+                    None if fixed else grid,
+                    transform=grid if fixed else None,
                 )
                 result.output["arcs"] = delta_encoding(result.output["arcs"])
                 result.output["transform"] = transform
@@ -619,6 +621,18 @@ class Topology(Hashmap):
             self.options.toposimplify = result.options.toposimplify
         else:
             return result
+
+    def _grid(self):
+        """The grid of the options to quantize on again: a transform (dict), a
+        quantize factor, or `None` when the options set no quantization."""
+        for option in (self.options.topoquantize, self.options.prequantize):
+            if isinstance(option, dict):
+                # keep the fixed grid
+                return option
+            if option > 0:
+                # set default if not specifically given in the options
+                return 1e5 if isinstance(option, bool) else option
+        return None
 
     @classmethod
     def read_json(cls, fp):

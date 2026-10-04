@@ -463,6 +463,53 @@ Docs
 > + ###### list of shapely.geometry.LineStrings or ndarrays, depending on the type of the input
 LineStrings that are simplified
 
+## dp_weights
+```python
+dp_weights(xy, starts, ends)
+```
+
+Weight of each vertex of lines for Douglas-Peucker: simplifying with a tolerance
+`epsilon` keeps exactly the vertices with a weight larger than `epsilon`, as
+`shapely.simplify` with `preserve_topology=False` does.
+
+Douglas-Peucker is nested: a vertex is kept when its distance to the segment of
+its section is larger than `epsilon` and the vertex that split off its section is
+kept as well. Its weight is therefore the smallest distance along its chain of
+splits. The splits are found level by level, for all sections of all lines at
+once.
+
+> #### Parameters
+> + ###### `xy` : numpy.ndarray
+    Coordinates of all lines after each other
+starts, ends : numpy.ndarray
+    Index in `xy` of the first and the last vertex of each line
+
+> #### Returns
+> + ###### numpy.ndarray
+Weight of each vertex; `inf` for the first and the last vertex of each line
+
+## simplify_keep
+```python
+simplify_keep(linestrings, keep)
+```
+
+Simplify lines with Douglas-Peucker to a share of their vertices: the share
+`keep` of the inner vertices with the largest weights (`dp_weights`) is kept, and
+the first and the last vertex of each line. Vertices with an equal weight are kept
+or removed together, so a little fewer vertices can be kept.
+
+> #### Parameters
+> + ###### `linestrings` : list of numpy.ndarray
+    Coordinates of the lines
+> + ###### `keep` : float
+    Share of the inner vertices to keep, between 0 and 1
+
+> #### Returns
+> + ###### list of list
+Coordinates of the simplified lines
+> + ###### float
+The tolerance that gives the same result with `simplify`
+
 ## simplify_coverage
 ```python
 simplify_coverage(linestrings, polygons, epsilon, exterior_cw=None)
