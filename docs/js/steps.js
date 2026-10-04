@@ -11,9 +11,16 @@
   const cache = {};
 
   // isometric projection of a point of the toy example (x 0..15, y 0..5) on a plate
-  const S = 15, GAP = 30, W = 560, CX = 205;
+  const S = 15, GAP = 30, W = 560, CX = 180;
   const P = (x, y, z) => [CX + (x - (5 - y)) * 0.866 * S, 64 + (x + (5 - y)) * 0.5 * S - z];
   const pts = (line, z) => line.map(([x, y]) => P(x, y, z).map(v => v.toFixed(1)).join(",")).join(" ");
+
+  // keep the text at about 12px on screen, whatever the scale of the figure
+  // (at most 1.45 times larger in the figure, so that the names still fit)
+  function fit(svg, most = Infinity) {
+    const scale = svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
+    if (scale > 0) svg.style.setProperty("--steps-font", `${Math.min(12 / scale, most).toFixed(1)}px`);
+  }
 
   function el(name, attrs, parent) {
     const e = document.createElementNS(NS, name);
@@ -49,10 +56,6 @@
         const m = Math.floor((a.length - 1) / 2);
         c.labels.push([a[m], a[m + 1], String(i)]);
       });
-    }
-    if (step === "topology") {
-      const [kx, ky] = s.transform.scale;
-      for (let x = 0; x <= 15 + 1e-9; x += kx) for (let y = 0; y <= 5 + 1e-9; y += ky) c.grid.push([x, y]);
     }
     return c;
   }
@@ -103,7 +106,7 @@
       path.replaceChildren();
       const [x0, y0] = P(-1.5, -1.5, top * GAP), [, y1] = P(-1.5, -1.5, 0);
       const a = x0 - 22, b = x0 - 12, up = y0 - 34, low = y1 + 14;
-      el("text", { x: a - 4, y: up - 6, "text-anchor": "end", class: "steps-name", fill: "var(--steps-hi)" }, path).textContent = call;
+      el("text", { x: a - 4, y: up - 10, "text-anchor": "start", class: "steps-name", fill: "var(--steps-hi)" }, path).textContent = call;
       el("path", { d: `M${a},${up} L${a},${low}`, fill: "none", stroke: "var(--steps-mid)", "stroke-width": 0.9, "stroke-dasharray": "2 3" }, path);
       el("path", { d: `M${a},${low} Q${a},${low + 10} ${(a + b) / 2},${low + 10} Q${b},${low + 10} ${b},${low} L${b},${up}`, fill: "none", stroke: "var(--steps-mid)", "stroke-width": 0.9 }, path);
       el("path", { d: `M${b - 3},${up + 5} L${b},${up} L${b + 3},${up + 5}`, fill: "none", stroke: "var(--steps-mid)", "stroke-width": 0.9 }, path);
@@ -120,6 +123,7 @@
 
     (cache[figure.dataset.src] ||= fetch(figure.dataset.src).then(r => r.json())).then(d => {
       draw(d);
+      new ResizeObserver(() => fit(svg, 12 * 1.45)).observe(svg);
       const go = () => { if (!frame) frame = requestAnimationFrame(() => tick(d)); };
       // the pointer picks the plate whose name, at its right corner, is nearest in
       // height (at rest, so that it does not jump while the plates above fade)
@@ -133,5 +137,86 @@
     });
   }
 
+  // The output of a step seen from above, one panel per line, part or arc: the
+  // whole toy example faint, the element itself dark.
+  //
+  // <figure class="parts" data-src="steps.json" data-step="cut"><svg></svg></figure>
+  function panels(step, d) {
+    const s = d[step], whole = d.extract.lines, junctions = d.join.junctions;
+    if (step === "toy") return [{ title: "", lines: whole, arrows: true, numbers: true }];
+    if (step === "extract") return s.lines.map((l, i) => ({ title: `line ${i}`, lines: [l], arrows: true }));
+    if (step === "join") return s.lines.map((l, i) => ({ title: `line ${i}`, lines: [l], dots: junctions }));
+    if (step === "cut") return s.parts.map((p, i) => ({ title: `part ${i}, of line ${s.line[i]}`, lines: [p], ends: true }));
+    if (step === "dedup") return s.arcs.map((a, i) => ({ title: s.shared.includes(i) ? `arc ${i}, shared` : `arc ${i}`, lines: [a], ends: true, thick: s.shared.includes(i) }));
+    return [{ title: "", lines: s.arcs, labels: true, ends: true }];
+  }
+
+  function mountParts(figure) {
+    const svg = figure.querySelector("svg");
+    (cache[figure.dataset.src] ||= fetch(figure.dataset.src).then(r => r.json())).then(d => {
+      cache[figure.dataset.src + ":data"] = d;
+      let cols = 0;
+      const layout = () => {
+        const list = panels(figure.dataset.step, d), single = list.length === 1;
+        const k = single ? 24 : 10, pad = single ? 22 : 12, head = single ? 0 : 18;
+        const w = 15 * k + 2 * pad, h = 5 * k + 2 * pad + head;
+        // as many panels in a row as fit the width of the page, at their own size
+        const room = figure.getBoundingClientRect().width || W;
+        const fits = single ? 1 : Math.max(1, Math.min(list.length, Math.floor((room + 12) / (w + 12))));
+        if (fits !== cols) { cols = fits; draw(list, single, k, pad, head, w, h, cols); }
+        fit(svg);
+      };
+      layout();
+      new ResizeObserver(layout).observe(figure);
+    });
+
+    function draw(list, single, k, pad, head, w, h, cols) {
+      const d = cache[figure.dataset.src + ":data"], whole = d.extract.lines;
+      const rows = Math.ceil(list.length / cols), width = cols * (w + 12) - 12;
+      svg.replaceChildren();
+      svg.setAttribute("viewBox", `0 0 ${width} ${rows * (h + 12) - 12}`);
+      svg.style.maxWidth = `${width}px`;
+      svg.setAttribute("role", "img");
+      svg.setAttribute("aria-label", `The output of ${figure.dataset.step}: ${list.map(p => p.title).filter(Boolean).join(", ") || "the arcs"}.`);
+      list.forEach((p, i) => {
+        const g = el("g", { transform: `translate(${(i % cols) * (w + 12)},${Math.floor(i / cols) * (h + 12)})` }, svg);
+        const Q = ([x, y]) => [pad + x * k, head + pad + (5 - y) * k];
+        const line = l => l.map(q => Q(q).map(v => v.toFixed(1)).join(",")).join(" ");
+        if (p.title) el("text", { x: 0, y: 11, class: "steps-label", fill: "var(--steps-edge)" }, g).textContent = p.title;
+        el("rect", { x: 0.5, y: head + 0.5, width: w - 1, height: h - head - 1, rx: 4, fill: "var(--steps-plate)", stroke: "var(--steps-lo)", "stroke-width": 0.9 }, g);
+        if (!single) whole.forEach(l => el("polyline", { points: line(l), fill: "none", stroke: "var(--steps-lo)", "stroke-width": 0.9, "stroke-linejoin": "round" }, g));
+        p.lines.forEach(l => el("polyline", { points: line(l), fill: "none", stroke: "var(--steps-hi)", "stroke-width": p.thick ? 2.2 : 1.2, "stroke-linejoin": "round", "stroke-linecap": "round" }, g));
+        const dot = (q, r) => { const [x, y] = Q(q); el("circle", { cx: x, cy: y, r, fill: "var(--steps-plate)", stroke: "var(--steps-hi)", "stroke-width": 0.9 }, g); };
+        if (p.ends) p.lines.forEach(l => { dot(l[0], 2); dot(l[l.length - 1], 2); });
+        (p.dots || []).forEach(q => dot(q, 3));
+        if (p.arrows) p.lines.forEach(l => {
+          // an arrowhead at the end, along the last segment
+          const [x0, y0] = Q(l[l.length - 2]), [x1, y1] = Q(l[l.length - 1]), a = Math.atan2(y1 - y0, x1 - x0), r = single ? 7 : 5;
+          const tip = s => `${(x1 - r * Math.cos(a + s)).toFixed(1)},${(y1 - r * Math.sin(a + s)).toFixed(1)}`;
+          el("polyline", { points: `${tip(0.45)} ${x1},${y1} ${tip(-0.45)}`, fill: "none", stroke: "var(--steps-hi)", "stroke-width": 1.2, "stroke-linejoin": "round" }, g);
+        });
+        // the number of each line next to its start, on the side away from the line
+        if (p.numbers) p.lines.forEach((l, j) => {
+          const [x, y] = Q(l[0]), [nx, ny] = Q(l[1]), dx = nx - x, dy = ny - y, n = Math.hypot(dx, dy);
+          const left = dx / n > 0.5, label = el("text", { class: "steps-label", fill: "var(--steps-hi)", "dominant-baseline": "central" }, g);
+          // along a horizontal start the label goes above it, else to its left
+          label.setAttribute("x", left ? x : x - 8);
+          label.setAttribute("y", left ? y - 12 : y - 6);
+          label.setAttribute("text-anchor", left ? "start" : "end");
+          label.textContent = `line ${j}`;
+        });
+        if (p.labels) p.lines.forEach((l, j) => {
+          // next to the middle of the middle segment, away from the middle of the panel
+          const m = Math.floor((l.length - 1) / 2), [x0, y0] = Q(l[m]), [x1, y1] = Q(l[m + 1]), [cx, cy] = Q([7.5, 2.5]);
+          const mx = (x0 + x1) / 2, my = (y0 + y1) / 2, n = Math.hypot(x1 - x0, y1 - y0);
+          let nx = (y0 - y1) / n, ny = (x1 - x0) / n;
+          if (nx * (mx - cx) + ny * (my - cy) < 0) { nx = -nx; ny = -ny; }
+          el("text", { x: mx + nx * 12, y: my + ny * 12, "text-anchor": "middle", "dominant-baseline": "central", class: "steps-label", fill: "var(--steps-hi)" }, g).textContent = String(j);
+        });
+      });
+    }
+  }
+
   document.querySelectorAll("figure.steps").forEach(mount);
+  document.querySelectorAll("figure.parts").forEach(mountParts);
 })();

@@ -41,23 +41,17 @@ Example 🔧
 <div class="example-text" markdown="1">
 
 ```python
-from IPython.display import display, SVG
 from shapely import geometry
 import topojson as tp
 
 data = geometry.MultiLineString([
-    [(0, 0), (10, 0), (5, 5), (15, 5)], 
+    [(0, 0), (10, 0), (5, 5), (15, 5)],
     [(15, 0), (15, 5), (5, 5), (0, 5)]
 ])
-
-s = data._repr_svg_()
-s = s.replace('stroke="#66cc99"', 'stroke="#F37929"', 1)
-s = s.replace('stroke-width="0.324"', 'stroke-width="0.7"', 1)
-display(SVG(s))
 ```
-<img src="images/two_linestring_orange.svg">
+<figure class="parts" data-src="{{site.baseurl}}/json/steps.json" data-step="toy"><svg></svg></figure>
 
-The orange line starts bottom-left and goes with a zig-zag to top-right. The green line starts bottom-right and goes up and then leftwards. Resulting in a shared segment for the two linestrings in opposite directions.
+Line 0 starts bottom-left and goes with a zig-zag to top-right. Line 1 starts bottom-right and goes up and then leftwards. Resulting in a shared segment for the two linestrings in opposite directions.
 
 The steps below use each class on its own, with its own defaults: without quantization. `Topology` quantizes by default, see the last step.
 </div>
@@ -111,15 +105,9 @@ The Extract class creates an object with a few different keys. From top to botto
 
 The two referenced arcs `[0, 1]` refer to `0`-index and `1`-index entry in the `bookkeeping_geoms`. In this case `[0]` and `[1]` respectively.
 
-```python
-Extract(data).to_svg(separate=True)
-```
-<pre class="code_no_highlight">
-0 LINESTRING (0 0, 10 0, 5 5, 15 5)
-<img src="images/hiw_e_0.svg">
-1 LINESTRING (15 0, 15 5, 5 5, 0 5)
-<img src="images/hiw_e_1.svg">
-</pre>
+Each line on its own:
+
+<figure class="parts" data-src="{{site.baseurl}}/json/steps.json" data-step="extract"><svg></svg></figure>
 
 </div>
 </div>
@@ -174,15 +162,9 @@ The Join class creates an object based on the Extract object. From top to bottom
 
 The `junctions` is a new key that stores all junctions as a list of shapely Points.
 
-```python
-Join(data).to_svg(separate=True, include_junctions=True)
-```
-<pre class="code_no_highlight">
-0 LINESTRING (0 0, 10 0, 5 5, 15 5)
-<img src="images/hiw_j_0.svg">
-1 LINESTRING (15 0, 15 5, 5 5, 0 5)
-<img src="images/hiw_j_1.svg">
-</pre>
+Each line on its own, with the junctions:
+
+<figure class="parts" data-src="{{site.baseurl}}/json/steps.json" data-step="join"><svg></svg></figure>
 </div>
 </div>
 
@@ -250,21 +232,9 @@ The Cut class creates an object based on the Join object. From top to bottom are
 
 The `bookkeeping_linestrings` is a new key.
 
-```python
-Cut(data).to_svg(separate=True, include_junctions=True)
-```
-<pre class="code_no_highlight">
-0 LINESTRING (0 0, 10 0, 5 5)
-<img src="images/hiw_c_0.svg">
-1 LINESTRING (5 5, 15 5)
-<img src="images/hiw_c_1.svg">
-2 LINESTRING (15 0, 15 5)
-<img src="images/hiw_c_2.svg">
-3 LINESTRING (15 5, 5 5)
-<img src="images/hiw_c_3.svg">
-4 LINESTRING (5 5, 0 5)
-<img src="images/hiw_c_4.svg">
-</pre>
+Each part on its own:
+
+<figure class="parts" data-src="{{site.baseurl}}/json/steps.json" data-step="cut"><svg></svg></figure>
 </div>
 </div>
 
@@ -330,19 +300,9 @@ The Dedup class creates an object based on the Cut object. From top to bottom ar
 
 The `bookkeeping_arcs` and `bookkeeping_shared_arcs` are new keys that stores all shared arcs and maintain bookkeeping.
 
-```python
-Dedup(data).to_svg(separate=True)
-```
-<pre class="code_no_highlight">
-0 LINESTRING (0 0, 10 0, 5 5)
-<img src="images/hiw_d_0.svg">
-1 LINESTRING (15 0, 15 5)
-<img src="images/hiw_d_1.svg">
-2 LINESTRING (15 5, 5 5)
-<img src="images/hiw_d_2.svg">
-3 LINESTRING (5 5, 0 5)
-<img src="images/hiw_d_3.svg">
-</pre>
+Each arc on its own; arc 2 is used by both lines:
+
+<figure class="parts" data-src="{{site.baseurl}}/json/steps.json" data-step="dedup"><svg></svg></figure>
 </div>
 </div>
 
@@ -449,12 +409,9 @@ The Topology class creates an object based on the Hashmap object. From top to bo
 
 The `arcs` key is created storing the quantized linestrings, where shared arcs are referred from within each geometry.
 
-```python
-Topology(data).to_svg()
-```
-<pre class="code_no_highlight">
-<img src="images/hiw_t.svg">
-</pre>
+The arcs, by number:
+
+<figure class="parts" data-src="{{site.baseurl}}/json/steps.json" data-step="topology"><svg></svg></figure>
 
 </div>
 </div>

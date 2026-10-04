@@ -30,7 +30,7 @@ def coords(lines):
 cut = Cut(data).output
 dedup = Dedup(data).output
 hashmap = Hashmap(data).output
-topology = tp.Topology(data, prequantize=16)
+topology = tp.Topology(data)
 steps = {
     "extract": {"lines": coords(Extract(data).output["linestrings"])},
     "join": {
@@ -56,14 +56,13 @@ steps = {
         "arcs": coords(hashmap["linestrings"]),
         "lines": hashmap["objects"]["data"]["geometries"][0]["arcs"],
     },
-    # the arcs on the grid of the topology
+    # the arcs of the topology, quantized as by default
     "topology": {
         "arcs": coords(
             tp.ops.arc_coordinates(
                 topology.output["arcs"], topology.output["transform"]
             )
         ),
-        "transform": topology.output["transform"],
     },
 }
 with open("docs/json/steps.json", "w") as f:
