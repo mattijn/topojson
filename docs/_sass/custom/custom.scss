@@ -43,8 +43,24 @@ figure.steps svg {
   height: auto;
 }
 
+figure.parts {
+  --steps-plate: #ffffff;
+  --steps-hi: #27272a;
+  --steps-edge: #71717a;
+  --steps-lo: #d4d4d8;
+  max-width: 560px;
+  margin: 0.5rem 0 1rem;
+}
+
+figure.parts svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 figure.steps .steps-name,
-figure.steps .steps-label {
+figure.steps .steps-label,
+figure.parts .steps-label {
   font-family: inherit;
-  font-size: 12px;
+  font-size: var(--steps-font, 12px);
 }
