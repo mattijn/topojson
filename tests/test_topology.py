@@ -215,7 +215,15 @@ def test_topology_widget():
     topo = topojson.Topology(data, prequantize=1e6, topology=True)
     widget = topo.to_widget()
 
-    assert len(widget.widget.children) == 4  # pylint: disable=no-member
+    assert len(widget.widget.children) == 5  # pylint: disable=no-member
+
+
+def test_topology_widget_keep():
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    topo = topojson.Topology(data[(data.CONTINENT == "Africa")])
+    for algo in ["vw", "keep", "dp"]:
+        chart = topojson.utils.toposimpquant(0.1, 1e4, algo, topo, keep=0.2)
+        assert chart.to_dict()["mark"]["type"] == "geoshape"
 
 
 def test_topology_simplification_vw():
@@ -889,6 +897,46 @@ def test_topology_toposimplify_keeps_rings_a_triangle():
     assert collapsed(topo.toposimplify(2)) == collapsed(topo) == 1
     # without prevent_oversimplify, small islands collapse
     assert collapsed(topo.toposimplify(2, prevent_oversimplify=False)) > 1
+
+
+def test_topology_toposimplify_keep_share_of_vertices():
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    topo = topojson.Topology(data)
+
+    def inner(t):
+        return sum(len(arc) - 2 for arc in t.output["arcs"])
+
+    simple = topo.toposimplify(keep=0.1, prevent_oversimplify=False)
+    assert inner(simple) == round(0.1 * inner(topo))
+
+
+def test_topology_toposimplify_keep_as_epsilon():
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    topo = topojson.Topology(data)
+    arcs = topojson.ops.arc_coordinates(topo.output["arcs"], topo.output["transform"])
+    _, epsilon = topojson.ops.simplify_keep(arcs, 0.2)
+
+    keep = topo.toposimplify(keep=0.2, prevent_oversimplify=False).to_dict()
+    tolerance = topo.toposimplify(epsilon, prevent_oversimplify=False).to_dict()
+    assert keep["arcs"] == tolerance["arcs"]
+
+
+def test_topology_toposimplify_keep_keeps_rings_a_triangle():
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    topo = topojson.Topology(data)
+    reasons = shapely.is_valid_reason(topo.toposimplify(keep=0).to_gdf().geometry.values)
+    # only the islet that collapses on the grid already (#243)
+    assert sum(r.startswith("Too few points") for r in reasons) == 1
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [{}, {"epsilon": 1, "keep": 0.5}, {"keep": 1.5}, {"keep": 0.5, "simplify_algorithm": "vw"}],
+)
+def test_topology_toposimplify_keep_invalid(kwargs):
+    data = geopandas.read_file("tests/files_shapefile/static_nybb.gpkg")
+    with pytest.raises(ValueError):
+        topojson.Topology(data).toposimplify(**kwargs)
 
 
 def test_topology_presimplify_geos_keeps_shared_borders():

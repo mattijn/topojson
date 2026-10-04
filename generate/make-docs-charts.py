@@ -129,6 +129,50 @@ gap = tp.Topology(rectangles, prequantize=21)
 fine = {"scale": [1, 1], "translate": [0, 0]}
 on_fine = tp.Topology(line, prequantize=fine)
 
+# example/settings-tuning.md
+wavy = np.array(
+    [(0, 1), (1.2, 2.9), (2.6, 4.6), (3.8, 4.1), (5.3, 3.9), (6.2, 5.2), (7.1, 6),
+     (8.0, 3.1), (9.6, 0), (10.7, 1.6), (12, 3.4)]
+)  # fmt: skip
+
+
+def kept(line, keep, px=22):
+    """A line (blue) with the Douglas-Peucker weight of each inner vertex, and the
+    line simplified to a share of its inner vertices (dashed): the vertices with the
+    largest weights are kept (filled)."""
+    weight = tp.ops.dp_weights(line, [0], [len(line) - 1])
+    (simple,), epsilon = tp.ops.simplify_keep([line], keep)
+    df = pd.DataFrame({"x": line[:, 0], "y": line[:, 1], "o": range(len(line))})
+    df["kept"] = weight > epsilon
+    df["label"] = [f"{w:.2f}" if np.isfinite(w) else "" for w in weight]
+    # labels on the outer side of each bend
+    out = line - (np.roll(line, 1, 0) + np.roll(line, -1, 0)) / 2
+    out /= np.hypot(*out.T)[:, None]
+    df["lx"], df["ly"] = (line + 1.1 * out).T
+    base = alt.Chart(df).encode(
+        x=alt.X("x:Q", scale=alt.Scale(domain=[-0.5, 12.5]), axis=None),
+        y=alt.Y("y:Q", scale=alt.Scale(domain=[-1.4, 7.4]), axis=None),
+        order="o:Q",
+    )
+    inner = len(line) - 2
+    return alt.layer(
+        base.mark_line(color=BLUE, strokeWidth=1.5),
+        base.transform_filter("datum.kept")
+        .mark_line(color=AMBER, strokeWidth=2, strokeDash=[5, 3]),
+        base.mark_point(size=60, color=AMBER, strokeWidth=1.5, opacity=1)
+        .encode(fill=alt.condition("datum.kept", alt.value(AMBER), alt.value(None))),
+        base.mark_text(color=GREY).encode(x="lx:Q", y="ly:Q", text="label:N"),
+    ).properties(
+        title=alt.Title(
+            f"keep={keep}",
+            subtitle=f"{len(simple) - 2} of {inner} inner vertices, as epsilon "
+            f"{epsilon:.2f}",
+        ),
+        width=13 * px,
+        height=8.8 * px,
+    )
+
+
 charts = {
     # example/settings-tuning.md
     "presimplify": tp.Topology(data, presimplify=4)
@@ -163,6 +207,7 @@ charts = {
     & tp.Topology(polygon, winding_order="CCW_CW", prequantize=False)
     .to_alt(projection="equalEarth", color="type:N")
     .properties(title="CCW_CW"),
+    "toposimplify_keep": kept(wavy, 0.25) | kept(wavy, 0.5),
     # example/quantization.md
     "quantization_snap": panel(
         tp.Topology(line, prequantize=5), line, "prequantize=5", (-0.5, 12.5, -0.5, 6.5)

@@ -54,10 +54,11 @@ coordinates but foremost the computation of a topology.
     computed Topology (`topo.output["transform"]`). The grid then stays the same
     when features are added or removed.
     Default is `True` (which correspond to a quantize factor of `1e5`).
-> + ###### `topoquantize` : boolean or int
+> + ###### `topoquantize` : boolean, int or dict
     If the topoquantization parameter is specified, the input geometry is quantized
     after the topology is constructed. If the topology is already quantized this
-    will be resolved first before the topoquantization is applied. See for more
+    will be resolved first before the topoquantization is applied. As for
+    `prequantize`, a fixed TopoJSON transform can be given as a dict. See for more
     details the `prequantize` parameter.
     Default is `False`.
 > + ###### `presimplify` : boolean, float
@@ -297,13 +298,15 @@ Display as Altair visualization.
 ### to_widget
 ```python
 Topology.to_widget(
-    slider_toposimplify={'min': 0, 'max': 10, 'step': 0.01, 'value': 0.01},
-    slider_topoquantize={'min': 1, 'max': 6, 'step': 1, 'value': 100000.0, 'base': 10}
-)
+  slider_toposimplify={'min': 0, 'max': 10, 'step': 0.01, 'value': 0.01},
+  slider_topoquantize={'min': 1, 'max': 6, 'step': 1, 'value': 100000.0, 'base': 10},
+  slider_keep={'min': 0, 'max': 1, 'step': 0.01, 'value': 0.1})
 ```
 
 Create an interactive widget based on Altair. The widget includes sliders to
-interactively change the `toposimplify` and `topoquantize` settings.
+interactively change the `toposimplify` and `topoquantize` settings. With
+the algorithm "Douglas-Peucker, share of vertices", the `keep` slider sets
+the share of the vertices to keep instead of the tolerance.
 
 > #### Parameters
 > + ###### `slider_toposimplify` : dict
@@ -312,6 +315,9 @@ interactively change the `toposimplify` and `topoquantize` settings.
 > + ###### `slider_topoquantize` : dict
     The dict should contain the following keys: `min`, `max`, `value`, `base`.
     Default is `{"min": 1, "max": 6, "step": 1, "value": 1e5, "base": 10}`.
+> + ###### `slider_keep` : dict
+    The dict should contain the following keys: `min`, `max`, `step`, `value`.
+    Default is `{"min": 0, "max": 1, "step": 0.01, "value": 0.1}`.
 
 ### topoquantize
 ```python
@@ -324,8 +330,12 @@ adjacent boundaries do not have identical values); typical values are powers
 of ten, such as `1e4`, `1e5` or  `1e6`.
 
 > #### Parameters
-> + ###### `quant_factor` : float
-    tolerance parameter
+> + ###### `quant_factor` : float or dict
+    Quantization factor: the number of steps on each axis of the bounding
+    box. Or a fixed TopoJSON transform as a dict
+    (`{"scale": [kx, ky], "translate": [x0, y0]}`), for example a grid with
+    cells that are a multiple of those of `prequantize`, so that each
+    quantized point is also a point of the finer grid.
 > + ###### `inplace` : bool, optional
     If `True`, do operation inplace and return `None`.
     Default is `False`.
@@ -336,11 +346,12 @@ Quantized coordinates and delta-encoded arcs if `inplace` is `False`.
 
 ### toposimplify
 ```python
-Topology.toposimplify(epsilon,
+Topology.toposimplify(epsilon=None,
                       simplify_algorithm=None,
                       simplify_with=None,
                       prevent_oversimplify=None,
-                      inplace=False)
+                      inplace=False,
+                      keep=None)
 ```
 
 Apply toposimplify to remove unnecessary points from arcs after the topology
@@ -349,8 +360,8 @@ topological relations. Sensible values for coordinates stored in degrees are
 in the range of `0.0001` to `10`.
 
 > #### Parameters
-> + ###### `epsilon` : float
-    tolerance parameter.
+> + ###### `epsilon` : float, optional
+    tolerance parameter. Give either `epsilon` or `keep`.
 > + ###### `simplify_algorithm` : str, optional
     Choose between `dp` and `vw`, for Douglas-Peucker or Visvalingam-Whyatt
     respectively. `vw` will only be selected if `simplify_with` is set to
@@ -375,6 +386,12 @@ in the range of `0.0001` to `10`.
 > + ###### `inplace` : bool, optional
     If `True`, do operation inplace and return `None`.
     Default is `False`.
+> + ###### `keep` : float, optional
+    Instead of `epsilon`, the share of the vertices to keep, between `0` and
+    `1`: the inner vertices of the arcs that Douglas-Peucker removes last are
+    kept, the ends of the arcs always. Uses Douglas-Peucker, whatever
+    `simplify_with`; with `prevent_oversimplify` a ring stays at least a
+    triangle.
 
 > #### Returns
 > + ###### object or None
