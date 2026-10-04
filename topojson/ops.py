@@ -1365,7 +1365,9 @@ def cart(arr):
 def hash_paths(paths):
     """
     Hash of each path that is the same for duplicate paths: equal coordinates in any
-    direction and, for a closed path, from any start.
+    direction and, for a closed path, from any start. The x and y values of a path are
+    hashed as multisets (the closing point of a closed path left out), together with
+    their number and whether the path is closed.
 
     Parameters
     ----------
@@ -1377,19 +1379,19 @@ def hash_paths(paths):
     numpy.ndarray
         int64 hash of each path
     """
-    hashes = []
-    for coordinates in paths:
-        # If start and end points are the same, remove end point before sorting
-        # Remark: check if it was originally a ring is not relevant, because lines with
-        # equal start and end point are no problem to be deduplicated with rings.
-        if np.array_equal(coordinates[0], coordinates[-1]):
-            coordinates = coordinates[0:-1]
-            coordinates = np.sort(coordinates, axis=0)
-            coordinates = np.append(coordinates[0:2], coordinates)
-        else:
-            coordinates = np.sort(coordinates, axis=0)
-        hashes.append(hash(bytes(coordinates)))
-    return np.array(hashes, dtype=np.int64)
+    if len(paths) == 0:
+        return np.empty(0, np.int64)
+    count = np.fromiter(map(len, paths), np.int64, len(paths))
+    xy = np.concatenate(paths).astype(float)
+    last = np.cumsum(count) - 1
+    closed = (count > 1) & (xy[last - count + 1] == xy[last]).all(axis=1)
+    keep = np.ones(len(xy), bool)
+    keep[last[closed]] = False
+    count -= closed
+    start = np.cumsum(count) - count
+    x, y = (_mix(np.ascontiguousarray(col).view(np.uint64)) for col in xy[keep].T)
+    x, y = np.add.reduceat(x, start), np.add.reduceat(y, start)
+    return _hash(x.view(np.int64), y.view(np.int64), count, closed)
 
 
 def find_duplicates(segments_list, type="array"):

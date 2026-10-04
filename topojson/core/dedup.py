@@ -72,6 +72,8 @@ class Dedup(Cut):
         else:
             array_bk = np.array([])
         array_bk_sarcs = None
+        array_bk_parts = array_bk
+        first_of_part = np.array([line[0] for line in data["linestrings"]])
         if len(data["bookkeeping_duplicates"]):
             array_bk, array_bk_sarcs = self._deduplicate(
                 data["bookkeeping_duplicates"], data["linestrings"], array_bk
@@ -103,6 +105,13 @@ class Dedup(Cut):
                         idx_merged_dups, data["linestrings"], array_bk
                     )
 
+        # without merges, an arc runs backward in a line where it starts elsewhere than
+        # the part it replaces; a line of one arc keeps it forward
+        if not self.options.shared_coords and array_bk.size:
+            array_bk = self._direct_arcs(
+                array_bk, array_bk_parts, first_of_part, data["linestrings"]
+            )
+
         # prepare to return object
         del data["bookkeeping_linestrings"]
         data["bookkeeping_arcs"] = lists_from_np_array(array_bk)
@@ -113,6 +122,22 @@ class Dedup(Cut):
             data["bookkeeping_shared_arcs"] = []
 
         return data
+
+    def _direct_arcs(self, array_bk, array_bk_parts, first_of_part, arcs):
+        """
+        Bookkeeping of arcs where an arc that runs against the part of the line it
+        replaces is written as ~index (backward).
+        """
+        valid = ~np.isnan(array_bk)
+        arc = array_bk[valid].astype(np.int64)
+        part = array_bk_parts[valid].astype(np.int64)
+        first_of_arc = np.array([line[0] for line in arcs])
+        forward = (first_of_arc[arc] == first_of_part[part]).all(axis=1)
+        n_arcs = valid.sum(axis=1)
+        forward |= np.repeat(n_arcs == 1, n_arcs)
+        directed = array_bk.copy()
+        directed[valid] = np.where(forward, arc, ~arc)
+        return directed
 
     def _find_merged_linestring(self, data, no_ndp_arcs, ndp_arcs, ndp_arcs_bk):
         """

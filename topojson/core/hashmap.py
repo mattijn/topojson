@@ -354,8 +354,10 @@ class Hashmap(Dedup):
             arcs_in_geom = copy.copy(self._data[bk_objects][geom])
             for idx_arc, arc_ref in enumerate(arcs_in_geom):
                 arc_ids = self._data[bk_element][arc_ref]
-                # check if the shared arcs in geom should be backward
-                if len(arc_ids) > 1 and key != "coordinates":
+                # check if the shared arcs in geom should be backward; without merges
+                # Dedup has set the direction already
+                merged = self.options.shared_coords
+                if len(arc_ids) > 1 and key != "coordinates" and merged:
                     self._inner = True if idx_arc > 0 else False
                     arc_ids = self._backward_arcs(arc_ids)
 

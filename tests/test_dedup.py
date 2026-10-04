@@ -46,7 +46,8 @@ def test_dedup_two_polygon_reversed_shared_arc():
 
     assert len(topo["bookkeeping_duplicates"]) == 0
     assert topo["bookkeeping_shared_arcs"] == [2]
-    assert topo["bookkeeping_arcs"] == [[2, 0], [1, 2]]
+    # the shared arc 2 runs backward in the first polygon
+    assert topo["bookkeeping_arcs"] == [[~2, 0], [1, 2]]
 
 
 def test_dedup_duplicate_polygon_no_junctions():
