@@ -7,7 +7,7 @@
 
 # Encode spatial data as topology in Python!
 
-Topojson is a library that is capable of creating a topojson encoded format of merely any spatial object in Python.
+Topojson is a library that is capable of creating a topojson encoded format of nearly any spatial object in Python.
 
 With topojson it is possible to reduce the size of your spatial data. Mostly by orders of magnitude. It is able to do so through:
 
@@ -31,16 +31,22 @@ _Click on the image to go the Notebook Viewer with code-snippets how these image
 
 ## Installation
 
-Installation can be done through PyPI by the following command:
+Topojson is available on PyPI and conda-forge:
 
-```
-python -m pip install topojson
+```bash
+pip install topojson
 ```
 
-And through conda using the following command:
+In a project managed with [uv](https://docs.astral.sh/uv/):
 
+```bash
+uv add topojson
 ```
-conda install topojson -c conda-forge
+
+Or with conda:
+
+```bash
+conda install -c conda-forge topojson
 ```
 
 This package `topojson` has the following hard dependencies:
@@ -51,10 +57,10 @@ This package `topojson` has the following hard dependencies:
 Further, optional soft dependencies are:
 
 - `altair` - enlarge the experience by visualizing your TopoJSON output
-- `simplification` - more and quicker simplification options
+- `simplification` - Visvalingam-Whyatt in toposimplify, and a quicker Douglas-Peucker that does not prevent oversimplification
 - `geojson` - parse string input with GeoJSON data
 - `geopandas` - parse your TopoJSON output directly into a GeoDataFrame
-- `ipywidgets` + (lab)extension - make your life complete with the interactive experience
+- `ipywidgets` - make your life complete with the interactive experience
 
 ## Other resources
 
@@ -66,7 +72,7 @@ For a better understanding how the different included simplification algorithms 
 You can have a look to this blog post on [Line simplification algorithms](https://martinfleischmann.net/line-simplification-algorithms/).
 There you can find out that the `epsilon` value for `vw` is area-based and that the `epsilon` value for `dp` is distance-based.
 
-Also, if your source projection is in meters, than it is very likely that your `epsilon` value should be magnitudes larger than the examples on this page where the source projection is in degrees.
+Also, if your source projection is in meters, then it is very likely that your `epsilon` value should be magnitudes larger than in the examples of the documentation, where the source projection is in degrees.
 
 There is a [section](https://py.geocompx.org/04-geometry-operations#sec-simplification) on simplification in the book on '[Geocomputation with Python](https://py.geocompx.org/)' that describes toposimplification as follow:
 
