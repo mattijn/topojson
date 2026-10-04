@@ -129,8 +129,8 @@ class Dedup(Cut):
         replaces is written as ~index (backward).
         """
         valid = ~np.isnan(array_bk)
-        arc = array_bk[valid].astype(np.int64)
-        part = array_bk_parts[valid].astype(np.int64)
+        arc = array_bk[valid].astype(np.intp)
+        part = array_bk_parts[valid].astype(np.intp)
         first_of_arc = np.array([line[0] for line in arcs])
         forward = (first_of_arc[arc] == first_of_part[part]).all(axis=1)
         n_arcs = valid.sum(axis=1)
