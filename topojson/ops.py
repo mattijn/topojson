@@ -1185,6 +1185,45 @@ def simplify(
     return list_arcs
 
 
+def simplify_coverage(linestrings, polygons, epsilon, exterior_cw=None):
+    """
+    Simplify the rings of polygons together as a coverage, with GEOS
+    (`shapely.coverage_simplify`, Visvalingam-Whyatt): an edge shared by two polygons
+    is simplified once, so that they stay matched, and each ring keeps at least three
+    points. The polygons should form a valid coverage: no overlaps, and the vertices
+    of shared edges equal.
+
+    Parameters
+    ----------
+    linestrings : list of LineString
+        Rings and lines; the rings of the polygons are replaced in place
+    polygons : list of list of int
+        Index into `linestrings` of the rings of each polygon, exterior first
+    epsilon : float
+        Tolerance of `shapely.coverage_simplify`
+    exterior_cw : bool, optional
+        Orientation of the exterior rings in the result; `None` keeps it as is
+
+    Returns
+    -------
+    list of LineString
+        The linestrings, with the rings simplified
+    """
+    if not polygons:
+        return linestrings
+    rings = np.concatenate(polygons)
+    xy, ring = shapely.get_coordinates([linestrings[i] for i in rings], return_index=True)
+    polygon = np.repeat(np.arange(len(polygons)), [len(p) for p in polygons])
+    shapes = shapely.polygons(shapely.linearrings(xy, indices=ring), indices=polygon)
+    shapes = shapely.coverage_simplify(shapes, epsilon)
+    if exterior_cw is not None:
+        shapes = shapely.orient_polygons(shapes, exterior_cw=exterior_cw)
+    xy, ring = shapely.get_coordinates(shapely.get_rings(shapes), return_index=True)
+    for i, line in zip(rings.tolist(), shapely.linestrings(xy, indices=ring)):
+        linestrings[i] = line
+    return linestrings
+
+
 def restore_collapsed_rings(arcs, original, rings):
     """
     Put back vertices of the original arcs in rings that simplification reduced to

@@ -67,9 +67,14 @@ coordinates but foremost the computation of a topology.
     Default is `True`.
 > + ###### `simplify_with` : str
     Sets the package to use for simplifying (both pre- and toposimplify). Choose
-    between `shapely` or `simplification`. Shapely adopts solely Douglas-Peucker
-    and simplification both Douglas-Peucker and Visvalingam-Whyatt. The package
-    simplification is known to be quicker than shapely.
+    between `shapely`, `simplification` or `geos`. Shapely adopts solely
+    Douglas-Peucker and simplification both Douglas-Peucker and
+    Visvalingam-Whyatt. The package simplification is known to be quicker than
+    shapely. `geos` applies to presimplify only: it simplifies the polygons
+    together as a coverage (`shapely.coverage_simplify`, Visvalingam-Whyatt), so
+    that shared borders stay matched and each ring stays at least a triangle;
+    other lines are simplified with shapely. The polygons should form a valid
+    coverage (`shapely.coverage_is_valid`).
     Default is `shapely`.
 > + ###### `simplify_algorithm` : str
     Choose between `dp` and `vw`, for Douglas-Peucker or Visvalingam-Whyatt

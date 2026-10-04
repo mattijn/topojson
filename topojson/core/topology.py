@@ -86,9 +86,14 @@ class Topology(Hashmap):
         Default is `True`.
     simplify_with : str
         Sets the package to use for simplifying (both pre- and toposimplify). Choose
-        between `shapely` or `simplification`. Shapely adopts solely Douglas-Peucker
-        and simplification both Douglas-Peucker and Visvalingam-Whyatt. The package
-        simplification is known to be quicker than shapely.
+        between `shapely`, `simplification` or `geos`. Shapely adopts solely
+        Douglas-Peucker and simplification both Douglas-Peucker and
+        Visvalingam-Whyatt. The package simplification is known to be quicker than
+        shapely. `geos` applies to presimplify only: it simplifies the polygons
+        together as a coverage (`shapely.coverage_simplify`, Visvalingam-Whyatt), so
+        that shared borders stay matched and each ring stays at least a triangle;
+        other lines are simplified with shapely. The polygons should form a valid
+        coverage (`shapely.coverage_is_valid`).
         Default is `shapely`.
     simplify_algorithm : str
         Choose between `dp` and `vw`, for Douglas-Peucker or Visvalingam-Whyatt
@@ -527,6 +532,12 @@ class Topology(Hashmap):
             result.options.prevent_oversimplify = prevent_oversimplify
         if simplify_with in ["shapely", "simplification"]:
             result.options.simplify_with = simplify_with
+        if "geos" in (simplify_with, result.options.simplify_with):
+            raise ValueError(
+                "simplify_with='geos' simplifies polygons as a coverage and applies to "
+                "presimplify; toposimplify simplifies arcs, use 'shapely' or "
+                "'simplification'"
+            )
         if simplify_algorithm in ["dp", "vw"]:
             result.options.simplify_algorithm = simplify_algorithm
 
