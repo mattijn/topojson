@@ -2,6 +2,8 @@
 import copy
 import pprint
 
+import numpy as np
+
 from shapely import geometry
 from shapely.errors import ShapelyError
 from shapely.ops import linemerge
@@ -15,6 +17,7 @@ from ..ops import shared_path_ends
 from ..ops import shared_path_ends_on_grid
 from ..utils import serialize_as_svg
 from ..ops import simplify
+from ..ops import simplify_coverage
 from .extract import Extract
 
 
@@ -129,19 +132,39 @@ class Join(Extract):
         # presimplify linestrings if required
         if self.options.presimplify > 0:
             # set default if not specifically given in the options
-            if isinstance(type(self.options.presimplify), bool):
+            if isinstance(self.options.presimplify, bool):
                 simplify_factor = 2
             else:
                 simplify_factor = self.options.presimplify
 
-            data["linestrings"] = simplify(
-                data["linestrings"],
-                simplify_factor,
-                algorithm=self.options.simplify_algorithm,
-                package=self.options.simplify_with,
-                input_as="linestring",
-                prevent_oversimplify=self.options.prevent_oversimplify,
-            )
+            if self.options.simplify_with == "geos":
+                # polygons together as a coverage, the other lines one by one
+                lines = data["linestrings"]
+                polygons = _polygon_rings(data["objects"], data["bookkeeping_geoms"])
+                order = self.options.winding_order
+                exterior_cw = None if order is None else order == "CW_CCW"
+                simplify_coverage(lines, polygons, simplify_factor, exterior_cw)
+                ring = np.zeros(len(lines), bool)
+                ring[[i for p in polygons for i in p]] = True
+                rest = np.flatnonzero(~ring)
+                simple = simplify(
+                    [lines[i] for i in rest],
+                    simplify_factor,
+                    package="shapely",
+                    input_as="linestring",
+                    prevent_oversimplify=self.options.prevent_oversimplify,
+                )
+                for i, line in zip(rest.tolist(), simple):
+                    lines[i] = line
+            else:
+                data["linestrings"] = simplify(
+                    data["linestrings"],
+                    simplify_factor,
+                    algorithm=self.options.simplify_algorithm,
+                    package=self.options.simplify_with,
+                    input_as="linestring",
+                    prevent_oversimplify=self.options.prevent_oversimplify,
+                )
 
         # compute the bounding box of input geometry
         lsbs = bounds(data["linestrings"])
@@ -284,3 +307,15 @@ class Join(Extract):
             p1_g2 = geometry.Point([g2.xy[0][0], g2.xy[1][0]])
             ls_p1_g1g2 = geometry.LineString([p1_g1, p1_g2])
             self._segments.extend([[ls_p1_g1g2]])
+
+
+def _polygon_rings(objects, bookkeeping_geoms):
+    """Index of the rings of each polygon in the extracted objects, also inside
+    geometry collections."""
+    polygons = []
+    for obj in objects.values() if isinstance(objects, dict) else objects:
+        if obj.get("type") == "GeometryCollection":
+            polygons += _polygon_rings(obj.get("geometries", []), bookkeeping_geoms)
+        elif obj.get("type") in ("Polygon", "MultiPolygon"):
+            polygons += [bookkeeping_geoms[b] for b in obj.get("arcs") or []]
+    return polygons

@@ -844,3 +844,45 @@ def test_topology_toposimplify_keeps_rings_a_triangle():
     assert collapsed(topo.toposimplify(2)) == collapsed(topo) == 1
     # without prevent_oversimplify, small islands collapse
     assert collapsed(topo.toposimplify(2, prevent_oversimplify=False)) > 1
+
+
+def test_topology_presimplify_geos_keeps_shared_borders():
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    topo = topojson.Topology(data, presimplify=1, simplify_with="geos")
+    geoms = topo.to_gdf().geometry.values
+    # no shared border is lost (simplifying lines one by one, they drift apart)
+    assert len(topo.output["arcs"]) >= len(topojson.Topology(data).output["arcs"])
+    assert shapely.coverage_is_valid(geoms)
+    assert shapely.get_num_coordinates(geoms).sum() < 0.5 * len(
+        shapely.get_coordinates(data.geometry.values)
+    )
+
+
+def test_topology_presimplify_geos_lines_and_points():
+    data = geopandas.GeoDataFrame(
+        geometry=[
+            geometry.Polygon([(0, 0), (10, 0), (10, 10), (0, 10)]),
+            geometry.Polygon([(10, 0), (20, 0), (20, 10), (10, 10)]),
+            geometry.LineString([(0, 0), (5, 1), (10, 0), (15, 1), (20, 0)]),
+            geometry.Point(3, 3),
+        ]
+    )
+    out = topojson.Topology(
+        data, presimplify=2, simplify_with="geos", prequantize=False
+    ).to_gdf()
+    types = ["Polygon", "Polygon", "LineString", "Point"]
+    assert out.geometry.geom_type.tolist() == types
+    assert shapely.get_num_coordinates(out.geometry.iloc[2]) == 3
+
+
+def test_topology_toposimplify_geos_raises():
+    data = geopandas.read_file("tests/files_shapefile/static_nybb.gpkg")
+    with pytest.raises(ValueError, match="presimplify"):
+        topojson.Topology(data).toposimplify(10, simplify_with="geos")
+
+
+def test_topology_presimplify_true_uses_default_factor():
+    data = geopandas.read_file("tests/files_shapefile/static_natural_earth.gpkg")
+    default = topojson.Topology(data, presimplify=True).to_dict()
+    assert default == topojson.Topology(data, presimplify=2).to_dict()
+    assert default != topojson.Topology(data, presimplify=1).to_dict()
