@@ -77,8 +77,10 @@ The documentation page is build upon Github Pages. To build the documentation pa
 Afterwards and consequently run the following command from within the `docs` folder:
 
 ```bash
-bundle exec jekyll serve --baseurl ''
+PAGES_REPO_NWO=mattijn/topojson bundle exec jekyll serve --baseurl ''
 ```
+
+`PAGES_REPO_NWO` names the repository, which the theme needs outside GitHub. If `bundle install` fails, the `github-pages` gem may not support the newest Ruby yet; use an earlier Ruby.
 
 **Note:** On Windows, a Windows Defender Firewall dialog can popup. Click allow access to give permission.
 
@@ -93,4 +95,10 @@ The charts on the example pages are Vega-Lite specifications in `docs/json`. The
 
 ```bash
 python generate/make-docs-charts.py
+```
+
+The lens on the overview page draws the arcs of Africa with the weight of each vertex, from `docs/json/lens_africa.json`; to update it:
+
+```bash
+python generate/make-docs-lens.py
 ```
