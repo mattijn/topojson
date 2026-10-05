@@ -25,6 +25,100 @@ figure.lens canvas {
   touch-action: pan-y;
 }
 
+// to_widget in the browser, with Pyodide (docs/js/widget.js)
+figure.widget {
+  --widget-line: #27272a;
+  --widget-faint: #d4d4d8;
+  --widget-edge: #71717a;
+  --widget-track: #e4e4e7;
+  --widget-accent: #fdf3e1;
+  position: relative;
+  max-width: 560px;
+  margin: 1rem 0 1.5rem;
+}
+
+figure.widget canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 5 / 4;
+}
+
+figure.widget .widget-cover {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  aspect-ratio: 5 / 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+figure.widget .widget-start {
+  font: inherit;
+  font-size: 14px;
+  padding: 0.45rem 1rem;
+  border: 1px solid var(--widget-line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--widget-line);
+  cursor: pointer;
+}
+
+figure.widget .widget-start:hover:not(:disabled) {
+  background: var(--widget-accent);
+}
+
+figure.widget .widget-start:disabled {
+  cursor: progress;
+  border-color: var(--widget-edge);
+  color: var(--widget-edge);
+}
+
+figure.widget .widget-note,
+figure.widget .widget-status {
+  font-size: 12px;
+  color: var(--widget-edge);
+}
+
+figure.widget .widget-controls {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 13px;
+  color: var(--widget-line);
+}
+
+figure.widget:not(.live) .widget-controls {
+  opacity: 0.45;
+}
+
+figure.widget .widget-row {
+  display: grid;
+  grid-template-columns: 6rem 1fr 3rem;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+}
+
+figure.widget .widget-row input {
+  width: 100%;
+  accent-color: var(--widget-line);
+}
+
+figure.widget .widget-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+figure.widget .widget-call {
+  justify-self: start;
+  font-size: 12px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 // the steps on the page How it works (docs/js/steps.js)
 figure.steps {
   --steps-plate: #ffffff;
