@@ -403,6 +403,11 @@ topo.to_widget()
 ```
 <img src="{{site.baseurl}}/images/africa_ipywidget.gif" alt="IPyWidget Africa">
 
+**Try it in your browser.** Here topojson runs in your browser, in [Pyodide](https://pyodide.org) (Python in WebAssembly). The slider _keep_ sets the share of the vertices that Douglas-Peucker keeps (`toposimplify(keep=...)`); below it is the tolerance `epsilon` that gives the same result.
+
+<figure class="widget" data-src="{{site.baseurl}}/json/lens_africa.json"><canvas role="img" aria-label="The arcs of Africa, simplified and quantized by topojson in the browser"></canvas></figure>
+<script src="{{site.baseurl}}/js/widget.js" defer></script>
+
 **Note:** `prevent_oversimplify` is set to `False` since the Douglas-Peucker algorithm within `simplification` can not prevent oversimplification.
 
 Custom slider options can be set using the `slider_toposimplify` and `slider_topoquantize` parameter settings. 
