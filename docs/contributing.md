@@ -1,17 +1,11 @@
----
-layout: default
-title: Contributing
-nav_order: 6
----
 
 # Contribute
-{: .no_toc}
 
 
 Contributions are much welcome for the documentation and for defects. Defects means here both behavior not conforming the specification and missing but desirable features. The following two sections describes the process that I use for code development and documentation writing.
 
-1. TOC
-{:toc}
+1. [Contribution for the Python Package](#contribution-for-the-python-package)
+2. [Contribution for the Documentation](#contribution-for-the-documentation)
 
 * * *
 
@@ -29,80 +23,63 @@ For contributions, use the following guidelines:
 
 4. A Pull Request triggers the Continuous Integration tests on the main GitHub repository and only after passing these tests a PR can be merged into main by the maintainer.
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Note to self 📝
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
-From a clone of the repository, an environment with [uv](https://docs.astral.sh/uv/) including the optional dependencies and the test tools:
+!!! note "Note to self"
 
-```bash
-uv venv --python 3.13
-uv pip install -e ".[dev]" pytest
-uv run pytest tests
-```
+    From a clone of the repository, an environment with [uv](https://docs.astral.sh/uv/) including the optional dependencies and the test tools:
 
-The code is linted and formatted with [ruff](https://docs.astral.sh/ruff/), as configured in `pyproject.toml`; CI checks both:
+    ```bash
+    uv venv --python 3.13
+    uv pip install -e ".[dev]" pytest
+    uv run pytest tests
+    ```
 
-```bash
-uvx ruff check
-uvx ruff format
-```
+    The code is linted and formatted with [ruff](https://docs.astral.sh/ruff/), as configured in `pyproject.toml`; CI checks both:
 
-The public API (`Topology`) is typed, and CI checks the types with mypy, also from the side of a user (`tests/typing_api.py`):
+    ```bash
+    uvx ruff check
+    uvx ruff format
+    ```
 
-```bash
-uv run --with mypy mypy topojson tests/typing_api.py
-```
+    The public API (`Topology`) is typed, and CI checks the types with mypy, also from the side of a user (`tests/typing_api.py`):
 
-Or install the package including optional dependencies directly from the GitHub repository using:
+    ```bash
+    uv run --with mypy mypy topojson tests/typing_api.py
+    ```
 
-```bash
-pip install "topojson[dev] @ git+https://github.com/mattijn/topojson.git"
-```
+    Or install the package including optional dependencies directly from the GitHub repository using:
 
-Or partly using conda:
-```bash
-conda create -n topo_dev
-conda activate topo_dev
-conda install flit codecov pytest ruff
-conda install numpy shapely geojson pyshp fiona geopandas altair ipywidgets
-pip install simplification
-```
+    ```bash
+    pip install "topojson[dev] @ git+https://github.com/mattijn/topojson.git"
+    ```
 
-</div>
-</div>
+    Or partly using conda:
+    ```bash
+    conda create -n topo_dev
+    conda activate topo_dev
+    conda install flit codecov pytest ruff
+    conda install numpy shapely geojson pyshp fiona geopandas altair ipywidgets
+    pip install simplification
+    ```
+
+
 
 
 * * * 
 
 ## Contribution for the Documentation
 
-The documentation page is build upon Github Pages. To build the documentation page locally, make sure you have installed:
-1. Ruby 
-- On MacOS this can be done using `brew install ruby`.
-- On Windows you should follow instructions on [https://rubyinstaller.org/downloads/](https://rubyinstaller.org/downloads/). 
-
-2. Dependencies GitHub Pages
-- Enter the `docs` directory from this repository on cmd and run `bundle install` to install all required (sub)dependencies that are mentioned in the `Gemfile`.
-
-Afterwards and consequently run the following command from within the `docs` folder:
+The documentation is built with [Zensical](https://zensical.org) from the Markdown in the `docs` folder, as configured in `zensical.toml`, and published to GitHub Pages by the workflow `docs`. To build it locally, install the documentation tools (next to the optional dependencies, which the examples use) and serve it from the root of the repository:
 
 ```bash
-PAGES_REPO_NWO=mattijn/topojson bundle exec jekyll serve --baseurl ''
+uv pip install -e ".[dev,docs]"
+zensical serve
 ```
 
-`PAGES_REPO_NWO` names the repository, which the theme needs outside GitHub. If `bundle install` fails, the `github-pages` gem may not support the newest Ruby yet; use an earlier Ruby.
+The server address is shown in the terminal, and a change in the Markdown is shown directly.
 
-**Note:** On Windows, a Windows Defender Firewall dialog can popup. Click allow access to give permission.
+The examples on the example pages and How it works run while the site is built ([markdown-exec](https://pawamoy.github.io/markdown-exec/)), so the output below them is that of the current code. Examples that write or read files, or draw in a notebook, are shown and not run.
 
-
-The server address is shown in cmd. Any changes you make in the Markdown documentation is directly reflected on this website.
-
-The _API reference_ documentation is created using `pydocmd`. The created markdown is subsequently changed to align with the style of this page. 
-
-All of this happens from the Jupyter Notebook available in the `generate` folder. PydocMd should be [installed](https://github.com/NiklasRosenstein/pydoc-markdown) (using version `2.X`) and available from cmd to run all cells in the notebook successfully.
+The _API reference_ is created from the docstrings and type annotations in the code by [mkdocstrings](https://mkdocstrings.github.io/): a page such as `docs/api/topojson.core.topology.md` holds only `::: topojson.core.topology`.
 
 The charts on the example pages are Vega-Lite specifications in `docs/json`. They are created by running the examples of these pages; to update them, run from the root of the repository:
 

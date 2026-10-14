@@ -1,0 +1,82 @@
+# The documentation, built with Zensical: zensical serve
+[project]
+site_name = "topojson"
+site_url = "https://mattijn.github.io/topojson/"
+site_description = "Encode spatial data as topology in Python"
+repo_url = "https://github.com/mattijn/topojson"
+repo_name = "mattijn/topojson"
+site_dir = "site"
+extra_css = ["css/figures.css"]
+nav = [
+  { "Overview" = "index.md" },
+  { "Installation" = "installation.md" },
+  { "Example usage" = [
+    "example/index.md",
+    { "Types of input data" = "example/input-types.md" },
+    { "Settings and tuning" = "example/settings-tuning.md" },
+    { "Retrieval data types" = "example/output-types.md" },
+    { "Incremental updates" = "example/incremental-updates.md" },
+    { "Quantization" = "example/quantization.md" },
+  ] },
+  { "How it works" = "how-it-works.md" },
+  { "API reference" = [
+    "api/index.md",
+    { "topojson.core.topology" = "api/topojson.core.topology.md" },
+    { "topojson.core.extract" = "api/topojson.core.extract.md" },
+    { "topojson.core.join" = "api/topojson.core.join.md" },
+    { "topojson.core.cut" = "api/topojson.core.cut.md" },
+    { "topojson.core.dedup" = "api/topojson.core.dedup.md" },
+    { "topojson.core.hashmap" = "api/topojson.core.hashmap.md" },
+    { "topojson.utils" = "api/topojson.utils.md" },
+    { "topojson.ops" = "api/topojson.ops.md" },
+  ] },
+  { "Contributing" = "contributing.md" },
+]
+
+[project.theme]
+language = "en"
+favicon = "favicon.ico"
+features = [
+  "content.code.copy",
+  "navigation.footer",
+  "navigation.indexes",
+  "navigation.sections",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+  "toc.follow",
+]
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to light mode"
+
+[project.markdown_extensions]
+admonition = {}
+attr_list = {}
+md_in_html = {}
+toc.permalink = true
+pymdownx.highlight.pygments_lang_class = true
+pymdownx.inlinehilite = {}
+pymdownx.superfences = {}
+pymdownx.tabbed.alternate_style = true
+
+[project.plugins.markdown-exec]
+
+[project.plugins.mkdocstrings.handlers.python]
+paths = ["."]
+options.docstring_style = "numpy"
+options.show_source = false
+options.show_root_heading = false
+options.members_order = "source"
+options.separate_signature = true
+options.show_signature_annotations = true
+options.filters = ["!^_"]

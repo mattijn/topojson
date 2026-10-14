@@ -1,12 +1,44 @@
----
-layout: default
-title: Quantization
-parent: Example usage
-nav_order: 5
----
 
 # Quantization
-{: .no_toc}
+
+```python exec="on" session="examplequantization"
+import threading
+from concurrent.futures import ThreadPoolExecutor
+
+import markdown_exec._internal.formatters.python as _python
+
+# Zensical renders pages in parallel threads; GDAL and PROJ (geopandas) crash when
+# they are used from more than one thread, so every example runs on one thread
+with _python.__dict__.setdefault("_one_thread_lock", threading.Lock()):
+    if not hasattr(_python, "_one_thread"):
+        _python._one_thread = ThreadPoolExecutor(max_workers=1)
+        _run = _python.exec_python
+
+        def _exec_python(*args, **kwargs):
+            return _python._one_thread.submit(_run, *args, **kwargs).result()
+
+        _python.exec_python = _exec_python
+
+import numpy as np
+import topojson as tp
+
+
+class _Drawing:
+    def __getattr__(self, name):
+        return lambda *args, **kwargs: self
+
+    __or__ = __and__ = __add__ = lambda self, other: self
+
+
+for _name in ["to_alt", "to_svg", "to_widget"]:
+    setattr(tp.Topology, _name, lambda self, *args, **kwargs: _Drawing())
+try:
+    import geopandas
+
+    geopandas.GeoDataFrame.plot = property(lambda self: lambda *a, **k: _Drawing())
+except ImportError:
+    pass
+```
 
 By default, a Topology snaps all coordinates to a grid of integers before it computes
 the topology (`prequantize`). Borders that are almost equal become exactly equal, so
@@ -14,8 +46,12 @@ shared paths are found reliably, and the integer coordinates are stored as small
 differences (delta encoding). This page shows what the grid looks like and how to
 choose it yourself.
 
-1. TOC
-{:toc}
+1. [The grid](#the-grid)
+2. [The cells follow the bounding box](#the-cells-follow-the-bounding-box)
+3. [Choose the grid yourself](#choose-the-grid-yourself)
+4. [One grid for several topologies](#one-grid-for-several-topologies)
+5. [prequantize and topoquantize](#prequantize-and-topoquantize)
+6. [What quantization does not do](#what-quantization-does-not-do)
 
 * * *
 
@@ -41,27 +77,32 @@ the nearest point of the grid, which gives the quantized line (dashed). On the l
 the grid of `prequantize=5`, on the right a grid with square cells of 2 (see
 [square cells](#square-cells)):
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
+!!! example
 
-```python
-import topojson as tp
-from shapely.geometry import LineString
 
-line = LineString([(0, 1), (2.6, 4.6), (5.3, 3.9), (7.1, 6), (9.6, 0), (12, 3.4)])
-topo = tp.Topology(line, prequantize=5)
-topo.output["transform"]
-```
-<pre class="code_no_highlight">
-{'scale': [3.0, 1.5], 'translate': [0.0, 0.0]}
-</pre>
-<figure class="parts" data-src="{{site.baseurl}}/json/fig_quantization_snap.json" data-label="A line snapped to prequantize=5 and to square cells of 2"><svg></svg></figure>
-</div>
-</div>
+    ```python
+    import topojson as tp
+    from shapely.geometry import LineString
+
+    line = LineString([(0, 1), (2.6, 4.6), (5.3, 3.9), (7.1, 6), (9.6, 0), (12, 3.4)])
+    topo = tp.Topology(line, prequantize=5)
+    topo.output["transform"]
+    ```
+
+    ```python exec="on" session="examplequantization" result="text"
+    import topojson as tp
+    from shapely.geometry import LineString
+
+    line = LineString([(0, 1), (2.6, 4.6), (5.3, 3.9), (7.1, 6), (9.6, 0), (12, 3.4)])
+    topo = tp.Topology(line, prequantize=5)
+    _ = topo.output["transform"]
+    if isinstance(_, dict):
+        print(__import__('pprint').pformat(_, sort_dicts=False, width=88))
+    else:
+        print(_)
+    ```
+    <figure class="parts" data-src="../../json/fig_quantization_snap.json" data-label="A line snapped to prequantize=5 and to square cells of 2"><svg></svg></figure>
+
 
 * * *
 
@@ -75,47 +116,51 @@ and 1.5 high. A vertex can move up to half a cell, so up to 1.5 along `x` and on
 The same happens with real data. Mainland Chile is 12.6° wide and 38.4° high, so its
 cells are about three times higher than wide:
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
+!!! example
 
-```python
-import geopandas as gpd
 
-countries = gpd.read_file(
-    "https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/"
-    "ne_50m_admin_0_countries.geojson"
-)
-chile = countries.query("name == 'Chile'")[["name", "geometry"]]
-chile = chile.clip((-80, -60, -60, -15))  # the mainland, without Easter Island
+    ```python
+    import geopandas as gpd
 
-topo = tp.Topology(chile)
-topo.output["transform"]
-```
-<pre class="code_no_highlight">
-{'scale': [0.00012553787647251398, 0.0003838602839153395],
- 'translate': [-78.98945312499993, -55.891699218750006]}
-</pre>
-</div>
-</div>
+    countries = gpd.read_file(
+        "https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/"
+        "ne_50m_admin_0_countries.geojson"
+    )
+    chile = countries.query("name == 'Chile'")[["name", "geometry"]]
+    chile = chile.clip((-80, -60, -60, -15))  # the mainland, without Easter Island
+
+    topo = tp.Topology(chile)
+    topo.output["transform"]
+    ```
+
+    ```python exec="on" session="examplequantization" result="text"
+    import geopandas as gpd
+
+    countries = gpd.read_file(
+        "https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/"
+        "ne_50m_admin_0_countries.geojson"
+    )
+    chile = countries.query("name == 'Chile'")[["name", "geometry"]]
+    chile = chile.clip((-80, -60, -60, -15))  # the mainland, without Easter Island
+
+    topo = tp.Topology(chile)
+    _ = topo.output["transform"]
+    if isinstance(_, dict):
+        print(__import__('pprint').pformat(_, sort_dicts=False, width=88))
+    else:
+        print(_)
+    ```
+
 
 Halfway Chile (36.7°S), that is a cell of 11 m east-west by 42 m north-south. On a
 coarse grid (`prequantize=40`) the difference is easy to see. On the left the grid
 from the bounding box, on the right a grid with square cells (see
 [below](#square-cells)):
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
-<figure class="parts" data-src="{{site.baseurl}}/json/fig_quantization_cells.json" data-label="Chile on the grid of its bounding box and on square cells"><svg></svg></figure>
-</div>
-</div>
+!!! example
+
+    <figure class="parts" data-src="../../json/fig_quantization_cells.json" data-label="Chile on the grid of its bounding box and on square cells"><svg></svg></figure>
+
 
 The bounding box also depends on all features. With Easter Island, more than 3,500 km
 to the west, Chile is 43° wide, and the cells become 0.00043° wide: 3.4 times coarser
@@ -150,31 +195,39 @@ topo = tp.Topology(line, prequantize={"scale": [2, 2], "translate": [0, 0]})
 For data in degrees, a cell is square on the ground when `kx = ky / cos(latitude)`.
 For Chile, at its middle latitude, with cells of about 44 m:
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
+!!! example
 
-```python
-import numpy as np
 
-x0, y0, x1, y1 = chile.total_bounds
-k = 0.0004  # about 44 m north-south
-square = {
-    "scale": [k / np.cos(np.radians((y0 + y1) / 2)), k],
-    "translate": [x0, y0],
-}
-topo = tp.Topology(chile, prequantize=square)
-topo.output["transform"]
-```
-<pre class="code_no_highlight">
-{'scale': [0.0004988853914682203, 0.0004],
- 'translate': [-78.98945312499993, -55.891699218750006]}
-</pre>
-</div>
-</div>
+    ```python
+    import numpy as np
+
+    x0, y0, x1, y1 = chile.total_bounds
+    k = 0.0004  # about 44 m north-south
+    square = {
+        "scale": [k / np.cos(np.radians((y0 + y1) / 2)), k],
+        "translate": [x0, y0],
+    }
+    topo = tp.Topology(chile, prequantize=square)
+    topo.output["transform"]
+    ```
+
+    ```python exec="on" session="examplequantization" result="text"
+    import numpy as np
+
+    x0, y0, x1, y1 = chile.total_bounds
+    k = 0.0004  # about 44 m north-south
+    square = {
+        "scale": [k / np.cos(np.radians((y0 + y1) / 2)), k],
+        "translate": [x0, y0],
+    }
+    topo = tp.Topology(chile, prequantize=square)
+    _ = topo.output["transform"]
+    if isinstance(_, dict):
+        print(__import__('pprint').pformat(_, sort_dicts=False, width=88))
+    else:
+        print(_)
+    ```
+
 
 A long country spans many latitudes, so the cells are square only near the middle;
 to the south they become narrower on the ground, to the north wider.
@@ -185,32 +238,35 @@ With the cell size and corner of a raster, the integer coordinates are the corne
 of its pixels. Polygons derived from the raster, or drawn on top of it, then follow
 its cells exactly:
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
+!!! example
 
-```python
-from shapely.geometry import box
 
-# a raster of 1 m cells, 400 rows, with its top-left corner at (155000, 463000)
-left, top, cell, rows = 155000, 463000, 1.0, 400
-grid = {"scale": [cell, cell], "translate": [left, top - rows * cell]}
+    ```python
+    from shapely.geometry import box
 
-parcel = gpd.GeoDataFrame(geometry=[box(155010.3, 462900.7, 155120.2, 462990.4)])
-tp.Topology(parcel, prequantize=grid).to_gdf().geometry[0].exterior.coords[:]
-```
-<pre class="code_no_highlight">
-[(155120.0, 462901.0),
- (155120.0, 462990.0),
- (155010.0, 462990.0),
- (155010.0, 462901.0),
- (155120.0, 462901.0)]
-</pre>
-</div>
-</div>
+    # a raster of 1 m cells, 400 rows, with its top-left corner at (155000, 463000)
+    left, top, cell, rows = 155000, 463000, 1.0, 400
+    grid = {"scale": [cell, cell], "translate": [left, top - rows * cell]}
+
+    parcel = gpd.GeoDataFrame(geometry=[box(155010.3, 462900.7, 155120.2, 462990.4)])
+    tp.Topology(parcel, prequantize=grid).to_gdf().geometry[0].exterior.coords[:]
+    ```
+
+    ```python exec="on" session="examplequantization" result="text"
+    from shapely.geometry import box
+
+    # a raster of 1 m cells, 400 rows, with its top-left corner at (155000, 463000)
+    left, top, cell, rows = 155000, 463000, 1.0, 400
+    grid = {"scale": [cell, cell], "translate": [left, top - rows * cell]}
+
+    parcel = gpd.GeoDataFrame(geometry=[box(155010.3, 462900.7, 155120.2, 462990.4)])
+    _ = tp.Topology(parcel, prequantize=grid).to_gdf().geometry[0].exterior.coords[:]
+    if isinstance(_, dict):
+        print(__import__('pprint').pformat(_, sort_dicts=False, width=88))
+    else:
+        print(_)
+    ```
+
 
 ### Different precision per axis
 
@@ -225,7 +281,7 @@ keeps the distance to the metre and the level to the centimetre.
 Topologies computed on the same grid have exactly the same integer coordinates where
 their inputs meet, also when they are computed separately: for example a layer of
 countries and a layer of provinces, or a job that runs every day (see
-[incremental updates](incremental-updates.html)). Take the transform of the first and
+[incremental updates](incremental-updates.md)). Take the transform of the first and
 pass it to the others:
 
 ```python
@@ -234,7 +290,7 @@ topo = tp.Topology(countries, prequantize=grid)
 ```
 
 When the inputs are in one Topology (a list of objects, see
-[input types](input-types.html)), they share one grid already.
+[input types](input-types.md)), they share one grid already.
 
 * * *
 
@@ -244,22 +300,23 @@ When the inputs are in one Topology (a list of objects, see
 finished topology on a coarser grid, to make the file smaller; it takes a number
 and derives the grid from the bounding box, as `prequantize` does:
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
+!!! example
 
-```python
-topo = tp.Topology(chile)
-len(topo.to_json()), len(topo.topoquantize(1e4).to_json())
-```
-<pre class="code_no_highlight">
-(21960, 18093)
-</pre>
-</div>
-</div>
+
+    ```python
+    topo = tp.Topology(chile)
+    len(topo.to_json()), len(topo.topoquantize(1e4).to_json())
+    ```
+
+    ```python exec="on" session="examplequantization" result="text"
+    topo = tp.Topology(chile)
+    _ = len(topo.to_json()), len(topo.topoquantize(1e4).to_json())
+    if isinstance(_, dict):
+        print(__import__('pprint').pformat(_, sort_dicts=False, width=88))
+    else:
+        print(_)
+    ```
+
 
 A fine `prequantize` and a coarser `topoquantize` keep the topology exact and the
 output small.
@@ -275,26 +332,28 @@ the fine grid as well.
 Below, the line on a fine grid with cells of 1 (dots, blue), put on a coarser grid
 (lines, dashed). A vertex is filled when it lies on a point of the fine grid:
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
+!!! example
 
-```python
-topo = tp.Topology(line, prequantize={"scale": [1, 1], "translate": [0, 0]})
-left = topo.topoquantize(6)
-right = topo.topoquantize({"scale": [3, 3], "translate": [0, 0]})
-left.output["transform"], right.output["transform"]
-```
-<pre class="code_no_highlight">
-({'scale': [2.4, 1.2], 'translate': [0.0, 0.0]},
- {'scale': [3.0, 3.0], 'translate': [0.0, 0.0]})
-</pre>
-<figure class="parts" data-src="{{site.baseurl}}/json/fig_quantization_nested.json" data-label="The line on a coarse grid from the bounding box and on nested cells of 3"><svg></svg></figure>
-</div>
-</div>
+
+    ```python
+    topo = tp.Topology(line, prequantize={"scale": [1, 1], "translate": [0, 0]})
+    left = topo.topoquantize(6)
+    right = topo.topoquantize({"scale": [3, 3], "translate": [0, 0]})
+    left.output["transform"], right.output["transform"]
+    ```
+
+    ```python exec="on" session="examplequantization" result="text"
+    topo = tp.Topology(line, prequantize={"scale": [1, 1], "translate": [0, 0]})
+    left = topo.topoquantize(6)
+    right = topo.topoquantize({"scale": [3, 3], "translate": [0, 0]})
+    _ = left.output["transform"], right.output["transform"]
+    if isinstance(_, dict):
+        print(__import__('pprint').pformat(_, sort_dicts=False, width=88))
+    else:
+        print(_)
+    ```
+    <figure class="parts" data-src="../../json/fig_quantization_nested.json" data-label="The line on a coarse grid from the bounding box and on nested cells of 3"><svg></svg></figure>
+
 
 Versions of the same data at several levels of detail then line up exactly, and the
 output can be put on a grid with a meaning, such as 1 m, instead of one that follows
@@ -310,35 +369,45 @@ the gap between `a1` and `a2` (0.04) is closed on a grid with cells of 0.1, whil
 smaller gap between `b1` and `b2` (0.02) stays open, because 1.04 rounds to 10 and
 1.06 to 11. The figure zooms in on the gaps:
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
+!!! example
 
-```python
-rectangles = gpd.GeoDataFrame(
-    {"name": ["a1", "a2", "b1", "b2"]},
-    geometry=[
-        box(0, 0, 1.0, 1),         # a1 and a2: a gap of 0.04
-        box(1.04, 0, 2, 1),
-        box(0, 1.2, 1.04, 2.2),    # b1 and b2: a gap of 0.02
-        box(1.06, 1.2, 2, 2.2),
-    ],
-)
-topo = tp.Topology(rectangles, prequantize=21)
-[g["arcs"] for g in topo.output["objects"]["data"]["geometries"]]
-```
-<pre class="code_no_highlight">
-[[[0, -2]], [[1, 2]], [[3]], [[4]]]
-</pre>
 
-`a1` and `a2` share arc `1` (`-2` is arc `1` reversed); `b1` and `b2` share nothing.
+    ```python
+    rectangles = gpd.GeoDataFrame(
+        {"name": ["a1", "a2", "b1", "b2"]},
+        geometry=[
+            box(0, 0, 1.0, 1),         # a1 and a2: a gap of 0.04
+            box(1.04, 0, 2, 1),
+            box(0, 1.2, 1.04, 2.2),    # b1 and b2: a gap of 0.02
+            box(1.06, 1.2, 2, 2.2),
+        ],
+    )
+    topo = tp.Topology(rectangles, prequantize=21)
+    [g["arcs"] for g in topo.output["objects"]["data"]["geometries"]]
+    ```
 
-<figure class="parts" data-src="{{site.baseurl}}/json/fig_quantization_gap.json" data-label="A gap of 0.04 that closes and a gap of 0.02 that stays open"><svg></svg></figure>
-</div>
-</div>
+    ```python exec="on" session="examplequantization" result="text"
+    rectangles = gpd.GeoDataFrame(
+        {"name": ["a1", "a2", "b1", "b2"]},
+        geometry=[
+            box(0, 0, 1.0, 1),         # a1 and a2: a gap of 0.04
+            box(1.04, 0, 2, 1),
+            box(0, 1.2, 1.04, 2.2),    # b1 and b2: a gap of 0.02
+            box(1.06, 1.2, 2, 2.2),
+        ],
+    )
+    topo = tp.Topology(rectangles, prequantize=21)
+    _ = [g["arcs"] for g in topo.output["objects"]["data"]["geometries"]]
+    if isinstance(_, dict):
+        print(__import__('pprint').pformat(_, sort_dicts=False, width=88))
+    else:
+        print(_)
+    ```
+
+    `a1` and `a2` share arc `1` (`-2` is arc `1` reversed); `b1` and `b2` share nothing.
+
+    <figure class="parts" data-src="../../json/fig_quantization_gap.json" data-label="A gap of 0.04 that closes and a gap of 0.02 that stays open"><svg></svg></figure>
+
 
 Quantization takes away small differences in coordinates that should be equal, such
 as floating point noise. To close gaps, clean the input first, for example with
@@ -350,4 +419,4 @@ point or a line, without area. Such a ring is dropped: a small island from its
 keeps its properties, with an empty (`null`) geometry. Choose a grid that is fine
 enough for the smallest features you want to keep.
 
-<script src="{{site.baseurl}}/js/steps.js" defer></script>
+<script src="../../js/steps.js" defer></script>

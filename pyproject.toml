@@ -25,6 +25,11 @@ dev = [
     "altair", 
     "ipywidgets"    
 ]
+docs = [
+    "zensical",
+    "mkdocstrings-python",
+    "markdown-exec",
+]
 
 [project.urls]
 Documentation = "https://mattijn.github.io/topojson"

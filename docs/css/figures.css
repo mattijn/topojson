@@ -1,14 +1,4 @@
-// .nav-list .nav-list-item > .nav-list {
-//   display: block !important;
-// }
-
-.code_no_highlight {
-  font-size: 0.75em;
-  padding-left: 0.75rem;
-  padding-bottom: 0.75rem;  
-  line-height: 1.4rem;
-} 
-// the lens on the overview page (docs/js/lens.js)
+/* the lens on the overview page (docs/js/lens.js) */
 figure.lens {
   --lens-line: #27272a;
   --lens-ring: #c9d6e8;
@@ -24,8 +14,7 @@ figure.lens canvas {
   cursor: crosshair;
   touch-action: pan-y;
 }
-
-// to_widget in the browser, with Pyodide (docs/js/widget.js)
+/* to_widget in the browser, with Pyodide (docs/js/widget.js) */
 figure.widget {
   --widget-line: #27272a;
   --widget-faint: #d4d4d8;
@@ -118,8 +107,7 @@ figure.widget .widget-call {
   white-space: normal;
   overflow-wrap: anywhere;
 }
-
-// the steps on the page How it works (docs/js/steps.js)
+/* the steps on the page How it works (docs/js/steps.js) */
 figure.steps {
   --steps-plate: #ffffff;
   --steps-accent: #fdf8ee;
@@ -159,4 +147,42 @@ figure.steps .steps-label,
 figure.parts .steps-label {
   font-family: inherit;
   font-size: var(--steps-font, 12px);
+}
+
+.md-typeset figure.lens,
+.md-typeset figure.steps,
+.md-typeset figure.parts,
+.md-typeset figure.widget {
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+.md-typeset figure.lens { margin-left: auto; margin-right: auto; }
+
+/* dark mode (scheme slate) */
+[data-md-color-scheme="slate"] figure.lens {
+  --lens-line: #e4e4e7;
+  --lens-ring: #4b5d78;
+  --lens-grid: #2a3445;
+}
+[data-md-color-scheme="slate"] figure.steps,
+[data-md-color-scheme="slate"] figure.parts {
+  --steps-plate: #1f2129;
+  --steps-accent: #2e2a22;
+  --steps-fill-a: #2a2d37;
+  --steps-fill-b: #3a3224;
+  --steps-hi: #e4e4e7;
+  --steps-edge: #a1a1aa;
+  --steps-mid: #71717a;
+  --steps-lo: #4a4b55;
+}
+[data-md-color-scheme="slate"] figure.widget {
+  --widget-line: #e4e4e7;
+  --widget-faint: #4a4b55;
+  --widget-edge: #a1a1aa;
+  --widget-track: #3f3f46;
+  --widget-accent: #3a3224;
+}
+[data-md-color-scheme="slate"] figure.widget .widget-start {
+  background: var(--md-default-bg-color);
 }
