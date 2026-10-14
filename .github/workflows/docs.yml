@@ -26,6 +26,25 @@ jobs:
         run: |
           zensical build --clean --strict 2>&1 | tee build.log
           ! grep -B2 -A20 "exited with errors" build.log
+      # every relative src, href and data-src points to a file of the site, as a plain
+      # static server (GitHub Pages) resolves it
+      - name: Check the references
+        shell: python
+        run: |
+          import posixpath, re, sys
+          from pathlib import Path
+
+          broken = []
+          for page in Path("site").rglob("*.html"):
+              base = posixpath.dirname(page.relative_to("site").as_posix())
+              for ref in re.findall(r'(?:href|src|data-src)="([^"#?]+)', page.read_text()):
+                  if re.match(r"(https?:|mailto:|//|data:|javascript:|/)", ref):
+                      continue
+                  target = Path("site", posixpath.normpath(posixpath.join(base, ref)))
+                  if not (target.is_file() or (target / "index.html").is_file()):
+                      broken.append(f"{page}: {ref}")
+          print("\n".join(broken))
+          sys.exit(bool(broken))
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

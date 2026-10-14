@@ -88,7 +88,7 @@ Default is `True`.
     ])
     data
     ```
-    <figure class="parts" data-src="../../json/fig_settings_topology_input.json" data-label="Two squares that share a side"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_settings_topology_input.json" data-label="Two squares that share a side"><svg></svg></figure>
 
     By setting `topology=False` a TopoJSON structured file format is created without considering shared segments (the setting `prequantize=False` avoids computing the delta-encoding):
     ```python
@@ -106,11 +106,11 @@ Default is `True`.
 
     When doing the same with `topology=True`, there are three `arcs`. Where one arc is referenced two times, namely arc `2` (arc `-3` is arc `2` reversed).
     ```python
-    tp.Topology(data, topology=False, prequantize=False)
+    tp.Topology(data, topology=True, prequantize=False)
     ```
 
     ```python exec="on" session="examplesettings-tuning" result="text"
-    _ = tp.Topology(data, topology=False, prequantize=False)
+    _ = tp.Topology(data, topology=True, prequantize=False)
     if isinstance(_, dict):
         print(__import__('pprint').pformat(_, sort_dicts=False, width=88))
     else:
@@ -173,7 +173,7 @@ and how to choose it yourself.
     ])
     data
     ```
-    <figure class="parts" data-src="../../json/fig_settings_prequantize_input.json" data-label="Two squares with a gap between them"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_settings_prequantize_input.json" data-label="Two squares with a gap between them"><svg></svg></figure>
 
     The `prequantize` option is defined as an integer number. It can be best understand as a value that defines the size of a rectangular grid, with the bottom left coordinate at `(0,0)`. Next, the `x`-numbers and `y`-numbers of all coordinates are independency scaled and shifted on this rectangular grid (normalization on range). Here it is shown for the `x`-numbers only:
     ```python
@@ -259,7 +259,7 @@ and how to choose it yourself.
     topo = tp.Topology(data, prequantize=33)
     topo.to_svg()
     ```
-    <figure class="parts" data-src="../../json/fig_settings_prequantize_33.json" data-label="The arcs after prequantize=33: the squares share a side"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_settings_prequantize_33.json" data-label="The arcs after prequantize=33: the squares share a side"><svg></svg></figure>
 
     Two polygons of a different size, quantized on the same fixed grid of `0.01`:
     ```python
@@ -482,7 +482,7 @@ considered shared when all coordinates appear in both paths
     ])
     data
     ```
-    <figure class="parts" data-src="../../json/fig_settings_shared_coords_input.json" data-label="Two lines that partly overlap"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_settings_shared_coords_input.json" data-label="Two lines that partly overlap"><svg></svg></figure>
 
     The setting `shared_coords=True` adopts a strategy of `coords-connected`, meaning it will split only when coordinates are detected in both linestrings. Here we show it as SVG, with each derived segment/arc plotted separately.
 
@@ -501,7 +501,7 @@ considered shared when all coordinates appear in both paths
         prequantize=False
     ).to_svg(separate=True)
     ```
-    <figure class="parts" data-src="../../json/fig_settings_shared_coords_true.json" data-label="The arcs with shared_coords=True"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_settings_shared_coords_true.json" data-label="The arcs with shared_coords=True"><svg></svg></figure>
     Arc 2 (20 5, 10 5) is the shared segment. 
 
     When using the setting `shared_coords=False` a `path-connected` strategy is adopted, meaning it will split also when paths are overlapping without having common coordinates.
@@ -521,7 +521,7 @@ considered shared when all coordinates appear in both paths
         prequantize=False
     ).to_svg(separate=True)
     ```
-    <figure class="parts" data-src="../../json/fig_settings_shared_coords_false.json" data-label="The arcs with shared_coords=False"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_settings_shared_coords_false.json" data-label="The arcs with shared_coords=False"><svg></svg></figure>
     Arcs 2 (5 0, 10 0) and 4 (20 5, 10 5) are shared segments. 
 
 
@@ -557,7 +557,7 @@ Default is `True`.
     circle = geometry.Point(0, 0).buffer(1)
     circle
     ```
-    <figure class="parts" data-src="../../json/fig_settings_prevent_oversimplify_input.json" data-label="A circle"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_settings_prevent_oversimplify_input.json" data-label="A circle"><svg></svg></figure>
 
     ```python
     # force simplification
@@ -594,7 +594,7 @@ Default is `True`.
         prevent_oversimplify=True
     ).to_svg()
     ```
-    <figure class="parts" data-src="../../json/fig_settings_prevent_oversimplify.json" data-label="The circle simplified without and with prevent_oversimplify"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_settings_prevent_oversimplify.json" data-label="The circle simplified without and with prevent_oversimplify"><svg></svg></figure>
 
 
 
@@ -756,7 +756,7 @@ rings and clockwise for interior rings. Default is `CW_CCW`.
     })
     data
     ```
-    <figure class="parts" data-src="../../json/fig_settings_winding_order_input.json" data-label="A square"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_settings_winding_order_input.json" data-label="A square"><svg></svg></figure>
 
     Continue with defining two Topology objects, one with the outer rings clock wise and the inner rings counter clockwise (`CW_CCW`) and one with the outer rings counter clock wise and the inner rings clock wise (`CCW_CW`).
 
@@ -882,4 +882,4 @@ window.addEventListener("DOMContentLoaded", event => {
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@6"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@6"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>
-<script src="../../js/steps.js" defer></script>
+<script src="../js/steps.js" defer></script>

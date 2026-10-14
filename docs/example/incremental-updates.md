@@ -47,7 +47,7 @@ sides are cut (8 arcs). After `remove(D)` they merge again:
     ```text
     (5, 8, 5)
     ```
-    <figure class="parts" data-src="../../json/fig_incremental_add_remove.json" data-label="Add a square that shares two sides, then remove it"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_incremental_add_remove.json" data-label="Add a square that shares two sides, then remove it"><svg></svg></figure>
 
 
 * * *
@@ -81,7 +81,7 @@ hash of the input geometry of each feature.
     ```text
     {'added': 1, 'removed': 1, 'changed': 1, 'unchanged': 2}
     ```
-    <figure class="parts" data-src="../../json/fig_incremental_sync.json" data-label="A next run that drops A, changes C and adds E"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_incremental_sync.json" data-label="A next run that drops A, changes C and adds E"><svg></svg></figure>
 
     The same on a larger set, 40 features of which 5 are gone, 5 are new and one has
     changed:
@@ -127,4 +127,4 @@ hash of the input geometry of each feature.
   the start on the same grid. After `remove` on its own, a ring can start at
   another vertex, and the bbox can differ by up to half a grid cell.
 
-<script src="../../js/steps.js" defer></script>
+<script src="../js/steps.js" defer></script>

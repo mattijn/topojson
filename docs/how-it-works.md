@@ -90,7 +90,7 @@ The following example data is used to clarify the steps:
         [(15, 0), (15, 5), (5, 5), (0, 5)]
     ])
     ```
-    <figure class="parts" data-src="../json/steps.json" data-step="toy"><svg></svg></figure>
+    <figure class="parts" data-src="json/steps.json" data-step="toy"><svg></svg></figure>
 
     Line 0 starts bottom-left and goes with a zig-zag to top-right. Line 1 starts bottom-right and goes up and then leftwards. Resulting in a shared segment for the two linestrings in opposite directions.
 
@@ -103,7 +103,7 @@ The following example data is used to clarify the steps:
 
 The first step is Extract. 
 
-<figure class="steps" data-src="../json/steps.json" data-step="extract"><svg></svg></figure>
+<figure class="steps" data-src="json/steps.json" data-step="extract"><svg></svg></figure>
 
 This class instance is determines the geometrical type of input data (eg. `dict`, `geojson.FeatureCollection`, `geopandas.GeoDataFrame`), and based on the type it extracts all geometric entities as `shapely.geometry.LineString`'s or `shapely.geometry.Point`'s and stores them in a top-level object with references in each geometric entity.
 
@@ -143,7 +143,7 @@ Target objectives:
 
     Each line on its own:
 
-    <figure class="parts" data-src="../json/steps.json" data-step="extract"><svg></svg></figure>
+    <figure class="parts" data-src="json/steps.json" data-step="extract"><svg></svg></figure>
 
 
 
@@ -153,7 +153,7 @@ Target objectives:
 
 The second step is Join. The Join class pass the data first _down_ towards the Extract class, before starting the Join phase. 
 
-<figure class="steps" data-src="../json/steps.json" data-step="join"><svg></svg></figure>
+<figure class="steps" data-src="json/steps.json" data-step="join"><svg></svg></figure>
 
    - Quantization of input linestrings if necessary
    - Identifies junctions of shared paths
@@ -192,7 +192,7 @@ How the junctions are found depends on the quantization. On a quantized grid (th
 
     Each line on its own, with the junctions:
 
-    <figure class="parts" data-src="../json/steps.json" data-step="join"><svg></svg></figure>
+    <figure class="parts" data-src="json/steps.json" data-step="join"><svg></svg></figure>
 
 
 * * *
@@ -201,7 +201,7 @@ How the junctions are found depends on the quantization. On a quantized grid (th
 
 The third step is Cut. The Cut class passes the data first _down_ towards the Extract and subsequently Join class, before starting the Cut phase. 
 
-<figure class="steps" data-src="../json/steps.json" data-step="cut"><svg></svg></figure>
+<figure class="steps" data-src="json/steps.json" data-step="cut"><svg></svg></figure>
 
    - Split linestrings given the junctions of shared paths
    - Identifies indexes of linestrings that are duplicates
@@ -242,7 +242,7 @@ On a quantized grid all lines are cut at once (`ops.cut_lines_on_grid`): a ring 
 
     Each part on its own:
 
-    <figure class="parts" data-src="../json/steps.json" data-step="cut"><svg></svg></figure>
+    <figure class="parts" data-src="json/steps.json" data-step="cut"><svg></svg></figure>
 
 
 * * *
@@ -251,7 +251,7 @@ On a quantized grid all lines are cut at once (`ops.cut_lines_on_grid`): a ring 
 
 The fourth step is Dedup. The Dedup class passes the data first _down_ towards the Extract and subsequently Join and Cut class, before starting the Dedup phase.
 
-<figure class="steps" data-src="../json/steps.json" data-step="dedup"><svg></svg></figure>
+<figure class="steps" data-src="json/steps.json" data-step="dedup"><svg></svg></figure>
 
    - Deduplication of linestrings that contain duplicates
    - Direction of each arc in each line (with `shared_coords=False`, the default)
@@ -292,7 +292,7 @@ The fourth step is Dedup. The Dedup class passes the data first _down_ towards t
 
     Each arc on its own; arc 2 is used by both lines:
 
-    <figure class="parts" data-src="../json/steps.json" data-step="dedup"><svg></svg></figure>
+    <figure class="parts" data-src="json/steps.json" data-step="dedup"><svg></svg></figure>
 
 
 * * *
@@ -301,7 +301,7 @@ The fourth step is Dedup. The Dedup class passes the data first _down_ towards t
 
 The fifth step is Hashmap. The Hashmap class passes the data first _down_ towards the Extract and subsequently Join, Cut and Dedup class, before starting the Hashmap phase.
 
-<figure class="steps" data-src="../json/steps.json" data-step="hashmap"><svg></svg></figure>
+<figure class="steps" data-src="json/steps.json" data-step="hashmap"><svg></svg></figure>
 
    - Resolves bookkeeping results to object arcs.
 
@@ -340,7 +340,7 @@ The fifth step is Hashmap. The Hashmap class passes the data first _down_ toward
 
 The sixth and last step is Topology. The Topology class passes the data first _down_ towards the Extract and subsequently Join, Cut, Dedup and Hashmap class, before starting the Topology phase.
 
-<figure class="steps" data-src="../json/steps.json" data-step="topology"><svg></svg></figure>
+<figure class="steps" data-src="json/steps.json" data-step="topology"><svg></svg></figure>
 
    - Applies all custom settings and output functions.
 
@@ -374,11 +374,11 @@ The sixth and last step is Topology. The Topology class passes the data first _d
 
     The arcs, by number:
 
-    <figure class="parts" data-src="../json/steps.json" data-step="topology"><svg></svg></figure>
+    <figure class="parts" data-src="json/steps.json" data-step="topology"><svg></svg></figure>
 
 
 
 * * * 
 The names are borrowed from the JavaScript variant of TopoJSON, to establish a certain synergy between the packages, even though the code differs significant (and sometimes even the TopoJSON output).
 
-<script src="../js/steps.js" defer></script>
+<script src="js/steps.js" defer></script>
