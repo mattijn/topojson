@@ -104,7 +104,7 @@ Default is `True`.
     ```
     As can be seen, the geometries are referenced by two segments (`'arcs': [[0], [1]]`), where each segment is a single linestring (see: `arcs`).
 
-    When doing the same with `topology=True`, there are three `arcs`. Where one arc is referenced two times, namely arc `2` (arc `-3` is arc `2` reversed).
+    When doing the same with `topology=True`, there are four `arcs`. The shared side is one arc, referenced by both lines: arc `3` by the second line and `-4` by the first (arc `-4` is arc `3` reversed).
     ```python
     tp.Topology(data, topology=True, prequantize=False)
     ```
