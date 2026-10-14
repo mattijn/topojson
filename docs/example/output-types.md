@@ -50,6 +50,7 @@ Multiple functions are available to serialize the Topology object. All of them a
 | topojson.Topology().to_geojson()    | Shapely, NumPy                                                          |
 | topojson.Topology().to_alt()    | Shapely, NumPy, _Altair\*_                                                |
 | topojson.Topology().to_gdf()    | Shapely, NumPy, _GeoPandas\*_                                             |
+| topojson.Topology().to_polars() | Shapely, NumPy, _Polars\*_                                                |
 | topojson.Topology().to_widget() | Shapely, NumPy, _Altair*_, _Simplification\*_, _ipywidgets*_ |
 
 _\* optional dependencies_
@@ -62,7 +63,8 @@ _\* optional dependencies_
 4. [.to_geojson()](#to_geojson)
 5. [.to_alt()](#to_alt)
 6. [.to_gdf()](#to_gdf)
-7. [.to_widget()](#to_widget)
+7. [.to_polars()](#to_polars)
+8. [.to_widget()](#to_widget)
 
 
 * * *
@@ -356,6 +358,46 @@ Serialize the Topology object into a GeoPandas GeoDataFrame. This destroys the T
     <figure class="parts" data-src="../json/fig_output_to_gdf.json" data-label="The polygons of Africa as a GeoDataFrame"><svg></svg></figure>
 
 
+
+* * * 
+
+## .to_polars()
+
+Serialize the Topology object into a Polars DataFrame: the id and the properties as
+columns, and the geometry as WKB in the column `geometry`, as
+[polars-st](https://github.com/oreilles/polars-st) stores it. With a CRS that has an
+EPSG code, from the input or given with `crs`, the WKB is EWKB with this code as SRID,
+so that polars-st knows the CRS. Polars is an optional dependency and not
+automatically installed. The ids of the features are the column `id`, so ids that went
+in (a column `id` of a Polars DataFrame, the index of a GeoDataFrame, the ids of
+GeoJSON features) come out as they went in. As with `to_gdf()`, `object_name` selects
+the object.
+
+!!! example
+
+    ```python
+    import polars_st as st
+    import topojson as tp
+
+    data = tp.utils.example_data_africa()
+    topo = tp.Topology(data)
+
+    # this requires the (optional!) package Polars, here with polars-st
+    gdf = st.GeoDataFrame(topo.to_polars(crs="EPSG:4326"))
+    print(gdf.select("name", "pop_est", st.geom().st.to_wkt()).head(3))
+    ```
+
+    ```python exec="on" session="exampleoutput-types" result="text"
+    import polars_st as st
+    import topojson as tp
+
+    data = tp.utils.example_data_africa()
+    topo = tp.Topology(data)
+
+    # this requires the (optional!) package Polars, here with polars-st
+    gdf = st.GeoDataFrame(topo.to_polars(crs="EPSG:4326"))
+    print(gdf.select("name", "pop_est", st.geom().st.to_wkt()).head(3))
+    ```
 
 * * * 
 

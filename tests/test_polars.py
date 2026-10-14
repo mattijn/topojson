@@ -66,3 +66,64 @@ def test_polars_list_of_dataframes():
 def test_polars_without_geometry():
     with pytest.raises(ValueError, match="WKB"):
         tp.Topology(pl.DataFrame({"name": ["abc"]}))
+
+
+# to_polars: the id and the properties as columns, the geometry as WKB, the same
+# geometries as to_gdf
+def test_to_polars():
+    pytest.importorskip("geopandas")
+    frame = pl.DataFrame({"name": ["abc", "def"]}).with_columns(squares())
+    topo = tp.Topology(frame)
+    out = topo.to_polars()
+
+    assert out.columns == ["id", "name", "geometry"]
+    assert out.schema["geometry"] == pl.Binary
+    assert list(shapely.from_wkb(out["geometry"].to_numpy())) == list(
+        topo.to_gdf().geometry
+    )
+
+
+# the CRS of the input, or the one given, is the SRID of the EWKB
+def test_to_polars_srid():
+    def srids(out):
+        return shapely.get_srid(shapely.from_wkb(out["geometry"].to_numpy())).tolist()
+
+    topo = tp.Topology(squares(srid=28992).to_frame())
+
+    assert srids(topo.to_polars()) == [28992, 28992]
+    assert srids(topo.to_polars(crs="EPSG:4326")) == [4326, 4326]
+    assert srids(tp.Topology(squares().to_frame()).to_polars()) == [0, 0]
+
+
+# a feature without geometry left (a ring that collapses on the grid) is null
+def test_to_polars_null_geometry():
+    data = [shapely.Polygon([(0, 0), (1e-9, 0), (0, 1e-9)]), shapely.box(0, 0, 10, 10)]
+    out = tp.Topology(data, prequantize=10).to_polars()
+
+    assert out["geometry"].is_null().to_list() == [True, False]
+
+
+# the ids of a column id come out as they went in: as ids, not as a property
+def test_polars_ids_in_and_out():
+    pytest.importorskip("geopandas")
+    frame = pl.DataFrame({"id": [10, 20], "name": ["abc", "def"]}).with_columns(
+        squares()
+    )
+    topo = tp.Topology(frame)
+    geometries = topo.to_dict()["objects"]["data"]["geometries"]
+
+    assert [g["id"] for g in geometries] == [10, 20]
+    assert [g["properties"] for g in geometries] == [{"name": "abc"}, {"name": "def"}]
+    assert topo.to_gdf().index.tolist() == [10, 20]
+    assert topo.to_polars().select("id", "name").equals(frame.select("id", "name"))
+
+
+# duplicate ids raise, as in a FeatureCollection; ignore_index numbers the features
+def test_polars_duplicate_ids():
+    frame = pl.DataFrame({"id": [1, 1], "name": ["abc", "def"]}).with_columns(squares())
+
+    with pytest.raises(IndexError, match="ignore_index"):
+        tp.Topology(frame)
+    out = tp.Topology(frame, ignore_index=True).to_polars()
+    assert out["id"].to_list() == [0, 1]
+    assert out.columns == ["id", "name", "geometry"]

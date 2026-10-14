@@ -404,6 +404,59 @@ def serialize_as_geodataframe(fc, crs=None):
     )
 
 
+def _srid(crs):
+    """The EPSG code of a CRS as integer (SRID), or `None` if it has none."""
+    if crs is None or isinstance(crs, bool):
+        return None
+    if isinstance(crs, int):
+        return crs
+    if isinstance(crs, str):
+        authority, _, code = crs.partition(":")
+        return int(code) if authority.upper() == "EPSG" and code.isdigit() else None
+    to_epsg = getattr(crs, "to_epsg", None)  # pyproj.CRS, as of a GeoDataFrame
+    return to_epsg() if to_epsg is not None else None
+
+
+def serialize_as_polars(fc, crs=None):
+    """
+    Convert a GeoJSON FeatureCollection into a Polars DataFrame: the id, the
+    properties as columns and the geometry as WKB in the column `geometry`, as
+    polars-st stores it. With a CRS that has an EPSG code, the WKB is EWKB with this
+    code as SRID.
+
+    Parameters
+    ----------
+    fc : dict
+        a complete object representing a GeoJSON file
+    crs : str, int, pyproj.CRS
+        coordinate reference system of the geometries, such as `"EPSG:4326"`.
+        Default is `None`.
+
+    Returns
+    -------
+    polars.DataFrame
+        topojson object parsed as Polars DataFrame
+    """
+    import polars as pl
+    import shapely
+    from shapely.geometry import shape
+
+    features = fc["features"]
+    geoms = np.array(
+        [shape(f["geometry"]) if f["geometry"] else None for f in features],
+        dtype=object,
+    )
+    srid = _srid(crs)
+    if srid is not None:
+        geoms = shapely.set_srid(geoms, srid)
+    wkb = shapely.to_wkb(geoms, include_srid=srid is not None)
+    rows = [{"id": f["id"], **f["properties"]} for f in features]
+    return pl.from_dicts(rows, infer_schema_length=None).with_columns(
+        # a list, as a null geometry makes the array one of objects
+        pl.Series("geometry", wkb.tolist(), dtype=pl.Binary)
+    )
+
+
 def serialize_as_svg(topo_object, separate=False, include_junctions=False):
     from IPython.display import SVG, display
     from shapely import geometry
