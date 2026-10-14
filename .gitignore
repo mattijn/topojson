@@ -65,11 +65,7 @@ instance/
 .scrapy
 
 # mkdocs documentation
-docs/_build/
-docs/_site
-docs/.sass-cache
 /site
-docs/Gemfile.lock
 
 # PyBuilder
 target/

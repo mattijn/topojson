@@ -1,84 +1,122 @@
----
-layout: default
-title: Settings and tuning
-parent: Example usage
-nav_order: 2
----
 
 # Settings and tuning
-{: .no_toc}
+
+```python exec="on" session="examplesettings-tuning"
+import threading
+from concurrent.futures import ThreadPoolExecutor
+
+import markdown_exec._internal.formatters.python as _python
+
+# Zensical renders pages in parallel threads; GDAL and PROJ (geopandas) crash when
+# they are used from more than one thread, so every example runs on one thread
+with _python.__dict__.setdefault("_one_thread_lock", threading.Lock()):
+    if not hasattr(_python, "_one_thread"):
+        _python._one_thread = ThreadPoolExecutor(max_workers=1)
+        _run = _python.exec_python
+
+        def _exec_python(*args, **kwargs):
+            return _python._one_thread.submit(_run, *args, **kwargs).result()
+
+        _python.exec_python = _exec_python
+
+import numpy as np
+import topojson as tp
+
+
+class _Drawing:
+    def __getattr__(self, name):
+        return lambda *args, **kwargs: self
+
+    __or__ = __and__ = __add__ = lambda self, other: self
+
+
+for _name in ["to_alt", "to_svg", "to_widget"]:
+    setattr(tp.Topology, _name, lambda self, *args, **kwargs: _Drawing())
+try:
+    import geopandas
+
+    geopandas.GeoDataFrame.plot = property(lambda self: lambda *a, **k: _Drawing())
+except ImportError:
+    pass
+```
 
 By adopting the TopoJSON format is possible to store geographical data as topology. Adopting this approach makes smaller files than its GeoJSON counterpart. This process allows varies options, which are described below:
 
-1. TOC
-{:toc}
+1. [topology](#topology)
+2. [prequantize](#prequantize)
+3. [topoquantize](#topoquantize)
+4. [presimplify](#presimplify)
+5. [toposimplify](#toposimplify)
+6. [shared_coords](#shared_coords)
+7. [prevent_oversimplify](#prevent_oversimplify)
+8. [simplify_with](#simplify_with)
+9. [simplify_algorithm](#simplify_algorithm)
+10. [winding_order](#winding_order)
+11. [object_name](#object_name)
+12. [ignore_index](#ignore_index)
 
 * * * 
 
 ## topology
 
 boolean
-{: .text-delta}
 Specify if the topology should be computed for deriving the TopoJSON.
 Default is `True`.
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
+!!! example
 
-Given the following two linestrings with one side sharing:
-```python
-import topojson as tp
-from shapely import geometry
 
-data = geometry.MultiLineString([
-    [[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]], 
-    [[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]
-])
-data
-```
-<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_topology_input.json" data-label="Two squares that share a side"><svg></svg></figure>
+    Given the following two linestrings with one side sharing:
+    ```python
+    import topojson as tp
+    from shapely import geometry
 
-By setting `topology=False` a TopoJSON structured file format is created without considering shared segments (the setting `prequantize=False` avoids computing the delta-encoding):
-```python
-tp.Topology(data, topology=False, prequantize=False)
-```
-<pre class="code_no_highlight">
-Topology(
-{'arcs': [[[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.0, 0.0]],
-          [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0], [1.0, 0.0]]],
- 'bbox': (0.0, 0.0, 2.0, 1.0),
- 'coordinates': [],
- 'objects': {'data': {'geometries': [{<strong>'arcs': [[0], [1]]</strong>,
-                                      'type': 'MultiLineString'}],
-                      'type': 'GeometryCollection'}},
- 'type': 'Topology'}
-)
-</pre>
-As can be seen, the geometries are referenced by two segments (`'arcs': [[0], [1]]`), where each segment is a single linestring (see: `arcs`).
+    data = geometry.MultiLineString([
+        [[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]], 
+        [[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]
+    ])
+    data
+    ```
 
-When doing the same with `topology=True`, there are three `arcs`. Where one arc is referenced two times, namely arc `2` (arc `-3` is arc `2` reversed).
-```python
-tp.Topology(data, topology=False, prequantize=False)
-```
-<pre class="code_no_highlight">
-Topology(
-{'arcs': [[[1.0, 1.0], [0.0, 1.0], [0.0, 0.0], [1.0, 0.0]],
-          [[1.0, 0.0], [2.0, 0.0], [2.0, 1.0], [1.0, 1.0]],
-          [[1.0, 1.0], [1.0, 0.0]]],
- 'bbox': (0.0, 0.0, 2.0, 1.0),
- 'coordinates': [],
- 'objects': {'data': {'geometries': [{<strong>'arcs': [[-3, 0], [1, 2]]</strong>,
-                                      'type': 'MultiLineString'}],
-                      'type': 'GeometryCollection'}},
- 'type': 'Topology'}
-)
-</pre>
-</div>
-</div>
+    ```python exec="on" session="examplesettings-tuning"
+    import topojson as tp
+    from shapely import geometry
+
+    data = geometry.MultiLineString([
+        [[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]], 
+        [[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]
+    ])
+    data
+    ```
+    <figure class="parts" data-src="../../json/fig_settings_topology_input.json" data-label="Two squares that share a side"><svg></svg></figure>
+
+    By setting `topology=False` a TopoJSON structured file format is created without considering shared segments (the setting `prequantize=False` avoids computing the delta-encoding):
+    ```python
+    tp.Topology(data, topology=False, prequantize=False)
+    ```
+
+    ```python exec="on" session="examplesettings-tuning" result="text"
+    _ = tp.Topology(data, topology=False, prequantize=False)
+    if isinstance(_, dict):
+        print(__import__('pprint').pformat(_, sort_dicts=False, width=88))
+    else:
+        print(_)
+    ```
+    As can be seen, the geometries are referenced by two segments (`'arcs': [[0], [1]]`), where each segment is a single linestring (see: `arcs`).
+
+    When doing the same with `topology=True`, there are three `arcs`. Where one arc is referenced two times, namely arc `2` (arc `-3` is arc `2` reversed).
+    ```python
+    tp.Topology(data, topology=False, prequantize=False)
+    ```
+
+    ```python exec="on" session="examplesettings-tuning" result="text"
+    _ = tp.Topology(data, topology=False, prequantize=False)
+    if isinstance(_, dict):
+        print(__import__('pprint').pformat(_, sort_dicts=False, width=88))
+    else:
+        print(_)
+    ```
+
 
 
 <!-- **Note:** The following figure is here to test if interactivity is possible
@@ -91,7 +129,6 @@ Topology(
 ## prequantize
 
 boolean, int, dict
-{: .text-delta}
 
 If the prequantization parameter is specified, the input geometry is 
 quantized prior to computing the topology. The returned topology is 
@@ -107,156 +144,187 @@ Instead of a factor, a TopoJSON transform can be given as a dict,
 `{"scale": [kx, ky], "translate": [x0, y0]}`. The grid is then fixed and does not
 depend on the bounding box of the input, so topologies of different inputs (or of
 different runs) share the same grid. This is what
-[incremental updates](incremental-updates.html) build on.
-See [quantization](quantization.html) for how the grid follows the bounding box
+[incremental updates](incremental-updates.md) build on.
+See [quantization](quantization.md) for how the grid follows the bounding box
 and how to choose it yourself.
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
+!!! example
 
-Quantization is a two-step process, namely normalization and delta-encoding. Given the following two polygon with no sides shared, since the left-polygon has a x-max coordinate at `0.97` and the right-polygon has a x-min coordinate at `1.03`:
-```python
-import topojson as tp
-from shapely import geometry
 
-data = geometry.MultiLineString([
-    [[0, 0], [0.97, 0], [0.97, 1], [0, 1], [0, 0]], 
-    [[1.03, 0], [2, 0], [2, 1], [1.03, 1], [1.03, 0]]
-])
-data
-```
-<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_prequantize_input.json" data-label="Two squares with a gap between them"><svg></svg></figure>
+    Quantization is a two-step process, namely normalization and delta-encoding. Given the following two polygon with no sides shared, since the left-polygon has a x-max coordinate at `0.97` and the right-polygon has a x-min coordinate at `1.03`:
+    ```python
+    import topojson as tp
+    from shapely import geometry
 
-The `prequantize` option is defined as an integer number. It can be best understand as a value that defines the size of a rectangular grid, with the bottom left coordinate at `(0,0)`. Next, the `x`-numbers and `y`-numbers of all coordinates are independency scaled and shifted on this rectangular grid (normalization on range). Here it is shown for the `x`-numbers only:
-```python
-# get the x-numbers of all coordinates
-x = np.array([ls.xy[0] for ls in data])
-print(f'x:\n{x}')
-```
-<pre class="code_no_highlight">
-x:
-[[0.   0.97 0.97 0.   0.  ]
- [1.03 2.   2.   1.03 1.03]]
-</pre>
-```python
-# compute the scaling factor (kx) given the quantize factor (qf)
-qf = 33
-kx = (x.max() - x.min()) / (qf - 1)
-print(f'kx: {kx}')
-```
-<pre class="code_no_highlight">
-kx: 0.0625
-</pre>
-```python
-# shift and apply the scaling factor to map the x-numbers on the integer range
-xnorm = np.round((x - x.min()) / kx).astype(int)
-print(f'x-normalized:\n{xnorm}')
-```
-<pre class="code_no_highlight">
-x-normalized:
-[[ 0 16 16  0  0]
- [16 32 32 16 16]]
-</pre>
-```python
-# denormalize happens as follow
-print(f'x-denormalized:\n{xnorm * kx + x.min()}')
-```
-<pre class="code_no_highlight">
-x-denormalized:
-[[0. 1. 1. 0. 0.]
- [1. 2. 2. 1. 1.]]
-</pre>
+    data = geometry.MultiLineString([
+        [[0, 0], [0.97, 0], [0.97, 1], [0, 1], [0, 0]], 
+        [[1.03, 0], [2, 0], [2, 1], [1.03, 1], [1.03, 0]]
+    ])
+    data
+    ```
 
-The delta-encoding is applied on the normalized coordinates and starting from the first coordinate, only the delta towards the following coordinate is stored. It is a character-reducing process, since the delta between two points is normally smaller than storing both coordinates. Here an example is shown for the `x`-numbers only (1D), where in real it is a 2D process:
-```python
-# delta encoding of normalized x-numbers
-x_quant = np.insert(np.diff(xnorm), 0, xnorm[:,0], axis=1)
-print(f'x-quantized (normalized-delta-encoded):\n{x_quant}')
-```
-<pre class="code_no_highlight">
-x-quantized (normalized-delta-encoded):
-[[  0  16   0 -16   0]
- [ 16  16   0 -16   0]]
-</pre>
-```python
-# dequantization of quantized x-numbers
-x_dequant = x_quant.cumsum(axis=1) * kx + x.min()
-print(f'x-dequantized:\n{x_dequant}')
-```
-<pre class="code_no_highlight">
-x-dequantized:
-[[0. 1. 1. 0. 0.]
- [1. 2. 2. 1. 1.]]
-</pre>
+    ```python exec="on" session="examplesettings-tuning"
+    import topojson as tp
+    from shapely import geometry
 
-So, to apply this `prequantize` value on the two no touching polygons, the polygons are touching as a result of it:
-```python
-topo = tp.Topology(data, prequantize=33)
-topo.to_svg()
-```
-<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_prequantize_33.json" data-label="The arcs after prequantize=33: the squares share a side"><svg></svg></figure>
+    data = geometry.MultiLineString([
+        [[0, 0], [0.97, 0], [0.97, 1], [0, 1], [0, 0]], 
+        [[1.03, 0], [2, 0], [2, 1], [1.03, 1], [1.03, 0]]
+    ])
+    data
+    ```
+    <figure class="parts" data-src="../../json/fig_settings_prequantize_input.json" data-label="Two squares with a gap between them"><svg></svg></figure>
 
-Two polygons of a different size, quantized on the same fixed grid of `0.01`:
-```python
-grid = {"scale": [0.01, 0.01], "translate": [0, 0]}
-small = tp.Topology(geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1]]), prequantize=grid)
-large = tp.Topology(geometry.Polygon([[0, 0], [2, 0], [2, 2], [0, 2]]), prequantize=grid)
-small.to_dict()["arcs"], large.to_dict()["arcs"]
-```
-<pre class="code_no_highlight">
-([[[0, 0], [0, 100], [100, 0], [0, -100], [-100, 0]]],
- [[[0, 0], [0, 200], [200, 0], [0, -200], [-200, 0]]])
-</pre>
-Both keep the transform `{'scale': [0.01, 0.01], 'translate': [0.0, 0.0]}`; with a
-quantize factor each would get a grid of its own bounding box.
-</div>
-</div>
+    The `prequantize` option is defined as an integer number. It can be best understand as a value that defines the size of a rectangular grid, with the bottom left coordinate at `(0,0)`. Next, the `x`-numbers and `y`-numbers of all coordinates are independency scaled and shifted on this rectangular grid (normalization on range). Here it is shown for the `x`-numbers only:
+    ```python
+    import numpy as np
+
+    # get the x-numbers of all coordinates
+    x = np.array([ls.xy[0] for ls in data.geoms])
+    print(f'x:\n{x}')
+    ```
+
+    ```python exec="on" session="examplesettings-tuning" result="text"
+    import numpy as np
+
+    # get the x-numbers of all coordinates
+    x = np.array([ls.xy[0] for ls in data.geoms])
+    print(f'x:\n{x}')
+    ```
+    ```python
+    # compute the scaling factor (kx) given the quantize factor (qf)
+    qf = 33
+    kx = (x.max() - x.min()) / (qf - 1)
+    print(f'kx: {kx}')
+    ```
+
+    ```python exec="on" session="examplesettings-tuning" result="text"
+    # compute the scaling factor (kx) given the quantize factor (qf)
+    qf = 33
+    kx = (x.max() - x.min()) / (qf - 1)
+    print(f'kx: {kx}')
+    ```
+    ```python
+    # shift and apply the scaling factor to map the x-numbers on the integer range
+    xnorm = np.round((x - x.min()) / kx).astype(int)
+    print(f'x-normalized:\n{xnorm}')
+    ```
+
+    ```python exec="on" session="examplesettings-tuning" result="text"
+    # shift and apply the scaling factor to map the x-numbers on the integer range
+    xnorm = np.round((x - x.min()) / kx).astype(int)
+    print(f'x-normalized:\n{xnorm}')
+    ```
+    ```python
+    # denormalize happens as follow
+    print(f'x-denormalized:\n{xnorm * kx + x.min()}')
+    ```
+
+    ```python exec="on" session="examplesettings-tuning" result="text"
+    # denormalize happens as follow
+    print(f'x-denormalized:\n{xnorm * kx + x.min()}')
+    ```
+
+    The delta-encoding is applied on the normalized coordinates and starting from the first coordinate, only the delta towards the following coordinate is stored. It is a character-reducing process, since the delta between two points is normally smaller than storing both coordinates. Here an example is shown for the `x`-numbers only (1D), where in real it is a 2D process:
+    ```python
+    # delta encoding of normalized x-numbers
+    x_quant = np.insert(np.diff(xnorm), 0, xnorm[:,0], axis=1)
+    print(f'x-quantized (normalized-delta-encoded):\n{x_quant}')
+    ```
+
+    ```python exec="on" session="examplesettings-tuning" result="text"
+    # delta encoding of normalized x-numbers
+    x_quant = np.insert(np.diff(xnorm), 0, xnorm[:,0], axis=1)
+    print(f'x-quantized (normalized-delta-encoded):\n{x_quant}')
+    ```
+    ```python
+    # dequantization of quantized x-numbers
+    x_dequant = x_quant.cumsum(axis=1) * kx + x.min()
+    print(f'x-dequantized:\n{x_dequant}')
+    ```
+
+    ```python exec="on" session="examplesettings-tuning" result="text"
+    # dequantization of quantized x-numbers
+    x_dequant = x_quant.cumsum(axis=1) * kx + x.min()
+    print(f'x-dequantized:\n{x_dequant}')
+    ```
+
+    So, to apply this `prequantize` value on the two no touching polygons, the polygons are touching as a result of it:
+    ```python
+    topo = tp.Topology(data, prequantize=33)
+    topo.to_svg()
+    ```
+
+    ```python exec="on" session="examplesettings-tuning"
+    topo = tp.Topology(data, prequantize=33)
+    topo.to_svg()
+    ```
+    <figure class="parts" data-src="../../json/fig_settings_prequantize_33.json" data-label="The arcs after prequantize=33: the squares share a side"><svg></svg></figure>
+
+    Two polygons of a different size, quantized on the same fixed grid of `0.01`:
+    ```python
+    grid = {"scale": [0.01, 0.01], "translate": [0, 0]}
+    small = tp.Topology(geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1]]), prequantize=grid)
+    large = tp.Topology(geometry.Polygon([[0, 0], [2, 0], [2, 2], [0, 2]]), prequantize=grid)
+    small.to_dict()["arcs"], large.to_dict()["arcs"]
+    ```
+
+    ```python exec="on" session="examplesettings-tuning" result="text"
+    grid = {"scale": [0.01, 0.01], "translate": [0, 0]}
+    small = tp.Topology(geometry.Polygon([[0, 0], [1, 0], [1, 1], [0, 1]]), prequantize=grid)
+    large = tp.Topology(geometry.Polygon([[0, 0], [2, 0], [2, 2], [0, 2]]), prequantize=grid)
+    _ = small.to_dict()["arcs"], large.to_dict()["arcs"]
+    if isinstance(_, dict):
+        print(__import__('pprint').pformat(_, sort_dicts=False, width=88))
+    else:
+        print(_)
+    ```
+    Both keep the transform `{'scale': [0.01, 0.01], 'translate': [0.0, 0.0]}`; with a
+    quantize factor each would get a grid of its own bounding box.
+
 
 * * * 
 
 ## topoquantize
 
 boolean or int
-{: .text-delta}
 
 If the topoquantization parameter is specified, the input geometry is quantized 
 after the topology is constructed. If the topology is already quantized this 
 will be resolved first before the topoquantization is applied. See for more 
 details the `prequantize` parameter. Default is `False`.
 
-See [prequantize](settings-tuning.html#prequantize) for an explained example.
+See [prequantize](settings-tuning.md#prequantize) for an explained example.
 
 **Note:** This is also supported by chaining. Meaning you could first compute the Topology (which can be cost-intensive) and afterwards apply the `topoquantize` on the computed Topology.
 
 
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
+!!! example
 
-```python
-import topojson as tp
-data = tp.utils.example_data_africa()
 
-topo = tp.Topology(data)
-topo_tq = topo.topoquantize(75)
+    ```python
+    import topojson as tp
+    data = tp.utils.example_data_africa()
 
-print(f'length with topoquantization:    {len(topo_tq.to_json())}')
-print(f'length without topoquantization: {len(topo.to_json())}')
-```
-<pre class="code_no_highlight">
-length with topoquantization:    20391
-length without topoquantization: 32549
-</pre>
-</div>
-</div>
+    topo = tp.Topology(data)
+    topo_tq = topo.topoquantize(75)
+
+    print(f'length with topoquantization:    {len(topo_tq.to_json())}')
+    print(f'length without topoquantization: {len(topo.to_json())}')
+    ```
+
+    ```python exec="on" session="examplesettings-tuning" result="text"
+    import topojson as tp
+    data = tp.utils.example_data_africa()
+
+    topo = tp.Topology(data)
+    topo_tq = topo.topoquantize(75)
+
+    print(f'length with topoquantization:    {len(topo_tq.to_json())}')
+    print(f'length without topoquantization: {len(topo.to_json())}')
+    ```
+
 
 
 * * * 
@@ -264,7 +332,6 @@ length without topoquantization: 32549
 ## presimplify
 
 boolean, float
-{: .text-delta}
 
 Apply presimplify to remove unnecessary points from linestrings before the 
 topology is constructed. This will simplify the input geometries. `True` uses a
@@ -274,34 +341,40 @@ The lines are simplified one by one, so the two sides of a shared border can be
 simplified apart. For polygons, `simplify_with="geos"` simplifies them together as
 a coverage instead, see [simplify_with](#simplify_with).
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
-Here we load continental Africa as data file and apply the `presimplify` on the input-space.
-The plot shows the borders including linestring simplification, derived _before_ the `Topology` is computed.
+!!! example
 
-```python
-import topojson as tp
-data = tp.utils.example_data_africa()
+    Here we load continental Africa as data file and apply the `presimplify` on the input-space.
+    The plot shows the borders including linestring simplification, derived _before_ the `Topology` is computed.
 
-topo = tp.Topology(data, presimplify=4)
+    ```python
+    import topojson as tp
+    data = tp.utils.example_data_africa()
 
-# since SVG rendering is too small for this example,
-# we use the (optional!) package Altair for visualization.
-topo.to_alt().properties(title='presimplify')
-```
-<div id="embed_tuning_presimplify"></div>
+    topo = tp.Topology(data, presimplify=4)
+
+    # since SVG rendering is too small for this example,
+    # we use the (optional!) package Altair for visualization.
+    topo.to_alt().properties(title='presimplify')
+    ```
+
+    ```python exec="on" session="examplesettings-tuning"
+    import topojson as tp
+    data = tp.utils.example_data_africa()
+
+    topo = tp.Topology(data, presimplify=4)
+
+    # since SVG rendering is too small for this example,
+    # we use the (optional!) package Altair for visualization.
+    topo.to_alt().properties(title='presimplify')
+    ```
+    <div id="embed_tuning_presimplify">
 </div>
-</div>
+
 * * * 
 
 ## toposimplify
 
 boolean, float 
-{: .text-delta}
 
 Apply toposimplify to remove unnecessary points from arcs after the topology 
 is constructed. This will simplify the constructed arcs without altering the 
@@ -315,27 +388,33 @@ in the range of `0.0001` to `10`. Defaults to `False`.
 
 **Note 3:** With `prevent_oversimplify` (the default), a ring that would be reduced to fewer than three points keeps the vertices to stay a triangle, so small islands do not collapse.
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
-Here we load continental Africa as data file and apply the `toposimplify` on the arcs.
-The plot shows the borders including linestring simplification, derived _after_ the `Topology` is computed.
+!!! example
 
-```python
-import topojson as tp
-data = tp.utils.example_data_africa()
+    Here we load continental Africa as data file and apply the `toposimplify` on the arcs.
+    The plot shows the borders including linestring simplification, derived _after_ the `Topology` is computed.
 
-topo = tp.Topology(data, toposimplify=4)
+    ```python
+    import topojson as tp
+    data = tp.utils.example_data_africa()
 
-# since SVG rendering is too small for this example,
-# we use the (optional!) package Altair for visualization.
-topo.to_alt().properties(title='toposimplify')
-```
-<div id="embed_tuning_toposimplify"></div>
-</div>
+    topo = tp.Topology(data, toposimplify=4)
+
+    # since SVG rendering is too small for this example,
+    # we use the (optional!) package Altair for visualization.
+    topo.to_alt().properties(title='toposimplify')
+    ```
+
+    ```python exec="on" session="examplesettings-tuning"
+    import topojson as tp
+    data = tp.utils.example_data_africa()
+
+    topo = tp.Topology(data, toposimplify=4)
+
+    # since SVG rendering is too small for this example,
+    # we use the (optional!) package Altair for visualization.
+    topo.to_alt().properties(title='toposimplify')
+    ```
+    <div id="embed_tuning_toposimplify">
 </div>
 
 Instead of a tolerance, `keep` gives the share of the vertices to keep, between `0` and
@@ -349,21 +428,21 @@ With `simplify_algorithm="vw"`, `keep` searches the tolerance of Visvalingam-Why
 of the search continues from the result of the step before, and the result is again
 that of the matching `epsilon`.
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
-A line of 9 inner vertices (blue) with the weight of each vertex, simplified to a
-quarter and to half of its inner vertices (dashed); the kept vertices are filled.
+!!! example
 
-```python
-topo = tp.Topology(data)
-topo.toposimplify(keep=0.1)  # keep 10% of the vertices
-```
-<div id="embed_tuning_toposimplify_keep"></div>
-</div>
+    A line of 9 inner vertices (blue) with the weight of each vertex, simplified to a
+    quarter and to half of its inner vertices (dashed); the kept vertices are filled.
+
+    ```python
+    topo = tp.Topology(data)
+    topo.toposimplify(keep=0.1)  # keep 10% of the vertices
+    ```
+
+    ```python exec="on" session="examplesettings-tuning"
+    topo = tp.Topology(data)
+    topo.toposimplify(keep=0.1)  # keep 10% of the vertices
+    ```
+    <div id="embed_tuning_toposimplify_keep">
 </div>
 
 
@@ -372,65 +451,85 @@ topo.toposimplify(keep=0.1)  # keep 10% of the vertices
 ## shared_coords
 
 boolean
-{: .text-delta}
 Sets the strategy to detect junctions. When set to `False` a path is considered
 shared when coordinates are the same path (`path-connected`). The path-connected
 strategy is more 'correct', but slightly slower. When set to `True` a path is 
 considered shared when all coordinates appear in both paths 
 (`coords-connected`). Default is `False`.
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
-The example shows two LineStrings, the are partially overlapping with one shared coordinate.
+!!! example
 
-```python
-import topojson as tp
-from shapely import geometry
+    The example shows two LineStrings, the are partially overlapping with one shared coordinate.
 
-data = geometry.MultiLineString([
-    [(0, 0), (10, 0), (10, 5), (20, 5)], 
-    [(5, 0), (20, 0), (20, 5), (10, 5), (0, 5)]
-])
-data
-```
-<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_shared_coords_input.json" data-label="Two lines that partly overlap"><svg></svg></figure>
+    ```python
+    import topojson as tp
+    from shapely import geometry
 
-The setting `shared_coords=True` adopts a strategy of `coords-connected`, meaning it will split only when coordinates are detected in both linestrings. Here we show it as SVG, with each derived segment/arc plotted separately.
+    data = geometry.MultiLineString([
+        [(0, 0), (10, 0), (10, 5), (20, 5)], 
+        [(5, 0), (20, 0), (20, 5), (10, 5), (0, 5)]
+    ])
+    data
+    ```
 
-```python
-tp.Topology(
-    data, 
-    shared_coords=True, 
-    prequantize=False
-).to_svg(separate=True)
-```
-<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_shared_coords_true.json" data-label="The arcs with shared_coords=True"><svg></svg></figure>
-Arc 2 (20 5, 10 5) is the shared segment. 
+    ```python exec="on" session="examplesettings-tuning"
+    import topojson as tp
+    from shapely import geometry
 
-When using the setting `shared_coords=False` a `path-connected` strategy is adopted, meaning it will split also when paths are overlapping without having common coordinates.
+    data = geometry.MultiLineString([
+        [(0, 0), (10, 0), (10, 5), (20, 5)], 
+        [(5, 0), (20, 0), (20, 5), (10, 5), (0, 5)]
+    ])
+    data
+    ```
+    <figure class="parts" data-src="../../json/fig_settings_shared_coords_input.json" data-label="Two lines that partly overlap"><svg></svg></figure>
 
-```python
-tp.Topology(
-    data, 
-    shared_coords=False, 
-    prequantize=False
-).to_svg(separate=True)
-```
-<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_shared_coords_false.json" data-label="The arcs with shared_coords=False"><svg></svg></figure>
-Arcs 2 (5 0, 10 0) and 4 (20 5, 10 5) are shared segments. 
-</div>
-</div>
+    The setting `shared_coords=True` adopts a strategy of `coords-connected`, meaning it will split only when coordinates are detected in both linestrings. Here we show it as SVG, with each derived segment/arc plotted separately.
+
+    ```python
+    tp.Topology(
+        data, 
+        shared_coords=True, 
+        prequantize=False
+    ).to_svg(separate=True)
+    ```
+
+    ```python exec="on" session="examplesettings-tuning"
+    tp.Topology(
+        data, 
+        shared_coords=True, 
+        prequantize=False
+    ).to_svg(separate=True)
+    ```
+    <figure class="parts" data-src="../../json/fig_settings_shared_coords_true.json" data-label="The arcs with shared_coords=True"><svg></svg></figure>
+    Arc 2 (20 5, 10 5) is the shared segment. 
+
+    When using the setting `shared_coords=False` a `path-connected` strategy is adopted, meaning it will split also when paths are overlapping without having common coordinates.
+
+    ```python
+    tp.Topology(
+        data, 
+        shared_coords=False, 
+        prequantize=False
+    ).to_svg(separate=True)
+    ```
+
+    ```python exec="on" session="examplesettings-tuning"
+    tp.Topology(
+        data, 
+        shared_coords=False, 
+        prequantize=False
+    ).to_svg(separate=True)
+    ```
+    <figure class="parts" data-src="../../json/fig_settings_shared_coords_false.json" data-label="The arcs with shared_coords=False"><svg></svg></figure>
+    Arcs 2 (5 0, 10 0) and 4 (20 5, 10 5) are shared segments. 
+
 
 * * * 
 
 ## prevent_oversimplify
 
 boolean
-{: .text-delta}
 
 If this setting is set to `True`, the simplification is slower, but the 
 likelihood of producing valid geometries is higher as it prevents 
@@ -439,43 +538,64 @@ setting is especially relevant for rings with no partial shared paths. This
 is also known as a topology-preserving variant of simplification. 
 Default is `True`. 
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
-The example shows a circle that is two times simplified. The first time with `prevent_oversimplify=False`, where the circle collapses to a single point, and the second time with `prevent_oversimplify=True`, where it keeps four points.
+!!! example
 
-```python
-import topojson as tp
-from shapely import geometry
+    The example shows a circle that is two times simplified. The first time with `prevent_oversimplify=False`, where the circle collapses to a single point, and the second time with `prevent_oversimplify=True`, where it keeps four points.
 
-circle = geometry.Point(0, 0).buffer(1)
-circle
-```
-<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_prevent_oversimplify_input.json" data-label="A circle"><svg></svg></figure>
+    ```python
+    import topojson as tp
+    from shapely import geometry
 
-```python
-# force simplification
-tp.Topology(
-    circle, 
-    toposimplify=2,
-    prevent_oversimplify=False
-).to_svg()
-```
+    circle = geometry.Point(0, 0).buffer(1)
+    circle
+    ```
 
-```python
-# avoid oversimplification
-tp.Topology(
-    circle, 
-    toposimplify=2,
-    prevent_oversimplify=True
-).to_svg()
-```
-<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_prevent_oversimplify.json" data-label="The circle simplified without and with prevent_oversimplify"><svg></svg></figure>
-</div>
-</div>
+    ```python exec="on" session="examplesettings-tuning"
+    import topojson as tp
+    from shapely import geometry
+
+    circle = geometry.Point(0, 0).buffer(1)
+    circle
+    ```
+    <figure class="parts" data-src="../../json/fig_settings_prevent_oversimplify_input.json" data-label="A circle"><svg></svg></figure>
+
+    ```python
+    # force simplification
+    tp.Topology(
+        circle, 
+        toposimplify=2,
+        prevent_oversimplify=False
+    ).to_svg()
+    ```
+
+    ```python exec="on" session="examplesettings-tuning"
+    # force simplification
+    tp.Topology(
+        circle, 
+        toposimplify=2,
+        prevent_oversimplify=False
+    ).to_svg()
+    ```
+
+    ```python
+    # avoid oversimplification
+    tp.Topology(
+        circle, 
+        toposimplify=2,
+        prevent_oversimplify=True
+    ).to_svg()
+    ```
+
+    ```python exec="on" session="examplesettings-tuning"
+    # avoid oversimplification
+    tp.Topology(
+        circle, 
+        toposimplify=2,
+        prevent_oversimplify=True
+    ).to_svg()
+    ```
+    <figure class="parts" data-src="../../json/fig_settings_prevent_oversimplify.json" data-label="The circle simplified without and with prevent_oversimplify"><svg></svg></figure>
+
 
 
 * * * 
@@ -483,7 +603,6 @@ tp.Topology(
 ## simplify_with
 
 str
-{: .text-delta}
 Sets the package to use for simplifying (both pre- and toposimplify). Choose 
 between `shapely`, `simplification` or `geos`. Shapely adopts solely Douglas-Peucker 
 and simplification both Douglas-Peucker and Visvalingam-Whyatt. The package 
@@ -498,40 +617,57 @@ coverage: no overlaps, and the vertices of shared borders equal
 (`shapely.coverage_is_valid`). Toposimplify simplifies arcs, to which this does not
 apply.
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
+!!! example
 
-```python
-import topojson as tp
-data = tp.utils.example_data_africa()
 
-topo = tp.Topology(data, prequantize=200)
+    ```python
+    import topojson as tp
+    data = tp.utils.example_data_africa()
 
-# we visualize with the (optional!) package Altair,
-# since SVG rendering is too small for this example
-topo.toposimplify(
-    epsilon=1,
-    simplify_algorithm='dp', 
-    simplify_with='simplification', 
-    prevent_oversimplify=False
-).to_alt().properties(title='Douglas-Peucker (package simplification)')
-```
-<div id="embed_tuning_simplify_with"></div>
+    topo = tp.Topology(data, prequantize=200)
 
-With `presimplify`, shapely simplifies each line on its own, so neighbours drift
-apart (the double lines on the left); with `geos` the polygons are simplified as a
-coverage:
-```python
-presimplified = tp.Topology(data, presimplify=1).to_alt()
-coverage = tp.Topology(data, presimplify=1, simplify_with="geos").to_alt()
-presimplified | coverage
-```
-<div id="embed_tuning_simplify_with_geos"></div>
-</div>
+    # we visualize with the (optional!) package Altair,
+    # since SVG rendering is too small for this example
+    topo.toposimplify(
+        epsilon=1,
+        simplify_algorithm='dp', 
+        simplify_with='simplification', 
+        prevent_oversimplify=False
+    ).to_alt().properties(title='Douglas-Peucker (package simplification)')
+    ```
+
+    ```python exec="on" session="examplesettings-tuning"
+    import topojson as tp
+    data = tp.utils.example_data_africa()
+
+    topo = tp.Topology(data, prequantize=200)
+
+    # we visualize with the (optional!) package Altair,
+    # since SVG rendering is too small for this example
+    topo.toposimplify(
+        epsilon=1,
+        simplify_algorithm='dp', 
+        simplify_with='simplification', 
+        prevent_oversimplify=False
+    ).to_alt().properties(title='Douglas-Peucker (package simplification)')
+    ```
+    <div id="embed_tuning_simplify_with"></div>
+
+    With `presimplify`, shapely simplifies each line on its own, so neighbours drift
+    apart (the double lines on the left); with `geos` the polygons are simplified as a
+    coverage:
+    ```python
+    presimplified = tp.Topology(data, presimplify=1).to_alt()
+    coverage = tp.Topology(data, presimplify=1, simplify_with="geos").to_alt()
+    presimplified | coverage
+    ```
+
+    ```python exec="on" session="examplesettings-tuning"
+    presimplified = tp.Topology(data, presimplify=1).to_alt()
+    coverage = tp.Topology(data, presimplify=1, simplify_with="geos").to_alt()
+    presimplified | coverage
+    ```
+    <div id="embed_tuning_simplify_with_geos">
 </div>
 
 * * * 
@@ -539,39 +675,49 @@ presimplified | coverage
 ## simplify_algorithm
 
 str
-{: .text-delta}
 
 Choose between `dp` and `vw`, for Douglas-Peucker or Visvalingam-Whyatt 
 respectively. `vw` will only be selected if `simplify_with` is set to 
 `simplification`. Default is `dp`, since it still "produces the most accurate 
 generalization" (Shi & Cheung, 2006).
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
-Here we use the `vw` algorithm from Visvalingam-Whyatt included in the package 
-`simplification`.
+!!! example
 
-```python
-import topojson as tp
-data = tp.utils.example_data_africa()
+    Here we use the `vw` algorithm from Visvalingam-Whyatt included in the package 
+    `simplification`.
 
-topo = tp.Topology(data, prequantize=200)
+    ```python
+    import topojson as tp
+    data = tp.utils.example_data_africa()
 
-# we visualize with the (optional!) package Altair,
-# since SVG rendering is too small for this example
-topo.toposimplify(
-    epsilon=1,
-    simplify_algorithm='vw', 
-    simplify_with='simplification', 
-    prevent_oversimplify=True
-).to_alt().properties(title='Visvalingam-Whyatt (package simplification)')
-```
-<div id="embed_tuning_simplify_alg"></div>
-</div>
+    topo = tp.Topology(data, prequantize=200)
+
+    # we visualize with the (optional!) package Altair,
+    # since SVG rendering is too small for this example
+    topo.toposimplify(
+        epsilon=1,
+        simplify_algorithm='vw', 
+        simplify_with='simplification', 
+        prevent_oversimplify=True
+    ).to_alt().properties(title='Visvalingam-Whyatt (package simplification)')
+    ```
+
+    ```python exec="on" session="examplesettings-tuning"
+    import topojson as tp
+    data = tp.utils.example_data_africa()
+
+    topo = tp.Topology(data, prequantize=200)
+
+    # we visualize with the (optional!) package Altair,
+    # since SVG rendering is too small for this example
+    topo.toposimplify(
+        epsilon=1,
+        simplify_algorithm='vw', 
+        simplify_with='simplification', 
+        prevent_oversimplify=True
+    ).to_alt().properties(title='Visvalingam-Whyatt (package simplification)')
+    ```
+    <div id="embed_tuning_simplify_alg">
 </div>
 
 * * * 
@@ -579,70 +725,72 @@ topo.toposimplify(
 ## winding_order
 
 str
-{: .text-delta}
 
 Determines the winding order of the features in the output geometry. Choose 
 between `CW_CCW` for clockwise orientation for outer rings and counter-
 clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer 
 rings and clockwise for interior rings. Default is `CW_CCW`.
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
-Start with creating a `Polygon` geometry
+!!! example
 
-```python
-import topojson as tp
-from shapely import geometry
+    Start with creating a `Polygon` geometry
 
-data = geometry.shape({
-    "type": "Polygon",
-    "coordinates": [[[0,0],[10,0],[10,10],[0,10],[0,0]]]
-})
-data
-```
-<figure class="parts" data-src="{{site.baseurl}}/json/fig_settings_winding_order_input.json" data-label="A square"><svg></svg></figure>
+    ```python
+    import topojson as tp
+    from shapely import geometry
 
-Continue with defining two Topology objects, one with the outer rings clock wise and the inner rings counter clockwise (`CW_CCW`) and one with the outer rings counter clock wise and the inner rings clock wise (`CCW_CW`).
+    data = geometry.shape({
+        "type": "Polygon",
+        "coordinates": [[[0,0],[10,0],[10,10],[0,10],[0,0]]]
+    })
+    data
+    ```
 
-```python
-CW_CCW = tp.Topology(data, winding_order='CW_CCW', prequantize=False)
-CCW_CW = tp.Topology(data, winding_order='CCW_CW', prequantize=False)
+    ```python exec="on" session="examplesettings-tuning"
+    import topojson as tp
+    from shapely import geometry
 
-print(CW_CCW)
-print(CCW_CW)
-```
-<pre class="code_no_highlight">
-Topology(
-{'arcs': [[[0.0, 0.0], [0.0, 10.0], [10.0, 10.0], [10.0, 0.0], [0.0, 0.0]]],
- 'bbox': (0.0, 0.0, 10.0, 10.0),
- 'coordinates': [],
- 'objects': {'data': {'geometries': [{'arcs': [[0]], 'type': 'Polygon'}],
-                      'type': 'GeometryCollection'}},
- 'type': 'Topology'}
-)
-Topology(
-{'arcs': [[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0], [0.0, 10.0], [0.0, 0.0]]],
- 'bbox': (0.0, 0.0, 10.0, 10.0),
- 'coordinates': [],
- 'objects': {'data': {'geometries': [{'arcs': [[0]], 'type': 'Polygon'}],
-                      'type': 'GeometryCollection'}},
- 'type': 'Topology'}
-)
-</pre>
-As you can see the `arcs` for type `Polygon` are reversed. The effect seems to be negligible, but the effect should be taken into account when using geographic projections, as it defines which part is 'inside' and 'outside' the `Polygon`:
+    data = geometry.shape({
+        "type": "Polygon",
+        "coordinates": [[[0,0],[10,0],[10,10],[0,10],[0,0]]]
+    })
+    data
+    ```
+    <figure class="parts" data-src="../../json/fig_settings_winding_order_input.json" data-label="A square"><svg></svg></figure>
 
-```python
-alt_top = CW_CCW.to_alt(projection='equalEarth', color='type:N').properties(title='CW_CCW')
-alt_bottom = CCW_CW.to_alt(projection='equalEarth', color='type:N').properties(title='CCW_CW')
+    Continue with defining two Topology objects, one with the outer rings clock wise and the inner rings counter clockwise (`CW_CCW`) and one with the outer rings counter clock wise and the inner rings clock wise (`CCW_CW`).
 
-alt_top & alt_bottom
-```
-<div id="embed_tuning_winding_order"></div>
-</div>
+    ```python
+    CW_CCW = tp.Topology(data, winding_order='CW_CCW', prequantize=False)
+    CCW_CW = tp.Topology(data, winding_order='CCW_CW', prequantize=False)
+
+    print(CW_CCW)
+    print(CCW_CW)
+    ```
+
+    ```python exec="on" session="examplesettings-tuning" result="text"
+    CW_CCW = tp.Topology(data, winding_order='CW_CCW', prequantize=False)
+    CCW_CW = tp.Topology(data, winding_order='CCW_CW', prequantize=False)
+
+    print(CW_CCW)
+    print(CCW_CW)
+    ```
+    As you can see the `arcs` for type `Polygon` are reversed. The effect seems to be negligible, but the effect should be taken into account when using geographic projections, as it defines which part is 'inside' and 'outside' the `Polygon`:
+
+    ```python
+    alt_top = CW_CCW.to_alt(projection='equalEarth', color='type:N').properties(title='CW_CCW')
+    alt_bottom = CCW_CW.to_alt(projection='equalEarth', color='type:N').properties(title='CCW_CW')
+
+    alt_top & alt_bottom
+    ```
+
+    ```python exec="on" session="examplesettings-tuning"
+    alt_top = CW_CCW.to_alt(projection='equalEarth', color='type:N').properties(title='CW_CCW')
+    alt_bottom = CCW_CW.to_alt(projection='equalEarth', color='type:N').properties(title='CCW_CW')
+
+    alt_top & alt_bottom
+    ```
+    <div id="embed_tuning_winding_order">
 </div>
 
 * * * 
@@ -650,44 +798,50 @@ alt_top & alt_bottom
 ## object_name
 
 str or list of str
-{: .text-delta}
 
 Name of the object in the TopoJSON. A list of GeoDataFrames can be given as data,
 with a list of names of the same length: each GeoDataFrame then becomes an object
 of its own, with the topology computed across all of them.
 Default is `data`.
 
-<div class="code-example mx-1 bg-example">
-<div class="example-label" markdown="1">
-Example 🔧
-{: .label .label-blue-000 }
-</div>
-<div class="example-text" markdown="1">
+!!! example
 
-```python
-import geopandas
-import topojson as tp
-from shapely import geometry
 
-left = geopandas.GeoDataFrame({"name": ["a"]}, geometry=[geometry.box(0, 0, 1, 1)])
-right = geopandas.GeoDataFrame({"name": ["b"]}, geometry=[geometry.box(1, 0, 2, 1)])
+    ```python
+    import geopandas
+    import topojson as tp
+    from shapely import geometry
 
-topo = tp.Topology([left, right], object_name=["left", "right"])
-list(topo.to_dict()["objects"])
-```
-<pre class="code_no_highlight">
-['left', 'right']
-</pre>
-The shared border is one arc, used by a feature of each object.
-</div>
-</div>
+    left = geopandas.GeoDataFrame({"name": ["a"]}, geometry=[geometry.box(0, 0, 1, 1)])
+    right = geopandas.GeoDataFrame({"name": ["b"]}, geometry=[geometry.box(1, 0, 2, 1)])
+
+    topo = tp.Topology([left, right], object_name=["left", "right"])
+    list(topo.to_dict()["objects"])
+    ```
+
+    ```python exec="on" session="examplesettings-tuning" result="text"
+    import geopandas
+    import topojson as tp
+    from shapely import geometry
+
+    left = geopandas.GeoDataFrame({"name": ["a"]}, geometry=[geometry.box(0, 0, 1, 1)])
+    right = geopandas.GeoDataFrame({"name": ["b"]}, geometry=[geometry.box(1, 0, 2, 1)])
+
+    topo = tp.Topology([left, right], object_name=["left", "right"])
+    _ = list(topo.to_dict()["objects"])
+    if isinstance(_, dict):
+        print(__import__('pprint').pformat(_, sort_dicts=False, width=88))
+    else:
+        print(_)
+    ```
+    The shared border is one arc, used by a feature of each object.
+
 
 * * * 
 
 ## ignore_index
 
 boolean
-{: .text-delta}
 
 If `True`, the ids of the features of a GeoJSON FeatureCollection are ignored and
 replaced by new ones. Otherwise features keep their id, and a duplicate id raises
@@ -703,29 +857,29 @@ window.addEventListener("DOMContentLoaded", event => {
         actions: false
     };
 
-    var spec_presimplify = "{{site.baseurl}}/json/example_presimplify.vl.json";
+    var spec_presimplify = "../../json/example_presimplify.vl.json";
     vegaEmbed("#embed_tuning_presimplify", spec_presimplify, opt).catch(console.err);
 
-    var spec_toposimplify = "{{site.baseurl}}/json/example_toposimplify.vl.json";
+    var spec_toposimplify = "../../json/example_toposimplify.vl.json";
     vegaEmbed("#embed_tuning_toposimplify", spec_toposimplify, opt).catch(console.err);
 
-    var spec_toposimplify_keep = "{{site.baseurl}}/json/example_toposimplify_keep.vl.json";
+    var spec_toposimplify_keep = "../../json/example_toposimplify_keep.vl.json";
     vegaEmbed("#embed_tuning_toposimplify_keep", spec_toposimplify_keep, opt).catch(console.err);
 
-    var spec_simplify_with = "{{site.baseurl}}/json/example_simplify_with.vl.json";
+    var spec_simplify_with = "../../json/example_simplify_with.vl.json";
     vegaEmbed("#embed_tuning_simplify_with", spec_simplify_with, opt).catch(console.err);   
 
-    var spec_simplify_with_geos = "{{site.baseurl}}/json/example_simplify_with_geos.vl.json";
+    var spec_simplify_with_geos = "../../json/example_simplify_with_geos.vl.json";
     vegaEmbed("#embed_tuning_simplify_with_geos", spec_simplify_with_geos, opt).catch(console.err);
 
-    var spec_simplify_alg = "{{site.baseurl}}/json/example_simplify_alg.vl.json";
+    var spec_simplify_alg = "../../json/example_simplify_alg.vl.json";
     vegaEmbed("#embed_tuning_simplify_alg", spec_simplify_alg, opt).catch(console.err);   
 
-    var spec_winding_order = "{{site.baseurl}}/json/example_winding_order.vl.json";
+    var spec_winding_order = "../../json/example_winding_order.vl.json";
     vegaEmbed("#embed_tuning_winding_order", spec_winding_order, opt).catch(console.err);     
 });
 </script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@6"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@6"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>
-<script src="{{site.baseurl}}/js/steps.js" defer></script>
+<script src="../../js/steps.js" defer></script>
