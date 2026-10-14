@@ -101,3 +101,29 @@ def test_to_polars_null_geometry():
     out = tp.Topology(data, prequantize=10).to_polars()
 
     assert out["geometry"].is_null().to_list() == [True, False]
+
+
+# the ids of a column id come out as they went in: as ids, not as a property
+def test_polars_ids_in_and_out():
+    pytest.importorskip("geopandas")
+    frame = pl.DataFrame({"id": [10, 20], "name": ["abc", "def"]}).with_columns(
+        squares()
+    )
+    topo = tp.Topology(frame)
+    geometries = topo.to_dict()["objects"]["data"]["geometries"]
+
+    assert [g["id"] for g in geometries] == [10, 20]
+    assert [g["properties"] for g in geometries] == [{"name": "abc"}, {"name": "def"}]
+    assert topo.to_gdf().index.tolist() == [10, 20]
+    assert topo.to_polars().select("id", "name").equals(frame.select("id", "name"))
+
+
+# duplicate ids raise, as in a FeatureCollection; ignore_index numbers the features
+def test_polars_duplicate_ids():
+    frame = pl.DataFrame({"id": [1, 1], "name": ["abc", "def"]}).with_columns(squares())
+
+    with pytest.raises(IndexError, match="ignore_index"):
+        tp.Topology(frame)
+    out = tp.Topology(frame, ignore_index=True).to_polars()
+    assert out["id"].to_list() == [0, 1]
+    assert out.columns == ["id", "name", "geometry"]

@@ -160,7 +160,8 @@ each feature. A row can hold any geometry type, also a `GeometryCollection`.
 From the package `polars` (not a hard dependency), such as a GeoDataFrame of
 [polars-st](https://github.com/oreilles/polars-st): a DataFrame with a column of
 geometries as WKB or EWKB (`Binary`). The column `geometry` is used, or else the only
-`Binary` column; the other columns become the properties. A Series of WKB works as
+`Binary` column; a column `id` gives the ids of the features, as the index of a
+GeoDataFrame, and the other columns become the properties. A Series of WKB works as
 well, and a list of DataFrames with `object_name`, as for GeoDataFrames. If the
 geometries share an SRID (EWKB), it becomes the CRS, also of `to_gdf()`.
 

@@ -632,7 +632,8 @@ class Extract:
     def _extract_polars_dataframe(self, geom):
         """
         This function extracts a Polars DataFrame with a column of geometries as WKB
-        or EWKB, such as a GeoDataFrame of polars-st.
+        or EWKB, such as a GeoDataFrame of polars-st. A column `id` gives the ids of
+        the features, as the index of a GeoDataFrame, unless `ignore_index`.
 
         Parameters
         ----------
@@ -642,7 +643,14 @@ class Extract:
         records, crs = _polars_records(geom)
         if crs:
             self._defined_crs_source = crs
-        self._data = dict(enumerate(records))
+        ids = [record.pop("id") for record in records] if "id" in geom.columns else None
+        if ids is None or self.options.ignore_index:
+            self._data = dict(enumerate(records))
+        else:
+            self._data = dict(zip(ids, records, strict=True))
+            if len(self._data) < len(records):
+                msg = "index in data duplicated, use `ignore_index=True` to overwrite index"
+                raise IndexError(msg)
         self._extract_records()
 
     def _extract_polars_series(self, geom):

@@ -368,7 +368,10 @@ columns, and the geometry as WKB in the column `geometry`, as
 [polars-st](https://github.com/oreilles/polars-st) stores it. With a CRS that has an
 EPSG code, from the input or given with `crs`, the WKB is EWKB with this code as SRID,
 so that polars-st knows the CRS. Polars is an optional dependency and not
-automatically installed. As with `to_gdf()`, `object_name` selects the object.
+automatically installed. The ids of the features are the column `id`, so ids that went
+in (a column `id` of a Polars DataFrame, the index of a GeoDataFrame, the ids of
+GeoJSON features) come out as they went in. As with `to_gdf()`, `object_name` selects
+the object.
 
 !!! example
 
