@@ -102,7 +102,7 @@ each feature. A row can hold any geometry type, also a `GeometryCollection`.
     | 1 | def | POLYGON ((1 0, 2 0, 2 1, 1 1, 1 0)) |
 
 
-    <figure class="parts" data-src="../../json/fig_input_geodataframe.json" data-label="The two squares abc and def"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_input_geodataframe.json" data-label="The two squares abc and def"><svg></svg></figure>
 
     ```python
     tp.Topology(gdf, prequantize=False).to_json(pretty=True)
@@ -220,7 +220,7 @@ A TopoJSON file can be post-processed using json dictionary.
     topo = tp.Topology(data, object_name="data")
     topo.toposimplify(4).to_svg()
     ```
-    <figure class="parts" data-src="../../json/fig_input_topojson.json" data-label="The arcs of Africa, simplified"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_input_topojson.json" data-label="The arcs of Africa, simplified"><svg></svg></figure>
 
 
 * * * 
@@ -340,7 +340,7 @@ From the package `fiona` (not a hard dependency)
 
     topo.to_svg()
     ```
-    <figure class="parts" data-src="../../json/fig_input_fiona.json" data-label="The arcs of a mesh of triangles"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_input_fiona.json" data-label="The arcs of a mesh of triangles"><svg></svg></figure>
 
 
 * * *
@@ -374,7 +374,7 @@ From the package `shapely`
 
     tp.Topology(data).to_svg()
     ```
-    <figure class="parts" data-src="../../json/fig_input_shapely.json" data-label="The arcs of two lines that share paths"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_input_shapely.json" data-label="The arcs of two lines that share paths"><svg></svg></figure>
 
 
 * * * 
@@ -402,7 +402,7 @@ This example use the package `pyshp` (not a hard dependency)
     topo = tp.Topology(data)
     topo.toposimplify(4).to_svg()
     ```
-    <figure class="parts" data-src="../../json/fig_input_geo_interface.json" data-label="The arcs of South America, simplified"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_input_geo_interface.json" data-label="The arcs of South America, simplified"><svg></svg></figure>
 
 
 * * *
@@ -662,7 +662,7 @@ From the package `geopandas` (not a hard dependency).
     topo.to_gdf(object_name='geom_2').plot(column='shrd_name')
     topo.to_gdf(object_name='geom_1').plot(column='uniq_name')
     ```
-    <figure class="parts" data-src="../../json/fig_input_list_of_geodataframes.json" data-label="The objects geom_2 and geom_1"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_input_list_of_geodataframes.json" data-label="The objects geom_2 and geom_1"><svg></svg></figure>
 
 
 
@@ -787,4 +787,4 @@ window.addEventListener("DOMContentLoaded", event => {
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@6"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@6"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>
-<script src="../../js/steps.js" defer></script>
+<script src="../js/steps.js" defer></script>

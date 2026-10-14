@@ -101,7 +101,7 @@ the grid of `prequantize=5`, on the right a grid with square cells of 2 (see
     else:
         print(_)
     ```
-    <figure class="parts" data-src="../../json/fig_quantization_snap.json" data-label="A line snapped to prequantize=5 and to square cells of 2"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_quantization_snap.json" data-label="A line snapped to prequantize=5 and to square cells of 2"><svg></svg></figure>
 
 
 * * *
@@ -159,7 +159,7 @@ from the bounding box, on the right a grid with square cells (see
 
 !!! example
 
-    <figure class="parts" data-src="../../json/fig_quantization_cells.json" data-label="Chile on the grid of its bounding box and on square cells"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_quantization_cells.json" data-label="Chile on the grid of its bounding box and on square cells"><svg></svg></figure>
 
 
 The bounding box also depends on all features. With Easter Island, more than 3,500 km
@@ -352,7 +352,7 @@ Below, the line on a fine grid with cells of 1 (dots, blue), put on a coarser gr
     else:
         print(_)
     ```
-    <figure class="parts" data-src="../../json/fig_quantization_nested.json" data-label="The line on a coarse grid from the bounding box and on nested cells of 3"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_quantization_nested.json" data-label="The line on a coarse grid from the bounding box and on nested cells of 3"><svg></svg></figure>
 
 
 Versions of the same data at several levels of detail then line up exactly, and the
@@ -406,7 +406,7 @@ smaller gap between `b1` and `b2` (0.02) stays open, because 1.04 rounds to 10 a
 
     `a1` and `a2` share arc `1` (`-2` is arc `1` reversed); `b1` and `b2` share nothing.
 
-    <figure class="parts" data-src="../../json/fig_quantization_gap.json" data-label="A gap of 0.04 that closes and a gap of 0.02 that stays open"><svg></svg></figure>
+    <figure class="parts" data-src="../json/fig_quantization_gap.json" data-label="A gap of 0.04 that closes and a gap of 0.02 that stays open"><svg></svg></figure>
 
 
 Quantization takes away small differences in coordinates that should be equal, such
@@ -419,4 +419,4 @@ point or a line, without area. Such a ring is dropped: a small island from its
 keeps its properties, with an empty (`null`) geometry. Choose a grid that is fine
 enough for the smallest features you want to keep.
 
-<script src="../../js/steps.js" defer></script>
+<script src="../js/steps.js" defer></script>
