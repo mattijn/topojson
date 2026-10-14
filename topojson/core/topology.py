@@ -37,6 +37,7 @@ from .hashmap import Hashmap
 if TYPE_CHECKING:
     import altair
     import geopandas
+    import polars
 
 
 class Topology(Hashmap):
@@ -394,6 +395,51 @@ class Topology(Hashmap):
         if crs is None and hasattr(self, "_defined_crs_source"):
             crs = self._defined_crs_source
         return serialize_as_geodataframe(fc, crs=crs)
+
+    def to_polars(
+        self,
+        crs: Any = None,
+        validate: bool = False,
+        winding_order: WindingOrder = "CCW_CW",
+        object_name: str | int = 0,
+    ) -> "polars.DataFrame":
+        """
+        Convert the Topology to a Polars DataFrame: the id and the properties as
+        columns, and the geometry as WKB in the column `geometry`, as polars-st stores
+        it. With a CRS that has an EPSG code, the WKB is EWKB with this code as SRID,
+        so that polars-st knows the CRS. Remember that this will destroy the computed
+        Topology.
+
+        Parameters
+        ----------
+        crs : str, int, pyproj.CRS
+            coordinate reference system of the geometries, such as `"EPSG:4326"`.
+            Default tries to use crs from data-input, otherwise is `None`.
+        validate : boolean
+            Set to `True` to validate each feature before inclusion in the GeoJSON. Only
+            features that are valid geometries objects will be included.
+            Default is `False`.
+        winding_order : str
+            Determines the winding order of the features in the output geometry. Choose
+            between `CW_CCW` for clockwise orientation for outer rings and counter-
+            clockwise for interior rings. Or `CCW_CW` for counter-clockwise for outer
+            rings and clockwise for interior rings.
+            Default is `CCW_CW` for GeoJSON.
+        object_name : str, int
+            Name or index of the object.
+            Default is index `0` to select the first object.
+        """
+        from ..utils import serialize_as_polars
+
+        topo_object = self._resolve_coords(self._copy_output())
+        objectname = self._resolve_object_name(object_name)
+        fc = serialize_as_geojson(
+            topo_object, validate=validate, objectname=objectname, order=winding_order
+        )
+
+        if crs is None and hasattr(self, "_defined_crs_source"):
+            crs = self._defined_crs_source
+        return serialize_as_polars(fc, crs=crs)
 
     def to_alt(  # type: ignore[override]
         self,
