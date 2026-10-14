@@ -56,6 +56,29 @@ def _polars_records(frame):
     return records, crs
 
 
+# the method of Extract that extracts each type of input
+_EXTRACT = {
+    "LineString": "_extract_line",
+    "MultiLineString": "_extract_multiline",
+    "Polygon": "_extract_ring",
+    "MultiPolygon": "_extract_multiring",
+    "Point": "_extract_point",
+    "MultiPoint": "_extract_multipoint",
+    "GeometryCollection": "_extract_geometrycollection",
+    "FeatureCollection": "_extract_featurecollection",
+    "Feature": "_extract_feature",
+    "fiona.Feature": "_extract_fiona_feature",
+    "Collection": "_extract_fiona_collection",
+    "GeoDataFrame": "_extract_geopandas_geodataframe",
+    "GeoSeries": "_extract_geopandas_geoseries",
+    "polars.DataFrame": "_extract_polars_dataframe",
+    "polars.Series": "_extract_polars_series",
+    "list": "_extract_list",
+    "str": "_extract_string",
+    "dict": "_extract_dictionary",
+}
+
+
 class Extract:
     """
     This class targets the following objectives:
@@ -221,30 +244,11 @@ class Extract:
         Any non-registered geometry wil return as an error that cannot be mapped.
         """
         kind = instance(geom)
-        if _is_polars(geom):
+        if kind in ("DataFrame", "Series") and _is_polars(geom):
             kind = f"polars.{kind}"
         elif kind == "Feature" and type(geom).__module__ == "fiona.model":
             kind = "fiona.Feature"
-        extract = {
-            "LineString": self._extract_line,
-            "MultiLineString": self._extract_multiline,
-            "Polygon": self._extract_ring,
-            "MultiPolygon": self._extract_multiring,
-            "Point": self._extract_point,
-            "MultiPoint": self._extract_multipoint,
-            "GeometryCollection": self._extract_geometrycollection,
-            "FeatureCollection": self._extract_featurecollection,
-            "Feature": self._extract_feature,
-            "fiona.Feature": self._extract_fiona_feature,
-            "Collection": self._extract_fiona_collection,
-            "GeoDataFrame": self._extract_geopandas_geodataframe,
-            "GeoSeries": self._extract_geopandas_geoseries,
-            "polars.DataFrame": self._extract_polars_dataframe,
-            "polars.Series": self._extract_polars_series,
-            "list": self._extract_list,
-            "str": self._extract_string,
-            "dict": self._extract_dictionary,
-        }.get(kind)
+        extract = getattr(self, _EXTRACT.get(kind, ""), None)
         if extract is not None:
             extract(geom)
         else:
