@@ -248,9 +248,9 @@ class Extract:
             kind = f"polars.{kind}"
         elif kind == "Feature" and type(geom).__module__ == "fiona.model":
             kind = "fiona.Feature"
-        extract = getattr(self, _EXTRACT.get(kind, ""), None)
-        if extract is not None:
-            extract(geom)
+        name = _EXTRACT.get(kind)
+        if name is not None:
+            getattr(self, name)(geom)
         else:
             # if no type is recognized: maybe the object has a __geo_interface__
             if hasattr(self._data, "__geo_interface__"):
