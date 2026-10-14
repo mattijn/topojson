@@ -43,16 +43,17 @@ except ImportError:
 This library can be useful for you if you have if one of the following geographical input data:
 
 1. [GeoDataFrame or GeoSeries](#geodataframe-or-geoseries)
-2. [GeoJSON data from file](#geojson-data-from-file)
-3. [TopoJSON data from file](#topojson-data-from-file)
-4. [FeatureCollection or Features](#featurecollection-or-features)
-5. [fiona.Collection](#fionacollection)
-6. [`shapely.geometry` object](#shapelygeometry-object)
-7. [object that support the `__geo_interface__` ](#object-that-support-the-__geo_interface__)
-8. [`list` of objects that provide a valid `__geo_interface__` or can be parsed into one](#list-of-objects-that-provide-a-valid-__geo_interface__-or-can-be-parsed-into-one)
-9. [`dict` of objects that provide a valid `__geo_interface__` or can be parsed into one](#dict-of-objects-that-provide-a-valid-__geo_interface__-or-can-be-parsed-into-one)
-10. [`list` of GeoDataFrames](#list-of-geodataframes)
-11. [`list` of GeoJSON objects](#list-of-geojson-objects)
+2. [Polars DataFrame or Series](#polars-dataframe-or-series)
+3. [GeoJSON data from file](#geojson-data-from-file)
+4. [TopoJSON data from file](#topojson-data-from-file)
+5. [FeatureCollection or Features](#featurecollection-or-features)
+6. [fiona.Collection](#fionacollection)
+7. [`shapely.geometry` object](#shapelygeometry-object)
+8. [object that support the `__geo_interface__` ](#object-that-support-the-__geo_interface__)
+9. [`list` of objects that provide a valid `__geo_interface__` or can be parsed into one](#list-of-objects-that-provide-a-valid-__geo_interface__-or-can-be-parsed-into-one)
+10. [`dict` of objects that provide a valid `__geo_interface__` or can be parsed into one](#dict-of-objects-that-provide-a-valid-__geo_interface__-or-can-be-parsed-into-one)
+11. [`list` of GeoDataFrames](#list-of-geodataframes)
+12. [`list` of GeoJSON objects](#list-of-geojson-objects)
 
 * * * 
 
@@ -152,6 +153,48 @@ each feature. A row can hold any geometry type, also a `GeometryCollection`.
     }
     ```
 
+
+* * *
+
+## Polars DataFrame or Series
+From the package `polars` (not a hard dependency), such as a GeoDataFrame of
+[polars-st](https://github.com/oreilles/polars-st): a DataFrame with a column of
+geometries as WKB or EWKB (`Binary`). The column `geometry` is used, or else the only
+`Binary` column; the other columns become the properties. A Series of WKB works as
+well, and a list of DataFrames with `object_name`, as for GeoDataFrames. If the
+geometries share an SRID (EWKB), it becomes the CRS, also of `to_gdf()`.
+
+!!! example
+
+    ```python
+    import polars_st as st
+    import topojson as tp
+
+    gdf = st.GeoDataFrame({
+        "name": ["abc", "def"],
+        "geometry": [
+            "POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))",
+            "POLYGON ((1 0, 2 0, 2 1, 1 1, 1 0))",
+        ],
+    })
+    topo = tp.Topology(gdf, prequantize=False)
+    print(topo.to_json(pretty=True))
+    ```
+
+    ```python exec="on" session="exampleinput-types" result="text"
+    import polars_st as st
+    import topojson as tp
+
+    gdf = st.GeoDataFrame({
+        "name": ["abc", "def"],
+        "geometry": [
+            "POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))",
+            "POLYGON ((1 0, 2 0, 2 1, 1 1, 1 0))",
+        ],
+    })
+    topo = tp.Topology(gdf, prequantize=False)
+    print(topo.to_json(pretty=True))
+    ```
 
 * * *
 

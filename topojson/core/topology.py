@@ -49,8 +49,9 @@ class Topology(Hashmap):
     Parameters
     ----------
     data : _any_ geometric type
-        Geometric data that should be converted into TopoJSON.
-        It is possible to provide a list of multiple geopandas.GeoDataFrames as
+        Geometric data that should be converted into TopoJSON, such as GeoJSON, shapely
+        geometries, a GeoDataFrame or a Polars DataFrame with a column of WKB
+        (polars-st). It is possible to provide a list of multiple GeoDataFrames as
         separate objects. In this case it is required to provide an equal length list of
         the names of the objects for parameter `object_name`.
     topology : boolean

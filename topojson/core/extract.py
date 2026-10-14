@@ -13,6 +13,72 @@ from ..utils import TopoOptions, instance, serialize_as_svg
 logger = logging.getLogger(__name__)
 
 
+def _is_polars(obj):
+    """A Polars DataFrame or Series, without importing Polars."""
+    return type(obj).__module__.startswith("polars.")
+
+
+def _polars_geometries(column):
+    """
+    The geometries of a Polars column of WKB or EWKB, as polars-st stores them, and
+    the CRS of their SRID if they share one.
+    """
+    import shapely
+
+    geoms = shapely.from_wkb(column.to_numpy())
+    srids = set(shapely.get_srid(geoms[~shapely.is_missing(geoms)]).tolist()) - {0}
+    crs = f"EPSG:{srids.pop()}" if len(srids) == 1 else None
+    return geoms, crs
+
+
+def _polars_records(frame):
+    """
+    The rows of a Polars DataFrame with a geometry column of WKB as dictionaries,
+    the geometry as shapely geometry, as `GeoDataFrame.to_dict(orient="records")`.
+    """
+    binary = [name for name, dtype in frame.schema.items() if str(dtype) == "Binary"]
+    name = (
+        "geometry"
+        if "geometry" in binary
+        else (binary[0] if len(binary) == 1 else None)
+    )
+    if name is None:
+        raise ValueError(
+            "a Polars DataFrame needs one column of geometries as WKB (Binary), "
+            f"such as the column 'geometry' of polars-st, got the columns {frame.columns}"
+        )
+    geoms, crs = _polars_geometries(frame[name])
+    # a frame of only the geometries has no rows left without them
+    records = frame.drop(name).to_dicts() if frame.width > 1 else [{}] * len(frame)
+    records = [dict(record) for record in records]
+    for record, geom in zip(records, geoms, strict=True):
+        record["geometry"] = geom
+    return records, crs
+
+
+# the method of Extract that extracts each type of input
+_EXTRACT = {
+    "LineString": "_extract_line",
+    "MultiLineString": "_extract_multiline",
+    "Polygon": "_extract_ring",
+    "MultiPolygon": "_extract_multiring",
+    "Point": "_extract_point",
+    "MultiPoint": "_extract_multipoint",
+    "GeometryCollection": "_extract_geometrycollection",
+    "FeatureCollection": "_extract_featurecollection",
+    "Feature": "_extract_feature",
+    "fiona.Feature": "_extract_fiona_feature",
+    "Collection": "_extract_fiona_collection",
+    "GeoDataFrame": "_extract_geopandas_geodataframe",
+    "GeoSeries": "_extract_geopandas_geoseries",
+    "polars.DataFrame": "_extract_polars_dataframe",
+    "polars.Series": "_extract_polars_series",
+    "list": "_extract_list",
+    "str": "_extract_string",
+    "dict": "_extract_dictionary",
+}
+
+
 class Extract:
     """
     This class targets the following objectives:
@@ -165,6 +231,8 @@ class Extract:
         - geojson.FeatureCollection
         - geopandas.GeoDataFrame
         - geopandas.GeoSeries
+        - polars.DataFrame with a column of geometries as WKB, such as polars-st
+        - polars.Series of geometries as WKB
         - dict of objects that provide a __geo_interface__
         - list of objects that provide a __geo_interface__
         - list of geopandas.GeoDataFrames
@@ -175,39 +243,14 @@ class Extract:
 
         Any non-registered geometry wil return as an error that cannot be mapped.
         """
-        if instance(geom) == "LineString":
-            self._extract_line(geom)
-        elif instance(geom) == "MultiLineString":
-            self._extract_multiline(geom)
-        elif instance(geom) == "Polygon":
-            self._extract_ring(geom)
-        elif instance(geom) == "MultiPolygon":
-            self._extract_multiring(geom)
-        elif instance(geom) == "Point":
-            self._extract_point(geom)
-        elif instance(geom) == "MultiPoint":
-            self._extract_multipoint(geom)
-        elif instance(geom) == "GeometryCollection":
-            self._extract_geometrycollection(geom)
-        elif instance(geom) == "FeatureCollection":
-            self._extract_featurecollection(geom)
-        elif instance(geom) == "Feature":
-            if type(geom).__module__ == "fiona.model":
-                self._extract_fiona_feature(geom)
-            else:
-                self._extract_feature(geom)
-        elif instance(geom) == "Collection":
-            self._extract_fiona_collection(geom)
-        elif instance(geom) == "GeoDataFrame":
-            self._extract_geopandas_geodataframe(geom)
-        elif instance(geom) == "GeoSeries":
-            self._extract_geopandas_geoseries(geom)
-        elif instance(geom) == "list":
-            self._extract_list(geom)
-        elif instance(geom) == "str":
-            self._extract_string(geom)
-        elif instance(geom) == "dict":
-            self._extract_dictionary(geom)
+        kind = instance(geom)
+        if kind in ("DataFrame", "Series") and _is_polars(geom):
+            kind = f"polars.{kind}"
+        elif kind == "Feature" and type(geom).__module__ == "fiona.model":
+            kind = "fiona.Feature"
+        name = _EXTRACT.get(kind)
+        if name is not None:
+            getattr(self, name)(geom)
         else:
             # if no type is recognized: maybe the object has a __geo_interface__
             if hasattr(self._data, "__geo_interface__"):
@@ -586,6 +629,37 @@ class Extract:
         self._data = geom.to_dict()
         self._extract_records()
 
+    def _extract_polars_dataframe(self, geom):
+        """
+        This function extracts a Polars DataFrame with a column of geometries as WKB
+        or EWKB, such as a GeoDataFrame of polars-st.
+
+        Parameters
+        ----------
+        geom : polars.DataFrame
+            DataFrame instance
+        """
+        records, crs = _polars_records(geom)
+        if crs:
+            self._defined_crs_source = crs
+        self._data = dict(enumerate(records))
+        self._extract_records()
+
+    def _extract_polars_series(self, geom):
+        """
+        This function extracts a Polars Series of geometries as WKB or EWKB.
+
+        Parameters
+        ----------
+        geom : polars.Series
+            Series instance
+        """
+        geoms, crs = _polars_geometries(geom)
+        if crs:
+            self._defined_crs_source = crs
+        self._data = dict(enumerate(geoms))
+        self._extract_records()
+
     def _extract_list(self, geom):
         """
         This function extracts a List instance.
@@ -603,14 +677,23 @@ class Extract:
                 raise LookupError(
                     "the number of data objects does not match the number of object_name"
                 )
-            geom = [subgeom.get("features", subgeom) for subgeom in geom]
+            geom = [
+                subgeom if _is_polars(subgeom) else subgeom.get("features", subgeom)
+                for subgeom in geom
+            ]
             geom_offset = np.cumsum([len(subgeom) for subgeom in geom]).tolist()
             geom_offset.pop()
             geom_offset.insert(0, 0)
             self._geom_offset = geom_offset
             for ix, subgeom in enumerate(geom):
-                subgeom = subgeom.copy()
                 start = geom_offset[ix]
+                if _is_polars(subgeom):
+                    records, _ = _polars_records(subgeom)
+                    for record in records:
+                        record["__geom_name"] = self.options.object_name[ix]
+                    geom[ix] = dict(enumerate(records, start))
+                    continue
+                subgeom = subgeom.copy()
                 if instance(subgeom) == "list":
                     # geojson feature collection
                     for feat in subgeom:

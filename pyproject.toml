@@ -23,12 +23,17 @@ dev = [
     "simplification", 
     "pyshp", 
     "altair", 
-    "ipywidgets"    
+    "ipywidgets",
+    "polars",
 ]
 docs = [
     "zensical",
     "mkdocstrings-python",
     "markdown-exec",
+    # the example of polars-st; polars-st 0.10 does not import with Polars 2
+    # (fixed in oreilles/polars-st#85, not released yet)
+    "polars<2",
+    "polars-st",
 ]
 
 [project.urls]
